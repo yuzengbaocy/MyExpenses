@@ -26,7 +26,12 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Properties;
 
+import com.google.api.client.http.HttpResponse;
+import com.google.api.client.http.HttpResponseException;
+
+import android.accounts.AccountManager;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ListActivity;
 
 import android.content.DialogInterface;
@@ -67,15 +72,20 @@ public class MyExpenses extends ListActivity {
   public static final int INSERT_TA_ID = Menu.FIRST;
   public static final int INSERT_TRANSFER_ID = Menu.FIRST + 1;
   public static final int RESET_ID = Menu.FIRST + 3;
+  public static final int SYNC_ID = Menu.FIRST + 4;
   public static final int DELETE_ID = Menu.FIRST +4;
   public static final int SHOW_DETAIL_ID = Menu.FIRST +5;
   public static final int HELP_ID = Menu.FIRST +6;
   public static final int SELECT_ACCOUNT_ID = Menu.FIRST +7;
   public static final int SETTINGS_ID = Menu.FIRST +8;
+  private static final int REQUEST_AUTHENTICATE_WRITELY = Menu.FIRST +9;
+  private static final int REQUEST_AUTHENTICATE_WISE = Menu.FIRST +10;
   public static final boolean TYPE_TRANSACTION = true;
   public static final boolean TYPE_TRANSFER = false;
   public static final String TRANSFER_EXPENSE = "=>";
   public static final String TRANSFER_INCOME = "<=";
+  private static final int DIALOG_ACCOUNTS = 0;
+  private static final String TAG = "MyExpenses";
     
   
   private ExpensesDbAdapter mDbHelper;
@@ -83,7 +93,12 @@ public class MyExpenses extends ListActivity {
   private Account mCurrentAccount;
   
   private SharedPreferences mSettings;
-  private Cursor mExpensesCursor;
+  protected Cursor mExpensesCursor;
+  
+  private boolean writelyAuthOk = false;
+  String writelyAuthToken;
+  private boolean wiseAuthOk = false;
+  String wiseAuthToken;
 
   /* (non-Javadoc)
    * Called when the activity is first created.
@@ -200,6 +215,7 @@ public class MyExpenses extends ListActivity {
     menu.add(0, INSERT_TA_ID, 0, R.string.menu_insert_ta);
     menu.add(0, INSERT_TRANSFER_ID, 0, R.string.menu_insert_transfer);
     menu.add(0, RESET_ID,1,R.string.menu_reset);
+    menu.add(0, SYNC_ID,1,"Sync with Google");
     menu.add(0, HELP_ID,1,R.string.menu_help);
     menu.add(0, SELECT_ACCOUNT_ID,1,R.string.select_account);
     menu.add(0,SETTINGS_ID,1,R.string.menu_settings);
@@ -240,6 +256,11 @@ public class MyExpenses extends ListActivity {
       return true;
     case SETTINGS_ID:
       startActivity(new Intent(this, MyPreferenceActivity.class));
+      return true;
+    case SYNC_ID:
+      gotAccount(false);
+      new SyncWithGoogleTask(this).execute();
+      return true;
     }
     return super.onMenuItemSelected(featureId, item);
   }
@@ -390,9 +411,27 @@ public class MyExpenses extends ListActivity {
         }
         //refetch account since it might have been edited
         mCurrentAccount = new Account(mDbHelper, account_id);
+        fillData();
+        return;
       }
     }
-    fillData();
+    if (requestCode == REQUEST_AUTHENTICATE_WRITELY) {
+        if (resultCode == RESULT_OK) {
+          writelyAuthOk = true;
+        } else {
+          //showDialog(DIALOG_ACCOUNTS);
+          Toast.makeText(this, "Could not get authorization to talk to Writely" , Toast.LENGTH_SHORT);
+        }
+    } else if (requestCode == REQUEST_AUTHENTICATE_WISE) {
+        if (resultCode == RESULT_OK) {
+          wiseAuthOk = true;
+        } else {
+          //showDialog(DIALOG_ACCOUNTS);
+          Toast.makeText(this, "Could not get authorization to talk to Wise" , Toast.LENGTH_SHORT);
+        }
+    }
+    if (writelyAuthOk && wiseAuthOk)
+      gotAccount(false);
   }
 
   /**
@@ -597,5 +636,117 @@ public class MyExpenses extends ListActivity {
       Log.e("MyExpenses", "Package name not found", e);
     }
     return version;
+  }
+  
+  private void gotAccount(boolean tokenExpired) {
+    String accountName = mSettings.getString("accountName", null);
+    if (accountName != null) {
+      AccountManager manager = AccountManager.get(this);
+      android.accounts.Account[] accounts = manager.getAccountsByType("com.google");
+      int size = accounts.length;
+      for (int i = 0; i < size; i++) {
+        android.accounts.Account account = accounts[i];
+        if (accountName.equals(account.name)) {
+          if (tokenExpired) {
+            manager.invalidateAuthToken("com.google", this.writelyAuthToken);
+            manager.invalidateAuthToken("com.google", this.wiseAuthToken);
+          }
+          gotAccount(manager, account);
+          return;
+        }
+      }
+    }
+    showDialog(DIALOG_ACCOUNTS);
+  }
+  void gotAccount(final AccountManager manager, final android.accounts.Account account) {
+    SharedPreferences.Editor editor = mSettings.edit();
+    editor.putString("accountName", account.name);
+    editor.commit();
+    new Thread() {
+      @Override
+      public void run() {
+        try {
+          final Bundle writelyBundle =
+              manager.getAuthToken(account, "writely", true, null, null).getResult();
+          final Bundle wiseBundle = 
+              manager.getAuthToken(account, "wise", true, null, null).getResult();
+          runOnUiThread(new Runnable() {
+
+            public void run() {
+              try {
+                if (writelyBundle.containsKey(AccountManager.KEY_INTENT)) {
+                  Intent intent = writelyBundle.getParcelable(AccountManager.KEY_INTENT);
+                  int flags = intent.getFlags();
+                  flags &= ~Intent.FLAG_ACTIVITY_NEW_TASK;
+                  intent.setFlags(flags);
+                  startActivityForResult(intent, REQUEST_AUTHENTICATE_WRITELY);
+                } else if (writelyBundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
+                  writelyAuthOk = true;
+                  writelyAuthToken = writelyBundle.getString(AccountManager.KEY_AUTHTOKEN);
+                }
+                if (wiseBundle.containsKey(AccountManager.KEY_INTENT)) {
+                  Intent intent = wiseBundle.getParcelable(AccountManager.KEY_INTENT);
+                  int flags = intent.getFlags();
+                  flags &= ~Intent.FLAG_ACTIVITY_NEW_TASK;
+                  intent.setFlags(flags);
+                  startActivityForResult(intent, REQUEST_AUTHENTICATE_WISE);
+                } else if (wiseBundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
+                  writelyAuthOk = true;
+                  wiseAuthToken = wiseBundle.getString(AccountManager.KEY_AUTHTOKEN);
+                }
+              } catch (Exception e) {
+                handleException(e);
+              }
+            }
+          });
+        } catch (Exception e) {
+          handleException(e);
+        }
+      }
+    }.start();
+  }
+  @Override
+  protected Dialog onCreateDialog(int id) {
+    switch (id) {
+      case DIALOG_ACCOUNTS:
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Select a Google account");
+        final AccountManager manager = AccountManager.get(this);
+        final android.accounts.Account[] accounts = manager.getAccountsByType("com.google");
+        final int size = accounts.length;
+        String[] names = new String[size];
+        for (int i = 0; i < size; i++) {
+          names[i] = accounts[i].name;
+        }
+        builder.setItems(names, new DialogInterface.OnClickListener() {
+          public void onClick(DialogInterface dialog, int which) {
+            gotAccount(manager, accounts[which]);
+          }
+        });
+        return builder.create();
+    }
+    return null;
+  }
+  void handleException(Exception e) {
+    e.printStackTrace();
+    if (e instanceof HttpResponseException) {
+      HttpResponse response = ((HttpResponseException) e).getResponse();
+      int statusCode = response.getStatusCode();
+      try {
+        response.ignore();
+      } catch (IOException e1) {
+        e1.printStackTrace();
+      }
+      if (statusCode == 401 || statusCode == 403) {
+        gotAccount(true);
+        return;
+      }
+      try {
+        Log.e(TAG, response.parseAsString());
+      } catch (IOException parseException) {
+        parseException.printStackTrace();
+      }
+    }
+    Log.e(TAG, e.getMessage(), e);
   }
 }
