@@ -378,7 +378,7 @@ public class CategoryList extends BudgetListFragment implements
         selection = " = ?";
         accountSelector = String.valueOf(mAccount.id);
       }
-      String catFilter = "FROM transactions WHERE " + KEY_ACCOUNTID + selection;
+      String catFilter = "FROM " + VIEW_COMMITTED + " WHERE " + KEY_ACCOUNTID + selection;
       if (!mGrouping.equals(Grouping.NONE)) {
         catFilter += " AND " +buildGroupingClause();
       }

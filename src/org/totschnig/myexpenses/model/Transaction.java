@@ -238,14 +238,17 @@ public class Transaction extends Model {
   public static Transaction getTypedNewInstance(int operationType, long accountId) {
     return getTypedNewInstance(operationType,accountId,0L);
   }
-  
+
   public static void delete(long id) {
-    cr().delete(
+    /*    cr().delete(
         TransactionProvider.PLAN_INSTANCE_STATUS_URI,
         KEY_TRANSACTIONID + " = ?",
-        new String[]{String.valueOf(id)});
-    cr().delete(ContentUris.appendId(CONTENT_URI.buildUpon(),id).build(),null,null);
+        new String[]{String.valueOf(id)});*/
+    ContentValues initialValues = new ContentValues();
+    initialValues.put(KEY_STATUS, STATUS_DELETED);
+    cr().update(ContentUris.appendId(CONTENT_URI.buildUpon(),id).build(), initialValues, null, null);
   }
+
   //needed for Template subclass
   public Transaction() {
     setDate(new Date());

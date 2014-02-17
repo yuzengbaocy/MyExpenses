@@ -58,6 +58,11 @@ public class DatabaseConstants {
    */
   public static final int STATUS_UNCOMMITTED = 2;
 
+  /**
+   * deleted transactions are marked with this flag, allows undo
+   */
+  public static final int STATUS_DELETED = -1;
+
   public static final String TABLE_TRANSACTIONS = "transactions";
   public static final String TABLE_ACCOUNTS = "accounts";
   public static final String TABLE_CATEGORIES = "categories";

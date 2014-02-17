@@ -32,7 +32,7 @@ import android.util.Log;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.*;
 
 public class TransactionDatabase extends SQLiteOpenHelper {
-  public static final int DATABASE_VERSION = 42;
+  public static final int DATABASE_VERSION = 43;
   public static final String DATABASE_NAME = "data";
   private Context mCtx;
 
@@ -200,14 +200,14 @@ public class TransactionDatabase extends SQLiteOpenHelper {
     db.execSQL(DATABASE_CREATE);
     db.execSQL(PAYEE_CREATE);
     String viewTransactions = VIEW_DEFINITION(TABLE_TRANSACTIONS);
-    db.execSQL("CREATE VIEW " + VIEW_COMMITTED   + viewTransactions + " WHERE " + KEY_STATUS + " != " + STATUS_UNCOMMITTED + ";");
+    db.execSQL("CREATE VIEW " + VIEW_COMMITTED   + viewTransactions + " WHERE " + KEY_STATUS + " IN (0," + STATUS_EXPORTED + ");");
     db.execSQL("CREATE VIEW " + VIEW_UNCOMMITTED + viewTransactions + " WHERE " + KEY_STATUS + " = " + STATUS_UNCOMMITTED + ";");
     db.execSQL("CREATE VIEW " + VIEW_ALL + viewTransactions);
     db.execSQL(TEMPLATE_CREATE);
     db.execSQL("CREATE VIEW " + VIEW_TEMPLATES +  VIEW_DEFINITION(TABLE_TEMPLATES));
     db.execSQL(CATEGORIES_CREATE);
     db.execSQL(ACCOUNTS_CREATE);
-    db.execSQL("CREATE VIEW " + VIEW_EXTENDED   + VIEW_DEFINITION_EXTENDED(TABLE_TRANSACTIONS) + " WHERE " + KEY_STATUS + " != " + STATUS_UNCOMMITTED + ";");
+    db.execSQL("CREATE VIEW " + VIEW_EXTENDED   + VIEW_DEFINITION_EXTENDED(TABLE_TRANSACTIONS) + " WHERE " + KEY_STATUS + " IN (0," + STATUS_EXPORTED + ");");
     db.execSQL("CREATE VIEW " + VIEW_TEMPLATES_EXTENDED +  VIEW_DEFINITION_EXTENDED(TABLE_TEMPLATES));
     insertDefaultAccount(db);
     db.execSQL(PAYMENT_METHODS_CREATE);
@@ -591,6 +591,12 @@ public class TransactionDatabase extends SQLiteOpenHelper {
                 "number " +
               "FROM transactions_old");
           db.execSQL("DROP TABLE transactions_old");
+    }
+    if (oldVersion < 43) {
+      db.execSQL("DROP VIEW transactions_committed");
+      db.execSQL("DROP VIEW transactions_extended");
+      db.execSQL("CREATE VIEW transactions_committed " + VIEW_DEFINITION(TABLE_TRANSACTIONS) + " WHERE " + KEY_STATUS + " IN (0," + STATUS_EXPORTED + ");");
+      db.execSQL("CREATE VIEW transactions_extended" + VIEW_DEFINITION_EXTENDED(TABLE_TRANSACTIONS) + " WHERE " + KEY_STATUS + " IN (0," + STATUS_EXPORTED + ");");
     }
   }
 }

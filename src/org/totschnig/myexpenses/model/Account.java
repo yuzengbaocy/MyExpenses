@@ -585,7 +585,6 @@ public class Account extends Model  implements Serializable {
   /**
    * For transfers the peer transaction will survive, but we transform it to a normal transaction
    * with a note about the deletion of the peer_transaction
-   * also takes care of templates
    */
   public void deleteAllTransactions() {
     String[] selectArgs = new String[] { String.valueOf(id) };
@@ -595,12 +594,15 @@ public class Account extends Model  implements Serializable {
     args.putNull(KEY_TRANSFER_PEER);
     cr().update(TransactionProvider.TRANSACTIONS_URI, args,
         KEY_TRANSFER_ACCOUNT + " = ?", selectArgs);
-    cr().delete(
+/*    cr().delete(
         TransactionProvider.PLAN_INSTANCE_STATUS_URI,
         KEY_TRANSACTIONID + " IN (SELECT " + KEY_ROWID + " from " + TABLE_TRANSACTIONS + " WHERE " + KEY_ACCOUNTID + " = ?)",
-        selectArgs);
-    cr().delete(TransactionProvider.TRANSACTIONS_URI, KEY_ACCOUNTID + " = ?", selectArgs);
+        selectArgs);*/
+    args = new ContentValues();
+    args.put(KEY_STATUS, STATUS_DELETED);
+    cr().update(TransactionProvider.TRANSACTIONS_URI, args,KEY_ACCOUNTID + " = ?", selectArgs);
   }
+
   public void deleteAllTemplates() {
     String[] selectArgs = new String[] { String.valueOf(id) };
     cr().delete(TransactionProvider.TEMPLATES_URI, KEY_ACCOUNTID + " = ?", selectArgs);
