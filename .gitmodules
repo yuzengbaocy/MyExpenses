@@ -1,3 +1,6 @@
 [submodule "StickyListHeaders"]
 	path = StickyListHeaders
 	url = git@github.com:emilsjolander/StickyListHeaders.git
+[submodule "UndoBar"]
+	path = UndoBar
+	url = git@github.com:soarcn/UndoBar.git

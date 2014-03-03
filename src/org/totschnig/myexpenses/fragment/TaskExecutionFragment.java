@@ -64,6 +64,7 @@ public class TaskExecutionFragment extends Fragment {
   public static final int TASK_NEW_CALENDAR = 16;
   public static final int TASK_CANCEL_PLAN_INSTANCE = 17;
   public static final int TASK_RESET_PLAN_INSTANCE = 18;
+  public static final int TASK_UNDELETE_TRANSACTION = 19;
 
   /**
    * Callback interface through which the fragment will report the
@@ -234,6 +235,11 @@ public class TaskExecutionFragment extends Fragment {
       case TASK_DELETE_TRANSACTION:
         for (long id: ids) {
           Transaction.delete(id);
+        }
+        return null;
+      case TASK_UNDELETE_TRANSACTION:
+        for (long id: ids) {
+          Transaction.undelete(id);
         }
         return null;
       case TASK_DELETE_ACCOUNT:

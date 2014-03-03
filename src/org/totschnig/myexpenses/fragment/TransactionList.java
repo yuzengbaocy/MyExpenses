@@ -27,6 +27,7 @@ import org.totschnig.myexpenses.activity.ExpenseEdit;
 import org.totschnig.myexpenses.activity.MyExpenses;
 import org.totschnig.myexpenses.dialog.EditTextDialog;
 import org.totschnig.myexpenses.dialog.MessageDialogFragment;
+import org.totschnig.myexpenses.dialog.ProgressDialogFragment;
 import org.totschnig.myexpenses.dialog.TransactionDetailFragment;
 import org.totschnig.myexpenses.model.Account;
 import org.totschnig.myexpenses.model.Account.Type;
@@ -36,6 +37,9 @@ import org.totschnig.myexpenses.model.Transaction.CrStatus;
 import org.totschnig.myexpenses.provider.DbUtils;
 import org.totschnig.myexpenses.provider.TransactionProvider;
 import org.totschnig.myexpenses.util.Utils;
+
+import com.cocosw.undobar.UndoBarController;
+import com.cocosw.undobar.UndoBarController.UndoListener;
 
 import se.emilsjolander.stickylistheaders.StickyListHeadersAdapter;
 import se.emilsjolander.stickylistheaders.StickyListHeadersListView;
@@ -52,6 +56,7 @@ import android.net.Uri.Builder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Parcelable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -80,7 +85,7 @@ import android.widget.Toast;
 
 //TODO: consider moving to ListFragment
 public class TransactionList extends BudgetListFragment implements
-    LoaderManager.LoaderCallbacks<Cursor>,OnHeaderClickListener {
+    LoaderManager.LoaderCallbacks<Cursor>,OnHeaderClickListener, UndoListener {
 
   protected int getMenuResource() {
     return R.menu.transactionlist_context;
@@ -247,16 +252,17 @@ public class TransactionList extends BudgetListFragment implements
     FragmentManager fm = getActivity().getSupportFragmentManager();
     switch(command) {
     case R.id.DELETE_COMMAND:
-      MessageDialogFragment.newInstance(
-          R.string.dialog_title_warning_delete_transaction,
-          getResources().getQuantityString(R.plurals.warning_delete_transaction,itemIds.length,itemIds.length),
-          new MessageDialogFragment.Button(
-              R.string.menu_delete,
-              R.id.DELETE_COMMAND_DO,
-              itemIds),
-          null,
-          new MessageDialogFragment.Button(android.R.string.no,R.id.CANCEL_CALLBACK_COMMAND,null))
-        .show(fm,"DELETE_TRANSACTION");
+      fm.beginTransaction()
+      .add(TaskExecutionFragment.newInstance(
+          TaskExecutionFragment.TASK_DELETE_TRANSACTION,
+          (Long[])itemIds, null),
+        "ASYNC_TASK")
+      .add(ProgressDialogFragment.newInstance(R.string.progress_dialog_deleting),"PROGRESS")
+      .commit();
+      final Bundle b = new Bundle();
+      b.putSerializable("itemIds", itemIds);
+      UndoBarController.show(
+          getActivity(), "Transactions deleted", this, b);
       return true;
     case R.id.CLONE_TRANSACTION_COMMAND:
       fm.beginTransaction()
@@ -748,5 +754,16 @@ public class TransactionList extends BudgetListFragment implements
       }
     }
     mCheckedListItems = null;
+  }
+  @Override
+  public void onUndo(Parcelable token) {
+    getActivity().getSupportFragmentManager().beginTransaction()
+    .add(TaskExecutionFragment.newInstance(
+        TaskExecutionFragment.TASK_UNDELETE_TRANSACTION,
+        (Long[]) ((Bundle) token).getSerializable("itemIds"), null),
+      "ASYNC_TASK")
+    .add(ProgressDialogFragment.newInstance(R.string.progress_dialog_deleting),"PROGRESS")
+    .commit();
+    
   }
 }

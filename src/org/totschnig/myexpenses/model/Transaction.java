@@ -251,6 +251,15 @@ public class Transaction extends Model {
     initialValues.put(KEY_STATUS, STATUS_DELETED);
     cr().update(ContentUris.appendId(CONTENT_URI.buildUpon(),id).build(), initialValues, null, null);
   }
+  public static void undelete(long id) {
+    /*    cr().delete(
+        TransactionProvider.PLAN_INSTANCE_STATUS_URI,
+        KEY_TRANSACTIONID + " = ?",
+        new String[]{String.valueOf(id)});*/
+    ContentValues initialValues = new ContentValues();
+    initialValues.put(KEY_STATUS, 0);
+    cr().update(ContentUris.appendId(CONTENT_URI.buildUpon(),id).build(), initialValues, null, null);
+  }
 
   //needed for Template subclass
   public Transaction() {
