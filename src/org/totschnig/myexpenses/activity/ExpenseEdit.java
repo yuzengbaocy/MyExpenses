@@ -274,6 +274,11 @@ public class ExpenseEdit extends AmountActivity implements
         mTransaction = Template.getTypedNewInstance(mOperationType, accountId);
       else
         mTransaction = Transaction.getTypedNewInstance(mOperationType,accountId,parentId);
+      if (mTransaction == null) {
+        Toast.makeText(this,"Error instantiating transaction for account "+accountId,Toast.LENGTH_SHORT).show();
+        finish();
+        return;
+      }
       //Split transactions are returned persisted to db and already have an id
       mRowId = mTransaction.id;
       setup();
@@ -538,12 +543,17 @@ public class ExpenseEdit extends AmountActivity implements
     return super.dispatchCommand(command, tag);
   }
   private void createRow(int type) {
+    int accountPosition = mAccountSpinner.getSelectedItemPosition();
+    if (accountPosition == AdapterView.INVALID_POSITION) {
+      //silently do nothing if accounts are not yet loaded
+      return;
+    }
     if (type == MyExpenses.TYPE_TRANSFER &&
-        !mAccounts[mAccountSpinner.getSelectedItemPosition()].transferEnabled) {
+        !mAccounts[accountPosition].transferEnabled) {
       MessageDialogFragment.newInstance(
           R.string.dialog_title_menu_command_disabled,
           getString(R.string.dialog_command_disabled_insert_transfer,
-              mAccounts[mAccountSpinner.getSelectedItemPosition()].currency.getCurrencyCode()),
+              mAccounts[accountPosition].currency.getCurrencyCode()),
           MessageDialogFragment.Button.okButton(),
           null,null)
        .show(getSupportFragmentManager(),"BUTTON_DISABLED_INFO");
@@ -1177,6 +1187,11 @@ public class ExpenseEdit extends AmountActivity implements
       }
       break;
     case ACCOUNTS_CURSOR:
+      if (data.getCount()==0) {
+        Toast.makeText(this,"Error loading accounts list ",Toast.LENGTH_SHORT).show();
+        finish();
+        return;
+      }
       mAccountsAdapter.swapCursor(data);
       mAccounts = new Account[data.getCount()];
       if (mSavedInstance) {

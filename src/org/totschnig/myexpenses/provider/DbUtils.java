@@ -27,8 +27,6 @@ import org.totschnig.myexpenses.model.PaymentMethod;
 import org.totschnig.myexpenses.model.Transaction;
 import org.totschnig.myexpenses.util.Utils;
 
-import com.android.calendar.CalendarContractCompat.Events;
-
 import static org.totschnig.myexpenses.provider.DatabaseConstants.*;
 
 import android.content.ContentProviderClient;
@@ -47,6 +45,7 @@ public class DbUtils {
     Cursor c = cr.query(TransactionProvider.TRANSACTIONS_URI, 
         new String[] {KEY_ROWID, KEY_DATE}, null, null, null);
     String dateString;
+    Date date;
     c.moveToFirst();
     while(!c.isAfterLast()) {
       dateString = c.getString(c.getColumnIndex(KEY_DATE));
@@ -57,12 +56,12 @@ public class DbUtils {
         ContentValues args = new ContentValues();
         //first we try to parse in the users locale
         try {
-          dateString = TransactionDatabase.dateTimeFormat.format(localeDependent.parse(dateString));
+          date = localeDependent.parse(dateString);
         } catch (ParseException e1) {
-          dateString = TransactionDatabase.dateTimeFormat.format(new Date());
+          date = new Date();
           args.put(KEY_COMMENT,"corrupted Date has been reset");
         }
-        args.put(KEY_DATE,dateString);
+        args.put(KEY_DATE,date.getTime()/1000);
         cr.update(TransactionProvider.TRANSACTIONS_URI, args,KEY_ROWID + " = ?",
             new String[] {String.valueOf(c.getLong(c.getColumnIndex(KEY_ROWID)))});
       }

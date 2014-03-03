@@ -117,8 +117,9 @@ public class TransactionProvider extends ContentProvider {
     SQLiteDatabase db = mOpenHelper.getReadableDatabase();
     Cursor c;
 
-    if (MyApplication.debug)
+    if (MyApplication.debug) {
       Log.d(TAG, "Query for URL: " + uri);
+    }
     String defaultOrderBy = null;
     String groupBy = null;
     String having = null;
@@ -542,6 +543,8 @@ public class TransactionProvider extends ContentProvider {
     if (uriMatch == TRANSACTIONS) {
       getContext().getContentResolver().notifyChange(ACCOUNTS_URI, null);
       getContext().getContentResolver().notifyChange(UNCOMMITTED_URI, null);
+    } else if (uriMatch == ACCOUNTS) {
+      getContext().getContentResolver().notifyChange(ACCOUNTS_BASE_URI, null);
     }
     return id >0 ? Uri.parse(newUri) : null;
   }
@@ -664,8 +667,12 @@ public class TransactionProvider extends ContentProvider {
       getContext().getContentResolver().notifyChange(TRANSACTIONS_URI, null);
       getContext().getContentResolver().notifyChange(ACCOUNTS_URI, null);
       getContext().getContentResolver().notifyChange(UNCOMMITTED_URI, null);
-    } else
+    } else {
+      if (uriMatch == ACCOUNTS) {
+        getContext().getContentResolver().notifyChange(ACCOUNTS_BASE_URI, null);
+      }
       getContext().getContentResolver().notifyChange(uri, null);
+    }
     return count;
   }
 
@@ -703,8 +710,6 @@ public class TransactionProvider extends ContentProvider {
       }
       count = db.update(TABLE_ACCOUNTS, values, "_id=" + segment + whereString,
           whereArgs);
-      //update aggregate cursor
-      //getContext().getContentResolver().notifyChange(AGGREGATES_URI, null);
       break;
     case TEMPLATES_ID:
       segment = uri.getPathSegments().get(1); 
@@ -831,8 +836,9 @@ public class TransactionProvider extends ContentProvider {
         //we do not need to refresh cursors on the usage counters
         uriMatch != TEMPLATES_INCREASE_USAGE &&
         uriMatch != CATEGORY_INCREASE_USAGE &&
-        uriMatch != ACCOUNT_INCREASE_USAGE)
+        uriMatch != ACCOUNT_INCREASE_USAGE) {
       getContext().getContentResolver().notifyChange(uri, null);
+    }
     return count;
   }
   static {

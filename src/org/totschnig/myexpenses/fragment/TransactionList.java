@@ -19,7 +19,6 @@ import static org.totschnig.myexpenses.provider.DatabaseConstants.*;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
@@ -61,7 +60,6 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.text.SpannableStringBuilder;
-import android.text.TextPaint;
 import android.text.TextUtils;
 import android.text.style.StyleSpan;
 import android.text.style.UnderlineSpan;
@@ -116,10 +114,10 @@ public class TransactionList extends BudgetListFragment implements
   private String mCurrency;
   private Long mOpeningBalance;
 
-  public static Fragment newInstance(Account account) {
+  public static Fragment newInstance(long accountId) {
     TransactionList pageFragment = new TransactionList();
     Bundle bundle = new Bundle();
-    bundle.putSerializable("account", account);
+    bundle.putSerializable(KEY_ACCOUNTID, accountId);
     pageFragment.setArguments(bundle);
     return pageFragment;
   }
@@ -127,9 +125,11 @@ public class TransactionList extends BudgetListFragment implements
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setHasOptionsMenu(true);
-
     mappedCategoriesPerGroup = new SparseBooleanArray();
-    mAccount = (Account) getArguments().getSerializable("account");
+    mAccount = Account.getInstanceFromDb(getArguments().getLong(KEY_ACCOUNTID));
+    if (mAccount == null) {
+      return;
+    }
     mGrouping = mAccount.grouping;
     mType = mAccount.type;
     mCurrency = mAccount.currency.getCurrencyCode();
@@ -188,6 +188,8 @@ public class TransactionList extends BudgetListFragment implements
   @Override
   public void onDestroy() {
     super.onDestroy();
+    if (aObserver==null)
+      return;
     try {
       ContentResolver cr = getActivity().getContentResolver();
       cr.unregisterContentObserver(aObserver);
@@ -199,6 +201,11 @@ public class TransactionList extends BudgetListFragment implements
   @Override  
   public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
     final MyExpenses ctx = (MyExpenses) getActivity();
+    if (mAccount==null) {
+      TextView tv = new TextView(ctx);
+      tv.setText("Error loading transaction list for account "+getArguments().getLong(KEY_ACCOUNTID));
+      return  tv;
+    }
     mManager = getLoaderManager();
     setGrouping();
     setColors();
@@ -427,7 +434,7 @@ public class TransactionList extends BudgetListFragment implements
         mType = mAccount.type;
         mCurrency = mAccount.currency.getCurrencyCode();
       }
-      if (mAccount.openingBalance.getAmountMinor() != mOpeningBalance) {
+      if (!mAccount.openingBalance.getAmountMinor().equals(mOpeningBalance)) {
         restartGroupingLoader();
         mOpeningBalance = mAccount.openingBalance.getAmountMinor();
       }
@@ -719,9 +726,9 @@ public class TransactionList extends BudgetListFragment implements
   }
   private void configureMenuInternal(Menu menu, int position) {
     if (mTransactionsCursor != null) {
-      mTransactionsCursor.moveToPosition(position);
       //templates for splits is not yet implemented
-      if (SPLIT_CATID.equals(DbUtils.getLongOrNull(mTransactionsCursor, KEY_CATID)))
+      if (mTransactionsCursor.moveToPosition(position) &&
+          SPLIT_CATID.equals(DbUtils.getLongOrNull(mTransactionsCursor, KEY_CATID)))
         menu.findItem(R.id.CREATE_TEMPLATE_COMMAND).setVisible(false);
     }
   }

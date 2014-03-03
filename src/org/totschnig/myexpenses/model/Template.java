@@ -31,6 +31,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
+import android.database.sqlite.SQLiteException;
 import android.net.Uri;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.*;
 
@@ -117,8 +118,16 @@ public class Template extends Transaction {
     super(accountId,amount);
     title = "";
   }
+  public Template(Account account, long amount) {
+    super(account,amount);
+    title = "";
+  }
   public static Template getTypedNewInstance(int mOperationType, long accountId) {
-    Template t = new Template(accountId,0L);
+    Account account = Account.getInstanceFromDb(accountId);
+    if (account == null) {
+      return null;
+    }
+    Template t = new Template(account,0L);
     t.isTransfer = mOperationType == MyExpenses.TYPE_TRANSFER;
     return t;
   }
@@ -211,11 +220,23 @@ public class Template extends Transaction {
       }
       initialValues.put(Events.TITLE,title);
       initialValues.put(Events.DESCRIPTION, compileDescription(MyApplication.getInstance()));
-      cr().update(
-          ContentUris.withAppendedId(Events.CONTENT_URI, planId),
-          initialValues,
-          null,
-          null);
+      try {
+        cr().update(
+            ContentUris.withAppendedId(Events.CONTENT_URI, planId),
+            initialValues,
+            null,
+            null);
+      } catch (SQLiteException e) {
+        //we have seen a bugy calendar provider implementation on Symphony phone
+        //we try the insert again without the custom app columns
+        initialValues.remove(Events.CUSTOM_APP_URI);
+        initialValues.remove(Events.CUSTOM_APP_PACKAGE);
+        cr().update(
+            ContentUris.withAppendedId(Events.CONTENT_URI, planId),
+            initialValues,
+            null,
+            null);
+      }
     }
     return uri;
   }

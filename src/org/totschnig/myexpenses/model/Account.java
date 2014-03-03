@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -53,7 +52,7 @@ import static org.totschnig.myexpenses.provider.DatabaseConstants.*;
  * @author Michael Totschnig
  *
  */
-public class Account extends Model  implements Serializable {
+public class Account extends Model {
 
   public long id = 0;
 
@@ -388,6 +387,10 @@ public class Account extends Model  implements Serializable {
   public static boolean isInstanceCached(long id) {
     return accounts.containsKey(id);
   }
+  public static void reportNull() {
+    /*org.acra.ACRA.getErrorReporter().handleSilentException(
+        new Exception("Error instantiating account"));*/
+  }
   /**
    * @param id
    * @return Account object, if id == 0, the first entry in the accounts cache will be returned or
@@ -418,10 +421,12 @@ public class Account extends Model  implements Serializable {
     Cursor c = cr().query(
         CONTENT_URI, null,selection,null, null);
     if (c == null) {
+      reportNull();
       return null;
     }
     if (c.getCount() == 0) {
       c.close();
+      reportNull();
       return null;
     }
     c.moveToFirst();
@@ -437,6 +442,8 @@ public class Account extends Model  implements Serializable {
   }
   public static boolean delete(long id) {
     Account account = getInstanceFromDb(id);
+    if (account == null)
+      return false;
     account.deleteAllTransactions();
     account.deleteAllTemplates();
     accounts.remove(id);
