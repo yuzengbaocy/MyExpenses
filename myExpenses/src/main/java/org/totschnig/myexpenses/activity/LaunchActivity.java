@@ -179,9 +179,15 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
         }
       }
       if (prev_version < 221) {
-        MyApplication.PrefKey.SORT_ORDER.putString(
+        MyApplication.PrefKey.SORT_ORDER_LEGACY.putString(
             MyApplication.PrefKey.CATEGORIES_SORT_BY_USAGES_LEGACY.getBoolean(true) ?
                 "USAGES" : "ALPHABETIC");
+      }
+      if (prev_version < 238) {
+        String legacy = MyApplication.PrefKey.SORT_ORDER_LEGACY.getString("USAGES");
+        MyApplication.PrefKey.SORT_ORDER_TEMPLATES.putString(legacy);
+        MyApplication.PrefKey.SORT_ORDER_CATEGORIES.putString(legacy);
+        MyApplication.PrefKey.SORT_ORDER_ACCOUNTS.putString(legacy);
       }
       VersionDialogFragment.newInstance(prev_version)
         .show(getSupportFragmentManager(), "VERSION_INFO");

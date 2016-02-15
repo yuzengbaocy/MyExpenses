@@ -21,6 +21,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v7.widget.SwitchCompat;
 import android.util.DisplayMetrics;
 import android.view.GestureDetector;
 import android.view.Menu;
@@ -38,7 +39,6 @@ import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.dialog.EditTextDialog;
 import org.totschnig.myexpenses.dialog.EditTextDialog.EditTextDialogListener;
 import org.totschnig.myexpenses.dialog.ProgressDialogFragment;
-import org.totschnig.myexpenses.dialog.SelectGroupingDialogFragment;
 import org.totschnig.myexpenses.dialog.SelectMainCategoryDialogFragment;
 import org.totschnig.myexpenses.fragment.CategoryList;
 import org.totschnig.myexpenses.fragment.DbWriteFragment;
@@ -141,7 +141,7 @@ public class ManageCategories extends ProtectedFragmentActivity implements
     FragmentManager fm = getSupportFragmentManager();
     mListFragment = ((CategoryList) fm.findFragmentById(R.id.category_list));
     findViewById(R.id.CREATE_COMMAND).setVisibility(
-        (helpVariant.equals(HelpVariant.select_mapping)||helpVariant.equals(HelpVariant.manage)) ?
+        (helpVariant.equals(HelpVariant.select_mapping) || helpVariant.equals(HelpVariant.manage)) ?
             View.VISIBLE : View.GONE);
   }
 
@@ -150,8 +150,10 @@ public class ManageCategories extends ProtectedFragmentActivity implements
     MenuInflater inflater = getMenuInflater();
     if (helpVariant.equals(HelpVariant.distribution)) {
       inflater.inflate(R.menu.distribution, menu);
+      inflater.inflate(R.menu.grouping, menu);
 
-      ToggleButton typeButton = (ToggleButton)
+
+      SwitchCompat typeButton = (SwitchCompat)
           MenuItemCompat.getActionView(menu.findItem(R.id.switchId))
               .findViewById(R.id.TaType);
 
@@ -163,6 +165,7 @@ public class ManageCategories extends ProtectedFragmentActivity implements
       });
 
     } else if (!helpVariant.equals(HelpVariant.select_filter)) {
+      inflater.inflate(R.menu.sort, menu);
       inflater.inflate(R.menu.categories, menu);
     }
     super.onCreateOptionsMenu(menu);
@@ -174,13 +177,6 @@ public class ManageCategories extends ProtectedFragmentActivity implements
     switch (command) {
       case R.id.CREATE_COMMAND:
         createCat(null);
-        return true;
-      case R.id.GROUPING_COMMAND:
-        SelectGroupingDialogFragment.newInstance(mListFragment.mGrouping.ordinal())
-            .show(getSupportFragmentManager(), "SELECT_GROUPING");
-        return true;
-      case R.id.GROUPING_COMMAND_DO:
-        mListFragment.setGrouping(Account.Grouping.values()[(Integer) tag]);
         return true;
       case R.id.DELETE_COMMAND_DO:
         finishActionMode();

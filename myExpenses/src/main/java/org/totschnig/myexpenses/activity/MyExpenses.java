@@ -15,26 +15,65 @@
 
 package org.totschnig.myexpenses.activity;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Currency;
-import java.util.Locale;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.Intent;
+import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.database.Cursor;
+import android.graphics.Typeface;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v4.view.ViewPager;
+import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.preference.PreferenceManager;
+import android.support.v7.widget.CardView;
+import android.support.v7.widget.PopupMenu;
+import android.support.v7.widget.Toolbar;
+import android.text.ClipboardManager;
+import android.text.TextUtils;
+import android.util.Log;
+import android.util.TypedValue;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.SubMenu;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
-import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.MyApplication.PrefKey;
+import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.dialog.BalanceDialogFragment;
-import org.totschnig.myexpenses.dialog.ConfirmationDialogFragment.ConfirmationDialogListener;
 import org.totschnig.myexpenses.dialog.ConfirmationDialogFragment;
+import org.totschnig.myexpenses.dialog.ConfirmationDialogFragment.ConfirmationDialogListener;
 import org.totschnig.myexpenses.dialog.EditTextDialog;
+import org.totschnig.myexpenses.dialog.EditTextDialog.EditTextDialogListener;
 import org.totschnig.myexpenses.dialog.ExportDialogFragment;
+import org.totschnig.myexpenses.dialog.MessageDialogFragment;
 import org.totschnig.myexpenses.dialog.ProgressDialogFragment;
 import org.totschnig.myexpenses.dialog.RemindRateDialogFragment;
-import org.totschnig.myexpenses.dialog.SelectGroupingDialogFragment;
-import org.totschnig.myexpenses.dialog.EditTextDialog.EditTextDialogListener;
-import org.totschnig.myexpenses.dialog.MessageDialogFragment;
 import org.totschnig.myexpenses.dialog.TransactionDetailFragment;
 import org.totschnig.myexpenses.dialog.WelcomeDialogFragment;
 import org.totschnig.myexpenses.fragment.ContextualActionBarFragment;
@@ -43,10 +82,10 @@ import org.totschnig.myexpenses.model.Account;
 import org.totschnig.myexpenses.model.Account.Grouping;
 import org.totschnig.myexpenses.model.Account.Type;
 import org.totschnig.myexpenses.model.AggregateAccount;
+import org.totschnig.myexpenses.model.ContribFeature;
 import org.totschnig.myexpenses.model.Money;
 import org.totschnig.myexpenses.model.Template;
 import org.totschnig.myexpenses.model.Transaction;
-import org.totschnig.myexpenses.model.ContribFeature;
 import org.totschnig.myexpenses.provider.TransactionDatabase;
 import org.totschnig.myexpenses.provider.TransactionProvider;
 import org.totschnig.myexpenses.provider.filter.CommentCriteria;
@@ -64,63 +103,33 @@ import org.totschnig.myexpenses.util.Utils;
 //import com.batch.android.BatchUnlockListener;
 //import com.batch.android.Offer;
 //import com.google.android.vending.licensing.PreferenceObfuscator;
-
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Currency;
+import java.util.Locale;
 import se.emilsjolander.stickylistheaders.StickyListHeadersAdapter;
 import se.emilsjolander.stickylistheaders.StickyListHeadersListView;
 
-import android.annotation.SuppressLint;
-import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteException;
-import android.graphics.Typeface;
-import android.net.Uri;
-import android.os.Build;
-import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.preference.PreferenceManager;
-import android.support.v7.widget.CardView;
-import android.support.v7.widget.PopupMenu;
-import android.support.v7.widget.Toolbar;
-import android.text.ClipboardManager;
-import android.text.TextUtils;
-import android.util.Log;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View.OnClickListener;
-import android.view.ViewGroup;
-
-import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.AbsListView;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.Toast;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.view.ViewPager;
-import android.support.v4.view.ViewPager.OnPageChangeListener;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
-import android.util.TypedValue;
-
-
-import static org.totschnig.myexpenses.provider.DatabaseConstants.*;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_ACCOUNTID;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_CLEARED_TOTAL;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_COLOR;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_CURRENCY;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_CURRENT_BALANCE;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_DESCRIPTION;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_HAS_CLEARED;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_HAS_EXPORTED;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_HAS_FUTURE;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_LABEL;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_OPENING_BALANCE;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_RECONCILED_TOTAL;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_ROWID;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_SORT_KEY;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_SUM_EXPENSES;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_SUM_INCOME;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_SUM_TRANSFERS;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TOTAL;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TRANSACTIONID;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TYPE;
 
 /**
  * This is the main activity where all expenses are listed
@@ -287,24 +296,52 @@ public class MyExpenses extends LaunchActivity implements
         R.id.reconciled_total
     };
     mDrawerListAdapter = new MyGroupedAdapter(this, R.layout.account_row, null, from, to, 0);
-    LinearLayout footer = new LinearLayout(this);
-    footer.setLayoutParams(new AbsListView.LayoutParams(
-        AbsListView.LayoutParams.MATCH_PARENT, AbsListView.LayoutParams.WRAP_CONTENT));
-    footer.setGravity(Gravity.CENTER_HORIZONTAL);
-    Button createAccount = new Button(this);
-    createAccount.setText(R.string.menu_create_account);
-    createAccount.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.ic_menu_add, 0, 0, 0);
-    createAccount.setLayoutParams(new LinearLayout.LayoutParams(
-        LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-    createAccount.setOnClickListener(new OnClickListener() {
+
+    Toolbar accountsMenu = (Toolbar) findViewById(R.id.accounts_menu);
+    accountsMenu.setTitle(R.string.pref_manage_accounts_title);
+    accountsMenu.inflateMenu(R.menu.accounts);
+    accountsMenu.inflateMenu(R.menu.sort);
+
+    //Sort submenu
+    MenuItem menuItem = accountsMenu.getMenu().findItem(R.id.SORT_COMMAND);
+    MenuItemCompat.setShowAsAction(
+        menuItem, MenuItem.SHOW_AS_ACTION_NEVER);
+    SubMenu sortMenu = menuItem.getSubMenu();
+    sortMenu.findItem(R.id.SORT_CUSTOM_COMMAND).setVisible(true);
+    Utils.configureSortMenu(sortMenu, PrefKey.SORT_ORDER_ACCOUNTS.getString("USAGES"));
+
+    //Grouping submenu
+    SubMenu groupingMenu = accountsMenu.getMenu().findItem(R.id.GROUPING_ACCOUNTS_COMMAND)
+        .getSubMenu();
+    Account.AccountGrouping accountGrouping;
+    try {
+      accountGrouping = Account.AccountGrouping.valueOf(
+          MyApplication.PrefKey.ACCOUNT_GROUPING.getString("TYPE"));
+    } catch (IllegalArgumentException e) {
+      accountGrouping = Account.AccountGrouping.TYPE;
+    }
+    MenuItem activeItem;
+    switch (accountGrouping) {
+      case CURRENCY:
+        activeItem = groupingMenu.findItem(R.id.GROUPING_ACCOUNTS_CURRENCY_COMMAND);
+        break;
+      case NONE:
+        activeItem = groupingMenu.findItem(R.id.GROUPING_ACCOUNTS_NONE_COMMAND);
+        break;
+      default:
+        activeItem = groupingMenu.findItem(R.id.GROUPING_ACCOUNTS_TYPE_COMMAND);
+        break;
+    }
+    activeItem.setChecked(true);
+
+    accountsMenu.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
       @Override
-      public void onClick(View v) {
-        closeDrawer();
-        dispatchCommand(R.id.CREATE_ACCOUNT_COMMAND, null);
+      public boolean onMenuItemClick(MenuItem item) {
+        return handleSortOption(item) || handleAccountsGrouping(item) ||
+            dispatchCommand(item.getItemId(), null);
       }
     });
-    footer.addView(createAccount);
-    mDrawerList.addFooterView(footer);
+
     mDrawerList.setAdapter(mDrawerListAdapter);
     mDrawerList.setAreHeadersSticky(false);
     mDrawerList.setOnItemClickListener(new OnItemClickListener() {
@@ -456,13 +493,22 @@ public class MyExpenses extends LaunchActivity implements
     }
     Utils.menuItemSetEnabledAndVisible(menu.findItem(R.id.BALANCE_COMMAND),
         showBalanceCommand);
-    return super.onPrepareOptionsMenu(menu);
+
+    SubMenu groupingMenu = menu.findItem(R.id.GROUPING_COMMAND).getSubMenu();
+
+    Account account = Account.getInstanceFromDb(mAccountId);
+    if (account!=null) {
+      Utils.configureGroupingMenu(groupingMenu,account.grouping);
+    }
+    super.onPrepareOptionsMenu(menu);
+    return true;
   }
 
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
     MenuInflater inflater = getMenuInflater();
     inflater.inflate(R.menu.expenses, menu);
+    inflater.inflate(R.menu.grouping, menu);
     super.onCreateOptionsMenu(menu);
     return true;
   }
@@ -554,22 +600,6 @@ public class MyExpenses extends LaunchActivity implements
               .show(getSupportFragmentManager(), "BUTTON_DISABLED_INFO");
         }
         return true;
-      case R.id.GROUPING_COMMAND:
-        a = Account.getInstanceFromDb(mAccountId);
-        if (a != null) {
-          SelectGroupingDialogFragment.newInstance(
-              a.grouping.ordinal())
-              .show(getSupportFragmentManager(), "SELECT_GROUPING");
-        }
-        return true;
-      case R.id.GROUPING_COMMAND_DO:
-        Grouping value = Account.Grouping.values()[(Integer) tag];
-        if (mAccountId < 0) {
-          AggregateAccount.getInstanceFromDb(mAccountId).persistGrouping(value);
-        } else {
-          Account.getInstanceFromDb(mAccountId).persistGrouping(value);
-        }
-        return true;
       case R.id.CREATE_COMMAND:
         createRow();
         return true;
@@ -645,6 +675,12 @@ public class MyExpenses extends LaunchActivity implements
       case R.id.REMIND_LATER_RATE_COMMAND:
         PrefKey.NEXT_REMINDER_RATE.putLong(sequenceCount + TRESHOLD_REMIND_RATE);
         return true;
+      case R.id.HELP_COMMAND_DRAWER:
+        i = new Intent(this,Help.class);
+        i.putExtra(Help.KEY_CONTEXT,"NavigationDrawer");
+        //for result is needed since it allows us to inspect the calling activity
+        startActivity(i);
+        return true;
       case R.id.HELP_COMMAND:
         setHelpVariant();
         break;
@@ -658,6 +694,7 @@ public class MyExpenses extends LaunchActivity implements
         }
         //we need the accounts to be loaded in order to evaluate if the limit has been reached
         else if (ContribFeature.ACCOUNTS_UNLIMITED.hasAccess() || mAccountCount < 5) {
+          closeDrawer();
           i = new Intent(this, AccountEdit.class);
           if (tag != null)
             i.putExtra(KEY_CURRENCY, (String) tag);
@@ -1087,6 +1124,8 @@ public class MyExpenses extends LaunchActivity implements
     }
     // Handle your other action bar items...
 
+    if (handleGrouping(item)) return true;
+
     return super.onOptionsItemSelected(item);
   }
 
@@ -1108,113 +1147,8 @@ public class MyExpenses extends LaunchActivity implements
         mViewPagerAdapter.getFragmentName(mCurrentPosition));
   }
 
-  public class MyAdapter extends SimpleCursorAdapter {
-
+  public class MyGroupedAdapter extends SimpleCursorAdapter implements StickyListHeadersAdapter {
     public static final int CARD_ELEVATION_DIP = 24;
-
-    public MyAdapter(Context context, int layout, Cursor c, String[] from,
-                     int[] to, int flags) {
-      super(context, layout, c, from, to, flags);
-    }
-
-    @Override
-    public View getView(final int position, View convertView, ViewGroup parent) {
-      View row = super.getView(position, convertView, parent);
-      final Cursor c = getCursor();
-      c.moveToPosition(position);
-
-      View v = row.findViewById(R.id.color1);
-      TextView labelTv = (TextView) row.findViewById(R.id.label);
-      final View accountMenu = row.findViewById(R.id.account_menu);
-
-      Currency currency = Utils.getSaveInstance(c.getString(columnIndexCurrency));
-      final long rowId = c.getLong(columnIndexRowId);
-      long sum_transfer = c.getLong(c.getColumnIndex(KEY_SUM_TRANSFERS));
-
-      boolean isHighlighted = rowId == mAccountId;
-      boolean has_future = c.getInt(c.getColumnIndex(KEY_HAS_FUTURE)) > 0;
-      final boolean isAggregate = rowId < 0;
-      final int count = c.getCount();
-      boolean hide_cr;
-      int colorInt;
-
-      ((CardView) row.findViewById(R.id.card)).setCardElevation(isHighlighted ?
-          TypedValue.applyDimension(
-              TypedValue.COMPLEX_UNIT_DIP, CARD_ELEVATION_DIP, getResources().getDisplayMetrics()) :
-          0);
-      labelTv.setTypeface(
-          Typeface.create(labelTv.getTypeface(), Typeface.NORMAL),
-          isHighlighted ? Typeface.BOLD : Typeface.NORMAL);
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-        row.findViewById(R.id.selected_indicator).setVisibility(isHighlighted ? View.VISIBLE : View.GONE);
-      }
-      if (isAggregate) {
-        accountMenu.setVisibility(View.INVISIBLE);
-        accountMenu.setOnClickListener(null);
-      } else {
-        accountMenu.setVisibility(View.VISIBLE);
-        accountMenu.setOnClickListener(new OnClickListener() {
-          @Override
-          public void onClick(View v) {
-            PopupMenu popup = new PopupMenu(MyExpenses.this, accountMenu);
-            popup.inflate(R.menu.accounts);
-            popup.getMenu().findItem(R.id.DELETE_ACCOUNT_COMMAND).setVisible(count > 1);
-            popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-
-              @Override
-              public boolean onMenuItemClick(MenuItem item) {
-                dispatchCommand(item.getItemId(), position);
-                return true;
-              }
-
-            });
-            popup.show();
-          }
-        });
-      }
-
-      if (isAggregate) {
-        hide_cr = true;
-        if (mAccountGrouping == Account.AccountGrouping.CURRENCY) {
-          labelTv.setText(R.string.menu_aggregates);
-        }
-        colorInt = colorAggregate;
-      } else {
-        //for deleting we need the position, because we need to find out the account's label
-        try {
-          hide_cr = Type.valueOf(c.getString(c.getColumnIndexOrThrow(KEY_TYPE))).equals(Type.CASH);
-        } catch (IllegalArgumentException ex) {
-          hide_cr = true;
-        }
-        colorInt = c.getInt(columnIndexColor);
-      }
-      row.findViewById(R.id.TransferRow).setVisibility(
-          sum_transfer == 0 ? View.GONE : View.VISIBLE);
-      row.findViewById(R.id.TotalRow).setVisibility(
-          has_future ? View.VISIBLE : View.GONE);
-      row.findViewById(R.id.ClearedRow).setVisibility(
-          hide_cr ? View.GONE : View.VISIBLE);
-      row.findViewById(R.id.ReconciledRow).setVisibility(
-          hide_cr ? View.GONE : View.VISIBLE);
-      if (c.getLong(columnIndexRowId) > 0) {
-        setConvertedAmount((TextView) row.findViewById(R.id.sum_transfer), currency);
-      }
-      v.setBackgroundColor(colorInt);
-      setConvertedAmount((TextView) row.findViewById(R.id.opening_balance), currency);
-      setConvertedAmount((TextView) row.findViewById(R.id.sum_income), currency);
-      setConvertedAmount((TextView) row.findViewById(R.id.sum_expenses), currency);
-      setConvertedAmount((TextView) row.findViewById(R.id.current_balance), currency);
-      setConvertedAmount((TextView) row.findViewById(R.id.total), currency);
-      setConvertedAmount((TextView) row.findViewById(R.id.reconciled_total), currency);
-      setConvertedAmount((TextView) row.findViewById(R.id.cleared_total), currency);
-      row.findViewById(R.id.description).setVisibility(
-          c.getString(columnIndexDescription).equals("") ?
-              View.GONE : View.VISIBLE);
-      return row;
-    }
-  }
-
-  public class MyGroupedAdapter extends MyAdapter implements StickyListHeadersAdapter {
     LayoutInflater inflater;
 
     public MyGroupedAdapter(Context context, int layout, Cursor c, String[] from,
@@ -1273,6 +1207,132 @@ public class MyExpenses extends LaunchActivity implements
           }
       }
       return 0;
+    }
+
+    @Override
+    public View getView(final int position, View convertView, ViewGroup parent) {
+      View row = super.getView(position, convertView, parent);
+      final Cursor c = getCursor();
+      c.moveToPosition(position);
+
+      View v = row.findViewById(R.id.color1);
+      TextView labelTv = (TextView) row.findViewById(R.id.label);
+      final View accountMenu = row.findViewById(R.id.account_menu);
+
+      Currency currency = Utils.getSaveInstance(c.getString(columnIndexCurrency));
+      final long rowId = c.getLong(columnIndexRowId);
+      long sum_transfer = c.getLong(c.getColumnIndex(KEY_SUM_TRANSFERS));
+
+      boolean isHighlighted = rowId == mAccountId;
+      boolean has_future = c.getInt(c.getColumnIndex(KEY_HAS_FUTURE)) > 0;
+      final boolean isAggregate = rowId < 0;
+      final int count = c.getCount();
+      boolean hide_cr;
+      int colorInt;
+
+      ((CardView) row.findViewById(R.id.card)).setCardElevation(isHighlighted ?
+          TypedValue.applyDimension(
+              TypedValue.COMPLEX_UNIT_DIP, CARD_ELEVATION_DIP, getResources().getDisplayMetrics()) :
+          0);
+      labelTv.setTypeface(
+          Typeface.create(labelTv.getTypeface(), Typeface.NORMAL),
+          isHighlighted ? Typeface.BOLD : Typeface.NORMAL);
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        row.findViewById(R.id.selected_indicator).setVisibility(isHighlighted ? View.VISIBLE : View.GONE);
+      }
+      if (isAggregate) {
+        accountMenu.setVisibility(View.INVISIBLE);
+        accountMenu.setOnClickListener(null);
+      } else {
+        accountMenu.setVisibility(View.VISIBLE);
+        boolean upVisible = false, downVisible = false;
+        if (PrefKey.SORT_ORDER_ACCOUNTS.getString(SORT_ORDER_USAGES).equals(SORT_ORDER_CUSTOM)) {
+          if (position > 0 && getHeaderId(position-1) == getHeaderId(position)) {
+            getCursor().moveToPosition(position-1);
+            if (c.getLong(columnIndexRowId) > 0) upVisible = true; //ignore if previous is aggregate
+          }
+          if(position + 1 < getCount() && getHeaderId(position+1) == getHeaderId(position)) {
+            getCursor().moveToPosition(position+1);
+            if (c.getLong(columnIndexRowId) > 0) downVisible = true;
+          }
+          getCursor().moveToPosition(position);
+        }
+        final boolean finalUpVisible = upVisible, finalDownVisible = downVisible;
+        accountMenu.setOnClickListener(new OnClickListener() {
+          @Override
+          public void onClick(View v) {
+            PopupMenu popup = new PopupMenu(MyExpenses.this, accountMenu);
+            popup.inflate(R.menu.accounts_context);
+            Menu menu = popup.getMenu();
+            menu.findItem(R.id.DELETE_ACCOUNT_COMMAND).setVisible(count > 1);
+            menu.findItem(R.id.UP_COMMAND).setVisible(finalUpVisible);
+            menu.findItem(R.id.DOWN_COMMAND).setVisible(finalDownVisible);
+            popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+
+              @Override
+              public boolean onMenuItemClick(MenuItem item) {
+                return handleSwap(item.getItemId(), position) ||
+                    dispatchCommand(item.getItemId(), position);
+              }
+
+              private boolean handleSwap(int itemId, int position) {
+                if (itemId != R.id.UP_COMMAND && itemId != R.id.DOWN_COMMAND) return false;
+                Cursor c = getCursor();
+                c.moveToPosition(position);
+                String sortKey1 = c.getString(c.getColumnIndex(KEY_SORT_KEY));
+                c.moveToPosition(itemId == R.id.UP_COMMAND ? position - 1 : position + 1);
+                String sortKey2 = c.getString(c.getColumnIndex(KEY_SORT_KEY));
+                startTaskExecution(
+                    TaskExecutionFragment.TASK_SWAP_SORT_KEY,
+                    new String[] {sortKey1, sortKey2},
+                    null,
+                    R.string.progress_dialog_saving);
+                return true;
+              }
+            });
+            popup.show();
+          }
+        });
+      }
+
+      if (isAggregate) {
+        hide_cr = true;
+        if (mAccountGrouping == Account.AccountGrouping.CURRENCY) {
+          labelTv.setText(R.string.menu_aggregates);
+        }
+        colorInt = colorAggregate;
+      } else {
+        //for deleting we need the position, because we need to find out the account's label
+        try {
+          hide_cr = Type.valueOf(c.getString(c.getColumnIndexOrThrow(KEY_TYPE))).equals(Type.CASH);
+        } catch (IllegalArgumentException ex) {
+          hide_cr = true;
+        }
+        colorInt = c.getInt(columnIndexColor);
+      }
+      row.findViewById(R.id.TransferRow).setVisibility(
+          sum_transfer == 0 ? View.GONE : View.VISIBLE);
+      row.findViewById(R.id.TotalRow).setVisibility(
+          has_future ? View.VISIBLE : View.GONE);
+      row.findViewById(R.id.ClearedRow).setVisibility(
+          hide_cr ? View.GONE : View.VISIBLE);
+      row.findViewById(R.id.ReconciledRow).setVisibility(
+          hide_cr ? View.GONE : View.VISIBLE);
+      if (c.getLong(columnIndexRowId) > 0) {
+        setConvertedAmount((TextView) row.findViewById(R.id.sum_transfer), currency);
+      }
+      v.setBackgroundColor(colorInt);
+      setConvertedAmount((TextView) row.findViewById(R.id.opening_balance), currency);
+      setConvertedAmount((TextView) row.findViewById(R.id.sum_income), currency);
+      setConvertedAmount((TextView) row.findViewById(R.id.sum_expenses), currency);
+      setConvertedAmount((TextView) row.findViewById(R.id.current_balance), currency);
+      setConvertedAmount((TextView) row.findViewById(R.id.total), currency);
+      setConvertedAmount((TextView) row.findViewById(R.id.reconciled_total), currency);
+      setConvertedAmount((TextView) row.findViewById(R.id.cleared_total), currency);
+      String description = c.getString(columnIndexDescription);
+      row.findViewById(R.id.description).setVisibility(
+          TextUtils.isEmpty(description) ? View.GONE : View.VISIBLE);
+      return row;
     }
   }
 
@@ -1444,5 +1504,76 @@ public class MyExpenses extends LaunchActivity implements
     ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
     clipboard.setText(mCurrentBalance);
     Toast.makeText(this, R.string.copied_to_clipboard, Toast.LENGTH_LONG).show();
+  }
+
+  protected boolean handleSortOption(MenuItem item) {
+    String newSortOrder = Utils.getSortOrderFromMenuItemId(item.getItemId());
+    if (newSortOrder != null) {
+      if (!item.isChecked()) {
+        PrefKey.SORT_ORDER_ACCOUNTS.putString(newSortOrder);
+        item.setChecked(true);
+
+        if (mManager.getLoader(ACCOUNTS_CURSOR) != null && !mManager.getLoader(ACCOUNTS_CURSOR).isReset()) {
+          mManager.restartLoader(ACCOUNTS_CURSOR, null, this);
+        } else {
+          mManager.initLoader(ACCOUNTS_CURSOR, null, this);
+        }
+        if (item.getItemId()==R.id.SORT_CUSTOM_COMMAND) {
+          MessageDialogFragment.newInstance(
+              R.string.dialog_title_information,
+              R.string.dialog_info_custom_sort,
+              MessageDialogFragment.Button.okButton(),
+              null, null)
+              .show(getSupportFragmentManager(), "CUSTOM_SORT_INFO");
+        }
+      }
+      return true;
+    }
+    return false;
+  }
+
+  protected boolean handleAccountsGrouping(MenuItem item) {
+    Account.AccountGrouping newGrouping = null;
+    switch (item.getItemId()) {
+      case R.id.GROUPING_ACCOUNTS_CURRENCY_COMMAND:
+        newGrouping = Account.AccountGrouping.CURRENCY;
+        break;
+      case R.id.GROUPING_ACCOUNTS_TYPE_COMMAND:
+        newGrouping = Account.AccountGrouping.TYPE;
+        break;
+      case R.id.GROUPING_ACCOUNTS_NONE_COMMAND:
+        newGrouping = Account.AccountGrouping.NONE;
+        break;
+    }
+    if (newGrouping != null) {
+      if (!item.isChecked()) {
+        PrefKey.ACCOUNT_GROUPING.putString(newGrouping.name());
+        item.setChecked(true);
+
+        if (mManager.getLoader(ACCOUNTS_CURSOR) != null && !mManager.getLoader(ACCOUNTS_CURSOR).isReset())
+          mManager.restartLoader(ACCOUNTS_CURSOR, null, this);
+        else
+          mManager.initLoader(ACCOUNTS_CURSOR, null, this);
+      }
+      return true;
+    }
+    return false;
+  }
+
+  protected boolean handleGrouping(MenuItem item) {
+    Grouping newGrouping = Utils.getGroupingFromMenuItemId(item.getItemId());
+    if (newGrouping != null) {
+      if (!item.isChecked()) {
+        PrefKey.ACCOUNT_GROUPING.putString(newGrouping.name());
+        item.setChecked(true);
+        if (mAccountId < 0) {
+          AggregateAccount.getInstanceFromDb(mAccountId).persistGrouping(newGrouping);
+        } else {
+          Account.getInstanceFromDb(mAccountId).persistGrouping(newGrouping);
+        }
+      }
+      return true;
+    }
+    return false;
   }
 }

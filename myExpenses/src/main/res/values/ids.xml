@@ -33,7 +33,6 @@
   <item type="id" name="FEEDBACK_COMMAND"/>
   <item type="id" name="FTP_DIALOG"/>
   <item type="id" name="GROUPING_COMMAND"/>
-  <item type="id" name="GROUPING_COMMAND_DO"/>
   <item type="id" name="HANDLE_RESTORE_ON_INSTALL_COMMAND"/>
   <item type="id" name="HELP_COMMAND"/>
   <item type="id" name="INVERT_TRANSFER_COMMAND"/>
@@ -83,7 +82,6 @@
   <item type="id" name="PRINT_COMMAND" />
   <item type="id" name="OPEN_PDF_COMMAND" />
   <item type="id" name="AUTO_FILL_COMMAND" />
-  <item type="id" name="SET_SORT_KEY_COMMAND"/>
   <item type="id" name="EXCLUDE_FROM_TOTALS_COMMAND"/>
   <item type="id" name="QUIT_COMMAND" />
   <item type="id" name="SPLIT_TRANSACTION_COMMAND" />
@@ -102,4 +100,20 @@
   <item name="SET_HEADER_COMMAND" type="id"/>
   <item name="CREATE_PLAN_COMMAND" type="id"/>
   <item name="MOVE_COMMAND" type="id"/>
+  <item name="SORT_COMMAND" type="id" />
+  <item name="SORT_TITLE_COMMAND" type="id" />
+  <item name="SORT_USAGES_COMMAND" type="id" />
+  <item name="SORT_LAST_USED_COMMAND" type="id" />
+  <item name="SORT_AMOUNT_COMMAND" type="id" />
+  <item name="GROUPING_ACCOUNTS_COMMAND" type="id"/>
+  <item name="GROUPING_ACCOUNTS_TYPE_COMMAND" type="id"/>
+  <item name="GROUPING_ACCOUNTS_CURRENCY_COMMAND" type="id"/>
+  <item name="GROUPING_ACCOUNTS_NONE_COMMAND" type="id"/>
+  <item name="SORT_CUSTOM_COMMAND" type="id"/>
+  <item name="GROUPING_NONE_COMMAND" type="id"/>
+  <item name="GROUPING_DAY_COMMAND" type="id"/>
+  <item name="GROUPING_WEEK_COMMAND" type="id"/>
+  <item name="GROUPING_MONTH_COMMAND" type="id"/>
+  <item name="GROUPING_YEAR_COMMAND" type="id"/>
+  <item name="HELP_COMMAND_DRAWER" type="id"/>
 </resources>

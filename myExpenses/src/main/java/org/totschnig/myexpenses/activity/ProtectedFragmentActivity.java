@@ -107,6 +107,11 @@ public class ProtectedFragmentActivity extends AppCompatActivity
   public static final int PICTURE_REQUEST_CODE = 14;
   public static final int IMPORT_FILENAME_REQUESTCODE = 15;
   public static final String SAVE_TAG = "SAVE_TASK";
+  public static final String SORT_ORDER_USAGES = "USAGES";
+  public static final String SORT_ORDER_LAST_USED = "LAST_USED";
+  public static final String SORT_ORDER_AMOUNT = "AMOUNT";
+  public static final String SORT_ORDER_TITLE = "TITLE";
+  public static final String SORT_ORDER_CUSTOM = "CUSTOM";
   private AlertDialog pwDialog;
   private ProtectionDelegate protection;
   private boolean scheduledRestart = false;
@@ -219,7 +224,7 @@ public class ProtectedFragmentActivity extends AppCompatActivity
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
     MenuInflater inflater = getMenuInflater();
-    inflater.inflate(R.menu.common, menu);
+    inflater.inflate(R.menu.help, menu);
     return true;
   }
   @Override
