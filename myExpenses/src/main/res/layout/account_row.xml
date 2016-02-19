@@ -17,6 +17,7 @@
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:background="@null"
@@ -31,7 +32,8 @@
         app:cardBackgroundColor="?android:colorBackground"
         app:cardCornerRadius="3dp"
         app:cardElevation="0dp"
-        app:cardUseCompatPadding="true">
+        app:cardUseCompatPadding="true"
+        tools:ignore="UnusedAttribute">
 
         <FrameLayout
             android:layout_width="wrap_content"
@@ -51,21 +53,22 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:paddingBottom="10dp"
                     android:paddingLeft="10dp"
                     android:paddingRight="10dp"
                     android:paddingTop="10dp"
-                    android:paddingBottom="10dp"
                     android:shrinkColumns="1"
                     android:stretchColumns="0">
 
                     <TableRow>
                         <!-- room for overflow menu -->
                         <TextView
-                            android:layout_marginRight="20dp"
                             android:id="@+id/label"
                             style="@style/headingStyle"
+                            android:layout_marginRight="20dp"
+                            android:layout_marginEnd="20dp"
                             android:layout_span="2"
-                            android:text="LABEL"/>
+                            tools:text="@string/label"/>
                     </TableRow>
 
                     <TableRow>
@@ -75,7 +78,7 @@
                             android:layout_width="fill_parent"
                             android:layout_height="wrap_content"
                             android:layout_span="2"
-                            android:text="DESCRIPTION"/>
+                            tools:text="DESCRIPTION"/>
                     </TableRow>
 
                     <TableRow
@@ -88,8 +91,8 @@
                             android:id="@+id/opening_balance"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:gravity="right"
-                            android:text="OPENING_BALANCE"/>
+                            android:gravity="end"
+                            tools:text="OPENING_BALANCE"/>
                     </TableRow>
 
                     <TableRow>
@@ -101,8 +104,8 @@
                             android:id="@+id/sum_income"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:gravity="right"
-                            android:text="SUM_INCOME"/>
+                            android:gravity="end"
+                            tools:text="SUM_INCOME"/>
                     </TableRow>
 
                     <TableRow>
@@ -114,8 +117,8 @@
                             android:id="@+id/sum_expenses"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:gravity="right"
-                            android:text="SUM_EXPENSES"/>
+                            android:gravity="end"
+                            tools:text="SUM_EXPENSES"/>
                     </TableRow>
 
                     <TableRow android:id="@+id/TransferRow">
@@ -127,8 +130,8 @@
                             android:id="@+id/sum_transfer"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:gravity="right"
-                            android:text="SUM_TRANSFER"/>
+                            android:gravity="end"
+                            tools:text="SUM_TRANSFER"/>
                     </TableRow>
 
                     <TableRow>
@@ -150,8 +153,8 @@
                             android:id="@+id/current_balance"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:gravity="right"
-                            android:text="CURRENT_BALANCE"/>
+                            android:gravity="end"
+                            tools:text="CURRENT_BALANCE"/>
                     </TableRow>
 
                     <TableRow android:id="@+id/TotalRow">
@@ -163,8 +166,8 @@
                             android:id="@+id/total"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:gravity="right"
-                            android:text="TOTAL"/>
+                            android:gravity="end"
+                            tools:text="TOTAL"/>
                     </TableRow>
 
                     <TableRow android:id="@+id/ClearedRow">
@@ -176,8 +179,8 @@
                             android:id="@+id/cleared_total"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:gravity="right"
-                            android:text="CLEARED_TOTAL"/>
+                            android:gravity="end"
+                            tools:text="CLEARED_TOTAL"/>
                     </TableRow>
 
                     <TableRow
@@ -190,21 +193,22 @@
                             android:id="@+id/reconciled_total"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:gravity="right"
-                            android:text="RECONCILED_TOTAL"/>
+                            android:gravity="end"
+                            tools:text="RECONCILED_TOTAL"/>
                     </TableRow>
                 </TableLayout>
             </LinearLayout>
 
             <ImageView
-                android:translationX="9dp"
-                android:translationY="-6dp"
                 android:id="@+id/account_menu"
                 style="?actionOverflowButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="top|right"
-                android:clickable="true"/>
+                android:layout_gravity="top|end"
+                android:clickable="true"
+                android:translationX="@dimen/overflow_menu_translation_x"
+                android:translationY="-6dp"
+                tools:ignore="ContentDescription"/>
         </FrameLayout>
     </android.support.v7.widget.CardView>
 

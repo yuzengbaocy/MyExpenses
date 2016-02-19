@@ -106,7 +106,7 @@ public class PlanList extends ContextualActionBarFragment implements LoaderManag
 
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-    View v = inflater.inflate(R.layout.plans_list, null, false);
+    View v = inflater.inflate(R.layout.plans_list, container, false);
     mListView = (ExpandableListView) v.findViewById(R.id.list);
     final View emptyView = v.findViewById(R.id.empty);
     mListView.setEmptyView(emptyView);
@@ -468,12 +468,16 @@ public class PlanList extends ContextualActionBarFragment implements LoaderManag
       Long instanceId = c.getLong(c.getColumnIndex(Instances._ID));
       Log.i(MyApplication.TAG, "looking up instance2transactionamp for instance "+instanceId);
       Long transactionId = mInstance2TransactionMap.get(instanceId);
-      if (transactionId == null)
+      if (transactionId == null) {
         iv.setImageResource(R.drawable.ic_stat_open);
-      else if (transactionId == 0L)
+        iv.setContentDescription(getString(R.string.plan_instance_state_open));
+      } else if (transactionId == 0L) {
         iv.setImageResource(R.drawable.ic_stat_cancelled);
-      else
+        iv.setContentDescription(getString(R.string.plan_instance_state_cancelled));
+      } else {
         iv.setImageResource(R.drawable.ic_stat_applied);
+        iv.setContentDescription(getString(R.string.plan_instance_state_applied));
+      }
       return convertView;
     }
     @Override

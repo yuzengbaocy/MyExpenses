@@ -98,7 +98,6 @@ import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_AMOUNT;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_LAST_USED;
@@ -986,8 +985,9 @@ public class Utils {
     String label;
     long main_id, sub_id;
 
-    for (Map.Entry<Integer, CategoryTree> main : catTree.children().entrySet()) {
-      CategoryTree mainCat = main.getValue();
+    int size = catTree.children().size();
+    for(int i = 0; i < size; i++) {
+      CategoryTree mainCat = catTree.children().valueAt(i);
       label = mainCat.getLabel();
       count++;
       main_id = Category.find(label, null);
@@ -1007,8 +1007,9 @@ public class Utils {
           continue;
         }
       }
-      for (Map.Entry<Integer, CategoryTree> sub : mainCat.children().entrySet()) {
-        label = sub.getValue().getLabel();
+      int subSize = mainCat.children().size();
+      for(int j = 0; j < subSize; j++) {
+        label = mainCat.children().valueAt(j).getLabel();
         count++;
         sub_id = Category.write(0L, label, main_id);
         if (sub_id != -1) {

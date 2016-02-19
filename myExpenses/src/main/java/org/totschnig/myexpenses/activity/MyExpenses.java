@@ -236,12 +236,9 @@ public class MyExpenses extends LaunchActivity implements
 
     mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
     mDrawerList = (StickyListHeadersListView) findViewById(R.id.left_drawer);
-    // set a custom shadow that overlays the main content when the drawer opens
-    theme.resolveAttribute(R.attr.drawerShadow, value, true);
     mToolbar = setupToolbar(false);
-    mToolbar.addView(getLayoutInflater().inflate(R.layout.custom_title, null));
+    mToolbar.addView(getLayoutInflater().inflate(R.layout.custom_title, mToolbar,false));
     if (mDrawerLayout != null) {
-      mDrawerLayout.setDrawerShadow(value.resourceId, GravityCompat.START);
       mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
           mToolbar, R.string.drawer_open, R.string.drawer_close) {
 
@@ -306,7 +303,7 @@ public class MyExpenses extends LaunchActivity implements
     //Sort submenu
     MenuItem menuItem = accountsMenu.getMenu().findItem(R.id.SORT_COMMAND);
     MenuItemCompat.setShowAsAction(
-        menuItem, MenuItem.SHOW_AS_ACTION_NEVER);
+        menuItem, MenuItemCompat.SHOW_AS_ACTION_NEVER);
     SubMenu sortMenu = menuItem.getSubMenu();
     sortMenu.findItem(R.id.SORT_CUSTOM_COMMAND).setVisible(true);
     Utils.configureSortMenu(sortMenu, PrefKey.SORT_ORDER_ACCOUNTS.getString("USAGES"));
@@ -483,8 +480,10 @@ public class MyExpenses extends LaunchActivity implements
 
   @Override
   public boolean onPrepareOptionsMenu(Menu menu) {
+    super.onPrepareOptionsMenu(menu);
     boolean showBalanceCommand = false;
-    if (mAccountId > 0 && mAccountsCursor != null && mAccountsCursor.moveToPosition(mCurrentPosition)) {
+    if (mAccountId > 0 && mAccountsCursor != null && !mAccountsCursor.isClosed() &&
+        mAccountsCursor.moveToPosition(mCurrentPosition)) {
       try {
         if (Type.valueOf(mAccountsCursor.getString(mAccountsCursor.getColumnIndexOrThrow(KEY_TYPE)))
             != Type.CASH) {
@@ -501,7 +500,6 @@ public class MyExpenses extends LaunchActivity implements
     if (account!=null) {
       Utils.configureGroupingMenu(groupingMenu,account.grouping);
     }
-    super.onPrepareOptionsMenu(menu);
     return true;
   }
 
@@ -908,10 +906,13 @@ public class MyExpenses extends LaunchActivity implements
     final boolean isBrightColor = Utils.isBrightColor(color);
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
       Window window = getWindow();
+      //noinspection InlinedApi
       window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+      //noinspection InlinedApi
       window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
       window.setStatusBarColor(color);
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        //noinspection InlinedApi
         getWindow().getDecorView().setSystemUiVisibility(
             isBrightColor ? View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR : 0);
       }
@@ -1444,7 +1445,7 @@ public class MyExpenses extends LaunchActivity implements
         startTaskExecution(
             TaskExecutionFragment.TASK_DELETE_TRANSACTION,
             ArrayUtils.toObject(args.getLongArray(TaskExecutionFragment.KEY_OBJECT_IDS)),
-            new Boolean(checked),
+            Boolean.valueOf(checked),
             R.string.progress_dialog_deleting);
     }
   }
