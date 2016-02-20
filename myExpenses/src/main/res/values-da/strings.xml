@@ -107,7 +107,6 @@
   <string name="dialog_title_contrib_feature">Premiumfunktion</string>
   <string name="dialog_title_extended_feature">Udvidet funktion</string>
   <string name="dialog_title_planner_setup_info">Der kræves opsætning kalenderen</string>
-  <string name="dialog_title_select_grouping">Vælg en gruppering</string>
   <!--the dialog where this title is displayed allows the user to customize the number of fraction digits for a currency
     e.g. 3 instead of 2 for € if you want to calculate with 1/10s of a ¢-->
   <string name="dialog_title_set_fraction_digits">Vælg antal decimaler</string>
@@ -226,7 +225,6 @@
   <string name="menu_search">Søg</string>
   <string name="menu_settings">Indstillinger</string>
   <string name="menu_share">Fortæl en ven</string>
-  <string name="menu_set_sort_key">Definér sorteringsnøgle</string>
   <string name="menu_split_transaction">Opsplit</string>
   <string name="method">Metode</string>
   <string name="no_amount_given">Du har ikke angivet noget beløb.</string>
@@ -234,8 +232,6 @@
   <string name="no_app_handling_ftp_available">Der findes ingen app til håndtering af ftp. Installer <i>Send via FTP</i>?</string>
   <string name="no_app_handling_pdf_available">Der findes Ingen app til håndtering af PDF-filer.</string>
   <string name="no_categories">Ingen kategorier.</string>
-  <string name="no_category_assigned">Ingen kategori tildelt</string>
-  <string name="no_details">Ingen detaljer.</string>
   <string name="no_expenses">Der findes endnu ingen udgifter!</string>
   <string name="no_exportable_expenses">Der findes ingen posteringer, der ikke allerede blev eksporteret.</string>
   <string name="no_filemanager_installed">Ingen filemanager installeret</string>
@@ -255,7 +251,6 @@
     <item quantity="other">%1$d valgte objekter er knyttet til skabeloner og kan ikke slettes.</item>
   </plurals>
   <string name="numbered">nummereret</string>
-  <string name="oi_pick_colors_info">Installer OI Color Picker for flere valgmuligheder</string>
   <string name="opening_balance">Åbningsbalancen</string>
   <string name="parse_error_file_not_found">Kunne ikke finde filen %1$s</string>
   <string name="parse_error_grisbi_version_not_supported">Ikke understøttet Grisbi filversion: %1$s</string>
@@ -294,7 +289,6 @@
   <string name="pm_type_credit">Indtægter</string>
   <string name="pm_type_debit">Udgifter</string>
   <string name="pm_type_neutral">Neutral</string>
-  <string name="pref_account_grouping_title">Gruppering af konti</string>
   <string name="pref_app_dir_title">Mappen til sikkerhedskopier og eksport</string>
   <string name="pref_auto_fill_title">AutoFyld</string>
   <string name="pref_auto_fill_summary">Overtager beløb, kategori og kommentar fra sidste postering for den samme betalingsmodtager/betaler</string>
@@ -337,8 +331,6 @@
   <string name="pref_perform_protection_summary">Skal app launches og resumes beskyttes?</string>
   <string name="pref_perform_protection_title">Password-beskyttelse</string>
   <string name="pref_perform_share_title">Del eksport og backup</string>
-  <string name="pref_perform_share_summaryOff">Filerne vil ikke blive delt.</string>
-  <string name="pref_perform_share_summaryOn">Filerne vil blive delt.</string>
   <!--This entry is added to the list of available calendars, if no local calendar has been set up yet-->
   <string name="pref_planning_calendar_create_local">Opret ny lokal kalender</string>
   <string name="pref_planning_calendar_summary">Vælg den kalender, hvor der skal gemmes planer for tilbagevendende posteringer der skal bruges i fremtiden</string>
@@ -359,14 +351,12 @@
   <string name="pref_security_question_summary">Giver dig mulighed for at oplåse app\'en, hvis du har glemt din adgangskode.</string>
   <string name="pref_security_question_title">Sikkerhedsspørgsmål</string>
   <string name="pref_send_feedback_title">Send feedback</string>
-  <string name="pref_share_target_summary">Den skal være tomt, hvis du vil vælge mellem passende apps (E-mail, Dropbox, Google Docs,...), eller du kan indsæt URL i en af de understøttede skemaer</string>
+  <string name="pref_share_target_summary">Den skal være tomt, hvis du vil vælge mellem passende apps (E-mail, Dropbox, Google Docs, …), eller du kan indsæt URL i en af de understøttede skemaer</string>
   <string name="pref_share_target_title">Upload URL</string>
   <string name="pref_shortcut_added">Genvej til startskærmen blev tilføjet </string>
   <string name="pref_shortcut_not_added">Ingen Startskærm tilgængelig der accepterer genveje.</string>
   <string name="pref_shortcut_summary">Tilføj genvej til startskærm.</string>
   <string name="pref_template_click_default_summary">Ved at klikke på et navn i listen af skabeloner</string>
-  <!--This preference presents a slider where the user selects a value from 0 to 4-->
-  <string name="pref_ui_fontsize_summary">Hvert trin forøger skriftstørrelsen med 2sp</string>
   <string name="pref_ui_fontsize_title">Forøg skriftstørrelsen</string>
   <string name="pref_ui_home_screen_shortcuts">Genvej til Startskærm</string>
   <string name="pref_ui_language_default">Systemstandard</string>
@@ -377,12 +367,12 @@
   <string name="pref_ui_theme_title">Stil</string>
   <string name="pref_visit_website_summary">Ændringer og FAQ</string>
   <string name="pref_visit_website_title">Besøg hjemmeside</string>
-  <string name="progress_dialog_create_calendar">Opretter lokal kalender...</string>
-  <string name="progress_dialog_create_plan">Opretter ny plan...</string>
-  <string name="progress_dialog_deleting">Objekter slettes...</string>
-  <string name="progress_dialog_loading">Lastning objekt fra database...</string>
-  <string name="progress_dialog_printing">Generating PDF...</string>
-  <string name="progress_dialog_saving">Gemmer objektet til database...</string>
+  <string name="progress_dialog_create_calendar">Opretter lokal kalender</string>
+  <string name="progress_dialog_create_plan">Opretter ny plan</string>
+  <string name="progress_dialog_deleting">Objekter slettes</string>
+  <string name="progress_dialog_loading">Lastning objekt fra database</string>
+  <string name="progress_dialog_printing">Generating PDF</string>
+  <string name="progress_dialog_saving">Gemmer objektet til database</string>
   <string name="qif_parse_result">Fundet: %1$s regnskaber; %2$s kategorier og %3$s parter</string>
   <string name="qif_parse_failure_found_multiple_accounts">Der findes flere konti i QIF filen.</string>
   <string name="qif_parse_failure_found_multiple_accounts_cannot_merge">Matcher ikke eksisterende konto.</string>
@@ -396,7 +386,7 @@
   <string name="restore_backup_archive_not_valid">Arkiv %1$s er ikke gyldigt</string>
   <string name="restore_backup_file_not_found">Der findes ingen fil %1$s i arkivet \"%2$s\"</string>
   <string name="restore_preferences_success">Indstillingerne blev gendannet fra backup.</string>
-  <string name="restore_calendar_success">%d planer blev gendannet fra backup</string>
+  <string name="restore_calendar_success" tools:ignore="PluralsCandidate">%d planer blev gendannet fra backup</string>
   <string name="save_transaction_and_new_success">Gemt</string>
   <string name="save_transaction_error">Kunne ikke gemme nye postering fra skabelonen.</string>
   <plurals name="save_transaction_from_template_success">
@@ -470,12 +460,10 @@
   <string name="warning_app_folder_will_be_deleted_upon_uninstall">Den aktuelt valgte mappe til sikkerhedskopier og eksport slettes automatisk af Android, hvis du fjerner Mine Udgifter. Du kan forhindre dette i at ske ved at vælge en anden mappe i skærmbilledet indstillinger.</string>
   <string name="warning_splitpartcategory_context">Overførsler, der er del af en splittet postering kan kun redigeres i forbindelse med opsplitningen.</string>
   <string name="warning_fraction_digits_out_of_range">Angiv et tal mellem 0 og 8</string>
-  <string name="warning_change_fraction_digits">Du er ved at reducere antallet af decimaler for valuta %1$s.
-Dette vil føre til tab af oplysninger for posteringer, du allerede har indtastet, og det kan ikke fortrydes. Vil du fortsætte?</string>
   <string name="import_categories_success">%1$s kategorier importeret</string>
   <string name="import_parties_success">%1$s parter importeret</string>
   <string name="import_accounts_success">%1$s regnskaber importeret</string>
-  <string name="import_transactions_success">%1$d posteringer importeret i konto %2$s</string>
+  <string name="import_transactions_success" tools:ignore="PluralsCandidate">%1$d posteringer importeret i konto %2$s</string>
   <string name="import_accounts_none">Ingen konti importeret</string>
   <string name="import_categories_none">Ingen kategorier importeret</string>
   <string name="import_parties_none">Ingen parter importeret</string>
@@ -483,7 +471,11 @@ Dette vil føre til tab af oplysninger for posteringer, du allerede har indtaste
   <string name="import_source_select_error">Angiv en fil af typen %1$s</string>
   <string name="menu_categories_setup_default">Opret standardkategorier</string>
   <string name="menu_create_folder">Ny mappe</string>
+  <!--This string is used for navigating up in the folder browser-->
   <string name="menu_up">Op</string>
+  <!--Move an account up in the account list-->
+  <string name="menu_sort_up">Op</string>
+  <!--Move an account down in the account list-->
   <string name="create_new_folder_fail">Kunne ikke oprette mappen</string>
   <string name="widget_title_accounts">Mine konti</string>
   <string name="widget_title_templates">Mine skabeloner</string>
@@ -510,7 +502,7 @@ Dette vil føre til tab af oplysninger for posteringer, du allerede har indtaste
   <string name="yes">Ja</string>
   <string name="no">Nej</string>
   <string name="hint_template_click">Anvend en skabelon ved at vælge en ud af listen ved at trykke på den. Den gemmes med det samme eller du kan rediger den før den gemmes. Du kan altid få adgang til begge aktioner og ændre standard indstillingerne ved at trykke på den og holder trykt.</string>
-  <string name="change_fraction_digits_result">%1$d konti med valuta %2$s opdateret.</string>
+  <string name="change_fraction_digits_result" tools:ignore="PluralsCandidate">%1$d konti med valuta %2$s opdateret.</string>
   <string name="learn_more">Læs mere</string>
   <string name="import_source_file">Fil</string>
   <string name="restore_calendar_handling">Kalender datahåndtering</string>
@@ -544,8 +536,8 @@ Dette vil føre til tab af oplysninger for posteringer, du allerede har indtaste
   <!--Label for column where user can check rows to be discarded from import-->
   <string name="cvs_import_discard">Forkast</string>
   <string name="csv_import_field_mapped_more_than_once">%s er tilknyttet til flere.</string>
-  <string name="csv_import_records_failed">%d dataposter kunne ikke importeres</string>
-  <string name="csv_import_records_discarded">%d dataposter ignoreret</string>
+  <string name="csv_import_records_failed" tools:ignore="PluralsCandidate">%d dataposter kunne ikke importeres</string>
+  <string name="csv_import_records_discarded" tools:ignore="PluralsCandidate">%d dataposter ignoreret</string>
   <string name="csv_import_subcategory_requires_category">Hvis du tilknytter en underkategori skal du også  tilknytte kategorien.</string>
   <string name="cvs_import_set_first_line_as_header">Skal den første linje bruges som kolonneoverskrift?</string>
   <string name="csv_import_delimiter_comma">Komma</string>
@@ -557,4 +549,8 @@ Dette vil føre til tab af oplysninger for posteringer, du allerede har indtaste
   <string name="switch_off_text">Fra</string>
   <string name="preferences_week_start_day_title">Ugen starter</string>
   <!--this is the title of the section in the preferences, where user can set start day for weekly and monthly groups-->
+  <string name="content_description_calculator">Lommeregner</string>
+  <!--describes the state of a plan instance that has not yet been applied, i.e. no transaction has been entered into the database for it. Used as content description for icon in list.-->
+  <!--describes the state of a plan instance that has been cancelled, i.e. it has been flagged it to be skipped. Used as content description for icon in list.-->
+  <!--describes the state of a plan instance that has been applied, i.e. a transaction has been entered into the database for it. Used as content description for icon in list.-->
 </resources>

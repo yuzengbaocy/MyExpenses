@@ -116,7 +116,6 @@
   <string name="dialog_title_contrib_feature">Premium-Funktion</string>
   <string name="dialog_title_extended_feature">Erweiterte Funktion</string>
   <string name="dialog_title_planner_setup_info">Einrichtung des Kalenders erforderlich</string>
-  <string name="dialog_title_select_grouping">Gruppierung auswählen</string>
   <!--the dialog where this title is displayed allows the user to customize the number of fraction digits for a currency
     e.g. 3 instead of 2 for € if you want to calculate with 1/10s of a ¢-->
   <string name="dialog_title_set_fraction_digits">Anzahl der Nachkommastellen</string>
@@ -235,7 +234,6 @@
   <string name="menu_search">Suche</string>
   <string name="menu_settings">Einstellungen</string>
   <string name="menu_share">Weiterempfehlen</string>
-  <string name="menu_set_sort_key">Sortierschlüssel festlegen</string>
   <string name="menu_split_transaction">Splitten</string>
   <string name="method">Zahlungsweise</string>
   <string name="no_amount_given">Sie haben keinen Betrag eingegeben.</string>
@@ -243,8 +241,6 @@
   <string name="no_app_handling_ftp_available">Keine App für FTP gefunden. <i>Mit FTP Senden</i> installieren?</string>
   <string name="no_app_handling_pdf_available">Keine App für das Öffnen von PDF Dateien gefunden.</string>
   <string name="no_categories">Noch keine Kategorien vorhanden.</string>
-  <string name="no_category_assigned">Keine Kategorie zugeordnet</string>
-  <string name="no_details">Keine Details vorhanden.</string>
   <string name="no_expenses">Noch keine Ausgaben!</string>
   <string name="no_exportable_expenses">Es gibt keine Buchungen, die noch nicht exportiert wurden.</string>
   <string name="no_filemanager_installed">Kein Dateimanager installiert</string>
@@ -265,7 +261,6 @@
     <item quantity="other">%1$d ausgewählte Objekte sind mit Vorlagen verknüpft und können nicht gelöscht werden.</item>
   </plurals>
   <string name="numbered">nummeriert</string>
-  <string name="oi_pick_colors_info">OI Color Picker installieren für mehr Auswahl</string>
   <string name="opening_balance">Anfangssaldo</string>
   <string name="parse_error_file_not_found">Konnte Datei %1$s nicht finden</string>
   <string name="parse_error_grisbi_version_not_supported">Grisbi Datei Version %1$s wird nicht unterstützt</string>
@@ -304,14 +299,11 @@
   <string name="pm_type_credit">Einnahmen</string>
   <string name="pm_type_debit">Ausgaben</string>
   <string name="pm_type_neutral">Neutral</string>
-  <string name="pref_account_grouping_title">Kontengruppierung</string>
   <string name="pref_app_dir_title">Ordner für Backups und Exports</string>
   <string name="pref_auto_fill_title">Automatisches Ausfüllen</string>
   <string name="pref_auto_fill_summary">Betrag, Kategorie und Kommentar von der letzten Buchung für denselben Empfänger/Zahler ausfüllen</string>
   <string name="pref_backup_summary">Erzeugt ein Backup der Datenbank und der Einstellungen</string>
-  <string name="pref_sort_order_title">Sortierreihenfolge für Kategorien, Vorlagen und Konten</string>
   <string name="pref_sort_order_usages">Häufigkeit der Benutzung</string>
-  <string name="pref_sort_order_alphabetic">Alphabetisch</string>
   <string name="pref_category_title_advanced">Erweitert</string>
   <string name="pref_category_title_export">Export</string>
   <string name="pref_category_title_import">Import</string>
@@ -351,8 +343,6 @@
   <string name="pref_perform_protection_summary">Sollen das Starten und Wiederaufnehmen der App abgesichert werden?</string>
   <string name="pref_perform_protection_title">Passwortschutz</string>
   <string name="pref_perform_share_title">Export und Sicherheitskopie versenden</string>
-  <string name="pref_perform_share_summaryOff">Die Dateien werden nicht nach jedem Export versendet.</string>
-  <string name="pref_perform_share_summaryOn">Die Dateien werden nach jedem Export versendet.</string>
   <!--This entry is added to the list of available calendars, if no local calendar has been set up yet-->
   <string name="pref_planning_calendar_create_local">Neuen lokalen Planer anlegen</string>
   <string name="pref_planning_calendar_summary">Wählen Sie den Kalender aus, in dem Pläne für zukünftige und wiederkehrende Buchungen gespeichert werden sollen.</string>
@@ -379,8 +369,6 @@
   <string name="pref_shortcut_not_added">Es steht kein Start-Bildschirm zur Verfügung, der Verknüpfungen akzeptiert.</string>
   <string name="pref_shortcut_summary">Fügt den Shortcut dem Home Screen hinzu.</string>
   <string name="pref_template_click_default_summary">Beim kurzen Tippen auf Eintrag in der Vorlagenliste</string>
-  <!--This preference presents a slider where the user selects a value from 0 to 4-->
-  <string name="pref_ui_fontsize_summary">Jeder Schritt vergrößert die Schrift um 2sp</string>
   <string name="pref_ui_fontsize_title">Schrift vergrößern</string>
   <string name="pref_ui_home_screen_shortcuts">Verknüpfungen für den Start-Bildschirm</string>
   <string name="pref_ui_language_default">System-Standard</string>
@@ -391,12 +379,12 @@
   <string name="pref_ui_theme_title">Stil</string>
   <string name="pref_visit_website_summary">Änderungsprotokoll und FAQ</string>
   <string name="pref_visit_website_title">Website besuchen</string>
-  <string name="progress_dialog_create_calendar">Lokaler Kalender wird angelegt …</string>
-  <string name="progress_dialog_create_plan">Neuer Plan wird angelegt …</string>
-  <string name="progress_dialog_deleting">Objekte werden gelöscht …</string>
-  <string name="progress_dialog_loading">Buchung wird von Datenbank geladen …</string>
-  <string name="progress_dialog_printing">Generierung von PDF...</string>
-  <string name="progress_dialog_saving">Objekt wird in Datenbank gespeichert …</string>
+  <string name="progress_dialog_create_calendar">Lokaler Kalender wird angelegt</string>
+  <string name="progress_dialog_create_plan">Neuer Plan wird angelegt</string>
+  <string name="progress_dialog_deleting">Objekte werden gelöscht</string>
+  <string name="progress_dialog_loading">Buchung wird von Datenbank geladen</string>
+  <string name="progress_dialog_printing">Generierung von PDF</string>
+  <string name="progress_dialog_saving">Objekt wird in Datenbank gespeichert</string>
   <string name="qif_parse_result">Gefunden: %1$s Konten, %2$s Kategorien und %3$s parteien.</string>
   <string name="qif_parse_failure_found_multiple_accounts">In der QIF Datei wurden mehrere Konten gefunden.</string>
   <string name="qif_parse_failure_found_multiple_accounts_cannot_merge">Diese konten nicht mit einem bestehendes Konto zusammengefügt werden.</string>
@@ -410,7 +398,7 @@
   <string name="restore_backup_archive_not_valid">Archiv %1$s ist nicht gültig</string>
   <string name="restore_backup_file_not_found">Keine Datei %1$s im Archiv \"%2$s\" gefunden.</string>
   <string name="restore_preferences_success">Die Einstellungen wurden aus dem Backup wiederhergestellt.</string>
-  <string name="restore_calendar_success">%d Pläne wurden aus dem Backup wiederhergestellt.</string>
+  <string name="restore_calendar_success" tools:ignore="PluralsCandidate">%d Pläne wurden aus dem Backup wiederhergestellt.</string>
   <string name="save_transaction_and_new_success">Erfolgreich gespeichert</string>
   <string name="save_transaction_error">Neue Buchung aus Vorlage konnte nicht gespeichert werden.</string>
   <plurals name="save_transaction_from_template_success">
@@ -492,11 +480,15 @@
   <string name="warning_app_folder_will_be_deleted_upon_uninstall">Der aktuell ausgewählte Ordner für Sicherungskopien und Exporte wird von Android automatisch gelöscht wenn Sie meine Ausgaben deinstallieren. Sie können dies verhindern, indem Sie einen anderen Ordner in den Einstellungen auswählen.</string>
   <string name="warning_splitpartcategory_context">Umbuchungen, die Teil einer Splitbuchung sind, können nur im Kontext der Splitbuchunung geändert werden.</string>
   <string name="warning_fraction_digits_out_of_range">Bitte eine Zahl zwischen 0 und 8 angeben</string>
-  <string name="warning_change_fraction_digits">Sie verringern die Anzahl der Nachkommastellen für Währung %1$s. Dies führt zu Verlust von Informationen für Buchungen, die Sie bereits eingegeben haben, und kann nicht rückgängig gemacht werden. Möchten Sie fortfahren?</string>
+  <string name="warning_change_fraction_digits_1">Beträge in der Datenbank müssen aktualisiert werden, um mit der neuen Anzahl der Nachkommastellen übereinzustimmen.</string>
+  <string name="warning_change_fraction_digits_2_multiplied" tools:ignore="PluralsCandidate">Wenn Beträge nicht aktualisiert werden, erscheinen diese nach der Änderung als multipliziert mit %d.</string>
+  <string name="warning_change_fraction_digits_2_divided" tools:ignore="PluralsCandidate">Wenn Beträge nicht aktualisiert werden, erscheinen diese nach der Änderung als dividiert durch %d.</string>
+  <string name="warning_change_fraction_digits_3">Wenn Beträge aktualisiert werden, verlieren Sie die Information über deren Bruchteil.</string>
+  <string name="warning_change_fraction_digits_checkbox_label">Beträge in der Datenbank aktualisieren</string>
   <string name="import_categories_success">%1$s Kategorien erfolgreich importiert</string>
   <string name="import_parties_success">%1$s Parteien erfolgreich importiert</string>
   <string name="import_accounts_success">%1$s Konten erfolgreich importiert</string>
-  <string name="import_transactions_success">%1$d Buchungen erfolgreich in das Konto %2$s importiert</string>
+  <string name="import_transactions_success" tools:ignore="PluralsCandidate">%1$d Buchungen erfolgreich in das Konto %2$s importiert</string>
   <string name="import_accounts_none">Keine Konten importiert</string>
   <string name="import_categories_none">Keine Kategorien importiert</string>
   <string name="import_parties_none">Keine Parteien importiert</string>
@@ -504,7 +496,12 @@
   <string name="import_source_select_error">Bitte wählen Sie eine Datei des Typs %1$s</string>
   <string name="menu_categories_setup_default">Standard Kategorien einrichten</string>
   <string name="menu_create_folder">Neuer Ordner</string>
+  <!--This string is used for navigating up in the folder browser-->
   <string name="menu_up">Nach oben</string>
+  <!--Move an account up in the account list-->
+  <string name="menu_sort_up">Nach oben</string>
+  <!--Move an account down in the account list-->
+  <string name="menu_sort_down">Nach unten</string>
   <string name="create_new_folder_fail">Erstellen des Ordners fehlgeschlagen</string>
   <string name="widget_title_accounts">Meine Konten</string>
   <string name="widget_title_templates">Meine Vorlagen</string>
@@ -532,7 +529,7 @@
   <string name="yes">Ja</string>
   <string name="no">Nein</string>
   <string name="hint_template_click">Ein kurzes Tippen auf einen Eintrag in dieser Liste wendet die Vorlage an. Entweder diese wird unmittelbar gespeichert, oder das Eingabeformular wird geöffnet, wo diese vor dem Speichern verändert werden kann. Sie können immer auf beide Aktionen über ein langes Tippen zugreifen und die Standardeinstellung in den Einstellungen ändern. </string>
-  <string name="change_fraction_digits_result">%1$d Konten mit Währung %2$s wurden aktualisiert.</string>
+  <string name="change_fraction_digits_result" tools:ignore="PluralsCandidate">%1$d Konten mit Währung %2$s wurden aktualisiert.</string>
   <string name="learn_more">Mehr erfahren</string>
   <string name="import_source_file">Datei</string>
   <string name="restore_calendar_handling">Verarbeitung der Kalender-Daten</string>
@@ -566,8 +563,8 @@
   <!--Label for column where user can check rows to be discarded from import-->
   <string name="cvs_import_discard">Verwerfen</string>
   <string name="csv_import_field_mapped_more_than_once">%s wird mehr als einmal zugeordnet.</string>
-  <string name="csv_import_records_failed">%d Einträge konnten nicht importiert werden.</string>
-  <string name="csv_import_records_discarded">%d Einträge wurden verworfen.</string>
+  <string name="csv_import_records_failed" tools:ignore="PluralsCandidate">%d Einträge konnten nicht importiert werden.</string>
+  <string name="csv_import_records_discarded" tools:ignore="PluralsCandidate">%d Einträge wurden verworfen.</string>
   <string name="csv_import_subcategory_requires_category">Wenn Sie Unterkategorie zuordnen, müssen Sie auch die Kategorie zuordnen.</string>
   <string name="cvs_import_set_first_line_as_header">Soll die erste Zeile als Kopfzeile behandelt werden?</string>
   <string name="csv_import_delimiter_comma">Komma</string>
@@ -577,11 +574,11 @@
   <string name="menu_show_transactions">Buchungen anzeigen</string>
   <string name="pref_custom_decimal_format_title">Zahlenformat</string>
   <string name="pref_custom_decimal_format_summary">Wenn Sie mit dem Standardformat für Ihr Gebietsschema nicht zufrieden sind, können Sie es an Ihre Bedürfnisse anpassen. Leer lassen, um das Standardformat wiederherzustellen. </string>
-  <string name="licence_validation_upgrade_needed">Bitte aktualisieren Sie Meine Ausgaben Contrib auf Version 1.5.</string>
+  <string name="licence_validation_upgrade_needed" tools:ignore="UnusedResources">Bitte aktualisieren Sie Meine Ausgaben Contrib auf Version 1.5.</string>
   <string name="pref_auto_backup_title">Automatisches Backup aktivieren</string>
   <string name="pref_auto_backup_summary">Sichere Datenbank täglich zur angegebenen Zeit (nur wenn sich die Daten verändert haben)</string>
   <string name="pref_auto_backup_time_title">Zeit für automatische Sicherung</string>
-  <string name="warning_auto_backup_limited_trial">Nach %d erfolgreichen automatischen Sicherungen wird automatische Sicherung deaktiviert werden.</string>
+  <string name="warning_auto_backup_limited_trial" tools:ignore="PluralsCandidate">Nach %d erfolgreichen automatischen Sicherungen wird automatische Sicherung deaktiviert werden.</string>
   <string name="warning_auto_backup_limit_reached">Das Limit für kostenlose erfolgreiche automatische Sicherungen wurde erreicht.</string>
   <string name="calendar_permission_required"><i>Meine Ausgaben</i> benötigt die Berechtigung, auf Ihren Kalender zugreifen, um Pläne für zukünftige und wiederkehrende Buchungen zu erstellen.</string>
   <string name="button_request_calendar_access">Zugriff gewähren</string>
@@ -598,4 +595,15 @@
   <string name="date_format_hour">Stunde</string>
   <string name="date_format_minute">Minute</string>
   <string name="copied_to_clipboard">In Zwischenablage kopiert</string>
+  <string name="menu_sort">Sortieren nach</string>
+  <string name="pref_sort_order_last_used">Zuletzt verwendet</string>
+  <string name="pref_sort_order_custom">Benutzerdefiniert</string>
+  <string name="dialog_info_custom_sort">Durch die Befehle \"Nach oben\" und \"Nach unten\" im Kontextmenü des Elements ändern Sie seine Sortierposition.</string>
+  <string name="content_description_calculator">Taschenrechner</string>
+  <!--describes the state of a plan instance that has not yet been applied, i.e. no transaction has been entered into the database for it. Used as content description for icon in list.-->
+  <string name="plan_instance_state_open">offen</string>
+  <!--describes the state of a plan instance that has been cancelled, i.e. it has been flagged it to be skipped. Used as content description for icon in list.-->
+  <string name="plan_instance_state_cancelled">annulliert</string>
+  <!--describes the state of a plan instance that has been applied, i.e. a transaction has been entered into the database for it. Used as content description for icon in list.-->
+  <string name="plan_instance_state_applied">angewendet</string>
 </resources>

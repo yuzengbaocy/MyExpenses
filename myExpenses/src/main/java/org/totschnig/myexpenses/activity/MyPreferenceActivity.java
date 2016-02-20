@@ -185,6 +185,7 @@ public class MyPreferenceActivity extends ProtectedFragmentActivity implements
         return DialogUtils.sendWithFTPDialog((Activity) this);
       case R.id.MORE_INFO_DIALOG:
         LayoutInflater li = LayoutInflater.from(this);
+        //noinspection InflateParams
         View view = li.inflate(R.layout.more_info, null);
         ((TextView) view.findViewById(R.id.aboutVersionCode)).setText(CommonCommands.getVersionInfo(this));
         return new AlertDialog.Builder(this)
@@ -240,8 +241,6 @@ public class MyPreferenceActivity extends ProtectedFragmentActivity implements
     } else if (key.equals(PrefKey.PROTECTION_ENABLE_TEMPLATE_WIDGET.getKey())) {
       //Log.d("DEBUG","shared preference changed: Template Widget");
       AbstractWidget.updateWidgets(this, TemplateWidget.class);
-    } else if (key.equals(PrefKey.ACCOUNT_GROUPING.getKey())) {
-      getContentResolver().notifyChange(TransactionProvider.ACCOUNTS_URI, null);
     } else if (key.equals(PrefKey.AUTO_BACKUP.getKey()) || key.equals(PrefKey.AUTO_BACKUP_TIME.getKey())) {
       DailyAutoBackupScheduler.updateAutoBackupAlarms(this);
     }
@@ -551,8 +550,9 @@ public class MyPreferenceActivity extends ProtectedFragmentActivity implements
       final ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
       final boolean status = prefKey.getBoolean(false);
       if (screen.getKey().equals(prefKey.getKey())) {
-        SwitchCompat actionBarSwitch =
-            (SwitchCompat) getActivity().getLayoutInflater().inflate(R.layout.pref_master_switch, null);
+        //noinspection InflateParams
+        SwitchCompat actionBarSwitch = (SwitchCompat) getActivity().getLayoutInflater().inflate(
+            R.layout.pref_master_switch, null);
         actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM,
             ActionBar.DISPLAY_SHOW_CUSTOM);
         actionBar.setCustomView(actionBarSwitch);
@@ -762,6 +762,7 @@ public class MyPreferenceActivity extends ProtectedFragmentActivity implements
         } else {
           Intent intent;
           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            //noinspection InlinedApi
             intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
             try {
               startActivityForResult(intent, PICK_FOLDER_REQUEST);

@@ -46,7 +46,7 @@ import android.util.Log;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.*;
 
 public class TransactionDatabase extends SQLiteOpenHelper {
-  public static final int DATABASE_VERSION = 55;
+  public static final int DATABASE_VERSION = 56;
   public static final String DATABASE_NAME = "data";
   private Context mCtx;
 
@@ -66,7 +66,7 @@ public class TransactionDatabase extends SQLiteOpenHelper {
     "CREATE TABLE " + TABLE_TRANSACTIONS  +  "( "
     + KEY_ROWID            + " integer primary key autoincrement, "
     + KEY_COMMENT          + " text, "
-    + KEY_DATE             + " DATETIME not null, "
+    + KEY_DATE             + " datetime not null, "
     + KEY_AMOUNT           + " integer not null, "
     + KEY_CATID            + " integer references " + TABLE_CATEGORIES + "(" + KEY_ROWID + "), "
     + KEY_ACCOUNTID        + " integer not null references " + TABLE_ACCOUNTS + "(" + KEY_ROWID + ") ON DELETE CASCADE,"
@@ -112,7 +112,8 @@ public class TransactionDatabase extends SQLiteOpenHelper {
         + KEY_COLOR           + " integer default -3355444, "
         + KEY_GROUPING        + " text not null check (" + KEY_GROUPING + " in (" + Account.Grouping.JOIN + ")) default '" +  Account.Grouping.NONE.name() + "', "
         + KEY_USAGES          + " integer default 0,"
-        + KEY_SORT_KEY      + " integer,"
+        + KEY_LAST_USED       + " datetime, "
+        + KEY_SORT_KEY        + " integer,"
         + KEY_EXCLUDE_FROM_TOTALS + " boolean default 0);";
 
   /**
@@ -123,11 +124,13 @@ public class TransactionDatabase extends SQLiteOpenHelper {
    */
   private static final String CATEGORIES_CREATE =
     "CREATE TABLE " + TABLE_CATEGORIES + " ("
-      + KEY_ROWID    + " integer primary key autoincrement, "
-      + KEY_LABEL    + " text not null, "
+      + KEY_ROWID            + " integer primary key autoincrement, "
+      + KEY_LABEL            + " text not null, "
       + KEY_LABEL_NORMALIZED + " text,"
-      + KEY_PARENTID + " integer references " + TABLE_CATEGORIES + "(" + KEY_ROWID + "), "
-      + KEY_USAGES   + " integer default 0, unique (" + KEY_LABEL + "," + KEY_PARENTID + "));";
+      + KEY_PARENTID         + " integer references " + TABLE_CATEGORIES + "(" + KEY_ROWID + "), "
+      + KEY_USAGES           + " integer default 0, "
+      + KEY_LAST_USED        + " datetime, "
+      + "unique (" + KEY_LABEL + "," + KEY_PARENTID + "));";
 
   private static final String PAYMENT_METHODS_CREATE =
     "CREATE TABLE " + TABLE_METHODS + " ("
@@ -167,6 +170,7 @@ public class TransactionDatabase extends SQLiteOpenHelper {
       + KEY_PLANID           + " integer, "
       + KEY_PLAN_EXECUTION   + " boolean default 0, "
       + KEY_UUID             + " text, "
+      + KEY_LAST_USED        + " datetime, "
       + "unique(" + KEY_ACCOUNTID + "," + KEY_TITLE + "));";
   
   private static final String EVENT_CACHE_CREATE = 
@@ -223,6 +227,13 @@ public class TransactionDatabase extends SQLiteOpenHelper {
                   "WHERE " + KEY_PICTURE_URI + " = old." + KEY_PICTURE_URI + ") " +
           "BEGIN INSERT INTO " + TABLE_STALE_URIS + " VALUES (old." + KEY_PICTURE_URI + "); END";
 
+  private static final String ACCOUNTS_TRIGGER_CREATE =
+      "CREATE TRIGGER sort_key_default " +
+          "AFTER INSERT ON " + TABLE_ACCOUNTS + " " +
+          "BEGIN UPDATE " + TABLE_ACCOUNTS + " SET " + KEY_SORT_KEY +
+          " = (SELECT coalesce(max(" + KEY_SORT_KEY + "),0) FROM " + TABLE_ACCOUNTS + ") + 1 WHERE " +
+          KEY_ROWID + " = NEW." + KEY_ROWID + "; END";
+
   public static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd",Locale.US);
   public static final SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",Locale.US);
 
@@ -269,6 +280,7 @@ public class TransactionDatabase extends SQLiteOpenHelper {
     db.execSQL(ACCOUNTS_CREATE);
     db.execSQL("CREATE VIEW " + VIEW_EXTENDED   + VIEW_DEFINITION_EXTENDED(TABLE_TRANSACTIONS) + " WHERE " + KEY_STATUS + " != " + STATUS_UNCOMMITTED + ";");
     db.execSQL("CREATE VIEW " + VIEW_TEMPLATES_EXTENDED +  VIEW_DEFINITION_EXTENDED(TABLE_TEMPLATES));
+    db.execSQL(ACCOUNTS_TRIGGER_CREATE);
     insertDefaultAccount(db);
     db.execSQL(ACCOUNTTYE_METHOD_CREATE);
     insertDefaultPaymentMethods(db);
@@ -353,7 +365,7 @@ public class TransactionDatabase extends SQLiteOpenHelper {
       }
       if (oldVersion < 20) {
         db.execSQL("CREATE TABLE transactions ( _id integer primary key autoincrement, comment text not null, "
-            + "date DATETIME not null, amount integer not null, cat_id integer, account_id integer, "
+            + "date datetime not null, amount integer not null, cat_id integer, account_id integer, "
             + "payee  text, transfer_peer integer default null);");
         db.execSQL("INSERT INTO transactions (comment,date,amount,cat_id,account_id,payee,transfer_peer)" +
             " SELECT comment,date,CAST(ROUND(amount*100) AS INTEGER),cat_id,account_id,payee,transfer_peer FROM expenses");
@@ -418,7 +430,7 @@ public class TransactionDatabase extends SQLiteOpenHelper {
       }
       if (oldVersion < 28) {
         db.execSQL("ALTER TABLE transactions RENAME to transactions_old");
-        db.execSQL("CREATE TABLE transactions(_id integer primary key autoincrement, comment text, date DATETIME not null, amount integer not null, " +
+        db.execSQL("CREATE TABLE transactions(_id integer primary key autoincrement, comment text, date datetime not null, amount integer not null, " +
             "cat_id integer references categories(_id), account_id integer not null references accounts(_id),payee text, " +
             "transfer_peer integer references transactions(_id), transfer_account integer references accounts(_id), " +
             "method_id integer references paymentmethods(_id));");
@@ -513,7 +525,7 @@ public class TransactionDatabase extends SQLiteOpenHelper {
         db.execSQL("ALTER TABLE transactions RENAME to transactions_old");
         db.execSQL("CREATE TABLE transactions (" +
             " _id integer primary key autoincrement," +
-            " comment text, date DATETIME not null," +
+            " comment text, date datetime not null," +
             " amount integer not null," +
             " cat_id integer references categories(_id)," +
             " account_id integer not null references accounts(_id)," +
@@ -625,7 +637,7 @@ public class TransactionDatabase extends SQLiteOpenHelper {
         db.execSQL("ALTER TABLE transactions RENAME to transactions_old");
         db.execSQL("CREATE TABLE transactions (" +
             " _id integer primary key autoincrement," +
-            " comment text, date DATETIME not null," +
+            " comment text, date datetime not null," +
             " amount integer not null," +
             " cat_id integer references categories(_id)," +
             " account_id integer not null references accounts(_id)," +
@@ -678,7 +690,7 @@ public class TransactionDatabase extends SQLiteOpenHelper {
         db.execSQL("ALTER TABLE transactions RENAME to transactions_old");
         db.execSQL("CREATE TABLE transactions (" +
             " _id integer primary key autoincrement," +
-            " comment text, date DATETIME not null," +
+            " comment text, date datetime not null," +
             " amount integer not null," +
             " cat_id integer references categories(_id)," +
             " account_id integer not null references accounts(_id) ON DELETE CASCADE," +
@@ -899,7 +911,7 @@ public class TransactionDatabase extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE " + "transactions" +  "( "
         + "_id" + " integer primary key autoincrement, "
         + "comment" + " text, "
-        + "date" + " DATETIME not null, "
+        + "date" + " datetime not null, "
         + "amount" + " integer not null, "
         + "cat_id" + " integer references " + "categories" + "(" + "_id" + "), "
         + "account_id" + " integer not null references " + "accounts" + "(" + "_id" + ") ON DELETE CASCADE,"
@@ -963,6 +975,34 @@ public class TransactionDatabase extends SQLiteOpenHelper {
           }
           c.close();
         }
+      }
+      if (oldVersion < 56) {
+        db.execSQL("ALTER TABLE templates add column last_used datetime");
+        db.execSQL("ALTER TABLE categories add column last_used datetime");
+        db.execSQL("ALTER TABLE accounts add column last_used datetime");
+        db.execSQL("CREATE TRIGGER sort_key_default AFTER INSERT ON accounts " +
+          "BEGIN UPDATE accounts SET sort_key = (SELECT coalesce(max(sort_key),0) FROM accounts) + 1 " +
+            "WHERE _id = NEW._id; END");
+        //The sort key could be set by user in previous versions, now it is handled internally
+        Cursor c = db.query("accounts", new String[]{"_id","sort_key"},null, null, null, null, "sort_key ASC");
+        boolean hasAccountSortKeySet = false;
+        if (c!=null) {
+          if (c.moveToFirst()) {
+            ContentValues v = new ContentValues();
+            while( c.getPosition() < c.getCount() ) {
+              v.put("sort_key", c.getPosition() + 1);
+              db.update("accounts", v, "_id = ?", new String[]{c.getString(0)});
+              if (c.getInt(1) != 0) hasAccountSortKeySet = true;
+              c.moveToNext();
+            }
+          }
+          c.close();
+        }
+        String legacy = MyApplication.PrefKey.SORT_ORDER_LEGACY.getString("USAGES");
+        MyApplication.PrefKey.SORT_ORDER_TEMPLATES.putString(legacy);
+        MyApplication.PrefKey.SORT_ORDER_CATEGORIES.putString(legacy);
+        MyApplication.PrefKey.SORT_ORDER_ACCOUNTS.putString(hasAccountSortKeySet ? "CUSTOM" : legacy);
+        MyApplication.PrefKey.SORT_ORDER_LEGACY.remove();
       }
     } catch (SQLException e) {
       throw Utils.hasApiLevel(Build.VERSION_CODES.JELLY_BEAN) ?

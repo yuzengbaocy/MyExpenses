@@ -7,8 +7,9 @@
   <string name="cab_edit_help_text">Editatu aukeratutako elementua.</string>
   <!--My Expenses Transaction list-->
   <string name="help_MyExpenses_title">Transakzioen zerrenda</string>
-  <string name="help_MyExpenses_info">Pantaila honek uneko kontuaren transakzio guztiak zerrendatzen ditu. Erabili ekintza botoi flotatzailea transakzio berri bat sortzeko formularioa irekitzeko. Erabili kontuen zerrenda (tabletetan ezkerreko panelean, telefonoetan hanburgesa menua zapalduz agertzen den panelean) kontuz aldatzeko. Kontu bakoitzak berau aldatu edo ezabatzea baimentzen duen menu bat du. Erabili zerrendaren bukaeran dagoen botoia kontu berriak sortzeko.</string>
+  <string name="help_MyExpenses_info">Pantaila honek uneko kontuaren transakzio guztiak zerrendatzen ditu. Erabili ekintza botoi flotatzailea transakzio berri bat sortzeko formularioa irekitzeko.</string>
   <string name="help_MyExpenses_crStatus_info">Transakzioaren egoera kolorezko lauki baten bidez adierazten da: grisa berdikatu gabea, urdina kitatua, berdea berdinkatuta. Sakatu laukia egoera aldatzeko.</string>
+  <string name="menu_reset_help_text">Komando honek uneko kontuaren transakzio guztiak SD txarteleko fitxategi batetara esportatzen ditu QIF edo CSV formatuan. Esportatutako transakzioak ezabatzea aukeratu dezakezu, kasu horretan irekiera saldoa automatikoki doituko da. Ordea, transakzioak ez badira ezabatzen esportatuta gisa markatuko dira. Nire Gastuak esportatu eta jarraian fitxategia elkarbanatu dezake FTP, posta elektronikoa edo fitxategiak elkarbanatzeko bestelako edozein aplikazio erabilita, horrela egin dezan konfiguratzen baduzu ezarpenetan. Iragazki bat gaituta badago iragazkiak hautatutako transakzioak besterik ez dita hartuko aintzat.</string>
   <string name="menu_grouping_help_text">Transakzioak taldekatu ditzakezu eguneko, asteko, hilabeteko eta urteko. Talde bakoitzean diru-sarreren, gastuen eta transferentzien guztirakoa kalkulatzen eta bistaratzen da. Taldearen goiburuan sakatzean transakzio taldea tolestu egiten da eta soilik goiburua erakusten da. Sakatu berriro taldea destolesteko.</string>
   <string name="menu_distribution_help_text">Bistaratu zure gastuen distribuzioa kategoriako. Luze sakatu dezakezu talde goiburu batean epe zehatz horren distribuzioa ikuskatzeko.</string>
   <string name="menu_manage_plans_help_text">Txantiloi eta planen zerrenda irekitzen du, han aplikatu, editatu edo ezabatu ditzakezu, bai eta etorkizunerako planak eta transakzio errepikakorrak zehaztu. </string>
@@ -65,7 +66,6 @@
   <string name="form_AccountEdit_label_help_text">Etiketak kontua identifikatzen du kontuen zerrendan.</string>
   <string name="form_description_help_text">Deskripzioa informaziorako da besterik ez.</string>
   <string name="form_currency_help_text">Hautatu moneta bat gaurkotutako moneten zerrendatik.</string>
-  <string name="menu_set_sort_key_help_text">Ezarri zenbakizko gako bat kontuaren posizioa zehazteko nabigazio ataleko kontuen zerrendan  (goranzko ordena)</string>
   <string name="menu_exclude_from_totals_help_text">Aukera hau markatzen baduzu, kontu hau ez da monetako guztirakoetan agregatuko.</string>
   <!--MethodEdit-->
   <string name="help_MethodEdit_title">Ordainketa metodoen formularioa</string>
@@ -82,4 +82,7 @@
   <string name="help_ManageStaleImages_info">Pantaila honetan ezabatutako transakzioetatik soberan geratu diren irudiak kudeatzea baimentzen dizu. Sakatu luze sarreretan hauek ezabatu edo (barne) biltegiratze karpetatik kanpo biltegiratzeko babeskopia karpetara mugitzeko (Android/data/org.totschnig.mxexpenses/files/images.old) </string>
   <!--CSV Import-->
   <string name="help_CsvImportActivity_info"><![CDATA[Inportatu nahi duzun fitxategia aukeratu eta gero, honen kodeketa zehaztu behar duzu (UTF-8 edo ISO-8859-1), eremuak banatzeko erabilitako karakterea (koma, puntu eta koma edo tabulazioa), eta daten formatua. Datuak aurretik dagoen kontu batetara inportatu daitezke edo kontu berri batetara, bigarren kasuan moneta eta kontu mota aukeratu ditzakezu.<br><br>Ekintza barrako prozesatu botoia sakatu eta gero datuak taula batean aurkeztuko zaizkizu. Inportazioa ekintza barrako botoiarekin abiatu aurretik albo batera utzi nahi dituzun lerroak aukeratu ditzakezu, eta zutabeak dagokien eremuekin lotu behar dituzu.<br><br>lehen lerroa alboratzen baduzu, goiburu gisa hartu nahi duzun galdetuko zaizu, kasu honetan <i>Nire Gastuak</i> zutabeak eremuekin automatikoki lotzen saiatuko da goiburuko gelaxken edukien arabera. Goiburuaren araberako loturak ere gogoratuko ditu goiburu formatu bera duen beste fitxategi bat inportatzean.]]></string>
+  <string name="menu_create_account_help_text">Sortu kontu berri bat. Dohako bertsioa bost kontuetara mugatuta dago.</string>
+  <string name="cab_sort_up_help_text">Mugitu elementua posizio bat gora zerrendan.</string>
+  <string name="cab_sort_down_help_text">Mugitu elementua posizio bat behera zerrendan.</string>
 </resources>

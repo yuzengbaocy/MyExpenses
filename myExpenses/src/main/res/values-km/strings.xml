@@ -82,7 +82,6 @@
   <string name="dialog_title_balance_account">សមតុល្យ %1$s</string>
   <string name="dialog_title_contrib_feature">លក្ខណៈពិសេសល្អជាងគេ</string>
   <string name="dialog_title_planner_setup_info">ត្រូវមានការ​រៀបចំ​​ប្រតិទិន</string>
-  <string name="dialog_title_select_grouping">ជ្រើសយក​ក្រុមមួយ</string>
   <!--the dialog where this title is displayed allows the user to customize the number of fraction digits for a currency
     e.g. 3 instead of 2 for € if you want to calculate with 1/10s of a ¢-->
   <string name="dialog_title_template_title">កំណត់ចំណងជើង</string>
@@ -194,14 +193,11 @@
   <string name="menu_search">ស្វែងរក</string>
   <string name="menu_settings">ការកំណត់</string>
   <string name="menu_share">ប្រាប់​មិត្តម្នាក់</string>
-  <string name="menu_set_sort_key">ដាក់សោមេ​​ដើម្បីតម្រៀប</string>
   <string name="method">វិធីសាស្ត្រ</string>
   <string name="no_amount_given">អ្នកមិនបានបញ្ចូលចំនួនទឹកប្រាក់ណាមួយឡើយ។</string>
   <string name="no_app_handling_email_available">គ្មាន​កម្មវិធី​ដំណើការ​អ៊ីម៉ែល​ទេ</string>
   <string name="no_app_handling_ftp_available">គ្មាន​កម្មវិធី​សម្រាប់ ftp ទេ។ សូម​បញ្ចូល​កម្មវិធី <i>Send With FTP</i>?</string>
   <string name="no_categories">គ្មាន​ចំណាត់ថ្នាក់​កំណត់។</string>
-  <string name="no_category_assigned">គ្មាន​ចំណាត់ថ្នាក់​ណាភ្ជាប់ទេ</string>
-  <string name="no_details">គ្មាន​សេចក្តីលម្អិត។</string>
   <string name="no_expenses">គ្មាន​ទិន្នន័យចំណាយ​នៅឡើយទេ។</string>
   <string name="no_exportable_expenses">មិនមានប្រតិបត្តិការដែលមិនទាន់ត្រូវបាននាំចេញទេ។</string>
   <string name="no_filemanager_installed">គ្មាន​កម្មវិធី​គ្រប់គ្រងឯកសារបញ្ចូលទេ</string>
@@ -219,7 +215,6 @@
     <item quantity="other">%1$d ធាតុ​ត្រូវ​បាន​ផ្គូផ្គងទៅ​ពុម្ព និង​មិន​អាច​លុប​បានទេ។</item>
   </plurals>
   <string name="numbered">ជាលេខ</string>
-  <string name="oi_pick_colors_info">បញ្ចូល កម្មវិធី រើសពណ៌ OI </string>
   <string name="opening_balance">បើក​សមតុល្យ</string>
   <string name="parse_error_file_not_found">មិនអាច​រកឯកសារ %1$s ឃើញទេ</string>
   <string name="parse_error_grisbi_version_not_supported">មិនគាំទ្រ ឯកសារ Grisbi កំណែ៖ %1$s</string>
@@ -289,8 +284,6 @@
   <string name="pref_perform_protection_summary">តើគួរតែចាប់ផ្តើមកម្មវិធី​ និងបន្តទៅទៀតដោយការការពារ ? </string>
   <string name="pref_perform_protection_title">ការការពារពាក្យសម្ងាត់</string>
   <string name="pref_perform_share_title">ការចែករំលែកឯកសារនាំចេញ</string>
-  <string name="pref_perform_share_summaryOff">ឯកសារនឹងមិនត្រូវបានចែករំលែកបន្ទាប់ពីឯកសារនីមួយៗនាំចេញ។</string>
-  <string name="pref_perform_share_summaryOn">ឯកសារនឹងត្រូវបានចែករំលែកបន្ទាប់ពីឯកសារនីមួយៗនាំចេញ។</string>
   <!--This entry is added to the list of available calendars, if no local calendar has been set up yet-->
   <string name="pref_planning_calendar_create_local">បង្កើតប្រតិទិន​ផែន​ការ​​មូលដ្ឋាន​ថ្មី</string>
   <string name="pref_planning_calendar_summary">ជ្រើស​រើស​ប្រតិទិន​ ដែល​មាន​ផែនការអនាគត និង​មាន​ប្រតិបត្តិការវិលជុំ ត្រូវបាន​ផ្ទុក</string>
@@ -309,8 +302,6 @@
   <string name="pref_share_target_title">URL ផ្ទុកឡើង</string>
   <string name="pref_shortcut_added">Shortcut បាន​ដាក់​នៅផ្ទាំងខាងមុខ​ហើយ</string>
   <string name="pref_shortcut_summary">ដាក់ shortcut ទៅ​ផ្ទាំងខាងមុខ</string>
-  <!--This preference presents a slider where the user selects a value from 0 to 4-->
-  <string name="pref_ui_fontsize_summary">រាល់​ជំហាន​និមួយៗ បន្ថែម​ទំហំ​ពុម្ពអក្សរ​ដោយ 2sp</string>
   <string name="pref_ui_fontsize_title"> បន្ថែម​ទំហំ​ពុម្ពអក្សរ​</string>
   <string name="pref_ui_home_screen_shortcuts">ផ្លូវកាត់​លើទំព័រ​ដើម</string>
   <string name="pref_ui_language_default">លំនាំដើមរបស់ប្រព័ន្ធ</string>
@@ -322,9 +313,9 @@
   <string name="pref_visit_website_summary">ការផ្លាស់ប្ដូរ និងសំណួរ​គេសួរ​ញឹក​ញាប់</string>
   <string name="pref_visit_website_title">សូមចូលទស្សនាគេហទំព័រ</string>
   <string name="progress_dialog_create_calendar">កំពុង​បង្កើត​ប្រតិទិន​​មូលដ្ឋាន</string>
-  <string name="progress_dialog_create_plan">កំពុង​បង្កើត​ផែនការ​ថ្មី​ ...</string>
-  <string name="progress_dialog_deleting">កំពុងលុប​អ្វីផ្សេងៗ ...</string>
-  <string name="progress_dialog_loading">ផ្ទុកវត្ថុពីមូលដ្ឋានទិន្នន័យ ...</string>
+  <string name="progress_dialog_create_plan">កំពុង​បង្កើត​ផែនការ​ថ្មី​</string>
+  <string name="progress_dialog_deleting">កំពុងលុប​អ្វីផ្សេងៗ</string>
+  <string name="progress_dialog_loading">ផ្ទុកវត្ថុពីមូលដ្ឋានទិន្នន័យ</string>
   <string name="progress_dialog_saving">កំពុង​ផ្ទុក​ទៅមូលដ្ឋាន​ទិន្នន័យ​</string>
   <string name="reference_number">លេខ​យោង</string>
   <string name="request_licence_mail_description">សូម​ពិពណ៌នា (ជាភាសាអង់គ្លេស អាឡឺម៉ង ឬបារាំង) ពី​​ការរួម​ចំណែក​របស់​អ្នក​សំរាប់ My Expenses (ឧ. វិភាគទាន​ជា​ប្រាក់​តាម Paypal, ផ្តល់​ព័ត៌​មាន​ពីកំហុស, តេស្ត ឬ​បក​ប្រែ)។</string>
@@ -398,7 +389,11 @@
   <string name="import_source_select_error">សូមផ្តល់​ឯកសារមួយ​ក្នុងប្រភេទ %1$s</string>
   <string name="menu_categories_setup_default">ដាក់ប្រភេទលំនាំដើម</string>
   <string name="menu_create_folder">ថត​ថ្មី</string>
+  <!--This string is used for navigating up in the folder browser-->
   <string name="menu_up">ទៅលើ</string>
+  <!--Move an account up in the account list-->
+  <string name="menu_sort_up">ទៅលើ</string>
+  <!--Move an account down in the account list-->
   <string name="create_new_folder_fail">បរាជ័យ​ក្នុង​ការបង្កើតថតនេះ</string>
   <string name="widget_title_accounts">គណនីរបស់ខ្ញុំ</string>
   <string name="widget_title_templates">ពុម្ព​របស់ខ្ញុំ</string>
@@ -420,4 +415,8 @@
   <string name="menu_move">រំកិល</string>
   <string name="preferences_week_start_day_title">សប្ដាហ៍​ចាប់ផ្ដើម​នៅ</string>
   <!--this is the title of the section in the preferences, where user can set start day for weekly and monthly groups-->
+  <string name="content_description_calculator">ម៉ាស៊ីនគិតលេខ</string>
+  <!--describes the state of a plan instance that has not yet been applied, i.e. no transaction has been entered into the database for it. Used as content description for icon in list.-->
+  <!--describes the state of a plan instance that has been cancelled, i.e. it has been flagged it to be skipped. Used as content description for icon in list.-->
+  <!--describes the state of a plan instance that has been applied, i.e. a transaction has been entered into the database for it. Used as content description for icon in list.-->
 </resources>

@@ -30,6 +30,7 @@ import org.totschnig.myexpenses.util.Utils;
  *
  */
 public class DatabaseConstants {
+  private static boolean isLocalized = false;
   public static int weekStartsOn, monthStartsOn;
   public static String YEAR_OF_WEEK_START, YEAR_OF_MONTH_START;
   //public static String YEAR_OF_MONTH_START;
@@ -71,7 +72,15 @@ public class DatabaseConstants {
     COUNT_FROM_WEEK_START_ZERO = "strftime('%%s','%d-01-01','weekday 1', 'weekday " + nextWeekStartsSqlite + "', '" +
         "-7 day" + 
         "' ,'+%d day')";
+    isLocalized = true;
   }
+
+  public static void ensureLocalized() {
+    if (!isLocalized) {
+      buildLocalized(Locale.getDefault());
+    }
+  }
+
   //if we do not cast the result to integer, we would need to do the conversion in Java
   public static final String YEAR  = "CAST(strftime('%Y',date,'unixepoch','localtime') AS integer)";
   public static final String THIS_DAY   = "CAST(strftime('%j','now','localtime') AS integer)";
@@ -153,6 +162,7 @@ public class DatabaseConstants {
   public static final String KEY_PICTURE_URI = "picture_id";//historical reasons
   public static final String KEY_TRANSFER_AMOUNT = "transfer_amount";
   public static final String KEY_LABEL_NORMALIZED = "label_normalized";
+  public static final String KEY_LAST_USED = "last_used";
 
   /**
    * column alias for the second group (month or week)

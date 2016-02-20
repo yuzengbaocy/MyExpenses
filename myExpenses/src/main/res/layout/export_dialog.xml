@@ -55,7 +55,8 @@
                 <EditText
                     android:id="@+id/file_name"
                     android:layout_width="0dip"
-                    android:layout_weight="5"/>
+                    android:layout_weight="5"
+                    android:inputType="text"/>
             </TableRow>
             <TableRow android:gravity="center_vertical">
 
@@ -78,14 +79,16 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:checked="true"
-                        android:text="QIF"/>
+                        android:text="QIF"
+                        tools:ignore="HardcodedText"/>
 
                     <RadioButton
                         android:id="@+id/csv"
                         android:layout_weight="1"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="CSV"/>
+                        android:text="CSV"
+                        tools:ignore="HardcodedText"/>
                 </RadioGroup>
             </TableRow>
 
@@ -105,7 +108,9 @@
                         android:id="@+id/date_format"
                         android:layout_weight="1"
                         android:layout_height="wrap_content"
-                        android:layout_width="0dp"/>
+                        android:layout_width="0dp"
+                        android:inputType="text"
+                        tools:ignore="TextFields"/>
                     <ImageView
                         android:id="@+id/date_format_help"
                         style="?actionButtonStyle"
@@ -113,7 +118,8 @@
                         android:layout_gravity="center"
                         android:src="@android:drawable/ic_menu_help"
                         android:layout_height="24dp"
-                        android:layout_width="24dp"/>
+                        android:layout_width="24dp"
+                        android:contentDescription="@string/menu_help"/>
                 </LinearLayout>
             </TableRow>
 
@@ -138,14 +144,16 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:checked="true"
-                        android:text="."/>
+                        android:text="."
+                        tools:ignore="HardcodedText"/>
 
                     <RadioButton
                         android:id="@+id/comma"
                         android:layout_weight="1"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text=","/>
+                        android:text=","
+                        tools:ignore="HardcodedText"/>
                 </RadioGroup>
             </TableRow>
 
@@ -179,6 +187,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="25dp"
+            android:layout_marginStart="25dp"
             android:visibility="gone"
             tools:visibility="visible">
 

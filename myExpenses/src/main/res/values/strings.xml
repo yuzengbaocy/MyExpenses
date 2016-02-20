@@ -132,7 +132,6 @@
     <string name="dialog_title_contrib_feature">Premium feature</string>
     <string name="dialog_title_extended_feature">Extended feature</string>
     <string name="dialog_title_planner_setup_info">Calendar setup required</string>
-    <string name="dialog_title_select_grouping">Pick a grouping</string>
     <!-- the dialog where this title is displayed allows the user to customize the number of fraction digits for a currency
     e.g. 3 instead of 2 for € if you want to calculate with 1/10s of a ¢ -->
     <string name="dialog_title_set_fraction_digits">Set the number of fraction digits</string>
@@ -251,7 +250,6 @@
     <string name="menu_search">Search</string>
     <string name="menu_settings">Settings</string>
     <string name="menu_share">Tell a friend</string>
-    <string name="menu_set_sort_key">Set sort key</string>
     <string name="menu_split_transaction">Transform to split</string>
     <string name="method">Method</string>
     <string name="no_amount_given">You did not enter any amount.</string>
@@ -259,8 +257,6 @@
     <string name="no_app_handling_ftp_available">No app handling ftp available. Install <i>Send With FTP</i>?</string>
     <string name="no_app_handling_pdf_available">No app handling PDF files available.</string>
     <string name="no_categories">No categories.</string>
-    <string name="no_category_assigned">No category assigned</string>
-    <string name="no_details">No details.</string>
     <string name="no_expenses">No Expenses Yet!</string>
     <string name="no_exportable_expenses">There are no transactions that have not yet been exported.</string>
     <string name="no_filemanager_installed">No filemanager installed</string>
@@ -281,7 +277,6 @@
         <item quantity="other">%1$d objects are mapped to templates and cannot be deleted.</item>
     </plurals>
     <string name="numbered">numbered</string>
-    <string name="oi_pick_colors_info">Install OI Color Picker for more choices</string>
     <string name="opening_balance">Opening balance</string>
     <string name="parse_error_file_not_found">Could not find file %1$s</string>
     <string name="parse_error_grisbi_version_not_supported">Unsupported Grisbi File Version: %1$s</string>
@@ -320,14 +315,11 @@
     <string name="pm_type_credit">Credit</string>
     <string name="pm_type_debit">Debit</string>
     <string name="pm_type_neutral">Neutral</string>
-    <string name="pref_account_grouping_title">Grouping of accounts</string>
     <string name="pref_app_dir_title">Folder for backups and exports</string>
     <string name="pref_auto_fill_title">Autofill transactions</string>
     <string name="pref_auto_fill_summary">Fill in amount, category and comment from last transaction for same payee/payer</string>
     <string name="pref_backup_summary">Create a backup of database and preferences.</string>
-    <string name="pref_sort_order_title">Sort order for categories, templates and accounts</string>
     <string name="pref_sort_order_usages">Count of usages</string>
-    <string name="pref_sort_order_alphabetic">Alphabetic</string>
     <string name="pref_category_title_advanced">Advanced</string>
     <string name="pref_category_title_export">Export</string>
     <string name="pref_category_title_import">Import</string>
@@ -368,8 +360,6 @@
     <string name="pref_perform_protection_summary">Should app launches and resumes be protected?</string>
     <string name="pref_perform_protection_title">Password protection</string>
     <string name="pref_perform_share_title">Share exports and backups</string>
-    <string name="pref_perform_share_summaryOff">The files will not be shared.</string>
-    <string name="pref_perform_share_summaryOn">The files will be shared.</string>
     <!-- This entry is added to the list of available calendars, if no local calendar has been set up yet -->
     <string name="pref_planning_calendar_create_local">Create new local planning calendar</string>
     <string name="pref_planning_calendar_summary">Select the calendar where plans for future and recurring transactions are stored</string>
@@ -396,8 +386,6 @@
     <string name="pref_shortcut_not_added">No Home Screen available that accepts shortcuts.</string>
     <string name="pref_shortcut_summary">Add the shortcut to Home Screen.</string>
     <string name="pref_template_click_default_summary">Upon short tap on entry in template list</string>
-    <!-- This preference presents a slider where the user selects a value from 0 to 4 -->
-    <string name="pref_ui_fontsize_summary">Each step increases base font size by 2sp</string>
     <string name="pref_ui_fontsize_title">Font size</string>
     <string name="pref_ui_home_screen_shortcuts">Home Screen Shortcuts</string>
     <string name="pref_ui_language_default">System default</string>
@@ -408,12 +396,12 @@
     <string name="pref_ui_theme_title">Theme</string>
     <string name="pref_visit_website_summary">Changelog and FAQ</string>
     <string name="pref_visit_website_title">Visit Website</string>
-    <string name="progress_dialog_create_calendar">Creating local calendar …</string>
-    <string name="progress_dialog_create_plan">Creating new plan …</string>
-    <string name="progress_dialog_deleting">Deleting objects …</string>
-    <string name="progress_dialog_loading">Loading object from database …</string>
-    <string name="progress_dialog_printing">Generating PDF …</string>
-    <string name="progress_dialog_saving">Saving object to database …</string>
+    <string name="progress_dialog_create_calendar">Creating local calendar</string>
+    <string name="progress_dialog_create_plan">Creating new plan</string>
+    <string name="progress_dialog_deleting">Deleting objects</string>
+    <string name="progress_dialog_loading">Loading object from database</string>
+    <string name="progress_dialog_printing">Generating PDF</string>
+    <string name="progress_dialog_saving">Saving object to database</string>
     <string name="qif_parse_result">Parsed: %1$s accounts; %2$s categories and %3$s parties</string>
     <string name="qif_parse_failure_found_multiple_accounts">Multiple accounts found in QIF file.</string>
     <string name="qif_parse_failure_found_multiple_accounts_cannot_merge">Cannot merge them into existing account.</string>
@@ -427,7 +415,7 @@
     <string name="restore_backup_archive_not_valid">Archive %1$s is not valid</string>
     <string name="restore_backup_file_not_found">No file %1$s found in archive \"%2$s\"</string>
     <string name="restore_preferences_success">Preferences have been restored from backup.</string>
-    <string name="restore_calendar_success">%d plans have been restored from backup</string>
+    <string name="restore_calendar_success" tools:ignore="PluralsCandidate">%d plans have been restored from backup</string>
     <string name="save_transaction_and_new_success">Successfully saved</string>
     <string name="save_transaction_error">Could not save new transaction from template.</string>
     <plurals name="save_transaction_from_template_success">
@@ -487,8 +475,8 @@
         <item quantity="other">%1$d selected transactions will be deleted.</item>
     </plurals>
     <plurals name="move_category_success">
-        <item quantity="one">One category was succesfully moved.</item>
-        <item quantity="other">%d categories were succesfully moved.</item>
+        <item quantity="one">One category was successfully moved.</item>
+        <item quantity="other">%d categories were successfully moved.</item>
     </plurals>
     <plurals name="move_category_failure">
         <item quantity="one">One category was not moved, because the same label already exists at the target.</item>
@@ -509,12 +497,15 @@
     <string name="warning_app_folder_will_be_deleted_upon_uninstall">The currently selected folder for backups and exports will be automatically deleted by Android if you uninstall My Expenses. You can prevent this from happening by selecting a different folder from the Settings screen.</string>
     <string name="warning_splitpartcategory_context">Transfers that are part of a split can only be edited in the context of the split.</string>
     <string name="warning_fraction_digits_out_of_range">Please set a number between 0 and 8</string>
-    <string name="warning_change_fraction_digits">You are reducing the number of fraction digits for currency %1$s.
-        This will lead to loss of information for transactions you have already entered, and cannot be undone. Do you want to continue?</string>
+    <string name="warning_change_fraction_digits_1">Amounts in the database need to be updated in order to match the new number of fraction digits.</string>
+    <string name="warning_change_fraction_digits_2_multiplied" tools:ignore="PluralsCandidate">If amounts are not updated, they will be displayed as multiplied by %d after the change.</string>
+    <string name="warning_change_fraction_digits_2_divided" tools:ignore="PluralsCandidate">If amounts are not updated, they will be displayed as divided by %d after the change.</string>
+    <string name="warning_change_fraction_digits_3">If amounts are updated, you will lose the information about their fractional part.</string>
+    <string name="warning_change_fraction_digits_checkbox_label">Update amounts in database</string>
     <string name="import_categories_success">%1$s categories successfully imported</string>
     <string name="import_parties_success">%1$s parties successfully imported</string>
     <string name="import_accounts_success">%1$s accounts successfully imported</string>
-    <string name="import_transactions_success">%1$d transactions successfully imported into account %2$s</string>
+    <string name="import_transactions_success" tools:ignore="PluralsCandidate">%1$d transactions successfully imported into account %2$s</string>
     <string name="import_accounts_none">No accounts imported</string>
     <string name="import_categories_none">No categories imported</string>
     <string name="import_parties_none">No parties imported</string>
@@ -522,7 +513,12 @@
     <string name="import_source_select_error">Please provide a file of type %1$s</string>
     <string name="menu_categories_setup_default">Setup default categories</string>
     <string name="menu_create_folder">New folder</string>
+    <!-- This string is used for navigating up in the folder browser -->
     <string name="menu_up">Up</string>
+    <!-- Move an account up in the account list -->
+    <string name="menu_sort_up">Up</string>
+    <!-- Move an account down in the account list -->
+    <string name="menu_sort_down">Down</string>
     <string name="create_new_folder_fail">Failed to create the folder</string>
     <string name="widget_title_accounts">My accounts</string>
     <string name="widget_title_templates">My templates</string>
@@ -550,7 +546,7 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="hint_template_click">A short tap on an entry in this list will instantiate the template and either save it immediately or enter its editing form where you can modify it before saving. You can always access both actions through a long tap, and change the default in the settings.</string>
-    <string name="change_fraction_digits_result">%1$d accounts with currency %2$s have been updated.</string>
+    <string name="change_fraction_digits_result" tools:ignore="PluralsCandidate">%1$d accounts with currency %2$s have been updated.</string>
     <string name="learn_more">Learn more</string>
     <string name="import_source_file">File</string>
     <string name="restore_calendar_handling">Calendar data handling</string>
@@ -584,8 +580,8 @@
     <!-- Label for column where user can check rows to be discarded from import -->
     <string name="cvs_import_discard">Discard</string>
     <string name="csv_import_field_mapped_more_than_once">%s is mapped more than once.</string>
-    <string name="csv_import_records_failed">%d records could not be imported.</string>
-    <string name="csv_import_records_discarded">%d records were discarded.</string>
+    <string name="csv_import_records_failed" tools:ignore="PluralsCandidate">%d records could not be imported.</string>
+    <string name="csv_import_records_discarded" tools:ignore="PluralsCandidate">%d records were discarded.</string>
     <string name="csv_import_subcategory_requires_category">If you map subcategory, you must also map category.</string>
     <string name="cvs_import_set_first_line_as_header">Should the first line be treated as a header line?</string>
     <string name="csv_import_delimiter_comma">Comma</string>
@@ -595,11 +591,11 @@
     <string name="menu_show_transactions">Show transactions</string>
     <string name="pref_custom_decimal_format_title">Number format</string>
     <string name="pref_custom_decimal_format_summary">If you are not satisfied with the default format for your locale, adapt it to your needs. Leave empty to restore the default format.</string>
-    <string name="licence_validation_upgrade_needed">Please upgrade My Expenses Contrib to version 1.5.</string>
+    <string name="licence_validation_upgrade_needed" tools:ignore="UnusedResources">Please upgrade My Expenses Contrib to version 1.5.</string>
     <string name="pref_auto_backup_title">Auto-backup</string>
     <string name="pref_auto_backup_summary">Backup database daily at the specified time (only if data has changed).</string>
     <string name="pref_auto_backup_time_title">Auto-backup time</string>
-    <string name="warning_auto_backup_limited_trial">After %d successful automatic backups, auto-backup will be deactivated.</string>
+    <string name="warning_auto_backup_limited_trial" tools:ignore="PluralsCandidate">After %d successful automatic backups, auto-backup will be deactivated.</string>
     <string name="warning_auto_backup_limit_reached">The limit for free successful automatic backups has been reached.</string>
     <string name="calendar_permission_required"><i>My Expenses</i> needs permission to access your calendar, in order to create plans for future and recurring transactions.</string>
     <string name="button_request_calendar_access">Grant access</string>
@@ -616,5 +612,16 @@
     <string name="date_format_hour">Hour</string>
     <string name="date_format_minute">Minute</string>
     <string name="copied_to_clipboard">Copied to clipboard</string>
+    <string name="menu_sort">Sort by</string>
+    <string name="pref_sort_order_last_used">Last used</string>
+    <string name="pref_sort_order_custom">Custom</string>
+    <string name="dialog_info_custom_sort">Use the Up and Down commands in each item\'s context menu to change its sort position.</string>
+    <string name="content_description_calculator">Calculator</string>
+    <!-- describes the state of a plan instance that has not yet been applied, i.e. no transaction has been entered into the database for it. Used as content description for icon in list. -->
+    <string name="plan_instance_state_open">open</string>
+    <!-- describes the state of a plan instance that has been cancelled, i.e. it has been flagged it to be skipped. Used as content description for icon in list. -->
+    <string name="plan_instance_state_cancelled">cancelled</string>
+    <!-- describes the state of a plan instance that has been applied, i.e. a transaction has been entered into the database for it. Used as content description for icon in list. -->
+    <string name="plan_instance_state_applied">applied</string>
 </resources>
 

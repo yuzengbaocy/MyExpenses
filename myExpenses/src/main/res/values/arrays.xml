@@ -30,25 +30,6 @@
         <item>@string/pref_ui_theme_light</item>
     </string-array>
 
-    <string-array name="pref_account_grouping_values">
-        <item>TYPE</item>
-        <item>CURRENCY</item>
-        <item>NONE</item>
-    </string-array>
-    <string-array name="pref_account_grouping_entries">
-        <item>@string/type</item>
-        <item>@string/currency</item>
-        <item>@string/grouping_none</item>
-    </string-array>
-
-    <string-array name="pref_sort_order_values">
-        <item>USAGES</item>
-        <item>ALPHABETIC</item>
-    </string-array>
-    <string-array name="pref_sort_order_entries">
-        <item>@string/pref_sort_order_usages</item>
-        <item>@string/pref_sort_order_alphabetic</item>
-    </string-array>
 
     <string-array name="pref_ui_language_entries">
         <item>@string/pref_ui_language_default</item>
@@ -111,14 +92,6 @@
         <item>zh-TW</item>
     </string-array>
 
-    <string-array name="grouping_entries">
-        <item>@string/grouping_none</item>
-        <item>@string/grouping_day</item>
-        <item>@string/grouping_week</item>
-        <item>@string/grouping_month</item>
-        <item>@string/grouping_year</item>
-    </string-array>
-
     <string-array name="pref_template_click_default_entries">
         <item>@string/menu_create_instance_save</item>
         <item>@string/menu_create_instance_edit</item>
@@ -136,8 +109,8 @@
     </string-array>
 
     <string-array name="MyExpenses_menuitems" tools:ignore="UnusedResources">
-        <item>manage_plans</item>
         <item>search</item>
+        <item>manage_plans</item>
         <item>reset</item>
         <item>grouping</item>
         <item>distribution</item>
@@ -150,6 +123,19 @@
         <item>create_template_from_transaction</item>
         <item>clone_transaction</item>
         <item>split_transaction</item>
+    </string-array>
+
+    <string-array name="NavigationDrawer_menuitems" tools:ignore="UnusedResources">
+        <item>create_account</item>
+        <item>sort</item>
+        <item>grouping</item>
+    </string-array>
+
+    <string-array name="NavigationDrawer_cabitems" tools:ignore="UnusedResources">
+        <item>edit</item>
+        <item>delete</item>
+        <item>sort_up</item>
+        <item>sort_down</item>
     </string-array>
 
     <string-array name="ManageMethods_cabitems" tools:ignore="UnusedResources">
@@ -166,6 +152,9 @@
         <item>edit</item>
         <item>delete</item>
     </string-array>
+    <string-array name="ManageTemplates_templates_menuitems" tools:ignore="UnusedResources">
+        <item>sort</item>
+    </string-array>
     <string-array name="ManageTemplates_templates_cabitems" tools:ignore="UnusedResources">
         <item>create_instance_save</item>
         <item>create_instance_edit</item>
@@ -179,10 +168,14 @@
     </string-array>
 
     <string-array name="ManageCategories_manage_menuitems" tools:ignore="UnusedResources">
+        <item>sort</item>
+        <item>search</item>
         <item>categories_setup_default</item>
         <item>categories_export</item>
     </string-array>
     <string-array name="ManageCategories_select_mapping_menuitems" tools:ignore="UnusedResources">
+        <item>sort</item>
+        <item>search</item>
         <item>categories_setup_default</item>
     </string-array>
     <string-array name="ManageCategories_distribution_menuitems" tools:ignore="UnusedResources">
@@ -303,10 +296,9 @@
 
     <string-array name="AccountEdit_menuitems" tools:ignore="UnusedResources">
         <item>save</item>
-        <item>set_sort_key</item>
         <item>exclude_from_totals</item>
     </string-array>
-    <string-array name="AccountEdit_formfields">
+    <string-array name="AccountEdit_formfields" tools:ignore="UnusedResources">
         <item>label</item>
         <item>description</item>
         <item>opening_balance</item>
@@ -336,7 +328,9 @@
     </string-array>
 
     <integer-array name="version_codes">
-        <item>235</item>
+        <item>240</item>
+        <item>239</item>
+        <item>236</item>
         <item>234</item>
         <item>231</item>
         <item>227</item>
@@ -356,6 +350,8 @@
         <item>191</item>
     </integer-array>
     <string-array name="version_names">
+        <item>2.6.5.1</item>
+        <item>2.6.5</item>
         <item>2.6.4</item>
         <item>2.6.3</item>
         <item>2.6.2</item>
@@ -444,6 +440,10 @@
     <string-array name="version_more_info_264" tools:ignore="UnusedResources">
         <item>posts/1694461640815307</item>
         <item>dC5XryCHkGx</item>
+    </string-array>
+    <string-array name="version_more_info_265" tools:ignore="UnusedResources">
+        <item>photos/a.1450395311888609.1073741827.1450391968555610/1703256933269111</item>
+        <item>2jimBYUsmPh</item>
     </string-array>
 
     <string-array name="comparison_operator_entries">

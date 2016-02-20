@@ -108,13 +108,14 @@
     <string name="help_FolderBrowser_title" tools:ignore="UnusedResources">@string/pref_app_dir_title</string>
     <string name="help_ManageStaleImages_title" tools:ignore="UnusedResources">@string/pref_manage_stale_images_title</string>
     <string name="help_CsvImportActivity_title" tools:ignore="UnusedResources">@string/contrib_feature_csv_import_label</string>
+    <string name="help_NavigationDrawer_title" tools:ignore="UnusedResources">@string/pref_manage_accounts_title</string>
 
     <string name="io_error_appdir_null">Application directory not found</string>
     <string name="io_error_backupdir_null">Could not create folder for storing backup</string>
     <string name="io_error_cachedir_null">Cache directory not found</string>
     <string name="account_list_not_yet_loaded">Account list not yet loaded. Please try again</string>
 
-    <string-array name="whats_new_252">
+    <string-array name="whats_new_252" tools:ignore="UnusedResources">
         <item>@string/contrib_feature_auto_backup_label</item>
     </string-array>
 </resources>

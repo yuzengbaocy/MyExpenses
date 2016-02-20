@@ -73,6 +73,7 @@ public class ConfirmationDialogFragment extends CommitSafeDialogFragment impleme
     int checkboxLabel = bundle.getInt(KEY_CHECKBOX_LABEL,0);
     if (bundle.getString(KEY_PREFKEY) != null ||
         checkboxLabel != 0) {
+      //noinspection InflateParams
       View cb = LayoutInflater.from(ctx).inflate(R.layout.checkbox, null);
       checkBox = (CheckBox) cb.findViewById(R.id.checkbox);
       checkBox.setText(
@@ -88,7 +89,7 @@ public class ConfirmationDialogFragment extends CommitSafeDialogFragment impleme
   }
   @Override
   public void onCancel (DialogInterface dialog) {
-    ConfirmationDialogListener ctx = (ConfirmationDialogListener) getActivity();
+    ConfirmationDialogBaseListener ctx = (ConfirmationDialogBaseListener) getActivity();
     if (ctx != null) {
       ctx.onDismissOrCancel(getArguments());
     }

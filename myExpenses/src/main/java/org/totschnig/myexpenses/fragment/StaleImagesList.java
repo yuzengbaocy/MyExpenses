@@ -88,7 +88,7 @@ public class StaleImagesList extends ContextualActionBarFragment implements Load
   @Override
   @SuppressLint("InlinedApi")
   public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-    View v = inflater.inflate(R.layout.images_list, null, false);
+    View v = inflater.inflate(R.layout.images_list, container, false);
     
     final GridView lv = (GridView) v.findViewById(R.id.grid);
 
@@ -129,6 +129,7 @@ public class StaleImagesList extends ContextualActionBarFragment implements Load
           v.setImageDrawable(asyncDrawable);
           task.execute(Uri.parse(value));
           v.setTag(value);
+          v.setContentDescription(value);
         }
       }
     };

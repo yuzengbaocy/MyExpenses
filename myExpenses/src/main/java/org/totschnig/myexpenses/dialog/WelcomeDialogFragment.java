@@ -88,13 +88,13 @@ public class WelcomeDialogFragment extends CommitSafeDialogFragment
   public Dialog onCreateDialog(Bundle savedInstanceState) {
     Activity ctx  = (Activity) getActivity();
     LayoutInflater li = LayoutInflater.from(ctx);
+    //noinspection InflateParams
     View view = li.inflate(R.layout.welcome_dialog, null);
     mProgress = (ProgressBar) view.findViewById(R.id.progress);
     ((TextView) view.findViewById(R.id.help_intro))
       .setText("- " + TextUtils.join("\n- ", getResources().getStringArray(R.array.help_intro)));
     SwitchCompat themeSwitch = (SwitchCompat) view.findViewById(R.id.TaType);
     themeSwitch.setChecked(MyApplication.getThemeType().equals(MyApplication.ThemeType.light));
-    themeSwitch.setShowText(false);
     themeSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
       @Override

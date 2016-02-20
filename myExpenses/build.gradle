@@ -21,8 +21,8 @@ android {
             sourceCompatibility JavaVersion.VERSION_1_7
             targetCompatibility JavaVersion.VERSION_1_7
         }
-        versionCode 237
-        versionName '2.6.4'
+        versionCode 240
+        versionName '2.6.5.1'
 
         testApplicationId "org.totschnig.myexpenses.test"
         testInstrumentationRunner "android.test.InstrumentationTestRunner"
@@ -114,15 +114,16 @@ dependencies {
     compile 'com.android.support:gridlayout-v7:' + project.androidSupportLibraryVersion
     compile 'com.android.support:preference-v14:' + project.androidSupportLibraryVersion
     compile 'com.itextpdf:itextpdf:5.5.8'
-    compile 'ch.acra:acra:4.8.0'
-    admobCompile 'com.google.android.gms:play-services-ads:7.5.0'
+    compile 'ch.acra:acra:4.8.2'
+    admobCompile 'com.google.android.gms:play-services-ads:8.4.0'
     compile group: 'com.google.guava', name: 'guava', version: '18.0'
     compile 'org.apache.commons:commons-lang3:3.4'
     compile 'org.onepf:openiab:0.9.8.7'
     compile files('libs/in-app-purchasing-2.0.61.jar')
     compile files('libs/fortumo-in-app-9.1.2.jar')
-    amaCompile files('libs/amazon-ads-5.5.149.jar')
+    amaCompile 'com.amazon.android:mobile-ads:5.+'
     compile 'org.apache.commons:commons-csv:1.1'
+    //noinspection GradleDynamicVersion
     compile 'com.commonsware.cwac:wakeful:1.0.+'
     androidTestCompile 'com.jayway.android.robotium:robotium-solo:5.2.1'
     testCompile 'junit:junit:4.12'

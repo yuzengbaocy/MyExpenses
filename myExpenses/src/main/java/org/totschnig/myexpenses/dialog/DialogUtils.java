@@ -18,24 +18,23 @@ package org.totschnig.myexpenses.dialog;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.pm.PackageManager;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.OpenableColumns;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
@@ -130,6 +129,7 @@ public class DialogUtils {
   public static AlertDialog passwordDialog(final Activity ctx, final boolean cancelable) {
     final String securityQuestion = MyApplication.PrefKey.SECURITY_QUESTION.getString("");
     LayoutInflater li = LayoutInflater.from(ctx);
+    //noinspection InflateParams
     View view = li.inflate(R.layout.password_check, null);
     view.findViewById(R.id.password).setTag(Boolean.valueOf(false));
     AlertDialog.Builder builder = new AlertDialog.Builder(ctx)
@@ -394,23 +394,20 @@ public class DialogUtils {
   }
 
   public static EditText configureFilename(View view) {
-    EditText filename = (EditText) view.findViewById(R.id.Filename);
-    filename.setEnabled(false);
-    return filename;
+    return (EditText) view.findViewById(R.id.Filename);
   }
 
   public static Spinner configureCurrencySpinner(
       View view, Context context, AdapterView.OnItemSelectedListener listener) {
     Spinner spinner = (Spinner) view.findViewById(R.id.Currency);
     ArrayAdapter<Account.CurrencyEnum> curAdapter = new ArrayAdapter<Account.CurrencyEnum>(
-        context, android.R.layout.simple_spinner_item, android.R.id.text1,Account.CurrencyEnum.values());
+        context, android.R.layout.simple_spinner_item, android.R.id.text1,
+        Account.CurrencyEnum.sortedValues());
     curAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
     spinner.setAdapter(curAdapter);
     spinner.setOnItemSelectedListener(listener);
-    spinner.setSelection(
-        Account.CurrencyEnum
-            .valueOf(Account.getLocaleCurrency().getCurrencyCode())
-            .ordinal());
+    spinner.setSelection(curAdapter.getPosition(Account.CurrencyEnum.valueOf(
+        Account.getLocaleCurrency().getCurrencyCode())));
     return spinner;
   }
 

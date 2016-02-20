@@ -179,7 +179,7 @@ public class TransactionAdapter extends SimpleCursorAdapter {
         catText = "―――";
         tv2.setGravity(Gravity.CENTER);
       } else {
-        tv2.setGravity(Gravity.LEFT);
+        tv2.setGravity(Gravity.START);
       }
     }
     tv2.setText(catText);
@@ -207,10 +207,12 @@ public class TransactionAdapter extends SimpleCursorAdapter {
       itemDateFormat = localizedTimeFormat;
       break;
     case MONTH:
+      //noinspection SimpleDateFormat
       itemDateFormat = monthStart == 1 ?
           new SimpleDateFormat("dd") : Utils.localizedYearlessDateFormat();
       break;
     case WEEK:
+      //noinspection SimpleDateFormat
       itemDateFormat = new SimpleDateFormat("EEE");
       break;
     case YEAR:
