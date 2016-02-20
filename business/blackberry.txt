@@ -1,0 +1,17 @@
+Blackberry Commands (ausgeführt von ~/programmieren
+
+export release_path="MyExpensesReleases/blackberry/2.4.4/myExpenses-ama-blackberry-release"
+
+1) Build Debug 
+blackberry.tools.SDK/bin/apk2bar -d blackberry.tools.SDK/my_debug_token.bar ${release_path}.apk android-sdk-linux/
+
+2) Build Release
+
+blackberry.tools.SDK/bin/apk2bar ${release_path}.apk android-sdk-linux
+
+3) Sign
+blackberry.tools.SDK/bin/blackberry-signer -verbose -cskpass seelen_ -keystore ~/.rim/author.p12 -storepass petit_robert ${release_path}.bar
+
+4) Deploy to device
+blackberry.tools.SDK/bin/blackberry-deploy -installApp 192.168.0.197 ${release_path}.bar -password 1111
+
