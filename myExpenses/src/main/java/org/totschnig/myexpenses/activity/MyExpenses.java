@@ -222,8 +222,7 @@ public class MyExpenses extends LaunchActivity implements
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
 
-    mAdView =
-        findViewById(R.id.adView);
+    mAdView = findViewById(R.id.adView);
     long now = System.currentTimeMillis();
 
     if (isAdDisabled(now)) {
