@@ -1,7 +1,6 @@
 package org.totschnig.myexpenses.util;
 
 import android.app.Activity;
-import android.content.Context;
 import android.util.Log;
 import android.view.View;
 
@@ -12,9 +11,6 @@ import com.google.android.gms.ads.InterstitialAd;
 import org.jetbrains.annotations.NotNull;
 import org.totschnig.myexpenses.R;
 
-/**
- * Created by michael on 04.06.15.
- */
 public class AdUtils {
   private static String TAG = "AdUtils";
   private static InterstitialAd interstitialAd;
@@ -40,7 +36,7 @@ public class AdUtils {
   @NotNull
   private static AdRequest buildRequest() {
     return new AdRequest.Builder()
-        //.addTestDevice("B6E7D9A3244EDB91BDB897A53A1B02C4")
+        //.addTestDevice("5EB15443712776CA9D760C5FF145709D")
         //.addTestDevice("0C9A9324A2B59536C630C2571458C698")
         .build();
   }
