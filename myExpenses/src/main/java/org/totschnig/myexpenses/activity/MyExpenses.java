@@ -69,6 +69,7 @@ import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.dialog.BalanceDialogFragment;
 import org.totschnig.myexpenses.dialog.ConfirmationDialogFragment;
 import org.totschnig.myexpenses.dialog.ConfirmationDialogFragment.ConfirmationDialogListener;
+import org.totschnig.myexpenses.dialog.ContribInfoDialogFragment;
 import org.totschnig.myexpenses.dialog.EditTextDialog;
 import org.totschnig.myexpenses.dialog.EditTextDialog.EditTextDialogListener;
 import org.totschnig.myexpenses.dialog.ExportDialogFragment;
@@ -216,7 +217,12 @@ public class MyExpenses extends LaunchActivity implements
     int prev_version = MyApplication.PrefKey.CURRENT_VERSION.getInt(-1);
     if (prev_version == -1) {
       //prevent preference change listener from firing when preference file is created
-      PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+      if (MyApplication.getInstance().isInstrumentationTest()) {
+        PreferenceManager.setDefaultValues(this, MyApplication.getTestId(), Context.MODE_PRIVATE,
+          R.xml.preferences, true);
+      } else {
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+      }
     }
 
     super.onCreate(savedInstanceState);
@@ -237,7 +243,7 @@ public class MyExpenses extends LaunchActivity implements
     mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
     mDrawerList = (StickyListHeadersListView) findViewById(R.id.left_drawer);
     mToolbar = setupToolbar(false);
-    mToolbar.addView(getLayoutInflater().inflate(R.layout.custom_title, mToolbar,false));
+    mToolbar.addView(getLayoutInflater().inflate(R.layout.custom_title, mToolbar, false));
     if (mDrawerLayout != null) {
       mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
           mToolbar, R.string.drawer_open, R.string.drawer_close) {
@@ -266,7 +272,7 @@ public class MyExpenses extends LaunchActivity implements
       };
 
       // Set the drawer toggle as the DrawerListener
-      mDrawerLayout.setDrawerListener(mDrawerToggle);
+      mDrawerLayout.addDrawerListener(mDrawerToggle);
     }
     String[] from = new String[]{
         KEY_DESCRIPTION,
@@ -356,29 +362,7 @@ public class MyExpenses extends LaunchActivity implements
     mFab = ((FloatingActionButton) findViewById(R.id.CREATE_COMMAND));
     if (prev_version == -1) {
       getSupportActionBar().hide();
-    /*if (MyApplication.backupExists()) {
-      if (!mSettings.getBoolean("restoreOnInstallAsked", false)) {
-        DialogFragment df = MessageDialogFragment.newInstance(
-            R.string.dialog_title_restore_on_install,
-            R.string.dialog_confirm_restore_on_install,
-            new MessageDialogFragment.Button(
-                android.R.string.yes,
-                R.id.HANDLE_RESTORE_ON_INSTALL_COMMAND,
-                Boolean.valueOf(true)),
-            null,
-            new MessageDialogFragment.Button(
-                android.R.string.no,
-                R.id.HANDLE_RESTORE_ON_INSTALL_COMMAND,
-                Boolean.valueOf(false)));
-        df.setCancelable(false);
-        df.show(getSupportFragmentManager(),"RESTORE_ON_INSTALL");
-        SharedPreferencesCompat.apply(
-            mSettings.edit().putBoolean("restoreOnInstallAsked", true));
-      }
-    } else {*/
       initialSetup();
-     /* }*/
-
       return;
     }
     if (savedInstanceState != null) {
@@ -521,7 +505,7 @@ public class MyExpenses extends LaunchActivity implements
     super.onActivityResult(requestCode, resultCode, intent);
     if (requestCode == EDIT_TRANSACTION_REQUEST && resultCode == RESULT_OK) {
       long nextReminder;
-      sequenceCount = intent.getLongExtra("sequence_count", 0);
+      sequenceCount = intent.getLongExtra(ContribInfoDialogFragment.KEY_SEQUENCE_COUNT, 0);
       if (Utils.IS_FLAVOURED) {
         nextReminder =
             MyApplication.PrefKey.NEXT_REMINDER_RATE.getLong(TRESHOLD_REMIND_RATE);
@@ -902,27 +886,25 @@ public class MyExpenses extends LaunchActivity implements
       MyApplication.PrefKey.CURRENT_ACCOUNT.putLong(newAccountId);
     }
     int color = newAccountId < 0 ? colorAggregate : mAccountsCursor.getInt(columnIndexColor);
-    final boolean isBrightColor = Utils.isBrightColor(color);
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
       Window window = getWindow();
       //noinspection InlinedApi
       window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
       //noinspection InlinedApi
       window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-      window.setStatusBarColor(color);
+      int color700 = Utils.get700Tint(color);
+      window.setStatusBarColor(color700);
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         //noinspection InlinedApi
         getWindow().getDecorView().setSystemUiVisibility(
-            isBrightColor ? View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR : 0);
+            Utils.isBrightColor(color700) ? View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR : 0);
       }
     }
     Utils.setBackgroundTintListOnFab(mFab,color);
-    mFab.setImageResource(isBrightColor ? R.drawable.ic_add_gray : R.drawable.ic_add_white);
     mAccountId = newAccountId;
     setBalance();
     mDrawerList.setItemChecked(position, true);
     supportInvalidateOptionsMenu();
-
   }
 
   @Override
@@ -1133,10 +1115,13 @@ public class MyExpenses extends LaunchActivity implements
   }
 
   private void setBalance() {
+    long balance = mAccountsCursor.getLong(mAccountsCursor.getColumnIndex
+        (KEY_CURRENT_BALANCE));
     mCurrentBalance = Utils.formatCurrency(new Money(Utils.getSaveInstance(mAccountsCursor
-        .getString(columnIndexCurrency)), mAccountsCursor.getLong(mAccountsCursor.getColumnIndex
-        (KEY_CURRENT_BALANCE))));
-    ((TextView) mToolbar.findViewById(R.id.end)).setText(mCurrentBalance);
+        .getString(columnIndexCurrency)), balance));
+    TextView balanceTextView = (TextView) mToolbar.findViewById(R.id.end);
+    balanceTextView.setTextColor(balance < 0 ? colorExpense : colorIncome);
+    balanceTextView.setText(mCurrentBalance);
   }
 
   public void setTitle(String title) {

@@ -21,6 +21,7 @@ import android.app.Application;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.res.Configuration;
@@ -36,7 +37,6 @@ import android.util.Log;
 import com.android.calendar.CalendarContractCompat;
 import com.android.calendar.CalendarContractCompat.Calendars;
 import com.android.calendar.CalendarContractCompat.Events;
-import com.google.common.annotations.VisibleForTesting;
 
 import org.acra.*;
 import org.acra.annotation.*;
@@ -56,6 +56,7 @@ import org.totschnig.myexpenses.widget.TemplateWidget;
 
 import java.io.File;
 import java.util.Locale;
+import java.util.UUID;
 
 @ReportsCrashes(
     formUri = "https://mtotschnig.cloudant.com/acra-myexpenses/_design/acra-storage/_update/report",
@@ -68,11 +69,12 @@ import java.util.Locale;
     )
 public class MyApplication extends Application implements
     OnSharedPreferenceChangeListener {
-  private static final int RETRY_LIMIT = 20;
+  static boolean instrumentationTest = false;
+  private static String testId;
   public static final String PLANNER_CALENDAR_NAME = "MyExpensesPlanner";
   public static final String PLANNER_ACCOUNT_NAME = "Local Calendar";
   public static final String INVALID_CALENDAR_ID = "-1";
-  private SharedPreferences mSettings;
+  SharedPreferences mSettings;
   private static MyApplication mSelf;
 
   public static final String BACKUP_DB_FILE_NAME = "BACKUP";
@@ -260,6 +262,10 @@ public class MyApplication extends Application implements
     this.isLocked = isLocked;
   }
 
+  public static boolean isInstrumentationTest() {
+    return instrumentationTest;
+  }
+
   public static final String FEEDBACK_EMAIL = "support@myexpenses.mobi";
   // public static int BACKDOOR_KEY = KeyEvent.KEYCODE_CAMERA;
 
@@ -320,14 +326,24 @@ public class MyApplication extends Application implements
 
   public SharedPreferences getSettings() {
     if (mSettings == null) {
-      mSettings = PreferenceManager.getDefaultSharedPreferences(this);
+      mSettings = instrumentationTest ? getSharedPreferences(getTestId(), Context.MODE_PRIVATE) :
+          PreferenceManager.getDefaultSharedPreferences(this);
     }
     return mSettings;
   }
 
-  @VisibleForTesting
-  public void setSettings(SharedPreferences s) {
-    mSettings = s;
+  public static String getTestId() {
+    if (testId == null) {
+      testId = UUID.randomUUID().toString();
+    }
+    return testId;
+  }
+
+  public static void cleanUpAfterTest() {
+    mSelf.deleteDatabase(testId);
+    mSelf.getSettings().edit().clear().commit();
+    new File(new File(mSelf.getFilesDir().getParentFile().getPath() + "/shared_prefs/"),
+        testId + ".xml").delete();
   }
 
   public static int getThemeId() {

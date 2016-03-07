@@ -25,8 +25,10 @@ import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -34,14 +36,18 @@ import android.os.Environment;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v4.provider.DocumentFile;
+import android.support.v7.widget.TintContextWrapper;
 import android.text.Html;
 import android.text.InputFilter;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.SparseIntArray;
 import android.util.Xml;
+import android.view.ContextThemeWrapper;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
@@ -114,6 +120,36 @@ public class Utils {
 
   public static final boolean IS_FLAVOURED = !TextUtils.isEmpty(BuildConfig.FLAVOR);
   public static final boolean IS_ANDROID = BuildConfig.PLATTFORM.equals("Android");
+
+  /*
+  from https://www.google.com/design/spec/style/color.html#color-color-palette
+  maps the 500 color to the 700 color
+   */
+  static final SparseIntArray colorPrimaryDarkMap = new SparseIntArray() {
+    {
+      append(0xffF44336,0xffD32F2F);
+      append(0xffE91E63,0xffC2185B);
+      append(0xff9C27B0,0xff7B1FA2);
+      append(0xff673AB7,0xff512DA8);
+      append(0xff3F51B5,0xff303F9F);
+      append(0xff2196F3,0xff1976D2);
+      append(0xff03A9F4,0xff0288D1);
+      append(0xff00BCD4,0xff0097A7);
+      append(0xff009688,0xff00796B);
+      append(0xff4CAF50,0xff388E3C);
+      append(0xff8BC34A,0xff689F38);
+      append(0xffCDDC39,0xffAFB42B);
+      append(0xffFFEB3B,0xffFBC02D);
+      append(0xffFFC107,0xffFFA000);
+      append(0xffFF9800,0xffF57C00);
+      append(0xffFF5722,0xffE64A19);
+      append(0xff795548,0xff5D4037);
+      append(0xff9E9E9E,0xff616161);
+      append(0xff607D8B,0xff455A64);
+      append(0xff757575,0xff424242); //aggregate theme light 600 800
+      append(0xffBDBDBD,0xff757575); //aggregate theme dark  400 600
+    }
+  };
 
   public static boolean hasApiLevel(int checkVersion) {
     return Build.VERSION.SDK_INT >= checkVersion;
@@ -237,7 +273,7 @@ public class Utils {
 
   public static String formatCurrency(BigDecimal amount, Currency currency) {
     NumberFormat nf = getNumberFormat();
-    int fractionDigits = Money.fractionDigits(currency);
+    int fractionDigits = Money.getFractionDigits(currency);
     nf.setCurrency(currency);
     if (fractionDigits <= 3) {
       nf.setMinimumFractionDigits(fractionDigits);
@@ -812,6 +848,11 @@ public class Utils {
     }
   }
 
+  public static int get700Tint(int color) {
+    int found = colorPrimaryDarkMap.get(color);
+    return found != 0 ? found : color;
+  }
+
   public enum LicenceStatus {
     CONTRIB, EXTENDED
   }
@@ -1333,6 +1374,7 @@ public class Utils {
   @SuppressLint("NewApi")
   public static void setBackgroundTintListOnFab(FloatingActionButton fab, int color) {
     fab.setBackgroundTintList(ColorStateList.valueOf(color));
+    fab.invalidate();
   }
 
   public static int getFirstDayOfWeek(Locale locale) {
@@ -1411,5 +1453,18 @@ public class Utils {
         return Account.Grouping.YEAR;
     }
     return null;
+  }
+
+  public static Bitmap getTintedBitmap(int resId) {
+    Context wrappedContext = TintContextWrapper.wrap(
+        new ContextThemeWrapper(MyApplication.getInstance(), R.style.ThemeDark));
+    Drawable d = ContextCompat.getDrawable(wrappedContext, resId);
+    Bitmap b = Bitmap.createBitmap(d.getIntrinsicWidth(),
+        d.getIntrinsicHeight(),
+        Bitmap.Config.ARGB_8888);
+    Canvas c = new Canvas(b);
+    d.setBounds(0, 0, c.getWidth(), c.getHeight());
+    d.draw(c);
+    return b;
   }
 }

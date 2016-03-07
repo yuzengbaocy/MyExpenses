@@ -45,7 +45,6 @@ import android.support.v7.preference.ListPreference;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceCategory;
 import android.support.v7.preference.PreferenceFragmentCompat;
-import android.support.v7.preference.PreferenceManager;
 import android.support.v7.preference.PreferenceScreen;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SwitchCompat;
@@ -88,7 +87,6 @@ import java.net.URI;
 import java.text.DateFormatSymbols;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Locale;
 
@@ -163,13 +161,13 @@ public class MyPreferenceActivity extends ProtectedFragmentActivity implements
   @Override
   protected void onResume() {
     super.onResume();
-    PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
+    MyApplication.getInstance().getSettings().registerOnSharedPreferenceChangeListener(this);
   }
 
   @Override
   protected void onPause() {
     super.onPause();
-    PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(this);
+    MyApplication.getInstance().getSettings().unregisterOnSharedPreferenceChangeListener(this);
   }
 
   private void restart() {
@@ -182,7 +180,7 @@ public class MyPreferenceActivity extends ProtectedFragmentActivity implements
   protected Dialog onCreateDialog(int id) {
     switch (id) {
       case R.id.FTP_DIALOG:
-        return DialogUtils.sendWithFTPDialog((Activity) this);
+        return DialogUtils.sendWithFTPDialog(this);
       case R.id.MORE_INFO_DIALOG:
         LayoutInflater li = LayoutInflater.from(this);
         //noinspection InflateParams
@@ -337,6 +335,14 @@ public class MyPreferenceActivity extends ProtectedFragmentActivity implements
       Preference.OnPreferenceChangeListener,
       Preference.OnPreferenceClickListener {
 
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      if (MyApplication.getInstance().isInstrumentationTest()) {
+        getPreferenceManager().setSharedPreferencesName(MyApplication.getTestId());
+      }
+    }
+
     Preference.OnPreferenceClickListener homeScreenShortcutPrefClickHandler =
         new Preference.OnPreferenceClickListener() {
           @Override
@@ -441,6 +447,10 @@ public class MyPreferenceActivity extends ProtectedFragmentActivity implements
           }
         }.execute();
 
+        if (!Utils.IS_ANDROID) {
+          categoryManage.removePreference(findPreference(PrefKey.PLANNER_CALENDAR_ID.getKey()));
+        }
+
       }
       //SHORTCUTS screen
       else if (rootKey.equals(getString(R.string.pref_ui_home_screen_shortcuts_key))) {
@@ -530,9 +540,12 @@ public class MyPreferenceActivity extends ProtectedFragmentActivity implements
       if (screen.getKey().equals(getString(R.string.pref_root_screen))) {
         setOnOffSummary(getString(R.string.pref_screen_protection),
             PrefKey.PERFORM_PROTECTION.getBoolean(false));
-        findPreference(PrefKey.PLANNER_CALENDAR_ID.getKey()).setSummary(
-            ((MyPreferenceActivity) getActivity()).calendarPermissionPermanentlyDeclined() ?
-                R.string.calendar_permission_required : R.string.pref_planning_calendar_summary);
+        Preference preference = findPreference(PrefKey.PLANNER_CALENDAR_ID.getKey());
+        if (preference != null) {
+          preference.setSummary(
+              ((MyPreferenceActivity) getActivity()).calendarPermissionPermanentlyDeclined() ?
+                  R.string.calendar_permission_required : R.string.pref_planning_calendar_summary);
+        }
       }
       activity.setFragment(this);
     }
@@ -816,7 +829,7 @@ public class MyPreferenceActivity extends ProtectedFragmentActivity implements
       Intent intent = new Intent();
       intent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);
       intent.putExtra(Intent.EXTRA_SHORTCUT_NAME, getString(nameId));
-      intent.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE, Intent.ShortcutIconResource.fromContext(getActivity(), iconId));
+      intent.putExtra(Intent.EXTRA_SHORTCUT_ICON, Utils.getTintedBitmap(iconId));
       intent.setAction("com.android.launcher.action.INSTALL_SHORTCUT");
 
       if (Utils.isIntentReceiverAvailable(getActivity(), intent)) {

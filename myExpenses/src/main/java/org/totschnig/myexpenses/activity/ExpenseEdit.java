@@ -51,6 +51,7 @@ import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.dialog.ConfirmationDialogFragment;
 import org.totschnig.myexpenses.dialog.ConfirmationDialogFragment.ConfirmationDialogListener;
+import org.totschnig.myexpenses.dialog.ContribInfoDialogFragment;
 import org.totschnig.myexpenses.dialog.MessageDialogFragment;
 import org.totschnig.myexpenses.fragment.DbWriteFragment;
 import org.totschnig.myexpenses.fragment.SplitPartList;
@@ -69,7 +70,6 @@ import org.totschnig.myexpenses.model.Transaction.CrStatus;
 import org.totschnig.myexpenses.model.Transfer;
 import org.totschnig.myexpenses.preference.SharedPreferencesCompat;
 import org.totschnig.myexpenses.provider.TransactionProvider;
-import org.totschnig.myexpenses.task.BitmapWorkerTask;
 import org.totschnig.myexpenses.task.TaskExecutionFragment;
 import org.totschnig.myexpenses.ui.AmountEditText;
 import org.totschnig.myexpenses.ui.SimpleCursorAdapter;
@@ -136,6 +136,7 @@ import android.widget.ToggleButton;
 
 import com.android.calendar.CalendarContractCompat;
 import com.android.calendar.CalendarContractCompat.Events;
+import com.squareup.picasso.Picasso;
 
 /**
  * Activity for editing a transaction
@@ -161,7 +162,8 @@ public class ExpenseEdit extends AmountActivity implements
   private EditText mCommentText, mTitleText, mReferenceNumberText;
   private AmountEditText mTransferAmountText, mExchangeRate1Text, mExchangeRate2Text;
   private Button mCategoryButton, mPlanButton;
-  private SpinnerHelper mMethodSpinner, mAccountSpinner, mTransferAccountSpinner, mStatusSpinner, mOperationTypeSpinner;
+  private Spinner mMethodSpinner;
+  private SpinnerHelper mAccountSpinner, mTransferAccountSpinner, mStatusSpinner, mOperationTypeSpinner;
   private SimpleCursorAdapter mMethodsAdapter, mAccountsAdapter, mTransferAccountsAdapter, mPayeeAdapter;
   private ArrayAdapter<Integer> mOperationTypeAdapter;
   private FilterCursorWrapper mTransferAccountCursor;
@@ -199,7 +201,6 @@ public class ExpenseEdit extends AmountActivity implements
   public static final int TRANSACTION_CURSOR = 5;
   public static final int SUM_CURSOR = 6;
   public static final int LAST_EXCHANGE_CURSOR = 7;
-  public static final int THUMBSIZE = 96;
   private static final String KEY_PICTURE_URI = "picture_uri";
   private static final String KEY_PICTURE_URI_TMP = "picture_uri_tmp";
 
@@ -329,7 +330,7 @@ public class ExpenseEdit extends AmountActivity implements
 
     mCategoryButton = (Button) findViewById(R.id.Category);
     mPlanButton = (Button) findViewById(R.id.Plan);
-    mMethodSpinner = new SpinnerHelper(findViewById(R.id.Method));
+    mMethodSpinner = (Spinner) findViewById(R.id.Method);
     mAccountSpinner = new SpinnerHelper(findViewById(R.id.Account));
     mTransferAccountSpinner = new SpinnerHelper(findViewById(R.id.TransferAccount));
     mTransferAccountSpinner.setOnItemSelectedListener(this);
@@ -566,7 +567,7 @@ public class ExpenseEdit extends AmountActivity implements
   }
 
   private void setup() {
-    mAmountText.setFractionDigits(Money.fractionDigits(mTransaction.getAmount().getCurrency()));
+    mAmountText.setFractionDigits(Money.getFractionDigits(mTransaction.getAmount().getCurrency()));
     linkInputsWithLabels();
     if (mTransaction instanceof SplitTransaction) {
       mAmountText.addTextChangedListener(new MyTextWatcher() {
@@ -771,7 +772,7 @@ public class ExpenseEdit extends AmountActivity implements
     linkInputWithLabel(mCommentText, commentLabel);
     linkInputWithLabel(mCategoryButton, findViewById(R.id.CategoryLabel));
     View methodLabel = findViewById(R.id.MethodLabel);
-    linkInputWithLabel(mMethodSpinner.getSpinner(), methodLabel);
+    linkInputWithLabel(mMethodSpinner, methodLabel);
     linkInputWithLabel(mReferenceNumberText, methodLabel);
     linkInputWithLabel(mPlanButton, findViewById(R.id.PlanLabel));
     final View transferAmountLabel = findViewById(R.id.TransferAmountLabel);
@@ -810,23 +811,15 @@ public class ExpenseEdit extends AmountActivity implements
       return true;
     } else if (!(mTransaction instanceof SplitPartCategory ||
         mTransaction instanceof SplitPartTransfer)) {
-      int iconRes,actionEnum;
-      if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
-        iconRes = android.R.drawable.ic_menu_save;
-        actionEnum = MenuItemCompat.SHOW_AS_ACTION_NEVER;
-      } else {
-        iconRes = R.drawable.save_and_new_icon;
-        actionEnum = MenuItemCompat.SHOW_AS_ACTION_ALWAYS;
-      }
       MenuItemCompat.setShowAsAction(
           menu.add(Menu.NONE, R.id.SAVE_AND_NEW_COMMAND, 0, R.string.menu_save_and_new)
-            .setIcon(iconRes),
-          actionEnum);
+            .setIcon(R.drawable.ic_action_save_new),
+          MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
     }
     if (mOperationType == MyExpenses.TYPE_TRANSFER) {
       MenuItemCompat.setShowAsAction(
           menu.add(Menu.NONE, R.id.INVERT_TRANSFER_COMMAND, 0, R.string.menu_invert_transfer)
-          .setIcon(R.drawable.ic_menu_refresh), MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
+          .setIcon(R.drawable.ic_menu_move), MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
     }
     return true;
   }
@@ -1236,10 +1229,8 @@ public class ExpenseEdit extends AmountActivity implements
   }
 
   protected void setPicture() {
-    int thumbsize = (int) getResources().getDimension(R.dimen.thumbnail_size);
-    BitmapWorkerTask task = new BitmapWorkerTask(mPictureView, thumbsize);
-    task.execute(mPictureUri);
     mPictureView.setVisibility(View.VISIBLE);
+    Picasso.with(this).load(mPictureUri).fit().into(mPictureView);
     mAttachPictureButton.setVisibility(View.GONE);
   }
   @Override
@@ -1599,7 +1590,7 @@ public class ExpenseEdit extends AmountActivity implements
         }
       }
       configureStatusSpinner();
-      mAmountText.setFractionDigits(Money.fractionDigits(account.currency));
+      mAmountText.setFractionDigits(Money.getFractionDigits(account.currency));
       //once user has selected account, we no longer want
       //the passed in KEY_CURRENCY to override it in onLoadFinished
       getIntent().removeExtra(KEY_CURRENCY);
@@ -1637,7 +1628,7 @@ public class ExpenseEdit extends AmountActivity implements
     final String symbol2 = transferAccount.currency.getSymbol();
     ((TextView) findViewById(R.id.TransferAmountLabel)).setText(getString(R.string.amount) + " ("
         + symbol2 + ")");
-    mTransferAmountText.setFractionDigits(Money.fractionDigits(transferAccount.currency));
+    mTransferAmountText.setFractionDigits(Money.getFractionDigits(transferAccount.currency));
     final String symbol1 = currency.getSymbol();
     ((TextView) findViewById(R.id.ExchangeRateLabel_1_1)).setText(String.format("1 %s =", symbol1));
     ((TextView) findViewById(R.id.ExchangeRateLabel_1_2)).setText(symbol2);
@@ -1740,7 +1731,7 @@ public class ExpenseEdit extends AmountActivity implements
         InputMethodManager im = (InputMethodManager) this.getApplicationContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         im.hideSoftInputFromWindow(getWindow().getDecorView().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
         Intent intent=new Intent();
-        intent.putExtra("sequence_count", sequenceCount);
+        intent.putExtra(ContribInfoDialogFragment.KEY_SEQUENCE_COUNT, sequenceCount);
         setResult(RESULT_OK,intent);
         finish();
         //no need to call super after finish

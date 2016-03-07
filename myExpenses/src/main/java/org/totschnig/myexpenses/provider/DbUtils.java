@@ -23,7 +23,6 @@ import org.totschnig.myexpenses.model.Account;
 import org.totschnig.myexpenses.model.PaymentMethod;
 import org.totschnig.myexpenses.model.Template;
 import org.totschnig.myexpenses.model.Transaction;
-import org.totschnig.myexpenses.service.AutoBackupService;
 import org.totschnig.myexpenses.service.DailyAutoBackupScheduler;
 import org.totschnig.myexpenses.service.PlanExecutor;
 import org.totschnig.myexpenses.util.Result;
@@ -109,7 +108,7 @@ public class DbUtils {
 
       //line below gives app_databases instead of databases ???
       //File currentDb = new File(mCtx.getDir("databases", 0),mDatabaseName);
-      File currentDb = new File(dataDir,TransactionDatabase.DATABASE_NAME);
+      File currentDb = new File(dataDir,TransactionProvider.mOpenHelper.getDatabaseName());
 
       if (backupFile.exists()) {
         result = Utils.copy(backupFile,currentDb);
@@ -191,10 +190,10 @@ public class DbUtils {
     return Transaction.getInstanceFromDb(id).parentId != null;
   }
   public static String weekStartFromGroupSqlExpression(int year, int week) {
-    return String.format(Locale.US, COUNT_FROM_WEEK_START_ZERO + " AS " + KEY_WEEK_START,year,week*7);
+    return String.format(Locale.US, getCountFromWeekStartZero() + " AS " + KEY_WEEK_START,year,week*7);
   }
   public static String weekEndFromGroupSqlExpression(int year, int week) {
-    return String.format(Locale.US, COUNT_FROM_WEEK_START_ZERO + " AS " + KEY_WEEK_END,year,week*7+6);
+    return String.format(Locale.US, getCountFromWeekStartZero() + " AS " + KEY_WEEK_END,year,week*7+6);
   }
 
   public static String[][] getTableDetails() {
