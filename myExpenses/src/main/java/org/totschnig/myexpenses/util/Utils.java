@@ -1097,7 +1097,7 @@ public class Utils {
   }
 
   public static void reportToAcra(Exception e) {
-    if (BuildConfig.DEBUG) {
+    if (BuildConfig.DEBUG || MyApplication.isInstrumentationTest()) {
       Log.e(MyApplication.TAG, "ACRA", e);
     } else {
       org.acra.ACRA.getErrorReporter().handleSilentException(e);
