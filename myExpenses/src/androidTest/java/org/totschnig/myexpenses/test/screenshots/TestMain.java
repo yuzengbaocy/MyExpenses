@@ -161,7 +161,7 @@ public class TestMain extends ActivityInstrumentationTestCase2<MyExpenses> {
         //.putString(MyApplication.PrefKey.ENTER_LICENCE.getKey(), l.toString())
     );
     app.setContribStatus(Distrib.STATUS_ENABLED_PERMANENT);
-
+    
     getActivity();
 	  Fixture.setup(getInstrumentation(), locale, defaultCurrency);
     int current_version = CommonCommands.getVersionNumber(getActivity());
