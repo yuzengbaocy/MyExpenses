@@ -48,7 +48,8 @@ android {
             //shrinkResources true // need to wait for resolution
             // https://code.google.com/p/android/issues/detail?id=79325
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-project.txt'
-            signingConfig signingConfigs.releasemanifestPlaceholders = [appName: "@string/app_name"]
+            signingConfig signingConfigs.release
+            manifestPlaceholders = [appName: "@string/app_name"]
         }
         debug {
             applicationIdSuffix ".debug"
