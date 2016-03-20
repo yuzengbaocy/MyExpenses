@@ -51,6 +51,7 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v4.app.FragmentActivity;
 import android.provider.Settings;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -146,6 +147,13 @@ public class ProtectedFragmentActivity extends AppCompatActivity
     colorExpense = color.data;
     theme.resolveAttribute(R.attr.colorIncome, color, true);
     colorIncome = color.data;
+  }
+
+  protected void setFabColor() {
+    TypedValue color = new TypedValue();
+    getTheme().resolveAttribute(R.attr.colorAccent, color, true);
+    FloatingActionButton fab = ((FloatingActionButton) findViewById(R.id.CREATE_COMMAND));
+    Utils.setBackgroundTintListOnFab(fab, color.data);
   }
 
   protected Toolbar setupToolbar(boolean withHome) {

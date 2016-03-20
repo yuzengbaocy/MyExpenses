@@ -49,7 +49,7 @@ import java.util.Iterator;
 /**
  * Created by privat on 30.06.15.
  */
-public class CsvImportDataFragment extends Fragment  {
+public class CsvImportDataFragment extends Fragment {
   public static final String KEY_DATASET = "DATASET";
   public static final String KEY_DISCARDED_ROWS = "DISCARDED_ROWS";
   public static final String KEY_COLUMN_TO_FIELD = "COLUMN_TO_FIELD";
@@ -184,6 +184,7 @@ public class CsvImportDataFragment extends Fragment  {
   }
 
   public void setData(ArrayList<CSVRecord> data) {
+    if (data == null || data.size() == 0) return;
     mDataset = data;
     int nrOfColumns = mDataset.get(0).size();
     discardedRows = new SparseBooleanArrayParcelable();
@@ -212,6 +213,7 @@ public class CsvImportDataFragment extends Fragment  {
     mAdapter = new MyAdapter();
     mRecyclerView.setAdapter(mAdapter);
     //set up header
+    mHeaderLine.removeViews(1,mHeaderLine.getChildCount()-1);
     for (int i = 0; i < nrOfColumns; i++) {
       Spinner cell = new Spinner(getActivity());
       cell.setId(i);
