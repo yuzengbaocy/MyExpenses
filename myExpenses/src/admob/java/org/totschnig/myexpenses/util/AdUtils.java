@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.util.Log;
 import android.view.View;
 
+import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.InterstitialAd;
@@ -17,7 +18,14 @@ public class AdUtils {
 
   public static void showBanner(View adView) {
     if (adView instanceof AdView) {
-      ((AdView) adView).loadAd(buildRequest());
+      final AdView adView1 = (AdView) adView;
+      adView1.loadAd(buildRequest());
+      adView1.setAdListener(new AdListener() {
+        @Override
+        public void onAdFailedToLoad(int errorCode) {
+          adView1.setVisibility(View.GONE);
+        }
+      });
     } else {
       Log.e(TAG, "View must be of type AdView");
     }
