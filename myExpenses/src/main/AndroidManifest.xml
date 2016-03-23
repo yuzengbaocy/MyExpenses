@@ -37,7 +37,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
 
-    <uses-sdk tools:overrideLibrary="android.support.v14.preference" />
+    <uses-sdk tools:overrideLibrary="android.support.v14.preference,com.facebook.ads" />
 
     <application
         tools:ignore="UnusedAttribute"

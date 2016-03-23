@@ -127,8 +127,7 @@ dependencies {
     compile group: 'com.google.guava', name: 'guava', version: '18.0'
     compile 'org.apache.commons:commons-lang3:3.4'
     compile 'org.onepf:openiab:0.9.8.7'
-    compile files('libs/in-app-purchasing-2.0.61.jar')
-    compile files('libs/fortumo-in-app-9.1.2.jar')
+    compile fileTree(dir: 'libs', include: ['*.jar'])
     amaCompile 'com.amazon.android:mobile-ads:5.+'
     compile 'org.apache.commons:commons-csv:1.1'
     compile 'com.squareup.picasso:picasso:2.5.2'
@@ -143,6 +142,7 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-contrib:' + project.espressoVersion) {
         exclude module: 'accessibility-test-framework'
     }
+    compile 'com.facebook.android:audience-network-sdk:4.+'
 
     testCompile 'junit:junit:4.12'
 }

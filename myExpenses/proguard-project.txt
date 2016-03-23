@@ -100,3 +100,26 @@
 -keepclassmembers class android.support.v4.widget.DrawerLayout {
     private android.support.v4.widget.DrawerLayout$DrawerListener mListener;
 }
+
+-keep class com.google.ads.mediation.admob.AdMobAdapter {
+    *;
+}
+
+-keep class com.google.ads.mediation.AdUrlAdapter {
+    *;
+}
+-keep class com.rhythmone.** {*;}
+-dontwarn com.rhythmone.**
+-keep class com.google.ads.mediation.RhythmAdapter {
+    *;
+}
+-keep class com.google.ads.mediation.FacebookAdapter {
+    *;
+}
+-keep public class com.google.android.gms.ads.** {
+   public *;
+}
+
+-keep public class com.google.ads.** {
+   public *;
+}
