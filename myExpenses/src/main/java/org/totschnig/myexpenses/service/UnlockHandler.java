@@ -43,7 +43,7 @@ public class UnlockHandler extends Handler {
         break;
       case STATUS_TEMPORARY:
       case STATUS_PERMANENT:
-        if (!BuildConfig.FLAVOR_distribution.equals("play")) {
+        if (!BuildConfig.FLAVOR.equals("play")) {
           doUnlock();
         } else {
           showNotif(Utils.concatResStrings(app,R.string.licence_validation_failure,

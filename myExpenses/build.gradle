@@ -61,25 +61,13 @@ android {
         }
         //beta.initWith(buildTypes.release)
     }
-    flavorDimensions "adprovider", "distribution"
 
     productFlavors {
-        play {
-            dimension "distribution"
-        }
-        amazon {
-            dimension "distribution"
-        }
+        play {}
+        amazon {}
         blackberry {
-            dimension "distribution"
             versionName buildVersionNumberBlackBerry()
             buildConfigField "String", "PLATTFORM", "\"Blackberry\""
-        }
-        admob {
-            dimension "adprovider"
-        }
-        ama {//Amazon Mobile Ads
-            dimension "adprovider"
         }
     }
 
@@ -123,12 +111,12 @@ dependencies {
     compile 'com.android.support:preference-v14:' + "23.1.1"
     compile 'com.itextpdf:itextpdf:5.5.8'
     compile 'ch.acra:acra:4.8.2'
-    admobCompile 'com.google.android.gms:play-services-ads:8.4.0'
+    compile 'com.google.android.gms:play-services-ads:8.4.0'
     compile group: 'com.google.guava', name: 'guava', version: '18.0'
     compile 'org.apache.commons:commons-lang3:3.4'
     compile 'org.onepf:openiab:0.9.8.7'
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    amaCompile 'com.amazon.android:mobile-ads:5.+'
+    compile 'com.amazon.android:mobile-ads:5.+'
     compile 'org.apache.commons:commons-csv:1.1'
     compile 'com.squareup.picasso:picasso:2.5.2'
     //noinspection GradleDynamicVersion

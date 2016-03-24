@@ -81,7 +81,7 @@ public final class Config {
 
     static {
       STORE_KEYS_MAP = new HashMap<String,String>();
-      switch (BuildConfig.FLAVOR_distribution) {
+      switch (BuildConfig.FLAVOR) {
         case "play":
           STORE_KEYS_MAP.put(OpenIabHelper.NAME_GOOGLE,
               Distrib.IS_CHROMIUM ? Config.CHROME_STORE_KEY : Config.GOOGLE_PLAY_KEY);

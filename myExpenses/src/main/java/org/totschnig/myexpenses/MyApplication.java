@@ -905,7 +905,7 @@ public class MyApplication extends Application implements
         restoredPlansCount);
   }
   public static String getMarketPrefix() {
-    switch(BuildConfig.FLAVOR_distribution) {
+    switch(BuildConfig.FLAVOR) {
     case "amazon":
       return "amzn://apps/android?p=";
     default:
@@ -913,7 +913,7 @@ public class MyApplication extends Application implements
     }
   }
   public static String getMarketSelfUri() {
-    if (BuildConfig.FLAVOR_distribution.equals("blackberry")) {
+    if (BuildConfig.FLAVOR.equals("blackberry")) {
       return "appworld://content/54472888";
     } else {
       return getMarketPrefix() + "org.totschnig.myexpenses";

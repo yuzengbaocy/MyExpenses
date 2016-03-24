@@ -21,7 +21,7 @@ import com.google.android.vending.licensing.PreferenceObfuscator;
 
 public class Distrib {
 
-  public static boolean HAS_EXTENDED = !BuildConfig.FLAVOR_distribution.equals("blackberry");
+  public static boolean HAS_EXTENDED = !BuildConfig.FLAVOR.equals("blackberry");
   public static boolean IS_CHROMIUM = Build.BRAND.equals("chromium");
 
   public static final long REFUND_WINDOW = 172800000L;
@@ -104,7 +104,7 @@ public class Distrib {
   }
 
   public static OpenIabHelper getIabHelper(Context ctx) {
-    if (BuildConfig.FLAVOR_distribution.equals("blackberry")) {
+    if (BuildConfig.FLAVOR.equals("blackberry")) {
       return null;
     }
     OpenIabHelper.Options.Builder builder =
@@ -116,7 +116,7 @@ public class Distrib {
       builder.setStoreSearchStrategy(OpenIabHelper.Options.SEARCH_STRATEGY_BEST_FIT);
     }
 
-    if (BuildConfig.FLAVOR_distribution.equals("amazon")) {
+    if (BuildConfig.FLAVOR.equals("amazon")) {
            ArrayList<Appstore> stores = new ArrayList<Appstore>();
            stores.add(new AmazonAppstore(ctx) {
              public boolean isBillingAvailable(String packageName) {

@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<com.amazon.device.ads.AdLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:Amazon="http://schemas.android.com/apk/lib/com.amazon.device.ads"
-    android:id="@+id/adView"
-    android:layout_centerHorizontal="true"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"/>

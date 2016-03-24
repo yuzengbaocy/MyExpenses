@@ -61,7 +61,19 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.amazon.device.ads.Ad;
+import com.amazon.device.ads.AdError;
+import com.amazon.device.ads.AdLayout;
+import com.amazon.device.ads.AdListener;
+import com.amazon.device.ads.AdProperties;
+import com.amazon.device.ads.AdRegistration;
+import com.amazon.device.ads.DefaultAdListener;
+import com.amazon.device.ads.InterstitialAd;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+
 import org.apache.commons.lang3.ArrayUtils;
+import org.jetbrains.annotations.NotNull;
 import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.MyApplication.PrefKey;
@@ -96,7 +108,6 @@ import org.totschnig.myexpenses.task.TaskExecutionFragment;
 import org.totschnig.myexpenses.ui.CursorFragmentPagerAdapter;
 import org.totschnig.myexpenses.ui.FragmentPagerAdapter;
 import org.totschnig.myexpenses.ui.SimpleCursorAdapter;
-import org.totschnig.myexpenses.util.AdUtils;
 import org.totschnig.myexpenses.util.FileUtils;
 import org.totschnig.myexpenses.util.Result;
 import org.totschnig.myexpenses.util.Utils;
@@ -109,6 +120,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Currency;
 import java.util.Locale;
+
 import se.emilsjolander.stickylistheaders.StickyListHeadersAdapter;
 import se.emilsjolander.stickylistheaders.StickyListHeadersListView;
 
@@ -132,6 +144,7 @@ import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_SUM_TRANSF
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TOTAL;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TRANSACTIONID;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TYPE;
+
 
 /**
  * This is the main activity where all expenses are listed
@@ -168,11 +181,16 @@ public class MyExpenses extends LaunchActivity implements
   private ViewPager myPager;
   private long mAccountId = 0;
   int mAccountCount = 0;
-  private View mAdView;
-  private boolean mAdViewShown = false;
+  private View mAdViewContainer;
+  private boolean mAdMobShown = false, mAmaShown = false;
   private Toolbar mToolbar;
   private String mCurrentBalance;
   private SubMenu sortMenu;
+  private AdLayout amaView;
+  private AdView admobView;
+  private InterstitialAd amaInterstitialAd;
+  private com.google.android.gms.ads.InterstitialAd admobInterstitialAd;
+  private boolean mAmaInterstitialLoaded = false;
 
   public enum HelpVariant {
     crStatus
@@ -219,7 +237,7 @@ public class MyExpenses extends LaunchActivity implements
       //prevent preference change listener from firing when preference file is created
       if (MyApplication.getInstance().isInstrumentationTest()) {
         PreferenceManager.setDefaultValues(this, MyApplication.getTestId(), Context.MODE_PRIVATE,
-          R.xml.preferences, true);
+            R.xml.preferences, true);
       } else {
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
       }
@@ -228,14 +246,19 @@ public class MyExpenses extends LaunchActivity implements
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
 
-    mAdView = findViewById(R.id.adView);
+    mAdViewContainer = findViewById(R.id.adContainer);
     long now = System.currentTimeMillis();
 
     if (isAdDisabled(now)) {
-      mAdView.setVisibility(View.GONE);
+      mAdViewContainer.setVisibility(View.GONE);
     } else {
-      AdUtils.showBanner(mAdView);
-      mAdViewShown = true;
+      String APP_KEY = BuildConfig.DEBUG ?
+          "sample-app-v1_pub-2" : "325c1c24185c46ccae8ec2cd4b2c290c";
+      AdRegistration.enableLogging(BuildConfig.DEBUG);
+      // For debugging purposes flag all ad requests as tests, but set to false for production builds.
+      AdRegistration.enableTesting(BuildConfig.DEBUG);
+      AdRegistration.setAppKey(APP_KEY);
+      showBanner();
       maybeRequestNewInterstitial(now);
     }
 
@@ -371,7 +394,7 @@ public class MyExpenses extends LaunchActivity implements
     } else {
       Bundle extras = getIntent().getExtras();
       if (extras != null) {
-        mAccountId = Utils.getFromExtra(extras,KEY_ROWID, 0);
+        mAccountId = Utils.getFromExtra(extras, KEY_ROWID, 0);
         idFromNotification = extras.getLong(KEY_TRANSACTIONID, 0);
         //detail fragment from notification should only be shown upon first instantiation from notification
         if (idFromNotification != 0) {
@@ -391,18 +414,19 @@ public class MyExpenses extends LaunchActivity implements
 
   private void maybeRequestNewInterstitial(long now) {
     if (now - MyApplication.PrefKey.INTERSTITIAL_LAST_SHOWN.getLong(0) > DAY_IN_MILLIS &&
-        MyApplication.PrefKey.ENTRIES_CREATED_SINCE_LAST_INTERSTITIAL.getInt(0)> INTERSTITIAL_MIN_INTERVAL) {
+        MyApplication.PrefKey.ENTRIES_CREATED_SINCE_LAST_INTERSTITIAL.getInt(0) > INTERSTITIAL_MIN_INTERVAL) {
       //last ad shown more than 24h and at least five expense entries ago,
-      AdUtils.requestNewInterstitial(this);
+      requestNewInterstitial();
     }
   }
+
   private void maybeShowInterstitial(long now) {
-    if (AdUtils.maybeShowInterstitial()) {
+    if (maybeShowInterstitialDo()) {
       MyApplication.PrefKey.INTERSTITIAL_LAST_SHOWN.putLong(now);
       MyApplication.PrefKey.ENTRIES_CREATED_SINCE_LAST_INTERSTITIAL.putInt(0);
     } else {
       MyApplication.PrefKey.ENTRIES_CREATED_SINCE_LAST_INTERSTITIAL.putInt(
-          MyApplication.PrefKey.ENTRIES_CREATED_SINCE_LAST_INTERSTITIAL.getInt(0)+1
+          MyApplication.PrefKey.ENTRIES_CREATED_SINCE_LAST_INTERSTITIAL.getInt(0) + 1
       );
       maybeRequestNewInterstitial(now);
     }
@@ -411,7 +435,7 @@ public class MyExpenses extends LaunchActivity implements
   private boolean isAdDisabled(long now) {
     return !BuildConfig.DEBUG &&
         (ContribFeature.AD_FREE.hasAccess() ||
-        isInInitialGracePeriod(now));
+            isInInitialGracePeriod(now));
   }
 
   private boolean isInInitialGracePeriod(long now) {
@@ -480,8 +504,8 @@ public class MyExpenses extends LaunchActivity implements
     SubMenu groupingMenu = menu.findItem(R.id.GROUPING_COMMAND).getSubMenu();
 
     Account account = Account.getInstanceFromDb(mAccountId);
-    if (account!=null) {
-      Utils.configureGroupingMenu(groupingMenu,account.grouping);
+    if (account != null) {
+      Utils.configureGroupingMenu(groupingMenu, account.grouping);
     }
     return true;
   }
@@ -554,7 +578,7 @@ public class MyExpenses extends LaunchActivity implements
       i.putExtra(KEY_CURRENCY, mAccountsCursor.getString(columnIndexCurrency));
     } else {
       //if accountId is 0 ExpenseEdit will retrieve the first entry from the accounts table
-      i.putExtra(KEY_ACCOUNTID,mAccountId);
+      i.putExtra(KEY_ACCOUNTID, mAccountId);
     }
     startActivityForResult(i, EDIT_TRANSACTION_REQUEST);
   }
@@ -658,8 +682,8 @@ public class MyExpenses extends LaunchActivity implements
         PrefKey.NEXT_REMINDER_RATE.putLong(sequenceCount + TRESHOLD_REMIND_RATE);
         return true;
       case R.id.HELP_COMMAND_DRAWER:
-        i = new Intent(this,Help.class);
-        i.putExtra(Help.KEY_CONTEXT,"NavigationDrawer");
+        i = new Intent(this, Help.class);
+        i.putExtra(Help.KEY_CONTEXT, "NavigationDrawer");
         //for result is needed since it allows us to inspect the calling activity
         startActivity(i);
         return true;
@@ -900,7 +924,7 @@ public class MyExpenses extends LaunchActivity implements
             Utils.isBrightColor(color700) ? View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR : 0);
       }
     }
-    Utils.setBackgroundTintListOnFab(mFab,color);
+    Utils.setBackgroundTintListOnFab(mFab, color);
     mAccountId = newAccountId;
     setBalance();
     mDrawerList.setItemChecked(position, true);
@@ -1235,12 +1259,12 @@ public class MyExpenses extends LaunchActivity implements
         accountMenu.setVisibility(View.VISIBLE);
         boolean upVisible = false, downVisible = false;
         if (PrefKey.SORT_ORDER_ACCOUNTS.getString(SORT_ORDER_USAGES).equals(SORT_ORDER_CUSTOM)) {
-          if (position > 0 && getHeaderId(position-1) == getHeaderId(position)) {
-            getCursor().moveToPosition(position-1);
+          if (position > 0 && getHeaderId(position - 1) == getHeaderId(position)) {
+            getCursor().moveToPosition(position - 1);
             if (c.getLong(columnIndexRowId) > 0) upVisible = true; //ignore if previous is aggregate
           }
-          if(position + 1 < getCount() && getHeaderId(position+1) == getHeaderId(position)) {
-            getCursor().moveToPosition(position+1);
+          if (position + 1 < getCount() && getHeaderId(position + 1) == getHeaderId(position)) {
+            getCursor().moveToPosition(position + 1);
             if (c.getLong(columnIndexRowId) > 0) downVisible = true;
           }
           getCursor().moveToPosition(position);
@@ -1272,7 +1296,7 @@ public class MyExpenses extends LaunchActivity implements
                 String sortKey2 = c.getString(c.getColumnIndex(KEY_SORT_KEY));
                 startTaskExecution(
                     TaskExecutionFragment.TASK_SWAP_SORT_KEY,
-                    new String[] {sortKey1, sortKey2},
+                    new String[]{sortKey1, sortKey2},
                     null,
                     R.string.progress_dialog_saving);
                 return true;
@@ -1358,70 +1382,71 @@ public class MyExpenses extends LaunchActivity implements
         onPositive(args, false);
     }
   }
-/*  @Override
-  protected void onStart()
-  {
-      super.onStart();
-      if (Distrib.isBatchAvailable()) {
-        Batch.Unlock.setUnlockListener(this);  Pass this as parameter since  we're implementing BatchUnlockListener 
-        Batch.onStart(this);
-      }
-  }
-  @Override
-  public void onRedeemAutomaticOffer(Offer offer) {
-    Log.d(MyApplication.TAG,"batch onRedeemAutomaticOffer called");
-    for(com.batch.android.Feature feature : offer.getFeatures())
+
+  /*  @Override
+    protected void onStart()
     {
-      Log.d(MyApplication.TAG,feature.getReference());
-      if (feature.getReference().equalsIgnoreCase("PREMIUMKEY")) {
-        MyApplication app = MyApplication.getInstance();
-        app.setContribEnabled(true);
-        PreferenceObfuscator mPreferences = Distrib.getLicenseStatusPrefs(app);
-        mPreferences.putString(MyApplication.PrefKey.LICENSE_STATUS.getKey(), "1");
-        mPreferences.commit();
-        handleUnlock(R.string.promotion_appgratis_welcome);
+        super.onStart();
+        if (Distrib.isBatchAvailable()) {
+          Batch.Unlock.setUnlockListener(this);  Pass this as parameter since  we're implementing BatchUnlockListener
+          Batch.onStart(this);
+        }
+    }
+    @Override
+    public void onRedeemAutomaticOffer(Offer offer) {
+      Log.d(MyApplication.TAG,"batch onRedeemAutomaticOffer called");
+      for(com.batch.android.Feature feature : offer.getFeatures())
+      {
+        Log.d(MyApplication.TAG,feature.getReference());
+        if (feature.getReference().equalsIgnoreCase("PREMIUMKEY")) {
+          MyApplication app = MyApplication.getInstance();
+          app.setContribEnabled(true);
+          PreferenceObfuscator mPreferences = Distrib.getLicenseStatusPrefs(app);
+          mPreferences.putString(MyApplication.PrefKey.LICENSE_STATUS.getKey(), "1");
+          mPreferences.commit();
+          handleUnlock(R.string.promotion_appgratis_welcome);
+        }
       }
     }
-  }
-  @Override
-  protected void onStop() {
-    if (Distrib.isBatchAvailable()) {
-      Batch.onStop(this);
+    @Override
+    protected void onStop() {
+      if (Distrib.isBatchAvailable()) {
+        Batch.onStop(this);
+      }
+      super.onStop();
     }
-    super.onStop();
+     @Override
+     protected void onDestroy()
+     {
+       if (Distrib.isBatchAvailable()) {
+         Batch.onDestroy(this);
+       }
+       super.onDestroy();
+     }
+
+     @Override
+     protected void onNewIntent(Intent intent)
+     {
+       if (Distrib.isBatchAvailable()) {
+         Batch.onNewIntent(this, intent);
+       }
+       super.onNewIntent(intent);
+     }*/
+  private void handleUnlock(int message) {
+    FragmentManager fm = getSupportFragmentManager();
+    WelcomeDialogFragment f =
+        ((WelcomeDialogFragment) fm.findFragmentByTag("WELCOME"));
+    if (f != null) {
+      f.showUnlockWelcome(message);
+    } else {
+      MessageDialogFragment.newInstance(
+          0,
+          message,
+          MessageDialogFragment.Button.okButton(),
+          null, null)
+          .show(getSupportFragmentManager(), "UNLOCK_WELCOME");
+    }
   }
-   @Override
-   protected void onDestroy()
-   {
-     if (Distrib.isBatchAvailable()) {
-       Batch.onDestroy(this);
-     }
-     super.onDestroy();
-   }
-  
-   @Override
-   protected void onNewIntent(Intent intent)
-   {
-     if (Distrib.isBatchAvailable()) {
-       Batch.onNewIntent(this, intent);
-     }
-     super.onNewIntent(intent);
-   }*/
-   private void handleUnlock(int message) {
-     FragmentManager fm = getSupportFragmentManager();
-     WelcomeDialogFragment f =
-         ((WelcomeDialogFragment) fm.findFragmentByTag("WELCOME"));
-     if (f!=null) {
-       f.showUnlockWelcome(message);
-     } else {
-       MessageDialogFragment.newInstance(
-           0,
-           message,
-           MessageDialogFragment.Button.okButton(),
-           null,null)
-        .show(getSupportFragmentManager(),"UNLOCK_WELCOME");
-     }
-   }
 
   @Override
   public void onPositive(Bundle args, boolean checked) {
@@ -1451,31 +1476,43 @@ public class MyExpenses extends LaunchActivity implements
   @Override
   protected void onResume() {
     super.onResume();
-    if (mAdViewShown) {
+    if (mAdMobShown) {
       //activity might have been resumed after user has bought contrib key
       if (ContribFeature.AD_FREE.hasAccess()) {
-        AdUtils.destroy(mAdView);
-        mAdView.setVisibility(View.GONE);
-        mAdViewShown = false;
+        admobView.destroy();
+        mAdViewContainer.setVisibility(View.GONE);
+        mAdMobShown = false;
       } else {
-        AdUtils.resume(mAdView);
+        admobView.resume();
       }
     }
+    if (mAmaShown) {
+      //activity might have been resumed after user has bought contrib key
+      if (ContribFeature.AD_FREE.hasAccess()) {
+        mAdViewContainer.setVisibility(View.GONE);
+        mAmaShown = false;
+      }
+    }
+
   }
 
   @Override
   public void onDestroy() {
-    if (mAdViewShown) {
-      AdUtils.destroy(mAdView);
-      mAdViewShown = false;
+    if (mAmaShown) {
+      amaView.destroy();
+      mAmaShown = false;
+    }
+    if (mAdMobShown) {
+      admobView.destroy();
+      mAdMobShown = false;
     }
     super.onDestroy();
   }
 
   @Override
   protected void onPause() {
-    if (mAdViewShown) {
-      AdUtils.pause(mAdView);
+    if (mAdMobShown) {
+      admobView.pause();
     }
     super.onPause();
   }
@@ -1506,7 +1543,7 @@ public class MyExpenses extends LaunchActivity implements
         } else {
           mManager.initLoader(ACCOUNTS_CURSOR, null, this);
         }
-        if (item.getItemId()==R.id.SORT_CUSTOM_COMMAND) {
+        if (item.getItemId() == R.id.SORT_CUSTOM_COMMAND) {
           MessageDialogFragment.newInstance(
               R.string.dialog_title_information,
               R.string.dialog_info_custom_sort,
@@ -1560,6 +1597,83 @@ public class MyExpenses extends LaunchActivity implements
           Account.getInstanceFromDb(mAccountId).persistGrouping(newGrouping);
         }
       }
+      return true;
+    }
+    return false;
+  }
+
+  //Ads
+  private void showBanner() {
+    amaView = (AdLayout) mAdViewContainer.findViewById(R.id.amaView);
+    amaView.setListener(new DefaultAdListener() {
+      @Override
+      public void onAdLoaded(Ad ad, AdProperties adProperties) {
+        super.onAdLoaded(ad, adProperties);
+        mAmaShown = true;
+        amaView.setVisibility(View.VISIBLE);
+      }
+
+      @Override
+      public void onAdFailedToLoad(Ad ad, AdError error) {
+        super.onAdFailedToLoad(ad, error);
+        admobView = (AdView) mAdViewContainer.findViewById(R.id.admobView);
+        admobView.loadAd(buildAdmobRequest());
+        admobView.setAdListener(new com.google.android.gms.ads.AdListener() {
+          @Override
+          public void onAdLoaded() {
+            super.onAdLoaded();
+            mAdMobShown = true;
+            admobView.setVisibility(View.VISIBLE);
+          }
+        });
+      }
+    });
+
+    if (!amaView.isLoading()) {
+      amaView.loadAd();
+    }
+  }
+
+  @NotNull
+  private AdRequest buildAdmobRequest() {
+    return new AdRequest.Builder()
+        //.addTestDevice("5EB15443712776CA9D760C5FF145709D")
+        //.addTestDevice("0C9A9324A2B59536C630C2571458C698")
+        .build();
+  }
+
+  private void requestNewInterstitial() {
+    // Create the interstitial.
+    amaInterstitialAd = new InterstitialAd(this);
+
+    // Set the listener to use the callbacks below.
+    amaInterstitialAd.setListener(new DefaultAdListener() {
+
+      @Override
+      public void onAdLoaded(Ad ad, AdProperties adProperties) {
+        super.onAdLoaded(ad, adProperties);
+        mAmaInterstitialLoaded = true;
+      }
+
+      @Override
+      public void onAdFailedToLoad(Ad ad, AdError error) {
+        super.onAdFailedToLoad(ad, error);
+        admobInterstitialAd = new com.google.android.gms.ads.InterstitialAd(MyExpenses.this);
+        admobInterstitialAd.setAdUnitId(getString(R.string.admob_unitid_interstitial));
+        admobInterstitialAd.loadAd(buildAdmobRequest());
+      }
+    });
+    // Load the interstitial.
+    amaInterstitialAd.loadAd();
+  }
+
+  private boolean maybeShowInterstitialDo() {
+    if (mAmaInterstitialLoaded) {
+      amaInterstitialAd.showAd();
+      return true;
+    }
+    if (admobInterstitialAd != null && admobInterstitialAd.isLoaded()) {
+      admobInterstitialAd.show();
       return true;
     }
     return false;
