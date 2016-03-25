@@ -169,6 +169,9 @@ public class MyExpenses extends LaunchActivity implements
 
   public static final int ACCOUNTS_CURSOR = -1;
   public static final int SPLIT_PART_CURSOR = 3;
+
+  public static final boolean WITH_AMA = true;
+
   private LoaderManager mManager;
 
   int mCurrentPosition = -1;
@@ -1603,34 +1606,43 @@ public class MyExpenses extends LaunchActivity implements
 
   //Ads
   private void showBanner() {
+    if (!WITH_AMA) {
+      showBannerAdmob();
+      return;
+    }
     amaView = (AdLayout) mAdViewContainer.findViewById(R.id.amaView);
     amaView.setListener(new DefaultAdListener() {
       @Override
       public void onAdLoaded(Ad ad, AdProperties adProperties) {
         super.onAdLoaded(ad, adProperties);
         mAmaBannerShown = true;
+        showBannerAdmob();
       }
 
       @Override
       public void onAdFailedToLoad(Ad ad, AdError error) {
         super.onAdFailedToLoad(ad, error);
         amaView.setVisibility(View.GONE);
-        admobView = (AdView) mAdViewContainer.findViewById(R.id.admobView);
-        admobView.loadAd(buildAdmobRequest());
-        admobView.setAdListener(new com.google.android.gms.ads.AdListener() {
-          @Override
-          public void onAdLoaded() {
-            super.onAdLoaded();
-            mAdMobBannerShown = true;
-            admobView.setVisibility(View.VISIBLE);
-          }
-        });
       }
     });
 
     if (!amaView.isLoading()) {
       amaView.loadAd();
     }
+  }
+
+  private void showBannerAdmob() {
+    admobView = (AdView) mAdViewContainer.findViewById(R.id.admobView);
+    admobView.loadAd(buildAdmobRequest());
+    Log.d("Admob Ads",admobView.getAdUnitId());
+    admobView.setAdListener(new com.google.android.gms.ads.AdListener() {
+      @Override
+      public void onAdLoaded() {
+        super.onAdLoaded();
+        mAdMobBannerShown = true;
+        admobView.setVisibility(View.VISIBLE);
+      }
+    });
   }
 
   @NotNull
@@ -1643,6 +1655,11 @@ public class MyExpenses extends LaunchActivity implements
 
   private void requestNewInterstitial() {
     mInterstitialShown = false;
+    if (!WITH_AMA) {
+      requestNewInterstitialAdMob();
+      return;
+    }
+
     // Create the interstitial.
     amaInterstitialAd = new InterstitialAd(this);
 
@@ -1658,13 +1675,17 @@ public class MyExpenses extends LaunchActivity implements
       @Override
       public void onAdFailedToLoad(Ad ad, AdError error) {
         super.onAdFailedToLoad(ad, error);
-        admobInterstitialAd = new com.google.android.gms.ads.InterstitialAd(MyExpenses.this);
-        admobInterstitialAd.setAdUnitId(getString(R.string.admob_unitid_interstitial));
-        admobInterstitialAd.loadAd(buildAdmobRequest());
+        requestNewInterstitialAdMob();
       }
     });
     // Load the interstitial.
     amaInterstitialAd.loadAd();
+  }
+
+  private void requestNewInterstitialAdMob() {
+    admobInterstitialAd = new com.google.android.gms.ads.InterstitialAd(MyExpenses.this);
+    admobInterstitialAd.setAdUnitId(getString(R.string.admob_unitid_interstitial));
+    admobInterstitialAd.loadAd(buildAdmobRequest());
   }
 
   private boolean maybeShowInterstitialDo() {
