@@ -64,7 +64,6 @@ import android.widget.Toast;
 import com.amazon.device.ads.Ad;
 import com.amazon.device.ads.AdError;
 import com.amazon.device.ads.AdLayout;
-import com.amazon.device.ads.AdListener;
 import com.amazon.device.ads.AdProperties;
 import com.amazon.device.ads.AdRegistration;
 import com.amazon.device.ads.DefaultAdListener;
@@ -182,7 +181,7 @@ public class MyExpenses extends LaunchActivity implements
   private long mAccountId = 0;
   int mAccountCount = 0;
   private View mAdViewContainer;
-  private boolean mAdMobShown = false, mAmaShown = false;
+  private boolean mAdMobBannerShown = false, mAmaBannerShown = false, mInterstitialShown = false;
   private Toolbar mToolbar;
   private String mCurrentBalance;
   private SubMenu sortMenu;
@@ -1476,21 +1475,21 @@ public class MyExpenses extends LaunchActivity implements
   @Override
   protected void onResume() {
     super.onResume();
-    if (mAdMobShown) {
+    if (mAdMobBannerShown) {
       //activity might have been resumed after user has bought contrib key
       if (ContribFeature.AD_FREE.hasAccess()) {
         admobView.destroy();
         mAdViewContainer.setVisibility(View.GONE);
-        mAdMobShown = false;
+        mAdMobBannerShown = false;
       } else {
         admobView.resume();
       }
     }
-    if (mAmaShown) {
+    if (mAmaBannerShown) {
       //activity might have been resumed after user has bought contrib key
       if (ContribFeature.AD_FREE.hasAccess()) {
         mAdViewContainer.setVisibility(View.GONE);
-        mAmaShown = false;
+        mAmaBannerShown = false;
       }
     }
 
@@ -1498,20 +1497,20 @@ public class MyExpenses extends LaunchActivity implements
 
   @Override
   public void onDestroy() {
-    if (mAmaShown) {
+    if (mAmaBannerShown) {
       amaView.destroy();
-      mAmaShown = false;
+      mAmaBannerShown = false;
     }
-    if (mAdMobShown) {
+    if (mAdMobBannerShown) {
       admobView.destroy();
-      mAdMobShown = false;
+      mAdMobBannerShown = false;
     }
     super.onDestroy();
   }
 
   @Override
   protected void onPause() {
-    if (mAdMobShown) {
+    if (mAdMobBannerShown) {
       admobView.pause();
     }
     super.onPause();
@@ -1609,20 +1608,20 @@ public class MyExpenses extends LaunchActivity implements
       @Override
       public void onAdLoaded(Ad ad, AdProperties adProperties) {
         super.onAdLoaded(ad, adProperties);
-        mAmaShown = true;
-        amaView.setVisibility(View.VISIBLE);
+        mAmaBannerShown = true;
       }
 
       @Override
       public void onAdFailedToLoad(Ad ad, AdError error) {
         super.onAdFailedToLoad(ad, error);
+        amaView.setVisibility(View.GONE);
         admobView = (AdView) mAdViewContainer.findViewById(R.id.admobView);
         admobView.loadAd(buildAdmobRequest());
         admobView.setAdListener(new com.google.android.gms.ads.AdListener() {
           @Override
           public void onAdLoaded() {
             super.onAdLoaded();
-            mAdMobShown = true;
+            mAdMobBannerShown = true;
             admobView.setVisibility(View.VISIBLE);
           }
         });
@@ -1643,6 +1642,7 @@ public class MyExpenses extends LaunchActivity implements
   }
 
   private void requestNewInterstitial() {
+    mInterstitialShown = false;
     // Create the interstitial.
     amaInterstitialAd = new InterstitialAd(this);
 
@@ -1668,12 +1668,15 @@ public class MyExpenses extends LaunchActivity implements
   }
 
   private boolean maybeShowInterstitialDo() {
+    if (mInterstitialShown) return false;
     if (mAmaInterstitialLoaded) {
       amaInterstitialAd.showAd();
+      mInterstitialShown = true;
       return true;
     }
     if (admobInterstitialAd != null && admobInterstitialAd.isLoaded()) {
       admobInterstitialAd.show();
+      mInterstitialShown = true;
       return true;
     }
     return false;
