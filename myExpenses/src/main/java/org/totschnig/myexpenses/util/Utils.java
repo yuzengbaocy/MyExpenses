@@ -15,6 +15,7 @@
 
 package org.totschnig.myexpenses.util;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -433,7 +434,9 @@ public class Utils {
     if (externalFilesDir != null) {
       return DocumentFile.fromFile(externalFilesDir);
     } else {
-      Utils.reportToAcra(new Exception("getExternalFilesDir returned null"));
+      String permission = Manifest.permission.WRITE_EXTERNAL_STORAGE;
+      Utils.reportToAcra(new Exception("getExternalFilesDir returned null; " + permission + " : " +
+          ContextCompat.checkSelfPermission(MyApplication.getInstance(),permission)));
       return null;
     }
   }
