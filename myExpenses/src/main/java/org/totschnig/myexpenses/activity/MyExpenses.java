@@ -254,12 +254,6 @@ public class MyExpenses extends LaunchActivity implements
     if (isAdDisabled(now)) {
       mAdViewContainer.setVisibility(View.GONE);
     } else {
-      String APP_KEY = BuildConfig.DEBUG ?
-          "sample-app-v1_pub-2" : "325c1c24185c46ccae8ec2cd4b2c290c";
-      AdRegistration.enableLogging(BuildConfig.DEBUG);
-      // For debugging purposes flag all ad requests as tests, but set to false for production builds.
-      AdRegistration.enableTesting(BuildConfig.DEBUG);
-      AdRegistration.setAppKey(APP_KEY);
       showBanner();
       maybeRequestNewInterstitial(now);
     }
@@ -1610,6 +1604,12 @@ public class MyExpenses extends LaunchActivity implements
       showBannerAdmob();
       return;
     }
+    String APP_KEY = BuildConfig.DEBUG ?
+        "sample-app-v1_pub-2" : "325c1c24185c46ccae8ec2cd4b2c290c";
+    AdRegistration.enableLogging(BuildConfig.DEBUG);
+    // For debugging purposes flag all ad requests as tests, but set to false for production builds.
+    AdRegistration.enableTesting(BuildConfig.DEBUG);
+    AdRegistration.setAppKey(APP_KEY);
     amaView = (AdLayout) mAdViewContainer.findViewById(R.id.amaView);
     amaView.setListener(new DefaultAdListener() {
       @Override
