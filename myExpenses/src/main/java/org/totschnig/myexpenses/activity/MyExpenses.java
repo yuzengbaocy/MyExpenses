@@ -919,7 +919,7 @@ public class MyExpenses extends LaunchActivity implements
             Utils.isBrightColor(color700) ? View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR : 0);
       }
     }
-    Utils.setBackgroundTintListOnFab(mFab, color);
+    Utils.setBackgroundTintListOnFab(floatingActionButton, color);
     mAccountId = newAccountId;
     setBalance();
     mDrawerList.setItemChecked(position, true);
