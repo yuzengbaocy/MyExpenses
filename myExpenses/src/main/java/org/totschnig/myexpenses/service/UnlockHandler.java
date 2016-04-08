@@ -46,7 +46,7 @@ public class UnlockHandler extends Handler {
         if (!BuildConfig.FLAVOR.equals("play")) {
           doUnlock();
         } else {
-          showNotif(Utils.concatResStrings(app,R.string.licence_validation_failure,
+          showNotif(Utils.concatResStrings(app, " ", R.string.licence_validation_failure,
               R.string.licence_validation_upgrade_needed));
         }
         break;
@@ -59,15 +59,15 @@ public class UnlockHandler extends Handler {
     app.setContribStatus(Distrib.STATUS_ENABLED_LEGACY_SECOND);
     mPreferences.putString(MyApplication.PrefKey.LICENSE_STATUS.getKey(), String.valueOf(Distrib.STATUS_ENABLED_LEGACY_SECOND));
     mPreferences.commit();
-    showNotif(Utils.concatResStrings(app,
-            R.string.licence_validation_premium,R.string.thank_you));
+    showNotif(Utils.concatResStrings(app, " ",
+            R.string.licence_validation_premium, R.string.thank_you));
   }
 
   private void showNotif(String text) {
     MyApplication app = MyApplication.getInstance();
     NotificationManager notificationManager =
         (NotificationManager) app.getSystemService(Context.NOTIFICATION_SERVICE);
-    String title = Utils.concatResStrings(app,R.string.app_name,R.string.contrib_key);
+    String title = Utils.concatResStrings(app, " ", R.string.app_name, R.string.contrib_key);
     NotificationCompat.Builder builder =
         new NotificationCompat.Builder(app)
             .setSmallIcon(R.drawable.ic_home_dark)

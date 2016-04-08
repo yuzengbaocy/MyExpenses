@@ -151,7 +151,7 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
                 Toast.makeText(
                     ContribInfoDialogActivity.this,
                     Utils.concatResStrings(
-                        ContribInfoDialogActivity.this,
+                        ContribInfoDialogActivity.this," ",
                         isPremium ? R.string.licence_validation_premium : R.string.licence_validation_extended,
                         R.string.thank_you),
                     Toast.LENGTH_SHORT).show();
