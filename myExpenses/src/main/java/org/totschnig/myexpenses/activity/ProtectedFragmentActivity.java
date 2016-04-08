@@ -78,7 +78,6 @@ import org.totschnig.myexpenses.dialog.ProgressDialogFragment;
 import org.totschnig.myexpenses.fragment.DbWriteFragment;
 import org.totschnig.myexpenses.model.ContribFeature;
 import org.totschnig.myexpenses.model.Model;
-import org.totschnig.myexpenses.provider.DatabaseConstants;
 import org.totschnig.myexpenses.task.TaskExecutionFragment;
 import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.widget.AbstractWidget;
@@ -118,6 +117,7 @@ public class ProtectedFragmentActivity extends AppCompatActivity
   private boolean scheduledRestart = false;
   public Enum<?> helpVariant = null;
   protected int colorExpense;
+  protected FloatingActionButton floatingActionButton;
 
   public int getColorExpense() {
     return colorExpense;
@@ -149,11 +149,23 @@ public class ProtectedFragmentActivity extends AppCompatActivity
     colorIncome = color.data;
   }
 
-  protected void setFabColor() {
+  @Override
+  public void setContentView(int layoutResID) {
+    super.setContentView(layoutResID);
+  }
+
+  protected void configureFloatingActionButton(int fabDescription) {
+    if (!requireFloatingActionButtonWithContentDescription(getString(fabDescription))) return;
     TypedValue color = new TypedValue();
     getTheme().resolveAttribute(R.attr.colorAccent, color, true);
-    FloatingActionButton fab = ((FloatingActionButton) findViewById(R.id.CREATE_COMMAND));
-    Utils.setBackgroundTintListOnFab(fab, color.data);
+    Utils.setBackgroundTintListOnFab(floatingActionButton, color.data);
+  }
+
+  protected boolean requireFloatingActionButtonWithContentDescription(String fabDescription) {
+    floatingActionButton = ((FloatingActionButton) findViewById(R.id.CREATE_COMMAND));
+    if (floatingActionButton == null) return false;
+    floatingActionButton.setContentDescription(fabDescription);
+    return true;
   }
 
   protected Toolbar setupToolbar(boolean withHome) {

@@ -107,6 +107,8 @@ public class SplitPartList extends Fragment implements LoaderManager.LoaderCallb
     });
     registerForContextMenu(lv);
     fab = ((FloatingActionButton) v.findViewById(R.id.CREATE_COMMAND));
+    fab.setContentDescription(Utils.concatResStrings(getActivity(), ". ",
+        R.string.menu_create_split_part_category, R.string.menu_create_split_part_transfer));
     updateFabColor(account.color);
     return v;
   }
@@ -158,8 +160,6 @@ public class SplitPartList extends Fragment implements LoaderManager.LoaderCallb
     switch(arg0.getId()) {
     case ExpenseEdit.TRANSACTION_CURSOR:
       mAdapter.swapCursor(c);
-      if (c.getCount()>0)
-        ((ExpenseEdit) getActivity()).disableAccountSpinner();
       break;
     case ExpenseEdit.SUM_CURSOR:
       c.moveToFirst();
@@ -191,5 +191,8 @@ public class SplitPartList extends Fragment implements LoaderManager.LoaderCallb
 
   public boolean splitComplete() {
     return unsplitAmount != null && unsplitAmount.getAmountMinor() == 0L;
+  }
+  public int getSplitCount() {
+    return mAdapter.getCount();
   }
 }

@@ -26,7 +26,6 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.LoaderManager;
@@ -179,7 +178,6 @@ public class MyExpenses extends LaunchActivity implements
 
   private MyViewPagerAdapter mViewPagerAdapter;
   private StickyListHeadersAdapter mDrawerListAdapter;
-  private FloatingActionButton mFab;
   private ViewPager myPager;
   private long mAccountId = 0;
   int mAccountCount = 0;
@@ -378,7 +376,8 @@ public class MyExpenses extends LaunchActivity implements
       }
     });
 
-    mFab = ((FloatingActionButton) findViewById(R.id.CREATE_COMMAND));
+    requireFloatingActionButtonWithContentDescription(Utils.concatResStrings(this, ". ",
+        R.string.menu_create_transaction, R.string.menu_create_transfer, R.string.menu_create_split));
     if (prev_version == -1) {
       getSupportActionBar().hide();
       initialSetup();
