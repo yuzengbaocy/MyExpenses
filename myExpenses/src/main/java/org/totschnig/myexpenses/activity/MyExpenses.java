@@ -68,6 +68,7 @@ import com.amazon.device.ads.AdRegistration;
 import com.amazon.device.ads.DefaultAdListener;
 import com.amazon.device.ads.InterstitialAd;
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -110,10 +111,6 @@ import org.totschnig.myexpenses.util.FileUtils;
 import org.totschnig.myexpenses.util.Result;
 import org.totschnig.myexpenses.util.Utils;
 
-//import com.batch.android.Batch;
-//import com.batch.android.BatchUnlockListener;
-//import com.batch.android.Offer;
-//import com.google.android.vending.licensing.PreferenceObfuscator;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Currency;
@@ -142,6 +139,11 @@ import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_SUM_TRANSF
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TOTAL;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TRANSACTIONID;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TYPE;
+
+//import com.batch.android.Batch;
+//import com.batch.android.BatchUnlockListener;
+//import com.batch.android.Offer;
+//import com.google.android.vending.licensing.PreferenceObfuscator;
 
 
 /**
@@ -181,7 +183,7 @@ public class MyExpenses extends LaunchActivity implements
   private ViewPager myPager;
   private long mAccountId = 0;
   int mAccountCount = 0;
-  private View mAdViewContainer;
+  private ViewGroup mAdViewContainer;
   private boolean mAdMobBannerShown = false, mAmaBannerShown = false, mInterstitialShown = false;
   private Toolbar mToolbar;
   private String mCurrentBalance;
@@ -246,7 +248,7 @@ public class MyExpenses extends LaunchActivity implements
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
 
-    mAdViewContainer = findViewById(R.id.adContainer);
+    mAdViewContainer = ((ViewGroup) findViewById(R.id.adContainer));
     long now = System.currentTimeMillis();
 
     if (isAdDisabled(now)) {
@@ -1599,7 +1601,9 @@ public class MyExpenses extends LaunchActivity implements
 
   //Ads
   private void showBanner() {
+    amaView = (AdLayout) mAdViewContainer.findViewById(R.id.amaView);
     if (!WITH_AMA) {
+      amaView.setVisibility(View.GONE);
       showBannerAdmob();
       return;
     }
@@ -1609,7 +1613,6 @@ public class MyExpenses extends LaunchActivity implements
     // For debugging purposes flag all ad requests as tests, but set to false for production builds.
     AdRegistration.enableTesting(BuildConfig.DEBUG);
     AdRegistration.setAppKey(APP_KEY);
-    amaView = (AdLayout) mAdViewContainer.findViewById(R.id.amaView);
     amaView.setListener(new DefaultAdListener() {
       @Override
       public void onAdLoaded(Ad ad, AdProperties adProperties) {
@@ -1631,15 +1634,24 @@ public class MyExpenses extends LaunchActivity implements
   }
 
   private void showBannerAdmob() {
-    admobView = (AdView) mAdViewContainer.findViewById(R.id.admobView);
+    final boolean with_rhythm = true;
+    admobView = new AdView(this);
+    admobView.setAdSize(with_rhythm ? AdSize.BANNER : AdSize.SMART_BANNER);
+    admobView.setAdUnitId(getString(with_rhythm ? R.string.admob_unitid_rhythm :
+        R.string.admob_unitid_mainscreen));
+    mAdViewContainer.addView(admobView);
     admobView.loadAd(buildAdmobRequest());
-    Log.d("Admob Ads",admobView.getAdUnitId());
     admobView.setAdListener(new com.google.android.gms.ads.AdListener() {
       @Override
       public void onAdLoaded() {
         super.onAdLoaded();
         mAdMobBannerShown = true;
         admobView.setVisibility(View.VISIBLE);
+        if (with_rhythm) {
+          mAdViewContainer.getLayoutParams().height = (int) TypedValue.applyDimension(
+              TypedValue.COMPLEX_UNIT_DIP, AdSize.BANNER.getHeight(),
+              getResources().getDisplayMetrics());
+        }
       }
     });
   }
