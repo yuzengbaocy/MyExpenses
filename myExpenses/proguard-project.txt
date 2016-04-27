@@ -29,16 +29,14 @@
 }
 
 # keep this otherwise it is removed by ProGuard
--keep public class org.acra.ErrorReporter
-{
+-keep public class org.acra.ErrorReporter {
     public void addCustomData(java.lang.String,java.lang.String);
     public void putCustomData(java.lang.String,java.lang.String);
     public void removeCustomData(java.lang.String);
 }
 
 # keep this otherwise it is removed by ProGuard
--keep public class org.acra.ErrorReporter
-{
+-keep public class org.acra.ErrorReporter {
     public void handleSilentException(java.lang.Throwable);
 }
 
@@ -108,7 +106,8 @@
 -keep class com.google.ads.mediation.AdUrlAdapter {
     *;
 }
--keep class com.rhythmone.** {*;}
+
+-keep class com.rhythmone.** { *; }
 -dontwarn com.rhythmone.**
 -keep class com.google.ads.mediation.RhythmAdapter {
     *;
@@ -116,12 +115,14 @@
 -keep class com.google.ads.mediation.FacebookAdapter {
     *;
 }
+-keep class com.facebook.ads.** { *; }
+
 -keep public class com.google.android.gms.ads.** {
    public *;
 }
-
 -keep public class com.google.ads.** {
    public *;
+}
 
 -dontwarn icepick.**
 -keep class icepick.** { *; }
