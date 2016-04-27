@@ -1634,7 +1634,7 @@ public class MyExpenses extends LaunchActivity implements
   }
 
   private void showBannerAdmob() {
-    final boolean with_rhythm = true;
+    final boolean with_rhythm = false;
     admobView = new AdView(this);
     admobView.setAdSize(with_rhythm ? AdSize.BANNER : AdSize.SMART_BANNER);
     admobView.setAdUnitId(getString(with_rhythm ? R.string.admob_unitid_rhythm :
