@@ -432,6 +432,12 @@ public class ProtectedFragmentActivity extends AppCompatActivity
         if (grantResults.length > 0
             && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
           MyApplication.getInstance().initPlanner();
+        } else {
+          if (ActivityCompat.shouldShowRequestPermissionRationale(
+              this, Manifest.permission.WRITE_CALENDAR)) {
+            Toast.makeText(this, getString(R.string.calendar_permission_required),Toast.LENGTH_LONG)
+                .show();
+          }
         }
         break;
     }
@@ -444,7 +450,7 @@ public class ProtectedFragmentActivity extends AppCompatActivity
         !ActivityCompat.shouldShowRequestPermissionRationale(this, permission);
   }
 
-  protected void requestCalendarPermission() {
+  public void requestCalendarPermission() {
     if (calendarPermissionPermanentlyDeclined()) {
       //noinspection InlinedApi
       Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
