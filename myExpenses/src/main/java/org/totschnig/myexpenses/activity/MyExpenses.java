@@ -1618,13 +1618,13 @@ public class MyExpenses extends LaunchActivity implements
       public void onAdLoaded(Ad ad, AdProperties adProperties) {
         super.onAdLoaded(ad, adProperties);
         mAmaBannerShown = true;
-        showBannerAdmob();
       }
 
       @Override
       public void onAdFailedToLoad(Ad ad, AdError error) {
         super.onAdFailedToLoad(ad, error);
         amaView.setVisibility(View.GONE);
+        showBannerAdmob();
       }
     });
 
@@ -1644,7 +1644,6 @@ public class MyExpenses extends LaunchActivity implements
     admobView.setAdListener(new com.google.android.gms.ads.AdListener() {
       @Override
       public void onAdLoaded() {
-        super.onAdLoaded();
         mAdMobBannerShown = true;
         admobView.setVisibility(View.VISIBLE);
         if (with_rhythm) {
