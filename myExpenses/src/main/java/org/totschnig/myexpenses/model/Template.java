@@ -47,7 +47,7 @@ public class Template extends Transaction {
   private String uuid;
 
   public static final Uri CONTENT_URI = TransactionProvider.TEMPLATES_URI;
-  public static String[] PROJECTION_BASE, PROJECTION_EXTENDED;
+  public static final String[] PROJECTION_BASE, PROJECTION_EXTENDED;
 
   public String getUuid() {
     return uuid;
@@ -408,5 +408,15 @@ public class Template extends Transaction {
     } else if (!uuid.equals(other.uuid))
       return false;
     return true;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = this.title != null ? this.title.hashCode() : 0;
+    result = 31 * result + (this.isTransfer ? 1 : 0);
+    result = 31 * result + (this.planId != null ? this.planId.hashCode() : 0);
+    result = 31 * result + (this.planExecutionAutomatic ? 1 : 0);
+    result = 31 * result + (this.uuid != null ? this.uuid.hashCode() : 0);
+    return result;
   }
 }

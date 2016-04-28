@@ -58,7 +58,7 @@ public class CalculatorInput extends ProtectedFragmentActivity implements OnClic
 
   //private Vibrator vibrator;
 
-  private Stack<String> stack = new Stack<String>();
+  private Stack<String> stack = new Stack<>();
   private String result = "0";
   private boolean isRestart = true;
   private boolean isInEquals = false;
@@ -358,7 +358,7 @@ public class CalculatorInput extends ProtectedFragmentActivity implements OnClic
   }
 
   private void doPercentChar() {
-    if (stack.size() == 0) return;
+    if (stack.isEmpty()) return;
     setDisplay(new BigDecimal(result).divide(HUNDRED).multiply(new BigDecimal(stack.peek()))
         .toPlainString());
     tvOp.setText("");
@@ -399,7 +399,7 @@ public class CalculatorInput extends ProtectedFragmentActivity implements OnClic
     result = savedInstanceState.getString("result");
     lastOp = savedInstanceState.getInt("lastOp");
     isInEquals = savedInstanceState.getBoolean("isInEquals");
-    stack = new Stack<String>();
+    stack = new Stack<>();
     stack.addAll(Arrays.asList((String[]) savedInstanceState.getSerializable("stack")));
     if (lastOp != 0 && !isInEquals) tvOp.setText(getLastOpLabel());
     setDisplay(result);

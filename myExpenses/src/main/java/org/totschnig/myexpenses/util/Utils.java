@@ -153,6 +153,9 @@ public class Utils {
     }
   };
 
+  private Utils() {
+  }
+
   public static boolean hasApiLevel(int checkVersion) {
     return Build.VERSION.SDK_INT >= checkVersion;
   }
@@ -723,7 +726,7 @@ public class Utils {
     } else if (scheme.equals("mailto")) {
       if (multiple) {
         intent = new Intent(android.content.Intent.ACTION_SEND_MULTIPLE);
-        ArrayList<Uri> uris = new ArrayList<Uri>();
+        ArrayList<Uri> uris = new ArrayList<>();
         for (Uri fileUri : fileUris) {
           uris.add(fileUri);
         }
@@ -785,13 +788,13 @@ public class Utils {
     final PackageManager packageManager = context.getPackageManager();
     List<ResolveInfo> list = packageManager.queryIntentActivities(intent,
         PackageManager.MATCH_DEFAULT_ONLY);
-    return list.size() > 0;
+    return !list.isEmpty();
   }
 
   public static boolean isIntentReceiverAvailable(Context context, Intent intent) {
     final PackageManager packageManager = context.getPackageManager();
     List<ResolveInfo> list = packageManager.queryBroadcastReceivers(intent, 0);
-    return list.size() > 0;
+    return !list.isEmpty();
   }
 
   public static boolean isBrightColor(int color) {

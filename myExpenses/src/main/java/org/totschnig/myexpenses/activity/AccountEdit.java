@@ -128,13 +128,13 @@ public class AccountEdit extends AmountActivity implements
     mCurrencySpinner.setAdapter(currencyAdapter);
     
     mAccountTypeSpinner = new SpinnerHelper(findViewById(R.id.AccountType));
-    ArrayAdapter<Account.Type> typAdapter = new ArrayAdapter<Account.Type>(
-        this, android.R.layout.simple_spinner_item, android.R.id.text1, Account.Type.values());
+    ArrayAdapter<Account.Type> typAdapter = new ArrayAdapter<>(
+            this, android.R.layout.simple_spinner_item, android.R.id.text1, Account.Type.values());
     typAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
     mAccountTypeSpinner.setAdapter(typAdapter);
     
     mColorSpinner = new SpinnerHelper(findViewById(R.id.Color));
-    mColors = new ArrayList<Integer>();
+    mColors = new ArrayList<>();
     Resources r = getResources();
     mColors.add(r.getColor(R.color.material_red));
     mColors.add(r.getColor(R.color.material_pink));
@@ -191,15 +191,13 @@ public class AccountEdit extends AmountActivity implements
 
   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     super.onActivityResult(requestCode, resultCode, data);
-    if (requestCode == PICK_COLOR_REQUEST) {
-      if (resultCode == RESULT_OK) {
-        mAccount.color = data.getExtras().getInt(OPENINTENTS_COLOR_EXTRA);
-        if (mColors.indexOf(mAccount.color) == -1) {
-          final int lastButOne = mColors.size()-1;
-          mColors.add(lastButOne,mAccount.color);
-          mColorSpinner.setSelection(lastButOne,true);
-          mColAdapter.notifyDataSetChanged();
-        }
+    if (requestCode == PICK_COLOR_REQUEST && resultCode == RESULT_OK) {
+      mAccount.color = data.getExtras().getInt(OPENINTENTS_COLOR_EXTRA);
+      if (mColors.indexOf(mAccount.color) == -1) {
+        final int lastButOne = mColors.size()-1;
+        mColors.add(lastButOne,mAccount.color);
+        mColorSpinner.setSelection(lastButOne,true);
+        mColAdapter.notifyDataSetChanged();
       }
     }
   }

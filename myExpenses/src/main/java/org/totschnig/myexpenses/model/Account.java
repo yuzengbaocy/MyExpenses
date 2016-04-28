@@ -94,8 +94,8 @@ public class Account extends Model {
 
   public boolean excludeFromTotals = false;
 
-  public static String[] PROJECTION_BASE, PROJECTION_EXTENDED, PROJECTION_FULL;
-  private static String CURRENT_BALANCE_EXPR = KEY_OPENING_BALANCE + " + (" + SELECT_AMOUNT_SUM + " AND " + WHERE_NOT_SPLIT_PART
+  public static final String[] PROJECTION_BASE, PROJECTION_EXTENDED, PROJECTION_FULL;
+  private static final String CURRENT_BALANCE_EXPR = KEY_OPENING_BALANCE + " + (" + SELECT_AMOUNT_SUM + " AND " + WHERE_NOT_SPLIT_PART
       + " AND date(" + KEY_DATE + ",'unixepoch') <= date('now') )";
 
   static {
@@ -577,9 +577,9 @@ public class Account extends Model {
     }
   }
 
-  public static int defaultColor = 0xff009688;
+  public static final int DEFAULT_COLOR = 0xff009688;
 
-  static HashMap<Long, Account> accounts = new HashMap<>();
+  static final HashMap<Long, Account> accounts = new HashMap<>();
 
   public static boolean isInstanceCached(long id) {
     return accounts.containsKey(id);
@@ -604,7 +604,7 @@ public class Account extends Model {
     Account account;
     String selection = KEY_ROWID + " = ";
     if (id == 0) {
-      if (accounts.size() > 0) {
+      if (!accounts.isEmpty()) {
         for (long _id : accounts.keySet()) {
           if (_id > 0) {
             return accounts.get(_id);
@@ -677,14 +677,14 @@ public class Account extends Model {
   }
 
   /**
-   * Account with currency from locale, of type CASH and with defaultColor
+   * Account with currency from locale, of type CASH and with DEFAULT_COLOR
    *
    * @param label          the label
    * @param openingBalance the opening balance
    * @param description    the description
    */
   public Account(String label, long openingBalance, String description) {
-    this(label, getLocaleCurrency(), openingBalance, description, Type.CASH, defaultColor);
+    this(label, getLocaleCurrency(), openingBalance, description, Type.CASH, DEFAULT_COLOR);
   }
 
   public Account(String label, Currency currency, long openingBalance, String description,
@@ -733,7 +733,7 @@ public class Account extends Model {
       //TODO ???
       this.color = c.getInt(c.getColumnIndexOrThrow(KEY_COLOR));
     } catch (IllegalArgumentException ex) {
-      this.color = defaultColor;
+      this.color = DEFAULT_COLOR;
     }
     this.excludeFromTotals = c.getInt(c.getColumnIndex(KEY_EXCLUDE_FROM_TOTALS)) != 0;
   }
@@ -1274,6 +1274,19 @@ public class Account extends Model {
     if (type != other.type)
       return false;
     return true;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = this.label != null ? this.label.hashCode() : 0;
+    result = 31 * result + (this.openingBalance != null ? this.openingBalance.hashCode() : 0);
+    result = 31 * result + (this.currency != null ? this.currency.hashCode() : 0);
+    result = 31 * result + (this.description != null ? this.description.hashCode() : 0);
+    result = 31 * result + this.color;
+    result = 31 * result + (this.excludeFromTotals ? 1 : 0);
+    result = 31 * result + (this.type != null ? this.type.hashCode() : 0);
+    result = 31 * result + (this.grouping != null ? this.grouping.hashCode() : 0);
+    return result;
   }
 
   /**

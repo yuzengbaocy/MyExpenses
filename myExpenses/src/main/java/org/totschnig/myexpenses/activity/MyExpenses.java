@@ -165,8 +165,8 @@ public class MyExpenses extends LaunchActivity implements
   public static final int INITIAL_GRACE_DAYS = BuildConfig.DEBUG ? 0 : 5;
   public static final int INTERSTITIAL_MIN_INTERVAL = BuildConfig.DEBUG ? 2 : 4;
 
-  public static long TRESHOLD_REMIND_RATE = 47L;
-  public static long TRESHOLD_REMIND_CONTRIB = 113L;
+  public static final long TRESHOLD_REMIND_RATE = 47L;
+  public static final long TRESHOLD_REMIND_CONTRIB = 113L;
 
   public static final int ACCOUNTS_CURSOR = -1;
   public static final int SPLIT_PART_CURSOR = 3;
@@ -588,7 +588,6 @@ public class MyExpenses extends LaunchActivity implements
   public boolean dispatchCommand(int command, Object tag) {
     Intent i;
     TransactionList tl;
-    Account a;
     switch (command) {
       case R.id.DISTRIBUTION_COMMAND:
         tl = getCurrentFragment();
@@ -1064,7 +1063,7 @@ public class MyExpenses extends LaunchActivity implements
         break;
       case TaskExecutionFragment.TASK_EXPORT:
         ArrayList<Uri> files = (ArrayList<Uri>) o;
-        if (files != null && files.size() > 0)
+        if (files != null && !files.isEmpty())
           Utils.share(this, files,
               MyApplication.PrefKey.SHARE_TARGET.getString("").trim(),
               "text/" + mExportFormat.toLowerCase(Locale.US));

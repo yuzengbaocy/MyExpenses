@@ -27,11 +27,11 @@ public class QifParser {
     private final QifBufferedReader r;
     private final QifDateFormat dateFormat;
 
-    public final List<QifAccount> accounts = new ArrayList<QifAccount>();
-    public final Set<QifCategory> categories = new HashSet<QifCategory>();
-    public final Set<QifCategory> categoriesFromTransactions = new HashSet<QifCategory>();
-    public final Set<String> payees = new HashSet<String>();
-    public final Set<String> classes = new HashSet<String>();
+    public final List<QifAccount> accounts = new ArrayList<>();
+    public final Set<QifCategory> categories = new HashSet<>();
+    public final Set<QifCategory> categoriesFromTransactions = new HashSet<>();
+    public final Set<String> payees = new HashSet<>();
+    public final Set<String> classes = new HashSet<>();
 
     public QifParser(QifBufferedReader r, QifDateFormat dateFormat) {
         this.r = r;
@@ -95,25 +95,23 @@ public class QifParser {
     private void parseTransactions(QifAccount account) throws IOException {
       accounts.add(account);
       String peek = r.peekLine();
-      if (peek != null) {
-          if (peek.startsWith("!Type:")) {
-              applyAccountType(account, peek);
-              r.readLine();
-              while (true) {
-                  QifTransaction t = new QifTransaction();
-                  t.readFrom(r, dateFormat);
-                  if (t.isOpeningBalance()) {
-                   account.openinBalance = t.amount;
-                    if (!TextUtils.isEmpty(t.toAccount))
-                      account.memo = t.toAccount;
-                  } else {
-                    addPayeeFromTransaction(t);
-                    addCategoryFromTransaction(t);
-                    account.transactions.add(t);
-                  }
-                  if (shouldBreakCurrentBlock()) {
-                      break;
-                  }
+      if (peek != null && peek.startsWith("!Type:")) {
+          applyAccountType(account, peek);
+          r.readLine();
+          while (true) {
+              QifTransaction t = new QifTransaction();
+              t.readFrom(r, dateFormat);
+              if (t.isOpeningBalance()) {
+               account.openinBalance = t.amount;
+                if (!TextUtils.isEmpty(t.toAccount))
+                  account.memo = t.toAccount;
+              } else {
+                addPayeeFromTransaction(t);
+                addCategoryFromTransaction(t);
+                account.transactions.add(t);
+              }
+              if (shouldBreakCurrentBlock()) {
+                  break;
               }
           }
       }

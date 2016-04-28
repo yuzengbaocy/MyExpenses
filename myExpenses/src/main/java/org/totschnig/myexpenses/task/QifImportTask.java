@@ -63,7 +63,7 @@ public class QifImportTask extends AsyncTask<Void, String, Void> {
   private int totalCategories=0;
   private final Map<String, Long> payeeToId = new HashMap<>();
   private final Map<String, Long> categoryToId = new HashMap<>();
-  private final Map<String, QifAccount> accountTitleToAccount = new HashMap<String, QifAccount>();
+  private final Map<String, QifAccount> accountTitleToAccount = new HashMap<>();
   Uri fileUri;
   /**
    * should we handle parties/categories?
@@ -211,7 +211,7 @@ public class QifImportTask extends AsyncTask<Void, String, Void> {
                       .getString(R.string.qif_parse_failure_found_multiple_accounts_cannot_merge));
           return;
         }
-        if (parser.accounts.size() == 0) {
+        if (parser.accounts.isEmpty()) {
           return;
         }
         Account dbAccount = Account.getInstanceFromDb(accountId);
