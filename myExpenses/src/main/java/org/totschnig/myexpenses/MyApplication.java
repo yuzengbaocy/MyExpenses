@@ -216,7 +216,6 @@ public class MyApplication extends Application implements
   public static final String KEY_OPERATION_TYPE = "operationType";
 
   public static final String CONTRIB_SECRET = "RANDOM_SECRET";
-  public static final String MARKET_PREFIX = "market://details?id=";
   public static final String CALENDAR_FULL_PATH_PROJECTION = "ifnull("
       + Calendars.ACCOUNT_NAME + ",'') || '/' ||" + "ifnull("
       + Calendars.ACCOUNT_TYPE + ",'') || '/' ||" + "ifnull(" + Calendars.NAME
@@ -906,12 +905,13 @@ public class MyApplication extends Application implements
     return new Result(true, R.string.restore_calendar_success,
         restoredPlansCount);
   }
+
   public static String getMarketPrefix() {
     switch(BuildConfig.FLAVOR) {
-    case "amazon":
-      return "amzn://apps/android?p=";
-    default:
-      return "market://details?id=";
+      case "amazon":
+        return "amzn://apps/android?p=";
+      default:
+        return "market://details?id=";
     }
   }
 
