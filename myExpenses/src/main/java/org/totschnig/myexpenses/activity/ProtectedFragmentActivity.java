@@ -87,7 +87,7 @@ import java.io.Serializable;
 /**
  * @author Michael Totschnig
  */
-public class ProtectedFragmentActivity extends AppCompatActivity
+public abstract class ProtectedFragmentActivity extends AppCompatActivity
     implements MessageDialogListener, OnSharedPreferenceChangeListener,
     TaskExecutionFragment.TaskCallbacks, DbWriteFragment.TaskCallbacks {
   public static final int CALCULATOR_REQUEST = 0;
