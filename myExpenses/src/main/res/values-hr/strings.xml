@@ -32,8 +32,6 @@
   <string name="contrib_feature_plans_unlimited_description" tools:ignore="UnusedResources">Broj planova koje možete kreirati na listi <i>Moji troškovi</i> je ograničen na 3.</string>
   <string name="contrib_feature_plans_unlimited_label" tools:ignore="UnusedResources">Neograničeni broj planova</string>
   <string name="contrib_feature_print_label" tools:ignore="UnusedResources">Eksportiraj listu transakcija u PDF</string>
-  <string name="contrib_feature_security_question_label" tools:ignore="UnusedResources">Sigurnosno pitanje</string>
-  <string name="contrib_feature_split_transaction_label" tools:ignore="UnusedResources">Dijeljena transakcija</string>
   <string name="contrib_feature_template_widget_label" tools:ignore="UnusedResources">Widget za predložak</string>
   <string name="contrib_key">Contrib Ključ</string>
   <!--Placeholder: 1 will be replace with either My Expenses Contrib Key or My Expenses Extended Key-->
@@ -97,7 +95,6 @@
   <string name="dialog_title_template_title">Odaberi naslov</string>
   <string name="dialog_title_warning_delete_account">Izbriši račun?</string>
   <string name="dialog_title_warning_delete_main_category">Izbrišu osnovnu kategoriju?</string>
-  <string name="dialog_title_warning_delete_plan">Izbriši plan?</string>
   <string name="dialog_title_warning_delete_template">Izbriši predložak?</string>
   <string name="dialog_title_warning_delete_transaction">Izbriši transakciju?</string>
   <string name="dialog_title_welcome">Dobrodošli!</string>
@@ -219,7 +216,6 @@
   <string name="no_mapped_transactions">Nema transakcija označenih po kategorijama tijekom ovog perioda.</string>
   <string name="no_methods">Nema načina plaćanja.</string>
   <string name="no_parties">Nema stranki.</string>
-  <string name="no_plans">Nema planova.</string>
   <string name="no_split_parts">Nema transakcija s odvojenim dijelovima.</string>
   <string name="no_templates">Nema predložaka.</string>
   <string name="no_title_given">Molimo unesite naslov.</string>
@@ -412,11 +408,6 @@
     <item quantity="one">Odabrana kategorija sadrži podkategorije, koje će također biti obrisane.</item>
     <item quantity="few">%1$d Odabrane kategorije sadrže podkategorije, koje će također biti obrisane.</item>
     <item quantity="other">%1$d Odabrane kategorije sadrže podkategorije, koje će također biti obrisane.</item>
-  </plurals>
-  <plurals name="warning_delete_plan">
-    <item quantity="one">Odabrani plan će biti obrisan.</item>
-    <item quantity="few">%1$d odabrani planovi će biti obrisani.</item>
-    <item quantity="other">%1$d odabrani planovi će biti obrisani.</item>
   </plurals>
   <plurals name="warning_delete_template">
     <item quantity="one">Odabrani predložak će biti obrisan.</item>

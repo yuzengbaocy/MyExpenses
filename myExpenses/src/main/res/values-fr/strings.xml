@@ -40,11 +40,8 @@
   <string name="contrib_feature_plans_unlimited_description" tools:ignore="UnusedResources">Le nombre d\'échéances que vous pouvez créer avec <i>Mes dépenses</i> est limité à 3.</string>
   <string name="contrib_feature_plans_unlimited_label" tools:ignore="UnusedResources">Nombre d\'échéances illimité</string>
   <string name="contrib_feature_print_label" tools:ignore="UnusedResources">Export de la liste des opérations au format PDF</string>
-  <string name="contrib_feature_security_question_label" tools:ignore="UnusedResources">Question de sécurité</string>
-  <string name="contrib_feature_split_transaction_label" tools:ignore="UnusedResources">Opération ventilée</string>
   <string name="contrib_feature_template_widget_label" tools:ignore="UnusedResources">Widget de modèles</string>
   <string name="contrib_feature_csv_import_label" tools:ignore="UnusedResources">Import CSV</string>
-  <string name="contrib_feature_auto_backup_label" tools:ignore="UnusedResources">Auto-backup</string>
   <string name="contrib_key">Clé Contrib</string>
   <string name="extended_key">Clé étendue</string>
   <!--Placeholder: 1 will be replace with either My Expenses Contrib Key or My Expenses Extended Key-->
@@ -122,7 +119,6 @@
   <string name="dialog_title_template_title">Définir le titre</string>
   <string name="dialog_title_warning_delete_account">Effacer le compte?</string>
   <string name="dialog_title_warning_delete_main_category">Effacer la catégorie principale</string>
-  <string name="dialog_title_warning_delete_plan">Effacer l\'échéance ?</string>
   <string name="dialog_title_warning_delete_template">Supprimer le modèle ?</string>
   <string name="dialog_title_warning_delete_transaction">Supprimer l\'opération ?</string>
   <string name="dialog_title_welcome">Bienvenue!</string>
@@ -248,7 +244,6 @@
   <string name="no_mapped_transactions">Aucune opération n\'a été attribuée à aucune catégorie au cours de cette période.</string>
   <string name="no_methods">Aucune méthode.</string>
   <string name="no_parties">Aucun tiers.</string>
-  <string name="no_plans">Aucune échéance.</string>
   <string name="no_split_parts">Aucune sous-opération.</string>
   <string name="no_templates">Aucun modèle.</string>
   <string name="no_title_given">Vous n\'avez pas saisi de titre.</string>
@@ -445,10 +440,6 @@
     <item quantity="one">La catégorie sélectionnée possède des sous-catégories, qui seront aussi supprimées.</item>
     <item quantity="other">%1$d catégories sélectionnées possèdent des sous-catégories, qui seront aussi supprimées.</item>
   </plurals>
-  <plurals name="warning_delete_plan">
-    <item quantity="one">L\'échéance sélectionnée sera supprimée.</item>
-    <item quantity="other">%1$d échéances sélectionnées seront supprimées.</item>
-  </plurals>
   <plurals name="warning_delete_template">
     <item quantity="one">Le modèle sélectionné sera supprimé.</item>
     <item quantity="other">%1$d modèles sélectionnés seront supprimés.</item>
@@ -547,6 +538,7 @@
   <string name="pref_manage_stale_images_summary">Gérer les photos ayant fait partie des transactions supprimées</string>
   <string name="menu_select_categories">Sélectionner les catégories cochées</string>
   <string name="image_deleted">La photo a été supprimée</string>
+  <string name="transaction_deleted">L\'opération a été supprimée</string>
   <string name="dialog_export_applied_to_filter">Seules les transactions qui correspondent au filtre actuel seront pris en considération.</string>
   <string name="export_handle_deleted_create_helper">Créer une opération annexe</string>
   <string name="export_handle_deleted_update_balance">Mise à jour du solde initial</string>
@@ -581,7 +573,7 @@
   <string name="warning_auto_backup_limited_trial" tools:ignore="PluralsCandidate">Après %d sauvegardes automatiques réussies, la sauvegarde automatique sera désactivée.</string>
   <string name="warning_auto_backup_limit_reached">La limite des sauvegardes automatiques réussies gratuites a été atteinte.</string>
   <string name="calendar_permission_required"><i>Mes dépenses </i> requiert votre permission d\'accéder à votre calendrier , dans le but de créer des échéances pour des opérations futures et répétitives </string>
-  <string name="button_request_calendar_access">Autoriser l\'accès</string>
+  <string name="button_request_calendar_access" tools:ignore="UnusedResources">Autoriser l\'accès</string>
   <string name="switch_on_text">Activé</string>
   <string name="switch_off_text">Désactivé</string>
   <string name="menu_move">Déplacer</string>

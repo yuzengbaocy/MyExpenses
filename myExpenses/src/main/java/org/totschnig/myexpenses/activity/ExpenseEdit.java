@@ -458,6 +458,9 @@ public class ExpenseEdit extends AmountActivity implements
       }
     } else {
       mOperationType = getIntent().getIntExtra(MyApplication.KEY_OPERATION_TYPE, MyExpenses.TYPE_TRANSACTION);
+      if (!isValidType(mOperationType)) {
+        mOperationType = MyExpenses.TYPE_TRANSACTION;
+      }
       if (mOperationType == MyExpenses.TYPE_SPLIT && !ContribFeature.SPLIT_TRANSACTION.hasAccess() &&
           ContribFeature.SPLIT_TRANSACTION.usagesLeft() < 1) {
         Toast.makeText(this, ContribFeature.SPLIT_TRANSACTION.buildRequiresString(this),
@@ -550,7 +553,8 @@ public class ExpenseEdit extends AmountActivity implements
       }
       if (mTransaction == null) {
         String errMsg = "Error instantiating transaction for account " + accountId;
-        Utils.reportToAcra(new IllegalStateException(errMsg));
+        Utils.reportToAcra(new IllegalStateException(errMsg),
+            "Extras", getIntent().getExtras().toString());
         Toast.makeText(this, errMsg, Toast.LENGTH_SHORT).show();
         finish();
         return;
@@ -690,6 +694,7 @@ public class ExpenseEdit extends AmountActivity implements
         mTransaction instanceof SplitPartTransfer) {
       findViewById(R.id.DateTimeRow).setVisibility(View.GONE);
     } else {
+      //noinspection SetTextI18n
       ((TextView) findViewById(R.id.DateTimeLabel)).setText(getString(
           R.string.date) + " / " + getString(R.string.time));
       mDateButton.setOnClickListener(new View.OnClickListener() {
@@ -1634,7 +1639,7 @@ public class ExpenseEdit extends AmountActivity implements
         break;
       case R.id.OperationType:
         int newType = ((Integer) mOperationTypeSpinner.getItemAtPosition(position));
-        if (newType != mOperationType) {
+        if (newType != mOperationType && isValidType(newType)) {
           if (newType == MyExpenses.TYPE_TRANSFER && !checkTransferEnabled(getCurrentAccount())) {
             //reset to previous
             resetOperationType();
@@ -1651,6 +1656,11 @@ public class ExpenseEdit extends AmountActivity implements
         configureTransferInput();
         break;
     }
+  }
+
+  private boolean isValidType(int type) {
+    return type == MyExpenses.TYPE_SPLIT || type == MyExpenses.TYPE_TRANSACTION ||
+        type == MyExpenses.TYPE_TRANSFER;
   }
 
   private void updateAccount(Account account) {
@@ -1690,8 +1700,8 @@ public class ExpenseEdit extends AmountActivity implements
     findViewById(R.id.ExchangeRateRow).setVisibility(
         isSame || (mTransaction instanceof Template) ? View.GONE : View.VISIBLE);
     final String symbol2 = transferAccount.currency.getSymbol();
-    ((TextView) findViewById(R.id.TransferAmountLabel)).setText(getString(R.string.amount) + " ("
-        + symbol2 + ")");
+    //noinspection SetTextI18n
+    addCurrencyToLabel((TextView) findViewById(R.id.TransferAmountLabel), symbol2);
     mTransferAmountText.setFractionDigits(Money.getFractionDigits(transferAccount.currency));
     final String symbol1 = currency.getSymbol();
     ((TextView) findViewById(R.id.ExchangeRateLabel_1_1)).setText(String.format("1 %s =", symbol1));
@@ -1708,7 +1718,12 @@ public class ExpenseEdit extends AmountActivity implements
   }
 
   private void setAccountLabel(Account account) {
-    mAmountLabel.setText(getString(R.string.amount) + " (" + account.currency.getSymbol() + ")");
+    addCurrencyToLabel(mAmountLabel, account.currency.getSymbol());
+  }
+
+  private void addCurrencyToLabel(TextView label, String symbol) {
+    //noinspection SetTextI18n
+    label.setText(getString(R.string.amount) + " (" + symbol + ")");
   }
 
   private void resetOperationType() {

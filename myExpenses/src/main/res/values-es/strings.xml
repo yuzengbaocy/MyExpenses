@@ -40,11 +40,8 @@
   <string name="contrib_feature_plans_unlimited_description" tools:ignore="UnusedResources">El número de planes que se pueden crear con <i>Mis gastos</i> se limita a 3.</string>
   <string name="contrib_feature_plans_unlimited_label" tools:ignore="UnusedResources">Planes sin límite</string>
   <string name="contrib_feature_print_label" tools:ignore="UnusedResources">Lista de transacciones de exportación a PDF</string>
-  <string name="contrib_feature_security_question_label" tools:ignore="UnusedResources">Pregunta de seguridad</string>
-  <string name="contrib_feature_split_transaction_label" tools:ignore="UnusedResources">Asiento dividido</string>
   <string name="contrib_feature_template_widget_label" tools:ignore="UnusedResources">Widget de plantillas</string>
   <string name="contrib_feature_csv_import_label" tools:ignore="UnusedResources">Importación CSV</string>
-  <string name="contrib_feature_auto_backup_label" tools:ignore="UnusedResources">Backup automática</string>
   <string name="contrib_key">Clave Contrib</string>
   <string name="extended_key">Clave Extendida</string>
   <!--Placeholder: 1 will be replace with either My Expenses Contrib Key or My Expenses Extended Key-->
@@ -122,7 +119,6 @@
   <string name="dialog_title_template_title">Establecer el título</string>
   <string name="dialog_title_warning_delete_account">¿Borrar la cuenta?</string>
   <string name="dialog_title_warning_delete_main_category">¿Borrar la categoría principal?</string>
-  <string name="dialog_title_warning_delete_plan">¿Borrar el plan?</string>
   <string name="dialog_title_warning_delete_template">Borrar plantilla</string>
   <string name="dialog_title_warning_delete_transaction">Borrar asiento</string>
   <string name="dialog_title_welcome">¡Bienvenido!</string>
@@ -248,7 +244,6 @@
   <string name="no_mapped_transactions">Ninguna transacción se ha asignado a las categorías durante este período.</string>
   <string name="no_methods">No hay métodos.</string>
   <string name="no_parties">No hay partidos.</string>
-  <string name="no_plans">No hay planes.</string>
   <string name="no_split_parts">No hay divisiones.</string>
   <string name="no_templates">No hay plantillas</string>
   <string name="no_title_given">No ha insertado usted título alguno.</string>
@@ -412,7 +407,7 @@
   <string name="menu_select_folder">Seleccione esta carpeta</string>
   <string name="share_scheme_not_supported">Esquema %1$s no está apoyado.</string>
   <string name="share_sending">Enviar el archivo</string>
-  <string name="split_parts_heading">Fracciones</string>
+  <string name="split_parts_heading">Divisiones</string>
   <string name="split_transaction">Asiento dividido</string>
   <string name="status">Estado</string>
   <string name="status_cleared">despejado</string>
@@ -444,10 +439,6 @@
   <plurals name="warning_delete_main_category">
     <item quantity="one">La categoría seleccionada tiene subcategorías, que se eliminará también.</item>
     <item quantity="other">%1$d categorías seleccionadas tienen subcategorías, que se eliminarán también.</item>
-  </plurals>
-  <plurals name="warning_delete_plan">
-    <item quantity="one">Se eliminará el plan seleccionado.</item>
-    <item quantity="other">Se eliminarán %1$d planes seleccionados.</item>
   </plurals>
   <plurals name="warning_delete_template">
     <item quantity="one">Se eliminará la plantilla seleccionada. </item>
@@ -547,6 +538,7 @@
   <string name="pref_manage_stale_images_summary">Administrar imágenes de transacciones eliminadas</string>
   <string name="menu_select_categories">Seleccionar las categorías marcadas</string>
   <string name="image_deleted">Foto ha sido borrado</string>
+  <string name="transaction_deleted">Transacción se ha eliminado</string>
   <string name="dialog_export_applied_to_filter">Se considerarán transacciones sólo igualadas por el filtro actual.</string>
   <string name="export_handle_deleted_create_helper">Crear transacción ayudante</string>
   <string name="export_handle_deleted_update_balance">Actualizar saldo inicial</string>
@@ -581,7 +573,7 @@
   <string name="warning_auto_backup_limited_trial" tools:ignore="PluralsCandidate">Después de %d copias de seguridad automáticas exitosa, copia de seguridad automática se desactiva.</string>
   <string name="warning_auto_backup_limit_reached">Il limite per i backup automatici di successo libero è stato raggiunto.</string>
   <string name="calendar_permission_required"><i>Mis gastos</i> necesita permiso para acceder a su calendario, con el fin de crear planes para transacciones futuras y recurrentes.</string>
-  <string name="button_request_calendar_access">Otorgar acceso</string>
+  <string name="button_request_calendar_access" tools:ignore="UnusedResources">Otorgar acceso</string>
   <string name="switch_on_text">Sí</string>
   <string name="switch_off_text">No</string>
   <string name="menu_move">Mover</string>
@@ -606,5 +598,8 @@
   <string name="plan_instance_state_cancelled">cancelado</string>
   <!--describes the state of a plan instance that has been applied, i.e. a transaction has been entered into the database for it. Used as content description for icon in list.-->
   <string name="plan_instance_state_applied">aplicado</string>
+  <string name="progress_dialog_updating_split_parts">Actualización de divisiones</string>
+  <string name="warning_cannot_move_split_transaction">Esto asiento dividido no se pueden mover para %1$s porque hay divisiones que hacen referencia a esta cuenta.</string>
   <string name="content_description_calculator_clear_button">Restablecer todas</string>
+  <string name="content_description_calculator_delete_button">Borrar el último dígito</string>
 </resources>

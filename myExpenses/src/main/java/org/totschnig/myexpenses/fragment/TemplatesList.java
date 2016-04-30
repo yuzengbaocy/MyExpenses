@@ -41,8 +41,12 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.android.calendar.CalendarContractCompat;
 
 import com.android.calendar.CalendarContractCompat;
 
@@ -84,6 +88,9 @@ import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TRANSFER_P
 
 import com.android.calendar.CalendarContractCompat.Events;
 
+import icepick.Icepick;
+import icepick.State;
+
 public class TemplatesList extends SortableListFragment {
 
   public static final String CALDROID_DIALOG_FRAGMENT_TAG = "CALDROID_DIALOG_FRAGMENT";
@@ -97,20 +104,31 @@ public class TemplatesList extends SortableListFragment {
     return R.menu.templateslist_context;
   }
 
-  Cursor mTemplatesCursor;
+  private Cursor mTemplatesCursor;
   private SimpleCursorAdapter mAdapter;
   private LoaderManager mManager;
 
   private int columnIndexAmount, columnIndexLabelSub, columnIndexComment,
       columnIndexPayee, columnIndexColor, columnIndexTransferPeer,
       columnIndexCurrency, columnIndexTransferAccount, columnIndexPlanId,
-      columnIndexTitle;
-  boolean indexesCalculated = false;
+      columnIndexTitle, columnIndexRowId;
+  private boolean indexesCalculated = false;
+  /**
+   * if we are called from the calendar app, we only need to handle display of plan once
+   */
+  @State
+  boolean expandedHandled = false;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setHasOptionsMenu(true);
+    Icepick.restoreInstanceState(this, savedInstanceState);
+  }
+
+  @Override public void onSaveInstanceState(Bundle outState) {
+    super.onSaveInstanceState(outState);
+    Icepick.saveInstanceState(this, outState);
   }
 
   @Override
@@ -284,6 +302,7 @@ public class TemplatesList extends SortableListFragment {
       case SORTABLE_CURSOR:
         mTemplatesCursor = c;
         if (c != null && !indexesCalculated) {
+          columnIndexRowId = c.getColumnIndex(KEY_ROWID);
           columnIndexAmount = c.getColumnIndex(KEY_AMOUNT);
           columnIndexLabelSub = c.getColumnIndex(KEY_LABEL_SUB);
           columnIndexComment = c.getColumnIndex(KEY_COMMENT);
@@ -302,8 +321,20 @@ public class TemplatesList extends SortableListFragment {
             mTemplatesCursor != null && mTemplatesCursor.moveToFirst()) {
           ArrayList<Long> plans = new ArrayList<>();
           long planId;
+          long needToExpand = expandedHandled ? ManageTemplates.NOT_CALLED :
+              ((ManageTemplates) getActivity()).getCalledFromCalendarWithId();
+          boolean foundToExpand = false;
           Bundle planBundle = new Bundle();
-          while (mTemplatesCursor.isAfterLast() == false) {
+          while (!mTemplatesCursor.isAfterLast()) {
+            long templateId = mTemplatesCursor.getLong(columnIndexRowId);
+            if (needToExpand == templateId) {
+              planMonthFragment = PlanMonthFragment.newInstance(
+                  mTemplatesCursor.getString(columnIndexTitle),
+                  templateId,
+                  mTemplatesCursor.getLong(columnIndexPlanId),
+                  mTemplatesCursor.getInt(columnIndexColor));
+              foundToExpand = true;
+            }
             if ((planId = mTemplatesCursor.getLong(columnIndexPlanId)) != 0L) {
               plans.add(planId);
             }
@@ -311,6 +342,14 @@ public class TemplatesList extends SortableListFragment {
           }
           planBundle.putSerializable(KEY_PLANS_LIST, plans);
           Utils.requireLoader(mManager, PLANS_CURSOR, planBundle, this);
+          if (needToExpand != ManageTemplates.NOT_CALLED) {
+            expandedHandled = true;
+            if (foundToExpand) {
+              planMonthFragment.show(getChildFragmentManager(), CALDROID_DIALOG_FRAGMENT_TAG);
+            } else {
+              Toast.makeText(getActivity(), R.string.save_transaction_template_deleted, Toast.LENGTH_LONG).show();
+            }
+          }
         }
         break;
       case PLANS_CURSOR:
@@ -416,10 +455,11 @@ public class TemplatesList extends SortableListFragment {
           planInfo = getString(R.string.plan_event_deleted);
         }
         ((TextView) convertView.findViewById(R.id.title)).setText(
-            c.getString(columnIndexTitle)
-                + " (" + planInfo + ")");
+            //noinspection SetTextI18n
+            c.getString(columnIndexTitle) + " (" + planInfo + ")");
       }
-      convertView.findViewById(R.id.Plan).setVisibility(doesHavePlan ? View.VISIBLE: View.INVISIBLE);
+      ((ImageView) convertView.findViewById(R.id.Plan)).setImageResource(
+          doesHavePlan ? R.drawable.ic_event : R.drawable.ic_menu_template);
       return convertView;
     }
   }

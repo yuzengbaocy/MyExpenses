@@ -24,12 +24,13 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:contentDescription="@string/menu_manage_plans_tab_plans"
-        app:srcCompat="@drawable/ic_event"
         tools:ignore="MissingPrefix"/>
 
     <View
         android:id="@+id/colorAccount"
         android:layout_width="4dp"
+        android:layout_marginRight="6dp"
+        android:layout_marginLeft="6dp"
         android:layout_height="fill_parent"/>
 
     <RelativeLayout

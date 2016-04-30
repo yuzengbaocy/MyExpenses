@@ -40,11 +40,8 @@
   <string name="contrib_feature_plans_unlimited_description" tools:ignore="UnusedResources"><i>Harcamalarım</i> ile oluşturabileceğiniz plan sayısı 3 ile sınırlıdır.</string>
   <string name="contrib_feature_plans_unlimited_label" tools:ignore="UnusedResources">Sınırsız plan sayısı</string>
   <string name="contrib_feature_print_label" tools:ignore="UnusedResources">Muamele listesini PDF dosyasına aktar</string>
-  <string name="contrib_feature_security_question_label" tools:ignore="UnusedResources">Güvenlik sorusu</string>
-  <string name="contrib_feature_split_transaction_label" tools:ignore="UnusedResources">Bölünmüş muamele</string>
   <string name="contrib_feature_template_widget_label" tools:ignore="UnusedResources">Şablon widget\'i</string>
   <string name="contrib_feature_csv_import_label" tools:ignore="UnusedResources">CSV içe aktar</string>
-  <string name="contrib_feature_auto_backup_label" tools:ignore="UnusedResources">Otomatik yedekleme</string>
   <string name="contrib_key">Katkı Anahtarı</string>
   <string name="extended_key">Genişletilmiş Anahtarı</string>
   <!--Placeholder: 1 will be replace with either My Expenses Contrib Key or My Expenses Extended Key-->
@@ -122,7 +119,6 @@
   <string name="dialog_title_template_title">Başlığı belirtin</string>
   <string name="dialog_title_warning_delete_account">Hesap silinsin mi?</string>
   <string name="dialog_title_warning_delete_main_category">Ana kategori silinsin mi?</string>
-  <string name="dialog_title_warning_delete_plan">Plan silinsin mi?</string>
   <string name="dialog_title_warning_delete_template">Şablon silinsin mi?</string>
   <string name="dialog_title_warning_delete_transaction">Muamele silinsin mi?</string>
   <string name="dialog_title_welcome">Hoşgeldiniz!</string>
@@ -248,7 +244,6 @@
   <string name="no_mapped_transactions">Bu zaman aralığında hiçbir muamele kategoriler ile ilişkilendirilmemiştir.</string>
   <string name="no_methods">Hiçbir ödeme metodu yok.</string>
   <string name="no_parties">Bölüm yok.</string>
-  <string name="no_plans">Plan yok.</string>
   <string name="no_split_parts">Hiçbir alt muamele yok.</string>
   <string name="no_templates">Şablon yok.</string>
   <string name="no_title_given">Hiçbir metin girmediniz.</string>
@@ -445,10 +440,6 @@
     <item quantity="one">Seçili kategorinin alt kategorileri bulunmaktadır ve bunlar da silinecektir.</item>
     <item quantity="other">Seçilen %1$d kategorinin alt kategorileri bulunmaktadır ve bunlar da silinecektir.</item>
   </plurals>
-  <plurals name="warning_delete_plan">
-    <item quantity="one">Seçilen planlama silinecektir.</item>
-    <item quantity="other">Seçilen %1$d planlama silinecektir.</item>
-  </plurals>
   <plurals name="warning_delete_template">
     <item quantity="one">Seçilen şablon silinecektir.</item>
     <item quantity="other">Seçilen %1$d şablon silinecektir.</item>
@@ -547,6 +538,7 @@
   <string name="pref_manage_stale_images_summary">Silinmiş muamelelerden kalan resimleri yönet</string>
   <string name="menu_select_categories">İşaretlenen kategorileri seç</string>
   <string name="image_deleted">Resim silinmiştir</string>
+  <string name="transaction_deleted">Muamele silinmiştir</string>
   <string name="dialog_export_applied_to_filter">Sadece güncel filtre ile eşleşen muameleler dikkate alınacaktır.</string>
   <string name="export_handle_deleted_create_helper">Yardımcı muamele oluştur</string>
   <string name="export_handle_deleted_update_balance">Açılış bakiyesini güncelle</string>
@@ -581,7 +573,7 @@
   <string name="warning_auto_backup_limited_trial" tools:ignore="PluralsCandidate">%d başarılı otomatik yedekleme ardından otomatik yedekleme devre dışı bırakılacaktır.</string>
   <string name="warning_auto_backup_limit_reached">Başarılı otomatik yedeklemeler için sınıra erişildi.</string>
   <string name="calendar_permission_required">Gelecek ve tekrar eden muameleler oluşturabilmek amacıyla <i>Harcamalarımın</i> takviminize erişmek için müsaadeye ihtiyacı vardır. </string>
-  <string name="button_request_calendar_access">İzin ver</string>
+  <string name="button_request_calendar_access" tools:ignore="UnusedResources">İzin ver</string>
   <string name="switch_on_text">Açık</string>
   <string name="switch_off_text">Kapalı</string>
   <string name="menu_move">Taşı</string>

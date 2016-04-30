@@ -32,10 +32,7 @@
   <string name="contrib_feature_distribution_label" tools:ignore="UnusedResources">توزيع العمليات لكل تصنيف</string>
   <string name="contrib_feature_plans_unlimited_description" tools:ignore="UnusedResources">عدد الخطط المسموح انشاؤها في <i>مصروفاتي</i> هي 3 فقط.</string>
   <string name="contrib_feature_plans_unlimited_label" tools:ignore="UnusedResources">عدد غير محدود من الخطط</string>
-  <string name="contrib_feature_security_question_label" tools:ignore="UnusedResources">السؤال السري</string>
-  <string name="contrib_feature_split_transaction_label" tools:ignore="UnusedResources">تقسيم العمليات</string>
   <string name="contrib_feature_csv_import_label" tools:ignore="UnusedResources">إستيراد ملف CSV</string>
-  <string name="contrib_feature_auto_backup_label" tools:ignore="UnusedResources">نسخ احتياطي آلي</string>
   <!--Placeholder: 1 will be replace with either My Expenses Contrib Key or My Expenses Extended Key-->
   <string name="currency">العملة</string>
   <string name="current_balance">الرصيد الحالي</string>
@@ -85,7 +82,6 @@
   <string name="dialog_title_template_title">اكتب العنوان</string>
   <string name="dialog_title_warning_delete_account">حذف الحساب؟</string>
   <string name="dialog_title_warning_delete_main_category">حذف التصنيف الأساسي؟</string>
-  <string name="dialog_title_warning_delete_plan">حذف خطة؟</string>
   <string name="dialog_title_warning_delete_template">حذف نموذج؟</string>
   <string name="dialog_title_warning_delete_transaction">حذف عملية؟</string>
   <string name="dialog_title_welcome">مرحبا!</string>
@@ -200,7 +196,6 @@
   <string name="no_mapped_transactions">لا يوجد عمليات لهذا التصنيف خلال هذه الفترة.</string>
   <string name="no_methods">لا يوجد طرق دفع.</string>
   <string name="no_parties">لا يوجد أطراف.</string>
-  <string name="no_plans">لا يوجد خطط.</string>
   <string name="no_split_parts">لا يوجد تقسيمات</string>
   <string name="no_templates">لا يوجد نماذج.</string>
   <string name="no_title_given">لم تقم بإدخال عنوان.</string>

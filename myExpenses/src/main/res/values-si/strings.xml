@@ -26,8 +26,6 @@
   <string name="contrib_feature_distribution_label" tools:ignore="UnusedResources">කාණ්ඩයක ගනුදෙනු විභාජනය</string>
   <string name="contrib_feature_plans_unlimited_description" tools:ignore="UnusedResources"><i>මයි එක්ස්පෙන්සසි</i> හි ඔබට නිර්මාණය කළහැකි උපරිම  සැලසුම් ගණන 3කි.</string>
   <string name="contrib_feature_plans_unlimited_label" tools:ignore="UnusedResources">සීමා රහිත ක්‍රම ගණනක්</string>
-  <string name="contrib_feature_security_question_label" tools:ignore="UnusedResources">සුරක්ෂිතතාවය සඳහා ප්‍රශ්නය</string>
-  <string name="contrib_feature_split_transaction_label" tools:ignore="UnusedResources">විභේදනය වූ ගනුදෙනු</string>
   <string name="contrib_feature_template_widget_label" tools:ignore="UnusedResources">විජට් අච්චුව </string>
   <string name="contrib_key">කොන්ට්‍රිබ් යතුර </string>
   <!--Placeholder: 1 will be replace with either My Expenses Contrib Key or My Expenses Extended Key-->
@@ -80,7 +78,6 @@
   <string name="dialog_title_template_title">මාතෘකාවක් යොදන්න </string>
   <string name="dialog_title_warning_delete_account">ගිණුම මකාදමන්න?</string>
   <string name="dialog_title_warning_delete_main_category">ප්‍රධාන ප්‍රබෙධය මක දමන්න?</string>
-  <string name="dialog_title_warning_delete_plan">සැලසුම මකා  දමන්න?</string>
   <string name="dialog_title_warning_delete_template">අච්චුව මකාදමන්න?</string>
   <string name="dialog_title_warning_delete_transaction">ගනුදෙනුව   මකාදමන්න?</string>
   <string name="dialog_title_welcome">ආදරයෙන් පිළිගන්නවා!</string>
@@ -198,7 +195,6 @@
   <string name="no_mapped_transactions">මෙම කාලපරාසය තුල කිසම ගනුදෙනුවක් ප්‍රබේධ තුලට වෙන්  කොට නැත </string>
   <string name="no_methods">මිලදී ගැනීමේ ක්‍රමයක් නැත </string>
   <string name="no_parties">කණ්ඩායම් නැත </string>
-  <string name="no_plans">සැලසුම් නොමැත </string>
   <string name="no_split_parts">කොටස් බෙදීම් නොමැත </string>
   <string name="no_templates">අච්චු නැත </string>
   <string name="no_title_given">ඔබ කිසිදු මාතෘකාවක් ඇතුලත් කරන නොමැත </string>
@@ -372,10 +368,6 @@
   <plurals name="warning_delete_main_category">
     <item quantity="one">තෝරාගත් ප්‍රබෙධයහි අනු ප්‍රබෙධද මකා දැමෙයි </item>
     <item quantity="other">තෝරාගත් %1$d ප්‍රබෙධයන්හි අනු ප්‍රබෙධද මකා දැමෙයි </item>
-  </plurals>
-  <plurals name="warning_delete_plan">
-    <item quantity="one">තෝරාගත් සැලසුම මකා දමයි </item>
-    <item quantity="other">තෝරාගත්  සැලසුම් %1$d  මකා දමයි </item>
   </plurals>
   <plurals name="warning_delete_template">
     <item quantity="one">තෝරාගත් අච්චුව   මකා දමයි </item>

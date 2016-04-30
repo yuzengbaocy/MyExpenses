@@ -40,11 +40,8 @@
   <string name="contrib_feature_plans_unlimited_description" tools:ignore="UnusedResources">Il numero di scadenze che si possono creare con <i>Le mie spese</i> è limitata a 3.</string>
   <string name="contrib_feature_plans_unlimited_label" tools:ignore="UnusedResources">Numero illimitato di scadenze</string>
   <string name="contrib_feature_print_label" tools:ignore="UnusedResources">Esportazione dell\'elenco delle transazioni in PDF</string>
-  <string name="contrib_feature_security_question_label" tools:ignore="UnusedResources">Domanda di sicurezza</string>
-  <string name="contrib_feature_split_transaction_label" tools:ignore="UnusedResources">Operazione frazionata</string>
   <string name="contrib_feature_template_widget_label" tools:ignore="UnusedResources">Widget modelli</string>
   <string name="contrib_feature_csv_import_label" tools:ignore="UnusedResources">Importazione CSV</string>
-  <string name="contrib_feature_auto_backup_label" tools:ignore="UnusedResources">Backup automatico</string>
   <string name="contrib_key">Chiave Contrib</string>
   <string name="extended_key">Chiave Ampliata</string>
   <!--Placeholder: 1 will be replace with either My Expenses Contrib Key or My Expenses Extended Key-->
@@ -122,7 +119,6 @@
   <string name="dialog_title_template_title">Assegna un nome</string>
   <string name="dialog_title_warning_delete_account">Cancellare il conto ?</string>
   <string name="dialog_title_warning_delete_main_category">Cancellare la categoria principale</string>
-  <string name="dialog_title_warning_delete_plan">Cancellare la scadenza</string>
   <string name="dialog_title_warning_delete_template">Eliminare modello ?</string>
   <string name="dialog_title_warning_delete_transaction">Eliminare transazione ?</string>
   <string name="dialog_title_welcome">Benvenuto!</string>
@@ -248,7 +244,6 @@
   <string name="no_mapped_transactions">Nessuna transazione è stata assegnata a categorie in questo periodo.</string>
   <string name="no_methods">Non ci sono modi.</string>
   <string name="no_parties">Non ci sono beneficiari.</string>
-  <string name="no_plans">Nessun piano.</string>
   <string name="no_split_parts">Nessun frazionamento.</string>
   <string name="no_templates">Non ci sono modelli.</string>
   <string name="no_title_given">Non hai inserito nessun titolo.</string>
@@ -445,10 +440,6 @@
     <item quantity="one">La categoria selezionata ha sottocategorie, che verrà cancellate così.</item>
     <item quantity="other">%1$d categorie selezionate hanno sottocategorie, che verrà cancellate così.</item>
   </plurals>
-  <plurals name="warning_delete_plan">
-    <item quantity="one">Il piano selezionato viene cancellato.</item>
-    <item quantity="other">Saranno cancellati %1$d piani selezionati.</item>
-  </plurals>
   <plurals name="warning_delete_template">
     <item quantity="one">Il modello selezionato verrà cancellato.</item>
     <item quantity="other">Saranno cancellati %1$d modelli selezionati.</item>
@@ -547,6 +538,7 @@
   <string name="pref_manage_stale_images_summary">Gestire immagini lasciati da transazioni eliminate</string>
   <string name="menu_select_categories">Selezionare categorie controllate</string>
   <string name="image_deleted">Foto cancellata</string>
+  <string name="transaction_deleted">Transazione è stato eliminato</string>
   <string name="dialog_export_applied_to_filter">Saranno considerate solo le transazioni di pari passo con il filtro corrente.</string>
   <string name="export_handle_deleted_create_helper">Creare transazione ausiliario</string>
   <string name="export_handle_deleted_update_balance">Aggiornare il saldo iniziale</string>
@@ -581,7 +573,7 @@
   <string name="warning_auto_backup_limited_trial" tools:ignore="PluralsCandidate">Dopo %d successo automatico backup, backup automatico verrà disattivato.</string>
   <string name="warning_auto_backup_limit_reached">Gratis backup automatici di successo è stato raggiunto il limite.</string>
   <string name="calendar_permission_required"><i>Le mie spese</i> richiede autorizzazione per accedere al calendario, al fine di creare piani per operazione future e ricorrente.</string>
-  <string name="button_request_calendar_access">Concedere l\'accesso</string>
+  <string name="button_request_calendar_access" tools:ignore="UnusedResources">Concedere l\'accesso</string>
   <string name="switch_on_text">Attivo</string>
   <string name="switch_off_text">Non attivo</string>
   <string name="menu_move">Spostare</string>
@@ -606,5 +598,8 @@
   <string name="plan_instance_state_cancelled">annullato</string>
   <!--describes the state of a plan instance that has been applied, i.e. a transaction has been entered into the database for it. Used as content description for icon in list.-->
   <string name="plan_instance_state_applied">applicato</string>
+  <string name="progress_dialog_updating_split_parts">Aggiornamento di frazionamenti</string>
+  <string name="warning_cannot_move_split_transaction">Questo operazione frazionata non può essere spostato per %1$s perché ci sono frazionamenti che fanno riferimento a questo conto.</string>
   <string name="content_description_calculator_clear_button">Reinizializzare tutti</string>
+  <string name="content_description_calculator_delete_button">Eliminare l\'ultima cifra</string>
 </resources>
