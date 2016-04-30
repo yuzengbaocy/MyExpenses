@@ -37,6 +37,7 @@ import android.os.Environment;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.LoaderManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v4.graphics.drawable.DrawableCompat;
@@ -114,9 +115,9 @@ import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_USAGES;
 
 /**
  * Util class with helper methods
- * 
+ *
  * @author Michael Totschnig
- * 
+ *
  */
 public class Utils {
 
@@ -223,7 +224,7 @@ public class Utils {
   /**
    * <a href="http://www.ibm.com/developerworks/java/library/j-numberformat/">
    * http://www.ibm.com/developerworks/java/library/j-numberformat/</a>
-   * 
+   *
    * @param strFloat
    *          parsed as float with the number format defined in the locale
    * @return the float retrieved from the string or null if parse did not
@@ -266,7 +267,7 @@ public class Utils {
 
   /**
    * formats an amount with a currency
-   * 
+   *
    * @param money
    * @return formated string
    */
@@ -322,7 +323,7 @@ public class Utils {
 
   /**
    * utility method that calls formatters for date
-   * 
+   *
    * @param text
    * @return formated string
    */
@@ -336,7 +337,7 @@ public class Utils {
 
   /**
    * utility method that calls formatters for date
-   * 
+   *
    * @param text
    *          unixEpochAsString
    * @return formated string
@@ -363,7 +364,7 @@ public class Utils {
   /**
    * utility method that calls formatters for amount this method is called from
    * adapters that give us the amount as String
-   * 
+   *
    * @param text
    *          amount as String
    * @param currency
@@ -402,7 +403,7 @@ public class Utils {
   /**
    * utility method that calls formatters for amount this method can be called
    * directly with Long values retrieved from db
-   * 
+   *
    * @param amount
    * @param currency
    * @return formated string
@@ -575,7 +576,7 @@ public class Utils {
 
   /**
    * create a File object for storage of picture data
-   * 
+   *
    * @param temp
    *          if true the returned file is suitable for temporary storage while
    *          the user is editing the transaction if false the file will serve
@@ -648,7 +649,7 @@ public class Utils {
 
   /**
    * copy src uri to dest uri
-   * 
+   *
    * @param src
    * @param dest
    * @return
@@ -772,15 +773,15 @@ public class Utils {
    * method queries the package manager for installed packages that can respond
    * to an intent with the specified action. If no suitable package is found,
    * this method returns false.
-   * 
+   *
    * From
    * http://android-developers.blogspot.fr/2009/01/can-i-use-this-intent.html
-   * 
+   *
    * @param context
    *          The application's environment.
    * @param intent
    *          The Intent action to check for availability.
-   * 
+   *
    * @return True if an Intent with the specified action can be sent and
    *         responded to, false otherwise.
    */
@@ -977,7 +978,7 @@ public class Utils {
    * Credit:
    * https://groups.google.com/forum/?fromgroups#!topic/actionbarsherlock
    * /Z8Ic8djq-3o
-   * 
+   *
    * @param item
    * @param enabled
    */
@@ -1479,5 +1480,14 @@ public class Utils {
     d.setBounds(0, 0, c.getWidth(), c.getHeight());
     d.draw(c);
     return b;
+  }
+
+  public static void requireLoader(LoaderManager manager, int loaderId, Bundle args,
+                                   LoaderManager.LoaderCallbacks callback) {
+    if (manager.getLoader(loaderId) != null && !manager.getLoader(loaderId).isReset()) {
+      manager.restartLoader(loaderId, args, callback);
+    } else {
+      manager.initLoader(loaderId, args, callback);
+    }
   }
 }
