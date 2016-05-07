@@ -150,7 +150,8 @@ public class MyApplication extends Application implements
     UI_HOME_SCREEN_SHORTCUTS(R.string.pref_ui_home_screen_shortcuts_key),
     CALENDAR_PERMISSION_REQUESTED("calendar_permission_requested"),
     GROUP_WEEK_STARTS(R.string.pref_group_week_starts_key),
-    GROUP_MONTH_STARTS(R.string.pref_group_month_starts_key);
+    GROUP_MONTH_STARTS(R.string.pref_group_month_starts_key),
+    NEW_PLAN_ENABLED("new_plan_enabled");
 
     private int resId = 0;
     private String key = null;
@@ -238,10 +239,12 @@ public class MyApplication extends Application implements
     //this currently is only here to prevent compile error, since the block where this is called
     //is not executed on distribution branch
     //this.contribEnabled = status;
+    Template.updateNewPlanEnabled();
   }
 
   public void setContribStatus(String contribStatus) {
     this.contribStatus = contribStatus;
+    Template.updateNewPlanEnabled();
   }
   public boolean isContribEnabled() {
     return ! contribStatus.equals(Distrib.STATUS_DISABLED);
@@ -787,7 +790,6 @@ public class MyApplication extends Application implements
 
     @Override
     public void onChange(boolean selfChange) {
-      super.onChange(selfChange);
       AbstractWidget.updateWidgets(mSelf, mProvider);
     }
   }

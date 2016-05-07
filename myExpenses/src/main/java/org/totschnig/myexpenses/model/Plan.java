@@ -1,65 +1,186 @@
 package org.totschnig.myexpenses.model;
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.TimeZone;
-
-import org.totschnig.myexpenses.MyApplication;
-import org.totschnig.myexpenses.MyApplication.PrefKey;
-import org.totschnig.myexpenses.util.Utils;
-
-import com.android.calendar.EventRecurrenceFormatter;
-import com.android.calendar.CalendarContractCompat.Events;
-import com.android.calendarcommon2.EventRecurrence;
-
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteException;
 import android.net.Uri;
+import android.os.Build;
 import android.text.TextUtils;
 import android.text.format.Time;
 import android.util.Log;
+
+import com.android.calendar.CalendarContractCompat.Events;
+import com.android.calendar.EventRecurrenceFormatter;
+import com.android.calendarcommon2.EventRecurrence;
+
+import org.totschnig.myexpenses.MyApplication;
+import org.totschnig.myexpenses.MyApplication.PrefKey;
+import org.totschnig.myexpenses.R;
+import org.totschnig.myexpenses.util.Utils;
+
+import java.io.Serializable;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.TimeZone;
 
 /**
  * @author Michael Totschnig
  * holds information about an event in the calendar
  */
 public class Plan extends Model implements Serializable {
-  public static final Long LIMIT_EXHAUSTED_ID = -2L;
-  public static final Long CALENDAR_NOT_SETUP_ID = -3L;
   public long dtstart;
   public String rrule;
   public String title;
   public String description;
+  private String customAppUri;
 
-  public Plan(Long id, long dtstart, String rrule, String title, String description) {
-    super();
+  public enum Recurrence {
+    NONE, ONETIME, DAILY, WEEKLY, MONTHLY, YEARLY;
+
+    public String toRrule() {
+      switch (this) {
+        case DAILY:
+          return "FREQ=DAILY";
+        case WEEKLY:
+          return "FREQ=WEEKLY";
+        case MONTHLY:
+          return "FREQ=MONTHLY";
+        case YEARLY:
+          return "FREQ=YEARLY";
+        default:
+          return null;
+      }
+    }
+
+    public String getLabel(Context context) {
+      switch (this) {
+        case NONE:
+          return "- - - -";
+        case ONETIME:
+          return context.getString(R.string.does_not_repeat);
+        case DAILY:
+          return context.getString(R.string.daily_plain);
+        case WEEKLY:
+          return context.getString(R.string.weekly_plain);
+        case MONTHLY:
+          return context.getString(R.string.monthly);
+        case YEARLY:
+          return context.getString(R.string.yearly_plain);
+      }
+      return null;
+    }
+  }
+
+  private Plan(Long id, long dtstart, String rrule, String title, String description) {
     this.setId(id);
     this.dtstart = dtstart;
     this.rrule = rrule;
     this.title = title;
     this.description = description;
   }
+
+  public Plan(Calendar cal, String rrule, String title, String description) {
+    Calendar clone = ((Calendar) cal.clone());
+    clone.set(Calendar.HOUR, 0);
+    clone.set(Calendar.MINUTE, 0);
+    clone.set(Calendar.SECOND, 0);
+    this.dtstart = cal.getTimeInMillis();
+    this.rrule = rrule;
+    this.title = title;
+    this.description = description;
+
+  }
+
+  public static Plan getInstanceFromDb(long planId) {
+    Plan plan = null;
+    Cursor c = cr().query(
+        ContentUris.withAppendedId(Events.CONTENT_URI, planId),
+        new String[]{
+            Events._ID,
+            Events.DTSTART,
+            Events.RRULE,
+            Events.TITLE},
+        null,
+        null,
+        null);
+    if (c != null) {
+      if (c.moveToFirst()) {
+        long eventId = c.getLong(c.getColumnIndexOrThrow(Events._ID));
+        long dtStart = c.getLong(c.getColumnIndexOrThrow(Events.DTSTART));
+        String rRule = c.getString(c.getColumnIndexOrThrow(Events.RRULE));
+        String title = c.getString(c.getColumnIndexOrThrow(Events.TITLE));
+        plan = new Plan(
+            eventId,
+            dtStart,
+            rRule,
+            title,
+            "" // we do not need the description stored in the event
+        );
+        c.close();
+      }
+    }
+    return plan;
+  }
+
   /**
    * insert a new planing event into the calendar
    * @return the id of the created object
    */
   @Override
   public Uri save() {
-    String calendarId = MyApplication.getInstance().checkPlanner();
-    if (calendarId.equals("-1"))
-      return null;
+    Uri uri;
     ContentValues values = new ContentValues();
-    values.put(Events.CALENDAR_ID, Long.parseLong(calendarId));
     values.put(Events.TITLE, title);
     values.put(Events.DESCRIPTION, description);
-    values.put(Events.DTSTART, dtstart);
-    values.put(Events.DTEND, dtstart);
-    if (!TextUtils.isEmpty(rrule))
+    if (android.os.Build.VERSION.SDK_INT >= 16) {
+      values.put(Events.CUSTOM_APP_URI, customAppUri);
+      values.put(Events.CUSTOM_APP_PACKAGE, MyApplication.getInstance().getPackageName());
+    }
+    if (!TextUtils.isEmpty(rrule)) {
       values.put(Events.RRULE, rrule);
-    //values.put(Events.ALL_DAY,1);
-    values.put(Events.EVENT_TIMEZONE, TimeZone.getDefault().getID());
-    return cr().insert(Events.CONTENT_URI, values);
+    }
+    if (Utils.hasApiLevel(Build.VERSION_CODES.ICE_CREAM_SANDWICH)) {
+      values.put(Events.ALL_DAY, 1);
+    }
+    values.put(Events.EVENT_TIMEZONE, Time.TIMEZONE_UTC);
+    if (getId() == 0) {
+      String calendarId = MyApplication.getInstance().checkPlanner();
+      if (calendarId.equals(MyApplication.INVALID_CALENDAR_ID)) {
+        calendarId = MyApplication.getInstance().createPlanner(true);
+        if (calendarId.equals(MyApplication.INVALID_CALENDAR_ID)) {
+          return null;
+        }
+      }
+      values.put(Events.CALENDAR_ID, Long.parseLong(calendarId));
+      values.put(Events.DTSTART, dtstart);
+      values.put(Events.DTEND, dtstart);
+      try {
+        uri = cr().insert(Events.CONTENT_URI, values);
+      } catch (SQLiteException e) {
+        removeCustomValues(values);
+        uri = cr().insert(Events.CONTENT_URI, values);
+      }
+    } else {
+      try {
+      uri = ContentUris.withAppendedId(Events.CONTENT_URI, getId());
+      } catch (SQLiteException e) {
+        removeCustomValues(values);
+        uri = ContentUris.withAppendedId(Events.CONTENT_URI, getId());
+      }
+    }
+    return uri;
+  }
+
+  /**
+   * we have seen a bugy calendar provider implementation on Symphony phone
+   * we try the insert again without the custom app columns
+   * @param values
+   */
+  private void removeCustomValues(ContentValues values) {
+    values.remove(Events.CUSTOM_APP_URI);
+    values.remove(Events.CUSTOM_APP_PACKAGE);
   }
 
   public static void delete(Long id) {
@@ -97,11 +218,15 @@ public class Plan extends Model implements Serializable {
       Time date = new Time();
       date.set(start);
       eventRecurrence.setStartDate(date);
-      return EventRecurrenceFormatter.getRepeatString(ctx,ctx.getResources(), eventRecurrence,true);
+      return EventRecurrenceFormatter.getRepeatString(ctx,ctx.getResources(), eventRecurrence, true);
     } else {
       return java.text.DateFormat
           .getDateInstance(java.text.DateFormat.FULL)
           .format(new Date(start));
     }
+  }
+
+  public void setCustomAppUri(String customAppUri) {
+    this.customAppUri = customAppUri;
   }
 }

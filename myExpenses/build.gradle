@@ -18,8 +18,8 @@ android {
         applicationId "org.totschnig.myexpenses"
         minSdkVersion project.minSdkVersion
         targetSdkVersion project.targetSdkVersion
-        versionCode 247
-        versionName '2.6.7.1'
+        versionCode 248
+        versionName '2.6.8'
 
         buildConfigField "String", "PLATTFORM", "\"Android\""
         buildConfigField "String", "BUILD_DATE", "\"" + getDate() + "\""
@@ -53,7 +53,7 @@ android {
             manifestPlaceholders = [appName: "@string/app_name"]
         }
         debug {
-            applicationIdSuffix ".debug"
+            //applicationIdSuffix ".debug"
             manifestPlaceholders = [appName: "My Expenses Debug"]
             minifyEnabled true
             //shrinkResources true // need to wait for resolution
@@ -95,7 +95,7 @@ android {
     aaptOptions {
         additionalParameters "--no-version-vectors"
     }
-    testBuildType "release"
+    //testBuildType "release"
 }
 
 dependencies {

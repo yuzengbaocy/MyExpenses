@@ -100,7 +100,6 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
   public static final int TEMPLATE_TITLE_REQUEST = 7;
   public static final int EDIT_SPLIT_REQUEST = 8;
   public static final int SELECT_CATEGORY_REQUEST = 9;
-  public static final int EDIT_EVENT_REQUEST = 10;
   public static final int PICK_COLOR_REQUEST = 11;
   public static final int PURCHASE_PREMIUM_REQUEST = 12;
   public static final int CONTRIB_REQUEST = 13;

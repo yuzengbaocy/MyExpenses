@@ -47,6 +47,7 @@
         android:label="${appName}"
         android:theme="@style/Launch"
         android:allowBackup="true"
+        android:fullBackupContent="@xml/mybackupscheme"
         android:supportsRtl="true"
         android:hardwareAccelerated="true">
         <activity
