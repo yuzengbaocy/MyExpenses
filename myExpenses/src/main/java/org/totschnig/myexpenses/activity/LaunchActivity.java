@@ -1,6 +1,19 @@
 package org.totschnig.myexpenses.activity;
 
-import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_ACCOUNTID;
+import android.Manifest;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.util.Log;
+import android.view.View;
+
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
@@ -8,9 +21,10 @@ import org.onepf.oms.appstore.googleUtils.IabHelper.QueryInventoryFinishedListen
 import org.onepf.oms.appstore.googleUtils.IabResult;
 import org.onepf.oms.appstore.googleUtils.Inventory;
 import org.onepf.oms.appstore.googleUtils.Purchase;
+import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
-import org.totschnig.myexpenses.contrib.Config;
 import org.totschnig.myexpenses.R;
+import org.totschnig.myexpenses.contrib.Config;
 import org.totschnig.myexpenses.dialog.VersionDialogFragment;
 import org.totschnig.myexpenses.model.Transaction;
 import org.totschnig.myexpenses.preference.SharedPreferencesCompat;
@@ -19,23 +33,14 @@ import org.totschnig.myexpenses.provider.filter.Criteria;
 import org.totschnig.myexpenses.util.Distrib;
 import org.totschnig.myexpenses.util.Utils;
 
-import android.Manifest;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
-import android.os.Bundle;
-import android.content.pm.PackageManager;
-import android.net.Uri;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.util.Log;
-import android.widget.Toast;
-
 import java.io.File;
 import java.util.Map;
 
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_ACCOUNTID;
+
 public abstract class LaunchActivity extends ProtectedFragmentActivity {
-  
+
+  public static final String TAG_VERSION_INFO = "VERSION_INFO";
   private OpenIabHelper mHelper;
   private String tag = LaunchActivity.class.getName();
   @Override
@@ -116,7 +121,7 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
   public void newVersionCheck() {
     int prev_version = MyApplication.PrefKey.CURRENT_VERSION.getInt(-1);
     int current_version = CommonCommands.getVersionNumber(this);
-    if (prev_version < current_version) {
+    if (prev_version == current_version) {
       if (prev_version == -1) {
         return;
       }
@@ -146,9 +151,6 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
         //if they are already above both tresholds, so we set some delay
         edit.putLong("nextReminderContrib", Transaction.getSequenceCount() + 23);
         SharedPreferencesCompat.apply(edit);
-      }
-      if (prev_version < 132) {
-        MyApplication.getInstance().showImportantUpgradeInfo = true;
       }
       if (prev_version < 163) {
        edit.remove("qif_export_file_encoding");
@@ -187,8 +189,10 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
             MyApplication.PrefKey.CATEGORIES_SORT_BY_USAGES_LEGACY.getBoolean(true) ?
                 "USAGES" : "ALPHABETIC");
       }
+
+      MyApplication.getInstance().showImportantUpgradeInfo = true;
       VersionDialogFragment.newInstance(prev_version)
-        .show(getSupportFragmentManager(), "VERSION_INFO");
+        .show(getSupportFragmentManager(), TAG_VERSION_INFO);
     }
     checkCalendarPermission();
   }
@@ -246,5 +250,30 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
       Log.d(tag, "Destroying helper.");
       if (mHelper != null) mHelper.dispose();
       mHelper = null;
+  }
+
+  public void registerVote(View view) {
+    String action = null;
+    switch (view.getId()){
+      case R.id.vote_new:
+        action = "New";
+        break;
+      case R.id.vote_old:
+        action = "Old";
+        break;
+    }
+    if (action != null) {
+      if (BuildConfig.DEBUG) {
+        action += "_DEBUG";
+      }
+      Tracker tracker = ((MyApplication) getApplication()).getDefaultTracker();
+      tracker.setScreenName("VersionDialog");
+      tracker.send(new HitBuilders.EventBuilder()
+          .setCategory("Vote")
+          .setAction(action)
+          .build());
+    }
+    ((VersionDialogFragment) getSupportFragmentManager().findFragmentByTag(TAG_VERSION_INFO))
+        .onFinishVote(view.getId());
   }
 }

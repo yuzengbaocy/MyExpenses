@@ -38,6 +38,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -49,6 +50,9 @@ import org.totschnig.myexpenses.dialog.MessageDialogFragment.MessageDialogListen
 import java.util.ArrayList;
 
 public class VersionDialogFragment extends CommitSafeDialogFragment implements OnClickListener {
+
+  private ViewGroup upgradeInfoContainer;
+
   public static final VersionDialogFragment newInstance(int from) {
     VersionDialogFragment dialogFragment = new VersionDialogFragment();
     Bundle bundle = new Bundle();
@@ -144,13 +148,13 @@ public class VersionDialogFragment extends CommitSafeDialogFragment implements O
     };
     lv.setAdapter(adapter);
     if (MyApplication.getInstance().showImportantUpgradeInfo) {
-      view.findViewById(R.id.ImportantUpgradeInfoHeading).setVisibility(View.VISIBLE);
-      view.findViewById(R.id.ImportantUpgradeInfoBody).setVisibility(View.VISIBLE);
+      upgradeInfoContainer = (ViewGroup) view.findViewById(R.id.ImportantUpgradeInfoContainer);
+      upgradeInfoContainer.setVisibility(View.VISIBLE);
     }
 
     AlertDialog.Builder builder = new AlertDialog.Builder(ctx)
       .setTitle(getString(R.string.help_heading_whats_new))
-      .setIcon(R.drawable.myexpenses)
+      //.setIcon(R.drawable.myexpenses)
       .setView(view)
       .setNegativeButton(android.R.string.ok, this);
     if (!MyApplication.getInstance().isContribEnabled())
@@ -165,6 +169,21 @@ public class VersionDialogFragment extends CommitSafeDialogFragment implements O
     if (which == AlertDialog.BUTTON_POSITIVE)
       ((MessageDialogListener) getActivity()).dispatchCommand(R.id.CONTRIB_INFO_COMMAND,null);
   }
+
+  public void onFinishVote(int viewId) {
+    upgradeInfoContainer.removeViewAt(1);
+    upgradeInfoContainer.removeViewAt(1);
+    if (viewId == R.id.vote_cancel) {
+      upgradeInfoContainer.removeViewAt(0);
+    } else {
+      int imgRes = viewId == R.id.vote_new ? R.mipmap.ic_launcher : R.drawable.myexpenses;
+      ImageView image = ((ImageView) getDialog().getWindow().findViewById(android.R.id.icon));
+      image.setVisibility(View.VISIBLE);
+      image.setImageResource(imgRes);
+      ((TextView) upgradeInfoContainer.getChildAt(0)).setText(R.string.vote_outro);
+    }
+  }
+
   public static class VersionInfo {
     private int code;
     private String name;
