@@ -1,0 +1,38 @@
+{
+  "project_info": {
+    "project_number": "725385967731",
+    "project_id": "my-expenses-61c7f"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:725385967731:android:d22ed7d7b0fe469f",
+        "android_client_info": {
+          "package_name": "org.totschnig.myexpenses"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA38l4-CVV325k9cXGbg4NrTWcCFiRclu4"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 2,
+          "analytics_property": {
+            "tracking_id": "UA-40789280-1"
+          }
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

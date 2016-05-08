@@ -38,6 +38,9 @@ import com.android.calendar.CalendarContractCompat;
 import com.android.calendar.CalendarContractCompat.Calendars;
 import com.android.calendar.CalendarContractCompat.Events;
 
+import com.google.android.gms.analytics.GoogleAnalytics;
+import com.google.android.gms.analytics.Tracker;
+
 import org.acra.*;
 import org.acra.annotation.*;
 import org.totschnig.myexpenses.model.Template;
@@ -76,6 +79,7 @@ public class MyApplication extends Application implements
   public static final String INVALID_CALENDAR_ID = "-1";
   SharedPreferences mSettings;
   private static MyApplication mSelf;
+  private Tracker mTracker;
 
   public static final String BACKUP_DB_FILE_NAME = "BACKUP";
   public static final String BACKUP_PREF_FILE_NAME = "BACKUP_PREF";
@@ -931,6 +935,19 @@ public class MyApplication extends Application implements
       MyApplication.PrefKey.AUTO_BACKUP_DIRTY.putBoolean(true);
       DailyAutoBackupScheduler.updateAutoBackupAlarms(mSelf);
     }
+  }
+
+  /**
+   * Gets the default {@link Tracker} for this {@link Application}.
+   * @return tracker
+   */
+  synchronized public Tracker getDefaultTracker() {
+    if (mTracker == null) {
+      GoogleAnalytics analytics = GoogleAnalytics.getInstance(this);
+      // To enable debug logging use: adb shell setprop log.tag.GAv4 DEBUG
+      mTracker = analytics.newTracker(R.xml.global_tracker);
+    }
+    return mTracker;
   }
 }
 
