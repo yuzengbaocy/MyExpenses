@@ -121,7 +121,7 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
   public void newVersionCheck() {
     int prev_version = MyApplication.PrefKey.CURRENT_VERSION.getInt(-1);
     int current_version = CommonCommands.getVersionNumber(this);
-    if (prev_version == current_version) {
+    if (prev_version < current_version) {
       if (prev_version == -1) {
         return;
       }
