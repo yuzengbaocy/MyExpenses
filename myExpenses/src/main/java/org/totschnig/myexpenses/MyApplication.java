@@ -37,12 +37,11 @@ import android.util.Log;
 import com.android.calendar.CalendarContractCompat;
 import com.android.calendar.CalendarContractCompat.Calendars;
 import com.android.calendar.CalendarContractCompat.Events;
-
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.Tracker;
 
-import org.acra.*;
-import org.acra.annotation.*;
+import org.acra.ACRA;
+import org.acra.annotation.ReportsCrashes;
 import org.totschnig.myexpenses.model.Template;
 import org.totschnig.myexpenses.preference.SharedPreferencesCompat;
 import org.totschnig.myexpenses.provider.DatabaseConstants;
@@ -58,6 +57,7 @@ import org.totschnig.myexpenses.widget.AccountWidget;
 import org.totschnig.myexpenses.widget.TemplateWidget;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -300,19 +300,24 @@ public class MyApplication extends Application implements
       ACRA.getErrorReporter().putCustomData("Distribution", BuildConfig.FLAVOR);
     }
     mSelf = this;
-    // sets up mSettings
-    getSettings().registerOnSharedPreferenceChangeListener(this);
-    initContribEnabled();
 
-    initPlanner();
-    registerWidgetObservers();
-    //      if (Distrib.isBatchAvailable()) {
-    //        Batch.setConfig(new Config(debug ? "DEV53E77E52E3DEF90DE5A6AAB9239" : "53E77E52E3C1DBC38C202023D2516C")
-    //            .setCanUseAdvertisingID(false)
-    //            .setCanUseAndroidID(false));
-    //      }
+    boolean isAcraSenderServiceProcess = false;
+    try {
+      Method method = ACRA.class.getDeclaredMethod("isACRASenderServiceProcess",
+          Application.class);
+      method.setAccessible(true);
+      isAcraSenderServiceProcess = (Boolean) method.invoke(null,this);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    if (!isAcraSenderServiceProcess) {
+      // sets up mSettings
+      getSettings().registerOnSharedPreferenceChangeListener(this);
+      initContribEnabled();
 
-    Log.d(TAG, "Memory class " + getMemoryClass());
+      initPlanner();
+      registerWidgetObservers();
+    }
   }
 
   private void registerWidgetObservers() {
