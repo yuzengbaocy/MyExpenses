@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<resources>
+  <string name="vote_intro">Meine Ausgaben erhält ein neues Icon. Bitte teilen Sie uns Ihre Meinung über den aktuellen Entwurf mit, indem Sie auf das Icon klicken, das Sie bevorzugen.</string>
+  <string name="vote_cancel">Ich kümmern sich nicht oder wollen nicht sagen</string>
+  <string name="vote_outro">Ihre Stimme wurde aufgezeichnet. Vielen Dank für Ihre Teilnahme.</string>
+</resources>

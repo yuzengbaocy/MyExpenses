@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<resources>
+  <string name="vote_intro">Mis gastos consigue un nuevo icono. Por favor díganos su opinon sobre el proyecto actual haciendo clic en el icono que prefieras.</string>
+  <string name="vote_cancel">No me importa, o no quiero decir</string>
+  <string name="vote_outro">Su voto ha sido registrado . Gracias por su participación.</string>
+</resources>

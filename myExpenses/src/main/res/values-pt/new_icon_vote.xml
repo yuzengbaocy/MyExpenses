@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<resources>
+  <string name="vote_intro">O My Expenses irá receber um novo ícone. Por favor indique-nos a sua preferência sobre os esboços, clicando no seu preferido.</string>
+  <string name="vote_cancel">Não quero participar</string>
+  <string name="vote_outro">O seu voto foi registado. Obrigado pelo seu contributo.</string>
+</resources>
