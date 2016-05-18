@@ -257,10 +257,10 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
     String action = null;
     switch (view.getId()){
       case R.id.vote_new:
-        action = "New";
+        action = getString(org.totschnig.myexpenses.R.string.vote_action_new);
         break;
       case R.id.vote_old:
-        action = "Old";
+        action = getString(org.totschnig.myexpenses.R.string.vote_action_old);
         break;
     }
     if (action != null) {
