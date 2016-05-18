@@ -123,6 +123,13 @@ public class Utils {
 
   public static final boolean IS_FLAVOURED = !TextUtils.isEmpty(BuildConfig.FLAVOR);
   public static final boolean IS_ANDROID = BuildConfig.PLATTFORM.equals("Android");
+  
+  public enum Feature {
+    ;
+    public boolean isEnabled() {
+      return true;
+    }
+  }
 
   public enum Feature {
     Plans;
@@ -1500,5 +1507,9 @@ public class Utils {
     } else {
       manager.initLoader(loaderId, args, callback);
     }
+  }
+
+  public static final boolean shouldUseAndroidPlatformCalendar() {
+    return IS_ANDROID;
   }
 }
