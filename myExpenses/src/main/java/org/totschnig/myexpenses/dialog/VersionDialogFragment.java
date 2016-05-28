@@ -170,20 +170,6 @@ public class VersionDialogFragment extends CommitSafeDialogFragment implements O
       ((MessageDialogListener) getActivity()).dispatchCommand(R.id.CONTRIB_INFO_COMMAND,null);
   }
 
-  public void onFinishVote(int viewId) {
-    upgradeInfoContainer.removeViewAt(1);
-    upgradeInfoContainer.removeViewAt(1);
-    if (viewId == R.id.vote_cancel) {
-      upgradeInfoContainer.removeViewAt(0);
-    } else {
-      int imgRes = viewId == R.id.vote_new ? R.mipmap.ic_launcher : R.drawable.myexpenses;
-      ImageView image = ((ImageView) getDialog().getWindow().findViewById(android.R.id.icon));
-      image.setVisibility(View.VISIBLE);
-      image.setImageResource(imgRes);
-      ((TextView) upgradeInfoContainer.getChildAt(0)).setText(R.string.vote_outro);
-    }
-  }
-
   public static class VersionInfo {
     private int code;
     private String name;
