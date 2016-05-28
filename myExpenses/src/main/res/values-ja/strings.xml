@@ -366,7 +366,6 @@
   <string name="qif_parse_failure_found_multiple_accounts">QIF ファイルに複数の勘定が見つかりました。</string>
   <string name="qif_parse_failure_found_multiple_accounts_cannot_merge">既存の勘定にそれをマージすることはできません。</string>
   <string name="reference_number">参照番号</string>
-  <string name="request_licence_mail_description">(英語、ドイツ語またはフランス語で) マイ エクスペンス に、あなたの貢献を説明してください (例: Paypal で寄付、バグ報告、テスト、翻訳)。</string>
   <string name="request_licence_mail_head">Please send me a key for Android-Id %1$s. </string>
   <string name="restore_db_failure">データベースの復元に失敗しました。</string>
   <string name="restore_db_success">バックアップからデータベースが復元されました。</string>
@@ -402,7 +401,6 @@
   <!--%s is replaced with Android or Blackberry-->
   <string name="tell_a_friend_message">マイ エクスペンス: %s用のパーソナル ファイナンス マネージャーを確かめてください。ここから http://www.myexpenses.mobi</string>
   <string name="template_create_success">テンプレート \"%1$s\" は正常に作成されました</string>
-  <string name="template_title_exists">タイトル \"%1$s\" のテンプレートは既に存在します</string>
   <string name="thank_you">サポートありがとうございます!</string>
   <string name="time">時間</string>
   <string name="title">タイトル/科目</string>
@@ -578,4 +576,7 @@
   <string name="warning_cannot_move_split_transaction">この分割取引は、この勘定を参照する振替パートがあるため、勘定 %1$s に移動できません。</string>
   <string name="content_description_calculator_clear_button">すべてリセット</string>
   <string name="content_description_calculator_delete_button">最後の数字を削除</string>
+  <string name="paypal_transaction_id">Paypal 取引 ID</string>
+  <string name="paypal_callback_info">取引は完了しました。ご購入の領収書をメールで送信しました。www.paypal.com にあなたのアカウントでログインして、この取引の詳細を表示することができます。</string>
+  <string name="paypal_callback_later_clicked_info">設定画面から、いつでもこのキーをリクエストすることができます。</string>
 </resources>

@@ -370,7 +370,6 @@
   <string name="qif_parse_failure_found_multiple_accounts">Открити са множество сметки в QIF файла.</string>
   <string name="qif_parse_failure_found_multiple_accounts_cannot_merge">Не могат да бъдат обединени в съществуваща сметка.</string>
   <string name="reference_number">Референтен номер</string>
-  <string name="request_licence_mail_description">Моля, опишете (на английски, немски или френски) вашия принос към Моите разходи (например: дарение чрез Paypal, доклад за бъг, тестване, превод).</string>
   <string name="request_licence_mail_head">Моля, изпратете ми ключ за андроид-ИД %1$s.</string>
   <string name="restore_db_failure">Неуспешно възстановяване на база данни.</string>
   <string name="restore_db_success">Базата данни е възстановена успешно.</string>
@@ -407,7 +406,6 @@
   <!--%s is replaced with Android or Blackberry-->
   <string name="tell_a_friend_message">Вижте Mоите разходи, личен финансов мениджър за %s, на http://www.myexpenses.mobi</string>
   <string name="template_create_success">Успешно създаден шаблон \"%1$s\"</string>
-  <string name="template_title_exists">Шаблона \"%1$s\" вече съществува</string>
   <string name="thank_you">Благодарим Ви за подкрепата!</string>
   <string name="time">Време</string>
   <string name="title">Заглавие</string>
@@ -524,6 +522,7 @@
   <string name="pref_manage_stale_images_summary">Управление на изображения, останали след изтриване на транзакция</string>
   <string name="menu_select_categories">Избери отбелязаните категории</string>
   <string name="image_deleted">Изображението е изтрито</string>
+  <string name="transaction_deleted">Транзакцията е изтрита</string>
   <string name="dialog_export_applied_to_filter">Ще се отчитат само транзакции, избрани с текущия филтър</string>
   <string name="export_handle_deleted_create_helper">Създай помощна транзакция</string>
   <string name="export_handle_deleted_update_balance">Обнови началното салдо</string>
@@ -587,4 +586,7 @@
   <string name="warning_cannot_move_split_transaction">Тази разпределена транзакция не може да бъде преместена в сметка %1$s, защото има отнесени към сметката нейни части .</string>
   <string name="content_description_calculator_clear_button">Нулирай всичко</string>
   <string name="content_description_calculator_delete_button">Изтрии последната цифра</string>
+  <string name="paypal_transaction_id">Paypal идентификатор на транзакцията</string>
+  <string name="paypal_callback_info">Транзакцията е завършена и квитанцията за покупката Ви е изпратена на електронната поща. За подробности по транзакцията вижте профила си във www.paypal.com.</string>
+  <string name="paypal_callback_later_clicked_info">От екрана с Настройки може да заявите ключ по всяко време.</string>
 </resources>

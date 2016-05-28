@@ -18,9 +18,12 @@ package org.totschnig.myexpenses.model;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
+import org.totschnig.myexpenses.provider.CalendarProviderProxy;
 import org.totschnig.myexpenses.provider.DatabaseConstants;
 import org.totschnig.myexpenses.provider.DbUtils;
 import org.totschnig.myexpenses.provider.TransactionProvider;
@@ -35,7 +38,12 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.util.Log;
 
+import com.android.calendar.CalendarContractCompat;
+
+import hirondelle.date4j.DateTime;
+
 import static org.totschnig.myexpenses.provider.DatabaseConstants.*;
+import static org.totschnig.myexpenses.provider.DbUtils.getLongOrNull;
 
 /**
  * Domain class for transactions
@@ -62,7 +70,7 @@ public class Transaction extends Model {
   /**
    * id of the template which defines the plan for which this transaction has been created
    */
-  public Long originTemplateId = null;
+  public Template originTemplate = null;
   /**
    * id of an instance of the event (plan) for which this transaction has been created
    */
@@ -192,7 +200,7 @@ public class Transaction extends Model {
     String[] projection = new String[]{KEY_ROWID, KEY_DATE, KEY_AMOUNT, KEY_COMMENT, KEY_CATID,
         FULL_LABEL, KEY_PAYEEID, KEY_PAYEE_NAME, KEY_TRANSFER_PEER, KEY_TRANSFER_ACCOUNT,
         KEY_ACCOUNTID, KEY_METHODID, KEY_PARENTID, KEY_CR_STATUS, KEY_REFERENCE_NUMBER,
-        KEY_PICTURE_URI, KEY_METHOD_LABEL, KEY_STATUS, TRANSFER_AMOUNT};
+        KEY_PICTURE_URI, KEY_METHOD_LABEL, KEY_STATUS, TRANSFER_AMOUNT, KEY_TEMPLATEID};
 
     Cursor c = cr().query(
         CONTENT_URI.buildUpon().appendPath(String.valueOf(id)).build(), projection, null, null, null);
@@ -204,16 +212,16 @@ public class Transaction extends Model {
       return null;
     }
     c.moveToFirst();
-    Long transfer_peer = DbUtils.getLongOrNull(c, KEY_TRANSFER_PEER);
+    Long transfer_peer = getLongOrNull(c, KEY_TRANSFER_PEER);
     long account_id = c.getLong(c.getColumnIndexOrThrow(KEY_ACCOUNTID));
     long amount = c.getLong(c.getColumnIndexOrThrow(KEY_AMOUNT));
-    Long parent_id = DbUtils.getLongOrNull(c, KEY_PARENTID);
-    Long catId = DbUtils.getLongOrNull(c, KEY_CATID);
+    Long parent_id = getLongOrNull(c, KEY_PARENTID);
+    Long catId = getLongOrNull(c, KEY_CATID);
     if (transfer_peer != null) {
       t = parent_id != null ? new SplitPartTransfer(account_id, amount, parent_id) :
           new Transfer(account_id, amount);
       t.transfer_peer = transfer_peer;
-      t.transfer_account = DbUtils.getLongOrNull(c, KEY_TRANSFER_ACCOUNT);
+      t.transfer_account = getLongOrNull(c, KEY_TRANSFER_ACCOUNT);
       t.transferAmount = new Money(Account.getInstanceFromDb(t.transfer_account).currency,
           c.getLong(c.getColumnIndex(KEY_TRANSFER_AMOUNT)));
     } else {
@@ -229,10 +237,10 @@ public class Transaction extends Model {
     } catch (IllegalArgumentException ex) {
       t.crStatus = CrStatus.UNRECONCILED;
     }
-    t.methodId = DbUtils.getLongOrNull(c, KEY_METHODID);
+    t.methodId = getLongOrNull(c, KEY_METHODID);
     t.methodLabel = DbUtils.getString(c, KEY_METHOD_LABEL);
     t.setCatId(catId);
-    t.payeeId = DbUtils.getLongOrNull(c, KEY_PAYEEID);
+    t.payeeId = getLongOrNull(c, KEY_PAYEEID);
     t.payee = DbUtils.getString(c, KEY_PAYEE_NAME);
     t.setId(id);
     t.setDate(c.getLong(
@@ -245,6 +253,8 @@ public class Transaction extends Model {
         null :
         Uri.parse(c.getString(pictureUriColumnIndex));
     t.status = c.getInt(c.getColumnIndexOrThrow(KEY_STATUS));
+    Long originTemplateId = getLongOrNull(c, KEY_TEMPLATEID);
+    t.originTemplate = originTemplateId == null ? null : Template.getInstanceFromDb(originTemplateId);
     c.close();
     return t;
   }
@@ -256,7 +266,7 @@ public class Transaction extends Model {
 
   public static Transaction getInstanceFromTemplate(Template te) {
     Transaction tr;
-    if (te.isTransfer) {
+    if (te.isTransfer()) {
       tr = new Transfer(te.accountId, te.amount);
       tr.transfer_account = te.transfer_account;
     } else {
@@ -268,7 +278,7 @@ public class Transaction extends Model {
     tr.comment = te.comment;
     tr.payee = te.payee;
     tr.label = te.label;
-    tr.originTemplateId = te.getId();
+    tr.originTemplate = te;
     cr().update(
         TransactionProvider.TEMPLATES_URI
             .buildUpon()
@@ -429,7 +439,7 @@ public class Transaction extends Model {
             null, null, null);
       if (originPlanInstanceId != null) {
         ContentValues values = new ContentValues();
-        values.put(KEY_TEMPLATEID, originTemplateId);
+        values.put(KEY_TEMPLATEID, originTemplate.getId());
         values.put(KEY_INSTANCEID, originPlanInstanceId);
         values.put(KEY_TRANSACTIONID, getId());
         cr().insert(TransactionProvider.PLAN_INSTANCE_STATUS_URI, values);
@@ -437,6 +447,32 @@ public class Transaction extends Model {
     } else {
       uri = CONTENT_URI.buildUpon().appendPath(String.valueOf(getId())).build();
       cr().update(uri, initialValues, null, null);
+    }
+    if (originTemplate != null && originTemplate.getId() == 0) {
+      originTemplate.save();
+      //now need to find out the instance number
+      Uri.Builder eventsUriBuilder = CalendarProviderProxy.INSTANCES_URI.buildUpon();
+      DateTime instant = DateTime.forInstant(originTemplate.getPlan().dtstart, TimeZone.getDefault());
+      ContentUris.appendId(eventsUriBuilder, instant.getStartOfDay().getMilliseconds(TimeZone.getDefault()));
+      ContentUris.appendId(eventsUriBuilder, instant.getEndOfDay().getMilliseconds(TimeZone.getDefault()));
+      Uri eventsUri = eventsUriBuilder.build();
+      Cursor c = cr().query(eventsUri,
+          null,
+          String.format(Locale.US, CalendarContractCompat.Instances.EVENT_ID + " = %d",
+              originTemplate.getPlan().getId()),
+          null,
+          null);
+      if (c != null) {
+        if (c.moveToFirst()) {
+          long instance_id = c.getLong(c.getColumnIndex(CalendarContractCompat.Instances._ID));
+          ContentValues values = new ContentValues();
+          values.put(KEY_TEMPLATEID, originTemplate.getId());
+          values.put(KEY_INSTANCEID, instance_id);
+          values.put(KEY_TRANSACTIONID, getId());
+          cr().insert(TransactionProvider.PLAN_INSTANCE_STATUS_URI, values);
+        }
+        c.close();
+      }
     }
     if (needIncreaseUsage) {
       cr().update(
@@ -710,7 +746,7 @@ public class Transaction extends Model {
     result = 31 * result + (this.methodLabel != null ? this.methodLabel.hashCode() : 0);
     result = 31 * result + (this.parentId != null ? this.parentId.hashCode() : 0);
     result = 31 * result + (this.payeeId != null ? this.payeeId.hashCode() : 0);
-    result = 31 * result + (this.originTemplateId != null ? this.originTemplateId.hashCode() : 0);
+    result = 31 * result + (this.originTemplate != null ? this.originTemplate.hashCode() : 0);
     result = 31 * result + (this.originPlanInstanceId != null ? this.originPlanInstanceId.hashCode() : 0);
     result = 31 * result + this.status;
     result = 31 * result + (this.crStatus != null ? this.crStatus.hashCode() : 0);

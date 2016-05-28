@@ -19,11 +19,11 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
-import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.model.Account;
 import org.totschnig.myexpenses.model.PaymentMethod;
+import org.totschnig.myexpenses.model.Plan;
 import org.totschnig.myexpenses.model.Template;
 import org.totschnig.myexpenses.model.Transaction;
 import org.totschnig.myexpenses.util.Utils;
@@ -48,7 +48,7 @@ import android.util.Log;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.*;
 
 public class TransactionDatabase extends SQLiteOpenHelper {
-  public static final int DATABASE_VERSION = 56;
+  public static final int DATABASE_VERSION = 57;
   public static final String DATABASE_NAME = "data";
   private Context mCtx;
 
@@ -83,23 +83,54 @@ public class TransactionDatabase extends SQLiteOpenHelper {
           + KEY_PICTURE_URI + " text);";
 
   private static String buildViewDefinition(String tableName) {
-    return " AS SELECT " +
-        tableName + ".*, " + TABLE_PAYEES + ".name as " + KEY_PAYEE_NAME + ", " +
-        TABLE_METHODS + "." + KEY_LABEL + " AS " + KEY_METHOD_LABEL +
-        " FROM " + tableName +
-        " LEFT JOIN " + TABLE_PAYEES + " ON " + KEY_PAYEEID + " = " + TABLE_PAYEES + "." + KEY_ROWID +
-        " LEFT JOIN " + TABLE_METHODS + " ON " + KEY_METHODID + " = " + TABLE_METHODS + "." + KEY_ROWID;
+    StringBuilder stringBuilder = new StringBuilder();
+    stringBuilder.append(" AS SELECT ").append(tableName).append(".*, ").append(TABLE_PAYEES)
+        .append(".").append(KEY_PAYEE_NAME).append(", ")
+        .append(TABLE_METHODS).append(".").append(KEY_LABEL).append(" AS ").append(KEY_METHOD_LABEL);
+
+    if (tableName.equals(TABLE_TRANSACTIONS)) {
+      stringBuilder.append(", ").append(TABLE_PLAN_INSTANCE_STATUS).append(".").append(KEY_TEMPLATEID);
+    }
+
+    stringBuilder.append(" FROM ").append(tableName).append(" LEFT JOIN ").append(TABLE_PAYEES).append(" ON ")
+        .append(KEY_PAYEEID).append(" = ").append(TABLE_PAYEES).append(".").append(KEY_ROWID).append(" LEFT JOIN ")
+        .append(TABLE_METHODS).append(" ON ").append(KEY_METHODID).append(" = ").append(TABLE_METHODS)
+        .append(".").append(KEY_ROWID);
+
+    if (tableName.equals(TABLE_TRANSACTIONS)) {
+      stringBuilder.append(" LEFT JOIN ").append(TABLE_PLAN_INSTANCE_STATUS)
+          .append(" ON ").append(tableName).append(".").append(KEY_ROWID).append(" = ")
+          .append(TABLE_PLAN_INSTANCE_STATUS).append(".").append(KEY_TRANSACTIONID);
+    }
+    return stringBuilder.toString();
   }
 
   private static String buildViewDefinitionExtended(String tableName) {
-    return " AS SELECT " +
-        tableName + ".*, " + TABLE_PAYEES + ".name as " + KEY_PAYEE_NAME + ", " +
-        KEY_COLOR + ", " + KEY_CURRENCY + ", " + KEY_EXCLUDE_FROM_TOTALS + ", " +
-        TABLE_METHODS + "." + KEY_LABEL + " AS " + KEY_METHOD_LABEL +
-        " FROM " + tableName +
-        " LEFT JOIN " + TABLE_PAYEES + " ON " + KEY_PAYEEID + " = " + TABLE_PAYEES + "." + KEY_ROWID +
-        " LEFT JOIN " + TABLE_ACCOUNTS + " ON " + KEY_ACCOUNTID + " = " + TABLE_ACCOUNTS + "." + KEY_ROWID +
-        " LEFT JOIN " + TABLE_METHODS + " ON " + KEY_METHODID + " = " + TABLE_METHODS + "." + KEY_ROWID;
+    StringBuilder stringBuilder = new StringBuilder();
+
+    stringBuilder.append(" AS SELECT ").append(tableName).append(".*, ").append(TABLE_PAYEES)
+        .append(".").append(KEY_PAYEE_NAME).append(", ").append(KEY_COLOR).append(", ")
+        .append(KEY_CURRENCY).append(", ").append(KEY_EXCLUDE_FROM_TOTALS).append(", ")
+        .append(TABLE_METHODS).append(".").append(KEY_LABEL).append(" AS ").append(KEY_METHOD_LABEL);
+
+    if (tableName.equals(TABLE_TRANSACTIONS)) {
+      stringBuilder.append(", ").append(TABLE_PLAN_INSTANCE_STATUS).append(".").append(KEY_TEMPLATEID);
+    }
+
+    stringBuilder.append(" FROM ").append(tableName).append(" LEFT JOIN ").append(TABLE_PAYEES).append(" ON ")
+        .append(KEY_PAYEEID).append(" = ").append(TABLE_PAYEES).append(".").append(KEY_ROWID)
+        .append(" LEFT JOIN ").append(TABLE_ACCOUNTS).append(" ON ").append(KEY_ACCOUNTID)
+        .append(" = ").append(TABLE_ACCOUNTS).append(".").append(KEY_ROWID).append(" LEFT JOIN ")
+        .append(TABLE_METHODS).append(" ON ").append(KEY_METHODID).append(" = ").append(TABLE_METHODS)
+        .append(".").append(KEY_ROWID);
+
+    if (tableName.equals(TABLE_TRANSACTIONS)) {
+      stringBuilder.append(" LEFT JOIN ").append(TABLE_PLAN_INSTANCE_STATUS)
+          .append(" ON ").append(tableName).append(".").append(KEY_ROWID).append(" = ")
+          .append(TABLE_PLAN_INSTANCE_STATUS).append(".").append(KEY_TRANSACTIONID);
+    }
+
+    return stringBuilder.toString();
   }
 
   /**
@@ -174,8 +205,7 @@ public class TransactionDatabase extends SQLiteOpenHelper {
           + KEY_PLANID + " integer, "
           + KEY_PLAN_EXECUTION + " boolean default 0, "
           + KEY_UUID + " text, "
-          + KEY_LAST_USED + " datetime, "
-          + "unique(" + KEY_ACCOUNTID + "," + KEY_TITLE + "));";
+          + KEY_LAST_USED + " datetime);";
 
   private static final String EVENT_CACHE_CREATE =
       "CREATE TABLE " + TABLE_EVENT_CACHE + " ( " +
@@ -279,11 +309,12 @@ public class TransactionDatabase extends SQLiteOpenHelper {
     db.execSQL(DATABASE_CREATE);
     db.execSQL(PAYEE_CREATE);
     db.execSQL(PAYMENT_METHODS_CREATE);
+    db.execSQL(TEMPLATE_CREATE);
+    db.execSQL(PLAN_INSTANCE_STATUS_CREATE);
     String viewTransactions = buildViewDefinition(TABLE_TRANSACTIONS);
     db.execSQL("CREATE VIEW " + VIEW_COMMITTED + viewTransactions + " WHERE " + KEY_STATUS + " != " + STATUS_UNCOMMITTED + ";");
     db.execSQL("CREATE VIEW " + VIEW_UNCOMMITTED + viewTransactions + " WHERE " + KEY_STATUS + " = " + STATUS_UNCOMMITTED + ";");
     db.execSQL("CREATE VIEW " + VIEW_ALL + viewTransactions);
-    db.execSQL(TEMPLATE_CREATE);
     db.execSQL("CREATE VIEW " + VIEW_TEMPLATES + buildViewDefinition(TABLE_TEMPLATES));
     db.execSQL(CATEGORIES_CREATE);
     db.execSQL(ACCOUNTS_CREATE);
@@ -301,7 +332,6 @@ public class TransactionDatabase extends SQLiteOpenHelper {
     initialValues.put(KEY_LABEL, "__SPLIT_TRANSACTION__");
     db.insertOrThrow(TABLE_CATEGORIES, null, initialValues);
     insertCurrencies(db);
-    db.execSQL(PLAN_INSTANCE_STATUS_CREATE);
     db.execSQL(EVENT_CACHE_CREATE);
     db.execSQL(STALE_URIS_CREATE);
     db.execSQL(STALE_URI_TRIGGER_CREATE);
@@ -827,19 +857,7 @@ public class TransactionDatabase extends SQLiteOpenHelper {
       if (oldVersion < 48) {
         //added method_label to extended view
         //do not comment out, since it is needed by the uuid update
-        db.execSQL("DROP VIEW IF EXISTS transactions_extended");
-        db.execSQL("DROP VIEW IF EXISTS templates_extended");
-        db.execSQL("DROP VIEW IF EXISTS transactions_committed");
-        db.execSQL("DROP VIEW IF EXISTS transactions_uncommitted");
-        db.execSQL("DROP VIEW IF EXISTS transactions_all");
-        db.execSQL("DROP VIEW IF EXISTS templates_all");
-        db.execSQL("CREATE VIEW transactions_extended" + buildViewDefinitionExtended(TABLE_TRANSACTIONS) + " WHERE " + KEY_STATUS + " != " + STATUS_UNCOMMITTED + ";");
-        db.execSQL("CREATE VIEW templates_extended" + buildViewDefinitionExtended(TABLE_TEMPLATES));
-        String viewTransactions = buildViewDefinition(TABLE_TRANSACTIONS);
-        db.execSQL("CREATE VIEW transactions_committed " + viewTransactions + " WHERE " + KEY_STATUS + " != " + STATUS_UNCOMMITTED + ";");
-        db.execSQL("CREATE VIEW transactions_uncommitted" + viewTransactions + " WHERE " + KEY_STATUS + " = " + STATUS_UNCOMMITTED + ";");
-        db.execSQL("CREATE VIEW transactions_all" + viewTransactions);
-        db.execSQL("CREATE VIEW templates_all" + buildViewDefinition(TABLE_TEMPLATES));
+        refreshViews(db);
         //need to inline to protect against later renames
 
         if (oldVersion < 47) {
@@ -1058,6 +1076,76 @@ public class TransactionDatabase extends SQLiteOpenHelper {
           new SQLiteUpgradeFailedException("Database upgrade failed", e) :
           e;
     }
+
+    if (oldVersion < 57) {
+      //fix custom app uris
+      Cursor c = db.query("templates", new String[]{"_id", "plan_id"}, null, null, null, null, null);
+      if (c != null) {
+        if (c.moveToFirst()) {
+          while (!c.isAfterLast()) {
+            Plan.updateCustomAppUri(c.getLong(1), Template.buildCustomAppUri(c.getLong(0)));
+            c.moveToNext();
+          }
+        }
+        c.close();
+      }
+
+      //Drop unique constraint on templates
+
+      db.execSQL("ALTER TABLE templates RENAME to templates_old");
+      db.execSQL("CREATE TABLE templates (" +
+          " _id integer primary key autoincrement," +
+          " comment text," +
+          " amount integer not null," +
+          " cat_id integer references categories(_id)," +
+          " account_id integer not null references accounts(_id) ON DELETE CASCADE," +
+          " payee_id integer references payee(_id)," +
+          " transfer_peer boolean default 0," +
+          " transfer_account integer references accounts(_id) ON DELETE CASCADE," +
+          " method_id integer references paymentmethods(_id)," +
+          " title text not null," +
+          " usages integer default 0," +
+          " plan_id integer, " +
+          " plan_execution boolean default 0, " +
+          " uuid text, " +
+          " last_used datetime);");
+      db.execSQL("INSERT INTO templates " +
+          "(_id,comment,amount,cat_id,account_id,payee_id,transfer_peer,transfer_account,method_id,title,usages,plan_id,plan_execution,uuid,last_used) " +
+          "SELECT " +
+          "_id, " +
+          "comment, " +
+          "amount, " +
+          "cat_id, " +
+          "account_id, " +
+          "payee_id, " +
+          "transfer_peer, " +
+          "transfer_account, " +
+          "method_id," +
+          "title," +
+          "usages, " +
+          "plan_id, " +
+          "plan_execution, uuid, last_used " +
+          "FROM templates_old");
+      db.execSQL("DROP TABLE templates_old");
+      //Recreate changed views
+      refreshViews(db);
+    }
+  }
+
+  private void refreshViews(SQLiteDatabase db) {
+    db.execSQL("DROP VIEW IF EXISTS transactions_extended");
+    db.execSQL("DROP VIEW IF EXISTS templates_extended");
+    db.execSQL("DROP VIEW IF EXISTS transactions_committed");
+    db.execSQL("DROP VIEW IF EXISTS transactions_uncommitted");
+    db.execSQL("DROP VIEW IF EXISTS transactions_all");
+    db.execSQL("DROP VIEW IF EXISTS templates_all");
+    db.execSQL("CREATE VIEW transactions_extended" + buildViewDefinitionExtended(TABLE_TRANSACTIONS) + " WHERE " + KEY_STATUS + " != " + STATUS_UNCOMMITTED + ";");
+    db.execSQL("CREATE VIEW templates_extended" + buildViewDefinitionExtended(TABLE_TEMPLATES));
+    String viewTransactions = buildViewDefinition(TABLE_TRANSACTIONS);
+    db.execSQL("CREATE VIEW transactions_committed " + viewTransactions + " WHERE " + KEY_STATUS + " != " + STATUS_UNCOMMITTED + ";");
+    db.execSQL("CREATE VIEW transactions_uncommitted" + viewTransactions + " WHERE " + KEY_STATUS + " = " + STATUS_UNCOMMITTED + ";");
+    db.execSQL("CREATE VIEW transactions_all" + viewTransactions);
+    db.execSQL("CREATE VIEW templates_all" + buildViewDefinition(TABLE_TEMPLATES));
   }
 
   @Override

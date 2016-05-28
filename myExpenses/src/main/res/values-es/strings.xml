@@ -370,7 +370,6 @@
   <string name="qif_parse_failure_found_multiple_accounts">Se encuentran en archivo QIF varias cuentas.</string>
   <string name="qif_parse_failure_found_multiple_accounts_cannot_merge">No puedes combinarlos en cuenta existente.</string>
   <string name="reference_number">Número de referencia</string>
-  <string name="request_licence_mail_description">Por favor describa (en inglés, francés o alemán) su contribución a Mis gastos (por ejemplo: donación a través de Paypal, informe de errores, pruebas, traducción).</string>
   <string name="request_licence_mail_head">Por favor, envíeme una clave para Android-Id %1$s.</string>
   <string name="restore_db_failure">La restauración de la base de datos ha fallado.</string>
   <string name="restore_db_success">La base de datos ha sido restaurada desde la copia de seguridad.</string>
@@ -407,7 +406,6 @@
   <!--%s is replaced with Android or Blackberry-->
   <string name="tell_a_friend_message">Probar Mis Gastos, Gestión de las finanzas personales para %s, desde http://www.myexpenses.mobi</string>
   <string name="template_create_success">Plantilla \"%1$s\" creada con éxito</string>
-  <string name="template_title_exists">Ya existe una plantilla con título \"%1$s\" .</string>
   <string name="thank_you">¡Gracias por su apoyo!</string>
   <string name="time">Hora</string>
   <string name="title">Título</string>
@@ -588,4 +586,7 @@
   <string name="warning_cannot_move_split_transaction">Esto asiento dividido no se pueden mover para %1$s porque hay divisiones que hacen referencia a esta cuenta.</string>
   <string name="content_description_calculator_clear_button">Restablecer todas</string>
   <string name="content_description_calculator_delete_button">Borrar el último dígito</string>
+  <string name="paypal_transaction_id">Identificador de la transacción de PayPal</string>
+  <string name="paypal_callback_info">Se haya completado su transacción, y un recibo de su compra ha sido enviado a usted. Puede iniciar sesión en tu cuenta en www.paypal.com para ver los detalles de esta transacción.</string>
+  <string name="paypal_callback_later_clicked_info">En la pantalla de configuración, puede solicitar una clave en cualquier momento.</string>
 </resources>

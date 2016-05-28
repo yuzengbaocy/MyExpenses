@@ -370,7 +370,6 @@
   <string name="qif_parse_failure_found_multiple_accounts">QIF dosyasında birden çok hesap bulundu.</string>
   <string name="qif_parse_failure_found_multiple_accounts_cannot_merge">Bunlar mevcut bir hesapla birleştirilemez.</string>
   <string name="reference_number">Referans sayısı</string>
-  <string name="request_licence_mail_description">Harcamalarıma katkınızı (Paypal ile bağış, hata raporu, deneme, tercüme) İngilizce, Almanca ya da Fransızca olarak açıklayınız.</string>
   <string name="request_licence_mail_head">Lütfen bana Android kimliği %1$s için bir anahtarı gönderin.</string>
   <string name="restore_db_failure">Veritabanının yüklenmesi başarısız oldu</string>
   <string name="restore_db_success">Veritabanı yedeklemeden restore edilmiştir.</string>
@@ -407,7 +406,6 @@
   <!--%s is replaced with Android or Blackberry-->
   <string name="tell_a_friend_message">%s için kişisel finans yöneticisi olan Harcamalarıma http://www.myexpenses.mobi adresinde göz atın</string>
   <string name="template_create_success">\"%1$s\" şablonu başarıyla oluşturuldu</string>
-  <string name="template_title_exists">\"%1$s\" başlıklı bir şablon zaten mevcut</string>
   <string name="thank_you">Desteğiniz için teşekkür ederiz!</string>
   <string name="time">Zaman</string>
   <string name="title">Başlık</string>
@@ -588,4 +586,7 @@
   <string name="warning_cannot_move_split_transaction">Bu bölünmüş muamele %1$s hesabına taşınamaz çünkü bu hesapla ilişkili transfer parçaları bulunmaktadır.</string>
   <string name="content_description_calculator_clear_button">Sıfırla tümünü</string>
   <string name="content_description_calculator_delete_button">Son rakamı sil</string>
+  <string name="paypal_transaction_id">Paypal Muamele Kimliği</string>
+  <string name="paypal_callback_info">Muameleniz tamamlanmış ve alışverişiniz hakkında bir makbuz e-posta ile size gönderilmiştir. Bu muamelenin ayrıntılarını görüntülemek için hesabınıza www.paypal.com adresinde bağlanabilirsiniz.</string>
+  <string name="paypal_callback_later_clicked_info">Ayarlar ekranından ne zaman isterseniz bir anahtar talep edebilirsiniz.</string>
 </resources>

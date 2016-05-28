@@ -370,7 +370,6 @@
   <string name="qif_parse_failure_found_multiple_accounts">Plusieurs comptes trouvés dans le fichier QIF.</string>
   <string name="qif_parse_failure_found_multiple_accounts_cannot_merge">Impossible de fusionner avec le compte existant.</string>
   <string name="reference_number">Numéro de référence</string>
-  <string name="request_licence_mail_description">S\'il vous plaît décrire votre contribution à Mes dépenses (par exemple: un don via Paypal, rapport de bug, des tests, de la traduction).</string>
   <string name="request_licence_mail_head">Envoyez-moi, s\'il vous plaît, une clé pour l\'Android-Id %1$s.</string>
   <string name="restore_db_failure">La restauration de la base de données a échoué.</string>
   <string name="restore_db_success">La base de données a été rétablie à partir de la sauvegarde.</string>
@@ -407,7 +406,6 @@
   <!--%s is replaced with Android or Blackberry-->
   <string name="tell_a_friend_message">Essayez Mes dépenses, Gestionnaire de finances personnelles pour %s, de http://www.myexpenses.mobi</string>
   <string name="template_create_success">Modèle \"%1$s\" créé avec succès</string>
-  <string name="template_title_exists">Un modèle avec le titre \"%1$s\" existe déjà</string>
   <string name="thank_you">Merci de votre soutien!</string>
   <string name="time">Heure</string>
   <string name="title">Titre</string>
@@ -588,4 +586,7 @@
   <string name="warning_cannot_move_split_transaction">Cette opération ventilée ne peut pas être déplacée vers le compte %1$s car il existe des ventilations de transfert vers ce même compte.</string>
   <string name="content_description_calculator_clear_button">Réinitialiser tous</string>
   <string name="content_description_calculator_delete_button">Supprimer le dernier chiffre</string>
+  <string name="paypal_transaction_id">N° d\'opération Paypal</string>
+  <string name="paypal_callback_info">Votre transaction s\'est bien terminée,  et un reçu de votre achat vous a été envoyé par courriel. Vous pouvez vous connecter sur votre compte PayPal pour voir les détails de cette transaction.  </string>
+  <string name="paypal_callback_later_clicked_info">A partir de l\'écran des paramètres,  vous pouvez demander une clé n\'importe quand. </string>
 </resources>

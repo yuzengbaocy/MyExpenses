@@ -366,7 +366,6 @@
   <string name="qif_parse_failure_found_multiple_accounts">QIF 파일에서 여러개의 계좌가 발견되었습니다.</string>
   <string name="qif_parse_failure_found_multiple_accounts_cannot_merge">기존 계좌에 합칠 수 없습니다.</string>
   <string name="reference_number">참조 번호</string>
-  <string name="request_licence_mail_description">기부, 버그 리포트, 테스트, 번역 등의 기여 내용을 영어, 독일어 또는 프랑스어로 기재해주세요.</string>
   <string name="request_licence_mail_head">Android-Id %1$s 에 맞는 기부 확인 키를 보내주세요.</string>
   <string name="restore_db_failure">데이터베이스 복원을 실패했습니다.</string>
   <string name="restore_db_success">데이터베이스를 백업으로부터 복원했습니다.</string>
@@ -402,7 +401,6 @@
   <!--%s is replaced with Android or Blackberry-->
   <string name="tell_a_friend_message">Check out My Expenses, Personal Finance Manager for %s, from http://www.myexpenses.mobi</string>
   <string name="template_create_success">\"%1$s\" 템플릿을 성공적으로 만들었습니다</string>
-  <string name="template_title_exists">\"%1$s\" 제목을 가진 템플릿이 이미 존재합니다</string>
   <string name="thank_you">지원해 주셔서 감사합니다!</string>
   <string name="time">시간</string>
   <string name="title">제목</string>

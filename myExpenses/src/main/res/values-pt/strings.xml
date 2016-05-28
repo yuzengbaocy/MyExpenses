@@ -370,7 +370,6 @@
   <string name="qif_parse_failure_found_multiple_accounts">Várias contas encontradas no arquivo QIF.</string>
   <string name="qif_parse_failure_found_multiple_accounts_cannot_merge">Não pode mesclá-las em conta existente.</string>
   <string name="reference_number">Número de Referência</string>
-  <string name="request_licence_mail_description">Por favor, descreva (em inglês, alemão ou francês), sua contribuição para as despesas de meu (por exemplo: doação via Paypal, relatório de bugs, testes, tradução).</string>
   <string name="request_licence_mail_head">Por favor me envie uma chave para Android-Id %1$s.</string>
   <string name="restore_db_failure">A restauração do banco de dados falhou.</string>
   <string name="restore_db_success">O banco de dados foi restaurado a partir do backup.</string>
@@ -407,7 +406,6 @@
   <!--%s is replaced with Android or Blackberry-->
   <string name="tell_a_friend_message">Minhas despesas, Gerenciador de finanças pessoais para o %s, http://www.myexpenses.mobi</string>
   <string name="template_create_success">Modelo \"%1$s\" criado com sucesso.</string>
-  <string name="template_title_exists">Um modelo sob título \"%1$s\" já existe</string>
   <string name="thank_you">Obrigado pelo vosso apoio!</string>
   <string name="time">Tempo</string>
   <string name="title">Título</string>

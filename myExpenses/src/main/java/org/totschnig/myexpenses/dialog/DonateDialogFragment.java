@@ -15,6 +15,7 @@
 
 package org.totschnig.myexpenses.dialog;
 
+import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.activity.ContribIFace;
@@ -22,6 +23,7 @@ import org.totschnig.myexpenses.dialog.MessageDialogFragment.MessageDialogListen
 import org.totschnig.myexpenses.util.Utils;
 
 import android.app.Activity;
+import android.os.Build;
 import android.support.v7.app.AlertDialog;
 import android.app.Dialog;
 import android.text.ClipboardManager;
@@ -38,27 +40,30 @@ import android.util.TypedValue;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.Locale;
+
 /**
  * the DonateDialog is shown on devices where Google Play is not available, in two contexts
- * 1) From the PREFKEY_CONTRIB_INSTALL entry of MyPreferenceActivity, here the Dialog is 
- *    instantiated through buildDialog and shown with showDialog
+ * 1) From the PREFKEY_CONTRIB_INSTALL entry of MyPreferenceActivity, here the Dialog is
+ * instantiated through buildDialog and shown with showDialog
  * 2) From the ContribDialog when user clicks on "Buy". Here it is shown as DialogFragmen
  */
 public class DonateDialogFragment extends CommitSafeDialogFragment {
 
   private static final String KEY_EXTENDED = "extended";
-  public static final String PAYPAL_BUTTON_CONTRIB = "A7ZPSCUTS23K6";
-  public static final String PAYPAL_BUTTON_EXTENDED = "85U6933MANDW8";
-  public static final String PAYPAL_BUTTON_UPGRADE = "7RVRT537PF6RC";
+  public static final String PAYPAL_BUTTON_CONTRIB = "Contrib";
+  public static final String PAYPAL_BUTTON_EXTENDED = "Extended";
+  public static final String PAYPAL_BUTTON_UPGRADE = "Upgrade";
   public static final String BITCOIN_ADDRESS = "1GCUGCSfFXzSC81ogHu12KxfUn3cShekMn";
 
   public static final DonateDialogFragment newInstance(boolean extended) {
     DonateDialogFragment fragment = new DonateDialogFragment();
     Bundle args = new Bundle();
-    args.putBoolean(KEY_EXTENDED,extended);
+    args.putBoolean(KEY_EXTENDED, extended);
     fragment.setArguments(args);
     return fragment;
   }
+
   @Override
   public Dialog onCreateDialog(Bundle savedInstanceState) {
     boolean isExtended = getArguments().getBoolean(KEY_EXTENDED);
@@ -66,7 +71,7 @@ public class DonateDialogFragment extends CommitSafeDialogFragment {
     final TextView message = new TextView(getActivity());
     int padding = (int) TypedValue.applyDimension(
         TypedValue.COMPLEX_UNIT_DIP, 10, getResources().getDisplayMetrics());
-    message.setPadding(padding,padding,padding,0);
+    message.setPadding(padding, padding, padding, 0);
     message.setMovementMethod(LinkMovementMethod.getInstance());
     CharSequence linefeed = Html.fromHtml("<br><br>");
     message.setText(TextUtils.concat(
@@ -81,12 +86,13 @@ public class DonateDialogFragment extends CommitSafeDialogFragment {
         R.string.pref_contrib_purchase_title_upgrade :
         (isExtended ? R.string.extended_key : R.string.contrib_key);
     return builder
-      .setTitle(title)
-      .setView(message)
-      .setPositiveButton(R.string.donate_button_paypal, listener)
-      .setNeutralButton(R.string.donate_button_bitcoin, listener)
-      .create();
+        .setTitle(title)
+        .setView(message)
+        .setPositiveButton(R.string.donate_button_paypal, listener)
+        .setNeutralButton(R.string.donate_button_bitcoin, listener)
+        .create();
   }
+
   public class DonationUriVisitor implements OnClickListener {
 
     @Override
@@ -96,7 +102,7 @@ public class DonateDialogFragment extends CommitSafeDialogFragment {
       if (which == AlertDialog.BUTTON_NEUTRAL) {
         intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse("bitcoin:" + BITCOIN_ADDRESS));
-        if (Utils.isIntentAvailable(ctx,intent)) {
+        if (Utils.isIntentAvailable(ctx, intent)) {
           ctx.startActivityForResult(intent, 0);
         } else {
           ClipboardManager clipboard = (ClipboardManager)
@@ -110,23 +116,33 @@ public class DonateDialogFragment extends CommitSafeDialogFragment {
           }
         }
       } else if (which == AlertDialog.BUTTON_POSITIVE) {
-        String paypalButtonId = MyApplication.getInstance().isContribEnabled() ?
+        String host = BuildConfig.DEBUG ? "www.sandbox.paypal.com" : "www.paypal.com" ;
+        String paypalButtonId = BuildConfig.DEBUG? "TURRUESSCUG8N" : "LBUDF8DSWJAZ8";
+        String whichLicence = MyApplication.getInstance().isContribEnabled() ?
             PAYPAL_BUTTON_UPGRADE :
             (getArguments().getBoolean(KEY_EXTENDED) ? PAYPAL_BUTTON_EXTENDED : PAYPAL_BUTTON_CONTRIB);
-        String uri =
-            "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id="
-                +  paypalButtonId;
+        String uri = String.format(Locale.US,
+            "https://%s/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=%s&on0=%s&os0=%s&lc=%s",
+            host, paypalButtonId, "Licence", whichLicence, getPaypalLocale());
+
+
+
         intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(uri));
         ctx.startActivityForResult(intent, 0);
       }
     }
   }
+
   @Override
-  public void onCancel (DialogInterface dialog) {
-    if (getActivity()==null) {
+  public void onCancel(DialogInterface dialog) {
+    if (getActivity() == null) {
       return;
     }
     getActivity().finish();
+  }
+
+  private String getPaypalLocale() {
+    return Locale.getDefault().toString();
   }
 }

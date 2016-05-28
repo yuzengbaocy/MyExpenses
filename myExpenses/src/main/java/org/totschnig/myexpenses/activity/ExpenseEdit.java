@@ -86,7 +86,9 @@ import org.totschnig.myexpenses.dialog.ConfirmationDialogFragment.ConfirmationDi
 import org.totschnig.myexpenses.dialog.ContribInfoDialogFragment;
 import org.totschnig.myexpenses.dialog.MessageDialogFragment;
 import org.totschnig.myexpenses.fragment.DbWriteFragment;
+import org.totschnig.myexpenses.fragment.PlanMonthFragment;
 import org.totschnig.myexpenses.fragment.SplitPartList;
+import org.totschnig.myexpenses.fragment.TemplatesList;
 import org.totschnig.myexpenses.model.Account;
 import org.totschnig.myexpenses.model.Account.Type;
 import org.totschnig.myexpenses.model.ContribFeature;
@@ -342,7 +344,7 @@ public class ExpenseEdit extends AmountActivity implements
     mTransferAccountSpinner.setOnItemSelectedListener(this);
     mStatusSpinner = new SpinnerHelper(findViewById(R.id.Status));
     mReccurenceSpinner = new SpinnerHelper(findViewById(R.id.Recurrence));
-    mPlanToggleButton = (ToggleButton) findViewById(R.id.togglebutton);
+    mPlanToggleButton = (ToggleButton) findViewById(R.id.PlanExecutionAutomatic);
     TextPaint paint = mPlanToggleButton.getPaint();
     int automatic = (int) paint.measureText(getString(R.string.plan_automatic));
     int manual = (int) paint.measureText(getString(R.string.plan_manual));
@@ -597,7 +599,7 @@ public class ExpenseEdit extends AmountActivity implements
         //if user has denied access and checked that he does not want to be asked again, we do not
         //bother him with a button that is not working
         setPlannerRowVisibility(View.VISIBLE);
-        RecurrenceAdapter recurrenceAdapter = new RecurrenceAdapter(this);
+        RecurrenceAdapter recurrenceAdapter = new RecurrenceAdapter(this, false);
         mReccurenceSpinner.setAdapter(recurrenceAdapter);
         mReccurenceSpinner.setOnItemSelectedListener(this);
         mPlanButton.setOnClickListener(new View.OnClickListener() {
@@ -644,14 +646,41 @@ public class ExpenseEdit extends AmountActivity implements
             R.string.menu_create_split_part_transfer : R.string.menu_edit_split_part_transfer);
         helpVariant = HelpVariant.splitPartTransfer;
         mTransaction.status = STATUS_UNCOMMITTED;
-      } else if (mTransaction instanceof Transfer) {
-        setTitle(mTransaction.getId() == 0 ?
-            R.string.menu_create_transfer : R.string.menu_edit_transfer);
-        helpVariant = HelpVariant.transfer;
-      } else if (mTransaction instanceof Transaction) {
-        setTitle(mTransaction.getId() == 0 ?
-            R.string.menu_create_transaction : R.string.menu_edit_transaction);
-        helpVariant = HelpVariant.transaction;
+      } else {
+        //Transfer or Template, we can suggest to create a plan
+        if (!calendarPermissionPermanentlyDeclined()) {
+          //we set adapter even if spinner is not immediately visible, since it might become visible
+          //after SAVE_AND_NEW action
+          RecurrenceAdapter recurrenceAdapter = new RecurrenceAdapter(this, true);
+          mReccurenceSpinner.setAdapter(recurrenceAdapter);
+          mReccurenceSpinner.setOnItemSelectedListener(this);
+          findViewById(R.id.PlannerRow).setVisibility(View.VISIBLE);
+          if (mTransaction.originTemplate != null) {
+            mReccurenceSpinner.getSpinner().setVisibility(View.GONE);
+            mPlanButton.setVisibility(View.VISIBLE);
+            mPlanButton.setText(Plan.prettyTimeInfo(this,
+                mTransaction.originTemplate.getPlan().rrule, mTransaction.originTemplate.getPlan().dtstart));
+            mPlanButton.setOnClickListener(new View.OnClickListener() {
+              public void onClick(View view) {
+                PlanMonthFragment.newInstance(
+                    mTransaction.originTemplate.getTitle(),
+                    mTransaction.originTemplate.getId(),
+                    mTransaction.originTemplate.planId,
+                    getCurrentAccount().color, true).show(getSupportFragmentManager(),
+                    TemplatesList.CALDROID_DIALOG_FRAGMENT_TAG);
+              }
+            });
+          }
+        }
+        if (mTransaction instanceof Transfer) {
+          setTitle(mTransaction.getId() == 0 ?
+              R.string.menu_create_transfer : R.string.menu_edit_transfer);
+          helpVariant = HelpVariant.transfer;
+        } else if (mTransaction instanceof Transaction) {
+          setTitle(mTransaction.getId() == 0 ?
+              R.string.menu_create_transaction : R.string.menu_edit_transaction);
+          helpVariant = HelpVariant.transaction;
+        }
       }
     }
     if (mClone) {
@@ -738,7 +767,10 @@ public class ExpenseEdit extends AmountActivity implements
     View methodLabel = findViewById(R.id.MethodLabel);
     linkInputWithLabel(mMethodSpinner, methodLabel);
     linkInputWithLabel(mReferenceNumberText, methodLabel);
-    linkInputWithLabel(mPlanButton, findViewById(R.id.PlanLabel));
+    View planLabel = findViewById(R.id.PlanLabel);
+    linkInputWithLabel(mPlanButton, planLabel);
+    linkInputWithLabel(mReccurenceSpinner.getSpinner(), planLabel);
+    linkInputWithLabel(mPlanToggleButton, planLabel);
     final View transferAmountLabel = findViewById(R.id.TransferAmountLabel);
     linkInputWithLabel(mTransferAmountText, transferAmountLabel);
     linkInputWithLabel(findViewById(R.id.CalculatorTransfer), transferAmountLabel);
@@ -956,8 +988,8 @@ public class ExpenseEdit extends AmountActivity implements
       }
     }
     if (mTransaction instanceof Template) {
-      mTitleText.setText(((Template) mTransaction).title);
-      mPlanToggleButton.setChecked(((Template) mTransaction).planExecutionAutomatic);
+      mTitleText.setText(((Template) mTransaction).getTitle());
+      mPlanToggleButton.setChecked(((Template) mTransaction).isPlanExecutionAutomatic());
     } else {
       mReferenceNumberText.setText(mTransaction.referenceNumber);
     }
@@ -1125,14 +1157,14 @@ public class ExpenseEdit extends AmountActivity implements
         mTitleText.setError(getString(R.string.no_title_given));
         validP = false;
       }
-      ((Template) mTransaction).title = title;
+      ((Template) mTransaction).setTitle(title);
       if (mPlan == null) {
         if (mReccurenceSpinner.getSelectedItemPosition() > 0) {
           String description = ((Template) mTransaction).compileDescription(ExpenseEdit.this);
           mPlan = new Plan(
              mCalendar,
               ((Plan.Recurrence) mReccurenceSpinner.getSelectedItem()).toRrule(),
-              ((Template) mTransaction).title,
+              ((Template) mTransaction).getTitle(),
               description);
           ((Template) mTransaction).setPlan(mPlan);
         }
@@ -1143,6 +1175,22 @@ public class ExpenseEdit extends AmountActivity implements
       }
     } else {
       mTransaction.referenceNumber = mReferenceNumberText.getText().toString();
+      if (!(mTransaction instanceof SplitPartCategory || mTransaction instanceof SplitPartTransfer)) {
+        if (mReccurenceSpinner.getSelectedItemPosition() > 0) {
+          title = TextUtils.isEmpty(mTransaction.payee) ?
+              (TextUtils.isEmpty(mLabel) ?
+                  (TextUtils.isEmpty(mTransaction.comment) ?
+                      getString(R.string.menu_create_template) : mTransaction.comment) : mLabel) : mTransaction.payee;
+          mTransaction.originTemplate = new Template(mTransaction, title);
+          mTransaction.originTemplate.setPlanExecutionAutomatic(true);
+          String description = mTransaction.originTemplate.compileDescription(ExpenseEdit.this);
+          mTransaction.originTemplate.setPlan(new Plan(
+              mCalendar,
+              ((Plan.Recurrence) mReccurenceSpinner.getSelectedItem()).toRrule(),
+              mTransaction.originTemplate.getTitle(),
+              description));
+        }
+      }
     }
 
     mTransaction.crStatus = (Transaction.CrStatus) mStatusSpinner.getSelectedItem();
@@ -1419,7 +1467,7 @@ public class ExpenseEdit extends AmountActivity implements
         if (mTransaction instanceof SplitTransaction) {
           mOperationType = MyExpenses.TYPE_SPLIT;
         } else if (mTransaction instanceof Template) {
-          mOperationType = ((Template) mTransaction).isTransfer ? MyExpenses.TYPE_TRANSFER : MyExpenses.TYPE_TRANSACTION;
+          mOperationType = ((Template) mTransaction).isTransfer() ? MyExpenses.TYPE_TRANSFER : MyExpenses.TYPE_TRANSACTION;
           mPlan = ((Template) mTransaction).getPlan();
         } else {
           mOperationType = mTransaction instanceof Transfer ? MyExpenses.TYPE_TRANSFER : MyExpenses.TYPE_TRANSACTION;
@@ -1527,8 +1575,10 @@ public class ExpenseEdit extends AmountActivity implements
                 ProtectionDelegate.PERMISSIONS_REQUEST_WRITE_CALENDAR);
           }
         }
-        mPlanButton.setVisibility(visibility);
-        mPlanToggleButton.setVisibility(visibility);
+        if (mTransaction instanceof Template) {
+          mPlanButton.setVisibility(visibility);
+          mPlanToggleButton.setVisibility(visibility);
+        }
         break;
       case R.id.Method:
         if (id > 0) {
@@ -1670,12 +1720,6 @@ public class ExpenseEdit extends AmountActivity implements
     }
     Long sequenceCount = (Long) result;
     if (sequenceCount < 0L) {
-      if (mTransaction instanceof Template) {
-        //for the moment, the only case where saving will fail
-        //if the unique constraint for template titles is violated
-        //TODO: we should probably validate the title earlier
-        mTitleText.setError(getString(R.string.template_title_exists, ((Template) mTransaction).title));
-      } else {
         String errorMsg;
         switch (sequenceCount.intValue()) {
           case DbWriteFragment.ERROR_EXTERNAL_STORAGE_NOT_AVAILABLE:
@@ -1692,7 +1736,6 @@ public class ExpenseEdit extends AmountActivity implements
             errorMsg = "Error while saving transaction";
         }
         Toast.makeText(this, errorMsg, Toast.LENGTH_LONG).show();
-      }
       mCreateNew = false;
     } else {
       if (mRecordTemplateWidget) {
@@ -1708,6 +1751,9 @@ public class ExpenseEdit extends AmountActivity implements
         } else {
           mTransaction.setId(0L);
           mRowId = 0L;
+          mReccurenceSpinner.getSpinner().setVisibility(View.VISIBLE);
+          mReccurenceSpinner.setSelection(0);
+          mPlanButton.setVisibility(View.GONE);
         }
         //while saving the picture might have been moved from temp to permanent
         mPictureUri = mTransaction.getPictureUri();
@@ -1935,7 +1981,7 @@ public class ExpenseEdit extends AmountActivity implements
   }
 
   public void onToggleClicked(View view) {
-    ((Template) mTransaction).planExecutionAutomatic = ((ToggleButton) view).isChecked();
+    ((Template) mTransaction).setPlanExecutionAutomatic(((ToggleButton) view).isChecked());
   }
 
   @Override
@@ -2068,8 +2114,10 @@ public class ExpenseEdit extends AmountActivity implements
         // If request is cancelled, the result arrays are empty.
         if (grantResults.length > 0
             && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-          mPlanButton.setVisibility(View.VISIBLE);
-          mPlanToggleButton.setVisibility(View.VISIBLE);
+          if (mTransaction instanceof Template) {
+            mPlanButton.setVisibility(View.VISIBLE);
+            mPlanToggleButton.setVisibility(View.VISIBLE);
+          }
         } else {
           mReccurenceSpinner.setSelection(0);
           if (!ActivityCompat.shouldShowRequestPermissionRationale(

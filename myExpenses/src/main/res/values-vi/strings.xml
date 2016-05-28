@@ -230,7 +230,6 @@
   <string name="pref_visit_website_summary">Nhật trình và các câu hỏi thường gặp</string>
   <string name="pref_visit_website_title">Truy cập Website</string>
   <string name="progress_dialog_loading">Đang tải đối tượng từ cơ sở dữ liệu</string>
-  <string name="request_licence_mail_description">Hãy gửi cho tác giả một mô tả ngắn gọn (bằng tiếng Anh, Đức hoặc Pháp) về sự cống hiến của bạn dành cho Chi Tiêu Của Tôi (ví dụ.: đóng góp qua Paypal, gửi báo cáo lỗi, xài thử chương trình, tham gia vào việc dịch chương trình).</string>
   <string name="restore_db_failure">Xảy ra lỗi khi khôi phục cơ sở dữ liệu</string>
   <string name="restore_db_success">Cơ sở dữ liệu đã được phục hồi từ phần sao lưu</string>
   <string name="restore_preferences_failure">Xảy ra lỗi khi khôi phục phần tùy biến</string>
@@ -255,7 +254,6 @@
   <!--%s is replaced with Android or Blackberry-->
   <string name="tell_a_friend_message">Chi Tiêu Của Tôi, Quản lý tài chính cá nhân trên %s, http://www.myexpenses.mobi</string>
   <string name="template_create_success">Mẫu \"%1$s\" đã được tạo thành công</string>
-  <string name="template_title_exists">Một mẫu có tiêu đề \"%1$s\" đã tồn tại trước đó</string>
   <string name="thank_you">Xin cảm ơn về sự hỗ trợ của bạn!</string>
   <string name="time">Thời gian</string>
   <string name="title">Tiêu đề</string>
