@@ -36,41 +36,7 @@
         <TextView
             android:id="@+id/ImportantUpgradeInfoHeading"
             style="@style/headingStyle.WithMargin"
-            android:text="@string/vote_intro"/>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal">
-
-            <ImageButton
-                android:id="@+id/vote_old"
-                style="?borderlessButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="registerVote"
-                android:src="@drawable/myexpenses"/>
-
-            <ImageButton
-                android:id="@+id/vote_new"
-                style="?borderlessButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="registerVote"
-                android:src="@mipmap/ic_launcher"/>
-
-        </LinearLayout>
-
-        <Button
-            android:id="@+id/vote_cancel"
-            style="?borderlessButtonStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:onClick="registerVote"
-            android:text="@string/vote_cancel"
-            android:textAllCaps="false"
-            />
+            android:text="@string/important_upgrade_information_heading"/>
     </LinearLayout>
 
     <ListView

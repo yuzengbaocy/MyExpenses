@@ -10,10 +10,6 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
-import android.view.View;
-
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
 
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
@@ -21,9 +17,7 @@ import org.onepf.oms.appstore.googleUtils.IabHelper.QueryInventoryFinishedListen
 import org.onepf.oms.appstore.googleUtils.IabResult;
 import org.onepf.oms.appstore.googleUtils.Inventory;
 import org.onepf.oms.appstore.googleUtils.Purchase;
-import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
-import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.contrib.Config;
 import org.totschnig.myexpenses.dialog.VersionDialogFragment;
 import org.totschnig.myexpenses.model.Transaction;
@@ -189,11 +183,8 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
             MyApplication.PrefKey.CATEGORIES_SORT_BY_USAGES_LEGACY.getBoolean(true) ?
                 "USAGES" : "ALPHABETIC");
       }
-      if (prev_version != 250) {
-        MyApplication.getInstance().showImportantUpgradeInfo = true;
-        VersionDialogFragment.newInstance(prev_version)
-            .show(getSupportFragmentManager(), TAG_VERSION_INFO);
-      }
+      VersionDialogFragment.newInstance(prev_version)
+          .show(getSupportFragmentManager(), TAG_VERSION_INFO);
     }
     checkCalendarPermission();
   }
@@ -251,30 +242,5 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
       Log.d(tag, "Destroying helper.");
       if (mHelper != null) mHelper.dispose();
       mHelper = null;
-  }
-
-  public void registerVote(View view) {
-    String action = null;
-    switch (view.getId()){
-      case R.id.vote_new:
-        action = getString(org.totschnig.myexpenses.R.string.vote_action_new);
-        break;
-      case R.id.vote_old:
-        action = getString(org.totschnig.myexpenses.R.string.vote_action_old);
-        break;
-    }
-    if (action != null) {
-      if (BuildConfig.DEBUG) {
-        action += "_DEBUG";
-      }
-      Tracker tracker = ((MyApplication) getApplication()).getDefaultTracker();
-      tracker.setScreenName("VersionDialog");
-      tracker.send(new HitBuilders.EventBuilder()
-          .setCategory("Vote")
-          .setAction(action)
-          .build());
-    }
-    ((VersionDialogFragment) getSupportFragmentManager().findFragmentByTag(TAG_VERSION_INFO))
-        .onFinishVote(view.getId());
   }
 }

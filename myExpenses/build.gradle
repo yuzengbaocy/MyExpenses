@@ -114,7 +114,7 @@ dependencies {
     compile 'com.itextpdf:itextpdf:5.5.8'
     compile 'ch.acra:acra:4.8.5'
     compile 'com.google.android.gms:play-services-ads:8.4.0'
-    compile 'com.google.android.gms:play-services-analytics:8.4.0'
+    //compile 'com.google.android.gms:play-services-analytics:8.4.0'
     compile group: 'com.google.guava', name: 'guava', version: '18.0'
     compile 'org.apache.commons:commons-lang3:3.4'
     compile 'org.onepf:openiab:0.9.8.7'
