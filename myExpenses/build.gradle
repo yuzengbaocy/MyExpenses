@@ -156,4 +156,4 @@ configurations.compile.dependencies.each { compileDependency ->
     }
 }
 
-apply plugin: 'com.google.gms.google-services'
+//apply plugin: 'com.google.gms.google-services'
