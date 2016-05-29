@@ -58,7 +58,7 @@ android {
             minifyEnabled true
             //shrinkResources true // need to wait for resolution
             // https://code.google.com/p/android/issues/detail?id=79325
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-project.txt'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-project.txt', 'proguard-flavored.txt'
         }
         //beta.initWith(buildTypes.release)
     }
