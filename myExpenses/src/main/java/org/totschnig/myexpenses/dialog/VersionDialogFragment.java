@@ -51,8 +51,6 @@ import java.util.ArrayList;
 
 public class VersionDialogFragment extends CommitSafeDialogFragment implements OnClickListener {
 
-  private ViewGroup upgradeInfoContainer;
-
   public static final VersionDialogFragment newInstance(int from) {
     VersionDialogFragment dialogFragment = new VersionDialogFragment();
     Bundle bundle = new Bundle();
@@ -148,8 +146,8 @@ public class VersionDialogFragment extends CommitSafeDialogFragment implements O
     };
     lv.setAdapter(adapter);
     if (MyApplication.getInstance().showImportantUpgradeInfo) {
-      upgradeInfoContainer = (ViewGroup) view.findViewById(R.id.ImportantUpgradeInfoContainer);
-      upgradeInfoContainer.setVisibility(View.VISIBLE);
+      view.findViewById(R.id.ImportantUpgradeInfoHeading).setVisibility(View.VISIBLE);
+      view.findViewById(R.id.ImportantUpgradeInfoBody).setVisibility(View.VISIBLE);
     }
 
     AlertDialog.Builder builder = new AlertDialog.Builder(ctx)
