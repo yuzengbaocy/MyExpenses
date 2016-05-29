@@ -289,7 +289,7 @@
                             android:title="@string/pref_acra_syslog"
                             android:dependency="acra.enable"
                             android:defaultValue="true"/>
-        <EditTextPreference android:key="acra.user.email"
+        <org.totschnig.myexpenses.preference.EditTextPreferenceShowSummary android:key="acra.user.email"
                             android:inputType="textUri"
                             android:title="@string/pref_acra_user_email"
                             android:summary="@string/pref_acra_user_email_summary"
