@@ -302,16 +302,7 @@ public class MyApplication extends Application implements
     }
     mSelf = this;
 
-    boolean isAcraSenderServiceProcess = false;
-    try {
-      Method method = ACRA.class.getDeclaredMethod("isACRASenderServiceProcess",
-          Application.class);
-      method.setAccessible(true);
-      isAcraSenderServiceProcess = (Boolean) method.invoke(null,this);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    if (!isAcraSenderServiceProcess) {
+    if (!ACRA.isACRASenderServiceProcess()) {
       // sets up mSettings
       getSettings().registerOnSharedPreferenceChangeListener(this);
       initContribEnabled();
