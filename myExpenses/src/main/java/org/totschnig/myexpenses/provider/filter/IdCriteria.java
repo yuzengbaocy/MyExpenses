@@ -19,13 +19,9 @@
 package org.totschnig.myexpenses.provider.filter;
 
 import android.os.Parcel;
-import android.os.Parcelable;
+import android.text.TextUtils;
 
-import com.google.common.base.Joiner;
-
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
-import java.util.regex.Pattern;
 
 public abstract class IdCriteria extends Criteria {
 
@@ -64,7 +60,7 @@ public abstract class IdCriteria extends Criteria {
   
   @Override
   public String toStringExtra() {
-    return escapeSeparator(label) + EXTRA_SEPARATOR + Joiner.on(EXTRA_SEPARATOR).join(values);
+    return escapeSeparator(label) + EXTRA_SEPARATOR + TextUtils.join(EXTRA_SEPARATOR, values);
   };
   public static<T extends IdCriteria> T fromStringExtra(String extra, Class<T> clazz) {
     String[] extraParts = extra.split(EXTRA_SEPARATOR_ESCAPE_SAVE_REGEXP);
