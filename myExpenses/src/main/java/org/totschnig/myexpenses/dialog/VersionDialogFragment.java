@@ -51,10 +51,14 @@ import java.util.ArrayList;
 
 public class VersionDialogFragment extends CommitSafeDialogFragment implements OnClickListener {
 
-  public static final VersionDialogFragment newInstance(int from) {
+  private static final String KEY_FROM = "from";
+  private static final String KEY_WITH_IMPORTANT_UPGRADE_INFO = "withImportantUpgradeInfo";
+
+  public static final VersionDialogFragment newInstance(int from, boolean withImportantUpgradeInfo) {
     VersionDialogFragment dialogFragment = new VersionDialogFragment();
     Bundle bundle = new Bundle();
-    bundle.putInt("from", from);
+    bundle.putInt(KEY_FROM, from);
+    bundle.putBoolean(KEY_WITH_IMPORTANT_UPGRADE_INFO, withImportantUpgradeInfo);
     dialogFragment.setArguments(bundle);
     dialogFragment.setCancelable(false);
     return dialogFragment;
@@ -62,9 +66,9 @@ public class VersionDialogFragment extends CommitSafeDialogFragment implements O
   @Override
   public Dialog onCreateDialog(Bundle savedInstanceState) {
     Bundle bundle = getArguments();
-    final Activity ctx  = (Activity) getActivity();
+    final Activity ctx  = getActivity();
     LayoutInflater li = LayoutInflater.from(ctx);
-    int from = bundle.getInt("from");
+    int from = bundle.getInt(KEY_FROM);
     Resources res = getResources();
     int[] versionCodes = res.getIntArray(R.array.version_codes);
     String[] versionNames = res.getStringArray(R.array.version_names);
@@ -145,14 +149,14 @@ public class VersionDialogFragment extends CommitSafeDialogFragment implements O
       }
     };
     lv.setAdapter(adapter);
-    if (MyApplication.getInstance().showImportantUpgradeInfo) {
+    if (getArguments().getBoolean(KEY_WITH_IMPORTANT_UPGRADE_INFO)) {
       view.findViewById(R.id.ImportantUpgradeInfoHeading).setVisibility(View.VISIBLE);
       view.findViewById(R.id.ImportantUpgradeInfoBody).setVisibility(View.VISIBLE);
     }
 
     AlertDialog.Builder builder = new AlertDialog.Builder(ctx)
       .setTitle(getString(R.string.help_heading_whats_new))
-      //.setIcon(R.drawable.myexpenses)
+      .setIcon(R.mipmap.ic_launcher)
       .setView(view)
       .setNegativeButton(android.R.string.ok, this);
     if (!MyApplication.getInstance().isContribEnabled())

@@ -43,6 +43,7 @@ import com.android.calendar.CalendarContractCompat.Events;
 import org.acra.ACRA;
 import org.acra.annotation.ReportsCrashes;
 import org.totschnig.myexpenses.model.Template;
+import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.preference.SharedPreferencesCompat;
 import org.totschnig.myexpenses.provider.DatabaseConstants;
 import org.totschnig.myexpenses.provider.DbUtils;
@@ -72,151 +73,17 @@ import java.util.UUID;
     )
 public class MyApplication extends Application implements
     OnSharedPreferenceChangeListener {
-  protected static boolean instrumentationTest = false;
+  private static boolean instrumentationTest = false;
   private static String testId;
   public static final String PLANNER_CALENDAR_NAME = "MyExpensesPlanner";
   public static final String PLANNER_ACCOUNT_NAME = "Local Calendar";
   public static final String INVALID_CALENDAR_ID = "-1";
-  SharedPreferences mSettings;
+  private SharedPreferences mSettings;
   private static MyApplication mSelf;
   //private Tracker mTracker;
 
   public static final String BACKUP_DB_FILE_NAME = "BACKUP";
   public static final String BACKUP_PREF_FILE_NAME = "BACKUP_PREF";
-
-  // the following keys are stored as string resources, so that
-  // they can be referenced from preferences.xml, and thus we
-  // can guarantee the referential integrity
-  public enum PrefKey {
-    CATEGORIES_SORT_BY_USAGES_LEGACY(R.string.pref_categories_sort_by_usages_key),
-    SORT_ORDER_LEGACY(R.string.pref_sort_order_key),
-    SORT_ORDER_TEMPLATES("sort_order_templates"),
-    SORT_ORDER_CATEGORIES("sort_order_categories"),
-    SORT_ORDER_ACCOUNTS("sort_order_accounts"),
-    PERFORM_SHARE(R.string.pref_perform_share_key),
-    SHARE_TARGET(R.string.pref_share_target_key),
-    UI_THEME_KEY(R.string.pref_ui_theme_key),
-    UI_FONTSIZE(R.string.pref_ui_fontsize_key),
-    BACKUP(R.string.pref_backup_key),
-    RESTORE(R.string.pref_restore_key),
-    IMPORT_QIF(R.string.pref_import_qif_key),
-    IMPORT_CSV(R.string.pref_import_csv_key),
-    RESTORE_LEGACY(R.string.pref_restore_legacy_key),
-    CONTRIB_PURCHASE(R.string.pref_contrib_purchase_key),
-    REQUEST_LICENCE(R.string.pref_request_licence_key),
-    ENTER_LICENCE(R.string.pref_enter_licence_key),
-    PERFORM_PROTECTION(R.string.pref_perform_protection_key),
-    SET_PASSWORD(R.string.pref_set_password_key),
-    SECURITY_ANSWER(R.string.pref_security_answer_key),
-    SECURITY_QUESTION(R.string.pref_security_question_key),
-    PROTECTION_DELAY_SECONDS(R.string.pref_protection_delay_seconds_key),
-    PROTECTION_ENABLE_ACCOUNT_WIDGET(R.string.pref_protection_enable_account_widget_key),
-    PROTECTION_ENABLE_TEMPLATE_WIDGET(R.string.pref_protection_enable_template_widget_key),
-    PROTECTION_ENABLE_DATA_ENTRY_FROM_WIDGET(R.string.pref_protection_enable_data_entry_from_widget_key),
-    EXPORT_FORMAT(R.string.pref_export_format_key),
-    SEND_FEEDBACK(R.string.pref_send_feedback_key),
-    MORE_INFO_DIALOG(R.string.pref_more_info_dialog_key),
-    SHORTCUT_CREATE_TRANSACTION(R.string.pref_shortcut_create_transaction_key),
-    SHORTCUT_CREATE_TRANSFER(R.string.pref_shortcut_create_transfer_key),
-    SHORTCUT_CREATE_SPLIT(R.string.pref_shortcut_create_split_key),
-    PLANNER_CALENDAR_ID(R.string.pref_planner_calendar_id_key),
-    RATE(R.string.pref_rate_key),
-    UI_LANGUAGE(R.string.pref_ui_language_key),
-    APP_DIR(R.string.pref_app_dir_key),
-    CATEGORY_CONTRIB(R.string.pref_category_contrib_key),
-    CATEGORY_MANAGE(R.string.pref_category_manage_key),
-    CATEGORY_ADVANCED(R.string.pref_category_advanced_key),
-    ACCOUNT_GROUPING(R.string.pref_account_grouping_key),
-    PLANNER_CALENDAR_PATH("planner_calendar_path"),
-    CURRENT_VERSION("currentversion"),
-    FIRST_INSTALL_VERSION("first_install_version"),
-    CURRENT_ACCOUNT("current_account"),
-    PLANNER_LAST_EXECUTION_TIMESTAMP("planner_last_execution_timestamp"),
-    APP_FOLDER_WARNING_SHOWN("app_folder_warning_shown"),
-    AUTO_FILL(R.string.pref_auto_fill_key),
-    AUTO_FILL_HINT_SHOWN("auto_fill_hint_shown"),
-    TEMPLATE_CLICK_DEFAULT(R.string.pref_template_click_default_key),
-    TEMPLATE_CLICK_HINT_SHOWN("template_click_hint_shown"),
-    NEXT_REMINDER_RATE("nextReminderRate"),
-    NEXT_REMINDER_CONTRIB("nextReminderContrib"),
-    LICENSE_STATUS("licenseStatus"),
-    LICENSE_RETRY_COUNT("retryCount"),
-    LICENSE_INITIAL_TIMESTAMP("licenseInitialTimeStamp"),
-    DISTRIBUTION_SHOW_CHART("distributionShowChart"),
-    DISTRIBUTION_AGGREGATE_TYPES("distributionAggregateTypes"),
-    MANAGE_STALE_IMAGES(R.string.pref_manage_stale_images_key),
-    INTERSTITIAL_LAST_SHOWN("interstitialLastShown"),
-    ENTRIES_CREATED_SINCE_LAST_INTERSTITIAL("entriesCreatedSinceLastInterstitial"),
-    CSV_IMPORT_HEADER_TO_FIELD_MAP(R.string.pref_import_csv_header_to_field_map_key),
-    CUSTOM_DECIMAL_FORMAT(R.string.pref_custom_decimal_format_key),
-    AUTO_BACKUP(R.string.pref_auto_backup_key),
-    AUTO_BACKUP_TIME(R.string.pref_auto_backup_time_key),
-    AUTO_BACKUP_DIRTY("auto_backup_dirty"),
-    UI_HOME_SCREEN_SHORTCUTS(R.string.pref_ui_home_screen_shortcuts_key),
-    CALENDAR_PERMISSION_REQUESTED("calendar_permission_requested"),
-    GROUP_WEEK_STARTS(R.string.pref_group_week_starts_key),
-    GROUP_MONTH_STARTS(R.string.pref_group_month_starts_key),
-    NEW_PLAN_ENABLED("new_plan_enabled");
-
-    private int resId = 0;
-    private String key = null;
-
-    public String getKey() {
-      return resId == 0 ? key : mSelf.getString(resId);
-    }
-
-    public String getString(String defValue) {
-      return mSelf.mSettings.getString(getKey(), defValue);
-    }
-
-    public void putString(String value) {
-      SharedPreferencesCompat.apply(mSelf.mSettings.edit().putString(getKey(),
-          value));
-    }
-
-    public boolean getBoolean(boolean defValue) {
-      return mSelf.mSettings.getBoolean(getKey(), defValue);
-    }
-
-    public void putBoolean(boolean value) {
-      SharedPreferencesCompat.apply(mSelf.mSettings.edit().putBoolean(getKey(),
-          value));
-    }
-
-    public int getInt(int defValue) {
-      return mSelf.mSettings.getInt(getKey(), defValue);
-    }
-
-    public void putInt(int value) {
-      SharedPreferencesCompat.apply(mSelf.mSettings.edit().putInt(getKey(),
-          value));
-    }
-
-    public long getLong(long defValue) {
-      return mSelf.mSettings.getLong(getKey(), defValue);
-    }
-    
-    public void putLong(long value) {
-      SharedPreferencesCompat.apply(mSelf.mSettings.edit().putLong(getKey(),
-          value));
-    }
-
-    public void remove() {
-      SharedPreferencesCompat.apply(mSelf.mSettings.edit().remove(getKey()));
-    }
-
-    public boolean isSet() {
-      return mSelf.mSettings.contains(getKey());
-    }
-
-    PrefKey(int resId) {
-      this.resId = resId;
-    }
-
-    PrefKey(String key) {
-      this.key = key;
-    }
-  }
 
   public static final String KEY_NOTIFICATION_ID = "notification_id";
   public static final String KEY_OPERATION_TYPE = "operationType";
@@ -227,11 +94,21 @@ public class MyApplication extends Application implements
       + Calendars.ACCOUNT_TYPE + ",'') || '/' ||" + "ifnull(" + Calendars.NAME
       + ",'')";
 
-  public boolean showImportantUpgradeInfo = false;
+  private Utils.LicenceStatus contribEnabled = null;
+  private boolean contribEnabledInitialized = false;
+
   private long mLastPause = 0;
-  public static String TAG = "MyExpenses";
+  public final static String TAG = "MyExpenses";
 
   private boolean isLocked;
+
+  public static void setInstrumentationTest(boolean instrumentationTest) {
+    MyApplication.instrumentationTest = instrumentationTest;
+  }
+
+  public static boolean isInstrumentationTest() {
+    return instrumentationTest;
+  }
 
   public boolean isLocked() {
     return isLocked;
@@ -270,10 +147,6 @@ public class MyApplication extends Application implements
     this.isLocked = isLocked;
   }
 
-  public static boolean isInstrumentationTest() {
-    return instrumentationTest;
-  }
-
   public static final String FEEDBACK_EMAIL = "support@myexpenses.mobi";
   // public static int BACKDOOR_KEY = KeyEvent.KEYCODE_CAMERA;
 
@@ -287,8 +160,6 @@ public class MyApplication extends Application implements
    * tried a different locale;
    */
   private Locale systemLocale = Locale.getDefault();
-
-  private WidgetObserver mTemplateObserver, mAccountObserver;
 
   @Override
   public void onCreate() {
@@ -314,11 +185,11 @@ public class MyApplication extends Application implements
 
   private void registerWidgetObservers() {
     final ContentResolver r = getContentResolver();
-    mTemplateObserver = new WidgetObserver(TemplateWidget.class);
+    WidgetObserver mTemplateObserver = new WidgetObserver(TemplateWidget.class);
     for (Uri uri : TemplateWidget.OBSERVED_URIS) {
       r.registerContentObserver(uri, true, mTemplateObserver);
     }
-    mAccountObserver = new WidgetObserver(AccountWidget.class);
+    WidgetObserver mAccountObserver = new WidgetObserver(AccountWidget.class);
     for (Uri uri : AccountWidget.OBSERVED_URIS) {
       r.registerContentObserver(uri, true, mAccountObserver);
     }
@@ -410,7 +281,7 @@ public class MyApplication extends Application implements
   }
 
   public void setLanguage() {
-    String language = MyApplication.PrefKey.UI_LANGUAGE.getString("default");
+    String language = PrefKey.UI_LANGUAGE.getString("default");
     Locale l;
     if (language.equals("default")) {
       l = systemLocale;
@@ -435,8 +306,7 @@ public class MyApplication extends Application implements
   }
 
   public static DocumentFile requireBackupFile(@NonNull DocumentFile appDir) {
-    DocumentFile dir = Utils.timeStampedFile(appDir, "backup", "application/zip", false);
-    return dir;
+    return Utils.timeStampedFile(appDir, "backup", "application/zip", false);
   }
 
   public static File getBackupDbFile(File backupDir) {
@@ -502,7 +372,7 @@ public class MyApplication extends Application implements
   }
 
   /**
-   * @param calendarId
+   * @param calendarId id of calendar in system calendar content provider
    * @return verifies if the passed in calendarid exists and is the one stored
    *         in {@link PrefKey#PLANNER_CALENDAR_PATH}
    */
@@ -556,7 +426,7 @@ public class MyApplication extends Application implements
    * {@link #PLANNER_ACCOUNT_NAME} if yes use it, otherwise create it
    * 
    * @return true if we have configured a useable calendar
-   * @param persistToSharedPref
+   * @param persistToSharedPref if true id of the created calendar is stored in preferences
    */
   public String createPlanner(boolean persistToSharedPref) {
     Uri.Builder builder = Calendars.CONTENT_URI.buildUpon();
@@ -650,7 +520,7 @@ public class MyApplication extends Application implements
    * @param eventCursor
    *          must have been populated with a projection built by
    *          {@link #buildEventProjection()}
-   * @param eventValues
+   * @param eventValues ContentValues where the extracted data is copied to
    */
   public static void copyEventData(Cursor eventCursor, ContentValues eventValues) {
     eventValues.put(Events.DTSTART, DbUtils.getLongOrNull(eventCursor, 0));
@@ -774,7 +644,7 @@ public class MyApplication extends Application implements
     }
   }
 
-  class WidgetObserver extends ContentObserver {
+  private class WidgetObserver extends ContentObserver {
     /**
        * 
        */
@@ -898,8 +768,8 @@ public class MyApplication extends Application implements
             planCursor.close();
           }
         }
+        c.close();
       }
-      c.close();
     }
     return new Result(true, R.string.restore_calendar_success,
         restoredPlansCount);
@@ -925,7 +795,7 @@ public class MyApplication extends Application implements
   public static void markDataDirty() {
     boolean persistedDirty =  PrefKey.AUTO_BACKUP_DIRTY.getBoolean(true);
     if (!persistedDirty) {
-      MyApplication.PrefKey.AUTO_BACKUP_DIRTY.putBoolean(true);
+      PrefKey.AUTO_BACKUP_DIRTY.putBoolean(true);
       DailyAutoBackupScheduler.updateAutoBackupAlarms(mSelf);
     }
   }

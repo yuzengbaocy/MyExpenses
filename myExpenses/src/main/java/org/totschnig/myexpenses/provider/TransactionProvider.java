@@ -23,8 +23,11 @@ import java.util.List;
 import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
+import org.totschnig.myexpenses.activity.ProtectedFragmentActivity;
 import org.totschnig.myexpenses.model.*;
 import org.totschnig.myexpenses.model.Account.Grouping;
+import org.totschnig.myexpenses.preference.PrefKey;
+import org.totschnig.myexpenses.util.PlanInfoCursorWrapper;
 import org.totschnig.myexpenses.util.Utils;
 
 import android.content.ContentProvider;
@@ -93,6 +96,8 @@ public class TransactionProvider extends ContentProvider {
       Uri.parse("content://" + AUTHORITY + "/debug_schema");
   public static final Uri STALE_IMAGES_URI =
       Uri.parse("content://" + AUTHORITY + "/stale_images");
+  public static final Uri MAPPED_TRANSFER_ACCOUNTS_URI =
+      Uri.parse("content://" + AUTHORITY + "/transfer_account_transactions");
   /**
    * select info from DB without table, e.g. CategoryList#DATEINFO_CURSOR
    */
@@ -112,6 +117,7 @@ public class TransactionProvider extends ContentProvider {
   public static final String QUERY_PARAMETER_EXTENDED = "extended";
   public static final String QUERY_PARAMETER_DISTINCT = "distinct";
   public static final String QUERY_PARAMETER_MARK_VOID = "markVoid";
+  public static final String QUERY_PARAMETER_WITH_PLAN_INFO = "withPlanInfo";
 
   
   static final String TAG = "TransactionProvider";
@@ -157,6 +163,7 @@ public class TransactionProvider extends ContentProvider {
   private static final int TRANSACTION_UNDELETE = 38;
   private static final int TRANSACTIONS_LASTEXCHANGE = 39;
   private static final int ACCOUNTS_SWAP_SORT_KEY = 40;
+  private static final int MAPPED_TRANSFER_ACCOUNTS = 41;
   
 
   protected static boolean mDirty = false;
@@ -351,7 +358,7 @@ public class TransactionProvider extends ContentProvider {
       if (projection == null) {
         projection = Category.PROJECTION;
       }
-      defaultOrderBy = Utils.defaultOrderBy(KEY_LABEL, MyApplication.PrefKey.SORT_ORDER_CATEGORIES);
+      defaultOrderBy = Utils.defaultOrderBy(KEY_LABEL, PrefKey.SORT_ORDER_CATEGORIES);
       break;
     case CATEGORY_ID:
       qb.setTables(TABLE_CATEGORIES);
@@ -361,7 +368,7 @@ public class TransactionProvider extends ContentProvider {
     case ACCOUNTS_BASE:
       qb.setTables(TABLE_ACCOUNTS);
       boolean mergeCurrencyAggregates = uri.getQueryParameter(QUERY_PARAMETER_MERGE_CURRENCY_AGGREGATES) != null;
-      defaultOrderBy =  Utils.defaultOrderBy(KEY_LABEL, MyApplication.PrefKey.SORT_ORDER_ACCOUNTS);
+      defaultOrderBy =  Utils.defaultOrderBy(KEY_LABEL, PrefKey.SORT_ORDER_ACCOUNTS);
       if (mergeCurrencyAggregates) {
         if (projection != null)
           throw new IllegalArgumentException(
@@ -417,7 +424,7 @@ public class TransactionProvider extends ContentProvider {
         Account.AccountGrouping accountGrouping;
         try {
           accountGrouping = Account.AccountGrouping.valueOf(
-              MyApplication.PrefKey.ACCOUNT_GROUPING.getString("TYPE"));
+              PrefKey.ACCOUNT_GROUPING.getString("TYPE"));
         } catch (IllegalArgumentException e) {
           accountGrouping = Account.AccountGrouping.TYPE;
         }
@@ -507,6 +514,11 @@ public class TransactionProvider extends ContentProvider {
       projection = new String[] {"DISTINCT " + TABLE_PAYEES + "." + KEY_ROWID,KEY_PAYEE_NAME + " AS " + KEY_LABEL};
       defaultOrderBy = KEY_PAYEE_NAME;
       break;
+    case MAPPED_TRANSFER_ACCOUNTS:
+      qb.setTables(TABLE_ACCOUNTS  + " JOIN " + TABLE_TRANSACTIONS+ " ON (" + KEY_TRANSFER_ACCOUNT + " = " + TABLE_ACCOUNTS + "." + KEY_ROWID + ")");
+      projection = new String[] {"DISTINCT " + TABLE_ACCOUNTS + "." + KEY_ROWID, KEY_LABEL};
+      defaultOrderBy = KEY_LABEL;
+      break;
     case METHODS:
       qb.setTables(TABLE_METHODS);
       if (projection == null) {
@@ -553,7 +565,7 @@ public class TransactionProvider extends ContentProvider {
       break;
     case TEMPLATES:
       qb.setTables(VIEW_TEMPLATES_EXTENDED);
-      defaultOrderBy =  Utils.defaultOrderBy(KEY_TITLE, MyApplication.PrefKey.SORT_ORDER_TEMPLATES);
+      defaultOrderBy =  Utils.defaultOrderBy(KEY_TITLE, PrefKey.SORT_ORDER_TEMPLATES);
       if (projection == null)
         projection = Template.PROJECTION_EXTENDED;
       break;
@@ -642,6 +654,10 @@ public class TransactionProvider extends ContentProvider {
     c = qb.query(db, projection, selection, selectionArgs, groupBy, having, orderBy, limit);
     //long endTime = System.nanoTime();
     //Log.d("TIMER",uri.toString() + Arrays.toString(selectionArgs) + " : "+(endTime-startTime));
+
+    if (uriMatch == TEMPLATES && uri.getQueryParameter(QUERY_PARAMETER_WITH_PLAN_INFO) != null) {
+      c = new PlanInfoCursorWrapper(getContext(), c, defaultOrderBy == null);
+    }
     c.setNotificationUri(getContext().getContentResolver(), uri);
     return c;
   }
@@ -1242,7 +1258,7 @@ public class TransactionProvider extends ContentProvider {
     URI_MATCHER.addURI(AUTHORITY, "stale_images", STALE_IMAGES);
     URI_MATCHER.addURI(AUTHORITY, "stale_images/#", STALE_IMAGES_ID);
     URI_MATCHER.addURI(AUTHORITY, "accounts/"+ URI_SEGMENT_SWAP_SORT_KEY + "/#/#", ACCOUNTS_SWAP_SORT_KEY);
-    
+    URI_MATCHER.addURI(AUTHORITY, "transfer_account_transactions", MAPPED_TRANSFER_ACCOUNTS);
   }
   public void resetDatabase() {
     mOpenHelper.close();

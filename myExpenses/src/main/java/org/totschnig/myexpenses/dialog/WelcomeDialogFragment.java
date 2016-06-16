@@ -15,18 +15,14 @@
 
 package org.totschnig.myexpenses.dialog;
 
-import org.totschnig.myexpenses.MyApplication;
-import org.totschnig.myexpenses.R;
-import org.totschnig.myexpenses.activity.CommonCommands;
-import org.totschnig.myexpenses.activity.MyExpenses;
-
 import android.app.Activity;
-import android.support.v7.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.Build;
+import android.databinding.DataBindingUtil;
+import android.databinding.ViewDataBinding;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.SwitchCompat;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -34,9 +30,13 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ProgressBar;
-import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.ToggleButton;
+
+import org.totschnig.myexpenses.MyApplication;
+import org.totschnig.myexpenses.R;
+import org.totschnig.myexpenses.activity.CommonCommands;
+import org.totschnig.myexpenses.activity.MyExpenses;
+import org.totschnig.myexpenses.preference.PrefKey;
 
 public class WelcomeDialogFragment extends CommitSafeDialogFragment
     implements DialogInterface.OnClickListener {
@@ -86,10 +86,9 @@ public class WelcomeDialogFragment extends CommitSafeDialogFragment
   
   @Override
   public Dialog onCreateDialog(Bundle savedInstanceState) {
-    Activity ctx  = (Activity) getActivity();
+    Activity ctx  = getActivity();
     LayoutInflater li = LayoutInflater.from(ctx);
-    //noinspection InflateParams
-    View view = li.inflate(R.layout.welcome_dialog, null);
+    View view = DataBindingUtil.inflate(li, R.layout.welcome_dialog, null, false).getRoot();
     mProgress = (ProgressBar) view.findViewById(R.id.progress);
     //noinspection SetTextI18n
     ((TextView) view.findViewById(R.id.help_intro))
@@ -103,7 +102,7 @@ public class WelcomeDialogFragment extends CommitSafeDialogFragment
       @Override
       public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         setContentDescriptonToThemeSwitch(buttonView, isChecked);
-        MyApplication.PrefKey.UI_THEME_KEY.putString(
+        PrefKey.UI_THEME_KEY.putString(
             (isChecked ? MyApplication.ThemeType.light : MyApplication.ThemeType.dark).name());
         Intent intent = getActivity().getIntent();
         getActivity().finish();
@@ -112,7 +111,7 @@ public class WelcomeDialogFragment extends CommitSafeDialogFragment
     });
     mDialog = new AlertDialog.Builder(ctx)
       .setTitle(getResources().getString(R.string.app_name) + " " + getResources().getString(R.string.dialog_title_welcome))
-      .setIcon(R.drawable.myexpenses)
+      .setIcon(R.mipmap.ic_launcher)
       .setView(view)
       .setPositiveButton(android.R.string.ok,this)
       .create();
@@ -152,7 +151,7 @@ public class WelcomeDialogFragment extends CommitSafeDialogFragment
   @Override
   public void onClick(DialogInterface dialog, int which) {
     int current_version = CommonCommands.getVersionNumber(getActivity());
-    MyApplication.PrefKey.CURRENT_VERSION.putInt(current_version);
-    MyApplication.PrefKey.FIRST_INSTALL_VERSION.putInt(current_version);
+    PrefKey.CURRENT_VERSION.putInt(current_version);
+    PrefKey.FIRST_INSTALL_VERSION.putInt(current_version);
   }
 }

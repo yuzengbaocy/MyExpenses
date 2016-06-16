@@ -72,6 +72,7 @@ import org.totschnig.myexpenses.model.ContribFeature;
 import org.totschnig.myexpenses.model.Money;
 import org.totschnig.myexpenses.model.Payee;
 import org.totschnig.myexpenses.provider.DbUtils;
+import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.provider.TransactionDatabase;
 import org.totschnig.myexpenses.provider.filter.WhereFilter;
 import org.totschnig.myexpenses.task.GrisbiImportTask;
@@ -171,7 +172,7 @@ public class Utils {
   private static NumberFormat numberFormat;
 
   private static void initNumberFormat() {
-    String prefFormat = MyApplication.PrefKey.CUSTOM_DECIMAL_FORMAT.getString("");
+    String prefFormat = PrefKey.CUSTOM_DECIMAL_FORMAT.getString("");
     if (!prefFormat.equals("")) {
       DecimalFormat nf = new DecimalFormat();
       try {
@@ -207,7 +208,7 @@ public class Utils {
     return sep;
   }
 
-  public static String defaultOrderBy(String textColumn, MyApplication.PrefKey prefKey) {
+  public static String defaultOrderBy(String textColumn, PrefKey prefKey) {
     String currentSortOrder = prefKey.getString("USAGES");
     String sortOrder = textColumn + " COLLATE LOCALIZED";
     switch (currentSortOrder) {
@@ -223,6 +224,8 @@ public class Utils {
       case ProtectedFragmentActivity.SORT_ORDER_AMOUNT:
         sortOrder =  "abs(" + KEY_AMOUNT + ") DESC, " + sortOrder;
         break;
+      case ProtectedFragmentActivity.SORT_ORDER_NEXT_INSTANCE:
+        sortOrder = null; //handled by PlanInfoCursorWrapper
       //default is textColumn
     }
     return sortOrder;
@@ -424,7 +427,7 @@ public class Utils {
    * returns {@link android.content.ContextWrapper#getExternalFilesDir(String)} with argument null
    */
   public static DocumentFile getAppDir() {
-    String prefString = MyApplication.PrefKey.APP_DIR.getString(null);
+    String prefString = PrefKey.APP_DIR.getString(null);
     if (prefString != null) {
       Uri pref = Uri.parse(prefString);
       if (pref.getScheme().equals("file")) {
@@ -1146,7 +1149,7 @@ public class Utils {
     // if (Build.VERSION.SDK_INT < Build.VERSION_CODES.FROYO) {
     // return true;
     // }
-    if (MyApplication.PrefKey.APP_FOLDER_WARNING_SHOWN.getBoolean(false)) {
+    if (PrefKey.APP_FOLDER_WARNING_SHOWN.getBoolean(false)) {
       return true;
     }
     try {
@@ -1416,6 +1419,8 @@ public class Utils {
         break;
       case ProtectedFragmentActivity.SORT_ORDER_CUSTOM:
         activeItem = sortMenu.findItem(R.id.SORT_CUSTOM_COMMAND);
+      case ProtectedFragmentActivity.SORT_ORDER_NEXT_INSTANCE:
+        activeItem = sortMenu.findItem(R.id.SORT_NEXT_INSTANCE_COMMAND);
         break;
       default:
         activeItem = sortMenu.findItem(R.id.SORT_TITLE_COMMAND);
@@ -1434,6 +1439,8 @@ public class Utils {
         return ProtectedFragmentActivity.SORT_ORDER_CUSTOM;
       case R.id.SORT_AMOUNT_COMMAND:
         return ProtectedFragmentActivity.SORT_ORDER_AMOUNT;
+      case R.id.SORT_NEXT_INSTANCE_COMMAND:
+        return ProtectedFragmentActivity.SORT_ORDER_NEXT_INSTANCE;
     }
     return null;
   }

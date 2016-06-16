@@ -7,9 +7,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 
-import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.activity.ProtectedFragmentActivity;
+import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.util.Utils;
 
 /**
@@ -25,22 +25,6 @@ public abstract class SortableListFragment extends ContextualActionBarFragment
     MenuItem menuItem = menu.findItem(R.id.SORT_COMMAND);
     if (menuItem == null) return;
     Utils.configureSortMenu(menuItem.getSubMenu(),getCurrentSortOrder());
-    SubMenu sortMenu = menuItem.getSubMenu();
-    MenuItem activeItem;
-    switch (getCurrentSortOrder()) {
-      case ProtectedFragmentActivity.SORT_ORDER_USAGES:
-        activeItem = sortMenu.findItem(R.id.SORT_USAGES_COMMAND);
-        break;
-      case ProtectedFragmentActivity.SORT_ORDER_LAST_USED:
-        activeItem = sortMenu.findItem(R.id.SORT_LAST_USED_COMMAND);
-        break;
-      case ProtectedFragmentActivity.SORT_ORDER_AMOUNT:
-        activeItem = sortMenu.findItem(R.id.SORT_AMOUNT_COMMAND);
-        break;
-      default:
-        activeItem = sortMenu.findItem(R.id.SORT_TITLE_COMMAND);
-    }
-    activeItem.setChecked(true);
   }
 
   @NonNull
@@ -55,10 +39,7 @@ public abstract class SortableListFragment extends ContextualActionBarFragment
         getSortOrderPrefKey().putString(newSortOrder);
         getActivity().supportInvalidateOptionsMenu();
         LoaderManager manager = getLoaderManager();
-        if (manager.getLoader(SORTABLE_CURSOR) != null && !manager.getLoader(SORTABLE_CURSOR).isReset())
-          manager.restartLoader(SORTABLE_CURSOR, null, this);
-        else
-          manager.initLoader(SORTABLE_CURSOR, null, this);
+        Utils.requireLoader(manager, SORTABLE_CURSOR, null, this);
       }
       return true;
     }
@@ -66,5 +47,5 @@ public abstract class SortableListFragment extends ContextualActionBarFragment
   }
 
 
-  protected abstract MyApplication.PrefKey getSortOrderPrefKey();
+  protected abstract PrefKey getSortOrderPrefKey();
 }

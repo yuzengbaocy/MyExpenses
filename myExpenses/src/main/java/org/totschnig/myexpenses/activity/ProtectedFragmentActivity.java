@@ -71,7 +71,7 @@ import android.widget.Toast;
 
 import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
-import org.totschnig.myexpenses.MyApplication.PrefKey;
+import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.dialog.MessageDialogFragment.MessageDialogListener;
 import org.totschnig.myexpenses.dialog.ProgressDialogFragment;
@@ -111,6 +111,7 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
   public static final String SORT_ORDER_AMOUNT = "AMOUNT";
   public static final String SORT_ORDER_TITLE = "TITLE";
   public static final String SORT_ORDER_CUSTOM = "CUSTOM";
+  public static final String SORT_ORDER_NEXT_INSTANCE = "NEXT_INSTANCE";
   private AlertDialog pwDialog;
   private ProtectionDelegate protection;
   private boolean scheduledRestart = false;

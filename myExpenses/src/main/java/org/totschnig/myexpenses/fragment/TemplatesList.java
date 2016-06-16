@@ -35,6 +35,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
@@ -46,12 +47,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.calendar.CalendarContractCompat;
-import com.android.calendar.CalendarContractCompat.Events;
-
-import com.android.calendar.CalendarContractCompat;
-
-import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.activity.ExpenseEdit;
 import org.totschnig.myexpenses.activity.ManageTemplates;
@@ -60,16 +55,13 @@ import org.totschnig.myexpenses.dialog.ConfirmationDialogFragment;
 import org.totschnig.myexpenses.dialog.MessageDialogFragment;
 import org.totschnig.myexpenses.model.Account;
 import org.totschnig.myexpenses.model.Category;
-import org.totschnig.myexpenses.model.Plan;
+import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.provider.DatabaseConstants;
 import org.totschnig.myexpenses.provider.DbUtils;
 import org.totschnig.myexpenses.provider.TransactionProvider;
 import org.totschnig.myexpenses.task.TaskExecutionFragment;
 import org.totschnig.myexpenses.ui.SimpleCursorAdapter;
 import org.totschnig.myexpenses.util.Utils;
-
-import java.util.ArrayList;
-import java.util.HashMap;
 
 import icepick.Icepick;
 import icepick.State;
@@ -84,6 +76,7 @@ import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_LABEL_MAIN
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_LABEL_SUB;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_PAYEE_NAME;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_PLANID;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_PLAN_INFO;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_ROWID;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TEMPLATEID;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TITLE;
@@ -93,11 +86,9 @@ import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TRANSFER_P
 public class TemplatesList extends SortableListFragment {
 
   public static final String CALDROID_DIALOG_FRAGMENT_TAG = "CALDROID_DIALOG_FRAGMENT";
-  private static final int PLANS_CURSOR = 1;
   public static final String KEY_PLANS_LIST = "plans";
   private ListView mListView;
   private PlanMonthFragment planMonthFragment;
-  private final HashMap<Long, String> mPlanTimeInfo = new HashMap<>();
 
   protected int getMenuResource() {
     return R.menu.templateslist_context;
@@ -110,7 +101,7 @@ public class TemplatesList extends SortableListFragment {
   private int columnIndexAmount, columnIndexLabelSub, columnIndexComment,
       columnIndexPayee, columnIndexColor, columnIndexTransferPeer,
       columnIndexCurrency, columnIndexTransferAccount, columnIndexPlanId,
-      columnIndexTitle, columnIndexRowId;
+      columnIndexTitle, columnIndexRowId, columnIndexPlanInfo;
   private boolean indexesCalculated = false;
   /**
    * if we are called from the calendar app, we only need to handle display of plan once
@@ -169,8 +160,8 @@ public class TemplatesList extends SortableListFragment {
         } else if (isForeignExchangeTransfer(position)) {
           ((ManageTemplates) getActivity()).dispatchCommand(R.id.CREATE_INSTANCE_EDIT_COMMAND,
               id);
-        } else if (MyApplication.PrefKey.TEMPLATE_CLICK_HINT_SHOWN.getBoolean(false)) {
-          if (MyApplication.PrefKey.TEMPLATE_CLICK_DEFAULT.getString("SAVE").equals("SAVE")) {
+        } else if (PrefKey.TEMPLATE_CLICK_HINT_SHOWN.getBoolean(false)) {
+          if (PrefKey.TEMPLATE_CLICK_DEFAULT.getString("SAVE").equals("SAVE")) {
             dispatchCreateInstanceSave(new Long[]{id});
           } else {
             dispatchCreateInstanceEdit(id);
@@ -185,7 +176,7 @@ public class TemplatesList extends SortableListFragment {
               .CREATE_INSTANCE_SAVE_COMMAND);
           b.putInt(ConfirmationDialogFragment.KEY_COMMAND_NEGATIVE, R.id
               .CREATE_INSTANCE_EDIT_COMMAND);
-          b.putString(ConfirmationDialogFragment.KEY_PREFKEY, MyApplication.PrefKey
+          b.putString(ConfirmationDialogFragment.KEY_PREFKEY, PrefKey
               .TEMPLATE_CLICK_HINT_SHOWN.getKey());
           b.putInt(ConfirmationDialogFragment.KEY_POSITIVE_BUTTON_LABEL, R.string
               .menu_create_instance_save);
@@ -280,21 +271,10 @@ public class TemplatesList extends SortableListFragment {
     switch (id) {
       case SORTABLE_CURSOR:
         return new CursorLoader(getActivity(),
-            TransactionProvider.TEMPLATES_URI,
+            TransactionProvider.TEMPLATES_URI.buildUpon()
+                .appendQueryParameter(TransactionProvider.QUERY_PARAMETER_WITH_PLAN_INFO, "1").build(),
             null,
             null,
-            null,
-            null);
-      case PLANS_CURSOR:
-        return new CursorLoader(getActivity(),
-            CalendarContractCompat.Events.CONTENT_URI,
-            new String[]{
-                Events._ID,
-                Events.DTSTART,
-                Events.RRULE,
-            },
-            Events._ID + " IN (" +
-                TextUtils.join(",", (ArrayList<Long>) bundle.getSerializable(KEY_PLANS_LIST)) + ")",
             null,
             null);
     }
@@ -318,18 +298,16 @@ public class TemplatesList extends SortableListFragment {
           columnIndexTransferAccount = c.getColumnIndex(KEY_TRANSFER_ACCOUNT);
           columnIndexPlanId = c.getColumnIndex(KEY_PLANID);
           columnIndexTitle = c.getColumnIndex(KEY_TITLE);
+          columnIndexPlanInfo = c.getColumnIndex(KEY_PLAN_INFO);
           indexesCalculated = true;
         }
         mAdapter.swapCursor(mTemplatesCursor);
         invalidateCAB();
         if (isCalendarPermissionGranted() &&
             mTemplatesCursor != null && mTemplatesCursor.moveToFirst()) {
-          ArrayList<Long> plans = new ArrayList<>();
-          long planId;
           long needToExpand = expandedHandled ? ManageTemplates.NOT_CALLED :
               ((ManageTemplates) getActivity()).getCalledFromCalendarWithId();
           boolean foundToExpand = false;
-          Bundle planBundle = new Bundle();
           while (!mTemplatesCursor.isAfterLast()) {
             long templateId = mTemplatesCursor.getLong(columnIndexRowId);
             if (needToExpand == templateId) {
@@ -340,13 +318,8 @@ public class TemplatesList extends SortableListFragment {
                   mTemplatesCursor.getInt(columnIndexColor), false);
               foundToExpand = true;
             }
-            if ((planId = mTemplatesCursor.getLong(columnIndexPlanId)) != 0L) {
-              plans.add(planId);
-            }
             mTemplatesCursor.moveToNext();
           }
-          planBundle.putSerializable(KEY_PLANS_LIST, plans);
-          Utils.requireLoader(mManager, PLANS_CURSOR, planBundle, this);
           if (needToExpand != ManageTemplates.NOT_CALLED) {
             expandedHandled = true;
             if (foundToExpand) {
@@ -357,20 +330,6 @@ public class TemplatesList extends SortableListFragment {
           }
         }
         break;
-      case PLANS_CURSOR:
-        mPlanTimeInfo.clear();
-        if (c != null && c.moveToFirst()) {
-          while (!c.isAfterLast()) {
-            mPlanTimeInfo.put(
-                c.getLong(c.getColumnIndex(Events._ID)),
-                Plan.prettyTimeInfo(
-                    getActivity(),
-                    c.getString(c.getColumnIndex(Events.RRULE)),
-                    c.getLong(c.getColumnIndex(Events.DTSTART))));
-            c.moveToNext();
-          }
-          mAdapter.notifyDataSetChanged();
-        }
     }
   }
 
@@ -381,14 +340,12 @@ public class TemplatesList extends SortableListFragment {
         mTemplatesCursor = null;
         mAdapter.swapCursor(null);
         break;
-      case PLANS_CURSOR:
-        mPlanTimeInfo.clear();
     }
   }
 
   @Override
-  protected MyApplication.PrefKey getSortOrderPrefKey() {
-    return MyApplication.PrefKey.SORT_ORDER_TEMPLATES;
+  protected PrefKey getSortOrderPrefKey() {
+    return PrefKey.SORT_ORDER_TEMPLATES;
   }
 
   //after orientation change, we need to restore the reference
@@ -454,8 +411,7 @@ public class TemplatesList extends SortableListFragment {
       tv2.setText(catText);
 
       if (doesHavePlan) {
-        Long planId = c.getLong(columnIndexPlanId);
-        String planInfo = mPlanTimeInfo.get(planId);
+        String planInfo = c.getString(columnIndexPlanInfo);
         if (planInfo == null) {
           planInfo = getString(ContextCompat.checkSelfPermission(getActivity(),
               Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_DENIED ?
@@ -539,7 +495,9 @@ public class TemplatesList extends SortableListFragment {
   @Override
   public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
     inflater.inflate(R.menu.sort, menu);
-    menu.findItem(R.id.SORT_COMMAND).getSubMenu().findItem(R.id.SORT_AMOUNT_COMMAND).setVisible(true);
+    SubMenu subMenu = menu.findItem(R.id.SORT_COMMAND).getSubMenu();
+    subMenu.findItem(R.id.SORT_AMOUNT_COMMAND).setVisible(true);
+    subMenu.findItem(R.id.SORT_NEXT_INSTANCE_COMMAND).setVisible(true);
   }
 
   @Override

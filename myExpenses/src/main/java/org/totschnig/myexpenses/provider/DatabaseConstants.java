@@ -18,11 +18,11 @@ package org.totschnig.myexpenses.provider;
 import java.util.Calendar;
 import java.util.Locale;
 
-import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.fragment.TransactionList;
 import org.totschnig.myexpenses.model.Account;
 import org.totschnig.myexpenses.model.Transaction;
 import org.totschnig.myexpenses.model.Transaction.CrStatus;
+import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.util.Utils;
 
 /**
@@ -46,10 +46,10 @@ public class DatabaseConstants {
     }
 
     public static void buildLocalized(Locale locale) {
-    weekStartsOn = Integer.parseInt(MyApplication.PrefKey.GROUP_WEEK_STARTS.getString("-1"));
+    weekStartsOn = Integer.parseInt(PrefKey.GROUP_WEEK_STARTS.getString("-1"));
     if (weekStartsOn == -1)
       weekStartsOn = Utils.getFirstDayOfWeek(locale); //JAVA starts with Sunday = 1
-    monthStartsOn = Integer.parseInt(MyApplication.PrefKey.GROUP_MONTH_STARTS.getString("1"));
+    monthStartsOn = Integer.parseInt(PrefKey.GROUP_MONTH_STARTS.getString("1"));
     int monthDelta = monthStartsOn - 1;
     int nextWeekEndSqlite, nextWeekStartsSqlite = weekStartsOn -1; //Sqlite starts with Sunday = 0
     if(weekStartsOn==Calendar.SUNDAY) {
@@ -161,6 +161,8 @@ public class DatabaseConstants {
   public static final String KEY_TRANSFER_AMOUNT = "transfer_amount";
   public static final String KEY_LABEL_NORMALIZED = "label_normalized";
   public static final String KEY_LAST_USED = "last_used";
+  public static final String KEY_HAS_TRANSFERS = "has_transfers";
+  public static final String KEY_PLAN_INFO = "plan_info";
 
   /**
    * column alias for the second group (month or week)
@@ -328,6 +330,8 @@ public class DatabaseConstants {
       "count(CASE WHEN  " + KEY_PAYEEID + ">0 AND " + WHERE_NOT_VOID + "  THEN 1 ELSE null END) as " + KEY_MAPPED_PAYEES;
   public static final String MAPPED_METHODS =
       "count(CASE WHEN  " + KEY_METHODID + ">0 AND " + WHERE_NOT_VOID + "  THEN 1 ELSE null END) as " + KEY_MAPPED_METHODS;
+  public static final String HAS_TRANSFERS =
+      "count(CASE WHEN  " + KEY_TRANSFER_ACCOUNT + ">0 AND " + WHERE_NOT_VOID + "  THEN 1 ELSE null END) as " + KEY_HAS_TRANSFERS;
 
   public static final String WHERE_DEPENDENT =
       KEY_ROWID + " = ? OR " + KEY_TRANSFER_PEER + " = ? OR "

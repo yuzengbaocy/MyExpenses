@@ -18,8 +18,8 @@ android {
         applicationId "org.totschnig.myexpenses"
         minSdkVersion project.minSdkVersion
         targetSdkVersion project.targetSdkVersion
-        versionCode 253
-        versionName '2.6.9'
+        versionCode 254
+        versionName '2.7.0'
 
         buildConfigField "String", "PLATTFORM", "\"Android\""
         buildConfigField "String", "BUILD_DATE", "\"" + getDate() + "\""
@@ -32,6 +32,10 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
         targetCompatibility JavaVersion.VERSION_1_7
+    }
+
+    dataBinding {
+        enabled = true
     }
 
     signingConfigs {
