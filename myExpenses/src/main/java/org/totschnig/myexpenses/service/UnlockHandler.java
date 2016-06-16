@@ -4,6 +4,7 @@ import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.activity.MyExpenses;
+import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.util.Distrib;
 import org.totschnig.myexpenses.util.Utils;
 
@@ -57,7 +58,7 @@ public class UnlockHandler extends Handler {
     MyApplication app = MyApplication.getInstance();
     PreferenceObfuscator mPreferences = Distrib.getLicenseStatusPrefs(app);
     app.setContribStatus(Distrib.STATUS_ENABLED_LEGACY_SECOND);
-    mPreferences.putString(MyApplication.PrefKey.LICENSE_STATUS.getKey(), String.valueOf(Distrib.STATUS_ENABLED_LEGACY_SECOND));
+    mPreferences.putString(PrefKey.LICENSE_STATUS.getKey(), String.valueOf(Distrib.STATUS_ENABLED_LEGACY_SECOND));
     mPreferences.commit();
     showNotif(Utils.concatResStrings(app, " ",
             R.string.licence_validation_premium, R.string.thank_you));

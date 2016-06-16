@@ -9,6 +9,7 @@ import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.activity.LaunchActivity;
 import org.totschnig.myexpenses.contrib.Config;
+import org.totschnig.myexpenses.preference.PrefKey;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -73,7 +74,7 @@ public class Distrib {
    */
   public static String getContribStatusInfo(Context ctx) {
     PreferenceObfuscator p = getLicenseStatusPrefs(ctx);
-    return p.getString(MyApplication.PrefKey.LICENSE_STATUS.getKey(),STATUS_DISABLED);
+    return p.getString(PrefKey.LICENSE_STATUS.getKey(),STATUS_DISABLED);
   }
 
   /**
@@ -85,10 +86,10 @@ public class Distrib {
     PreferenceObfuscator p = getLicenseStatusPrefs(ctx);
     String status = extended ? STATUS_EXTENDED_TEMPORARY : STATUS_ENABLED_TEMPORARY;
     long timestamp = Long.parseLong(p.getString(
-        MyApplication.PrefKey.LICENSE_INITIAL_TIMESTAMP.getKey(),"0"));
+        PrefKey.LICENSE_INITIAL_TIMESTAMP.getKey(),"0"));
     long now = System.currentTimeMillis();
     if (timestamp == 0L) {
-      p.putString(MyApplication.PrefKey.LICENSE_INITIAL_TIMESTAMP.getKey(),
+      p.putString(PrefKey.LICENSE_INITIAL_TIMESTAMP.getKey(),
           String.valueOf(now));
     } else {
       long timeSincePurchase = now - timestamp;
@@ -98,7 +99,7 @@ public class Distrib {
         status = extended ? STATUS_EXTENDED_PERMANENT : STATUS_ENABLED_PERMANENT;
       }
     }
-    p.putString(MyApplication.PrefKey.LICENSE_STATUS.getKey(), status);
+    p.putString(PrefKey.LICENSE_STATUS.getKey(), status);
     p.commit();
     MyApplication.getInstance().setContribStatus(status);
   }
@@ -140,12 +141,12 @@ public class Distrib {
   public static void maybeCancel(Context ctx) {
     PreferenceObfuscator p = getLicenseStatusPrefs(ctx);
     long timestamp = Long.parseLong(p.getString(
-        MyApplication.PrefKey.LICENSE_INITIAL_TIMESTAMP.getKey(), "0"));
+        PrefKey.LICENSE_INITIAL_TIMESTAMP.getKey(), "0"));
     long now = System.currentTimeMillis();
     long timeSincePurchase = now - timestamp;
     if (timeSincePurchase> REFUND_WINDOW) {
       String status = STATUS_DISABLED;
-      p.putString(MyApplication.PrefKey.LICENSE_STATUS.getKey(), status);
+      p.putString(PrefKey.LICENSE_STATUS.getKey(), status);
       p.commit();
       MyApplication.getInstance().setContribStatus(status);
     }

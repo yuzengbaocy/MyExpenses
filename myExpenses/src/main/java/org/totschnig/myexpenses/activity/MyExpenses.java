@@ -410,8 +410,8 @@ public class MyExpenses extends LaunchActivity implements
   }
 
   private void maybeRequestNewInterstitial(long now) {
-    if (now - MyApplication.PrefKey.INTERSTITIAL_LAST_SHOWN.getLong(0) > DAY_IN_MILLIS &&
-        MyApplication.PrefKey.ENTRIES_CREATED_SINCE_LAST_INTERSTITIAL.getInt(0) > INTERSTITIAL_MIN_INTERVAL) {
+    if (now - PrefKey.INTERSTITIAL_LAST_SHOWN.getLong(0) > DAY_IN_MILLIS &&
+        PrefKey.ENTRIES_CREATED_SINCE_LAST_INTERSTITIAL.getInt(0) > INTERSTITIAL_MIN_INTERVAL) {
       //last ad shown more than 24h and at least five expense entries ago,
       requestNewInterstitial();
     }
@@ -419,11 +419,11 @@ public class MyExpenses extends LaunchActivity implements
 
   private void maybeShowInterstitial(long now) {
     if (maybeShowInterstitialDo()) {
-      MyApplication.PrefKey.INTERSTITIAL_LAST_SHOWN.putLong(now);
-      MyApplication.PrefKey.ENTRIES_CREATED_SINCE_LAST_INTERSTITIAL.putInt(0);
+      PrefKey.INTERSTITIAL_LAST_SHOWN.putLong(now);
+      PrefKey.ENTRIES_CREATED_SINCE_LAST_INTERSTITIAL.putInt(0);
     } else {
-      MyApplication.PrefKey.ENTRIES_CREATED_SINCE_LAST_INTERSTITIAL.putInt(
-          MyApplication.PrefKey.ENTRIES_CREATED_SINCE_LAST_INTERSTITIAL.getInt(0) + 1
+      PrefKey.ENTRIES_CREATED_SINCE_LAST_INTERSTITIAL.putInt(
+          PrefKey.ENTRIES_CREATED_SINCE_LAST_INTERSTITIAL.getInt(0) + 1
       );
       maybeRequestNewInterstitial(now);
     }
