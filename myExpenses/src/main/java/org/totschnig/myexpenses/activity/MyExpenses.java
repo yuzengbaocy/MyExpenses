@@ -172,6 +172,7 @@ public class MyExpenses extends LaunchActivity implements
   public static final int SPLIT_PART_CURSOR = 3;
 
   public static final boolean WITH_AMA = true;
+  public static final boolean WITH_RHYTHM = false;
 
   private LoaderManager mManager;
 
@@ -1638,13 +1639,12 @@ public class MyExpenses extends LaunchActivity implements
   }
 
   private void showBannerAdmob() {
-    final boolean with_rhythm = false;
     admobView = new AdView(this);
     String sizeSpec = getString(R.string.admob_banner_size);
     AdSize adSize;
     switch (sizeSpec) {
       case "SMART_BANNER":
-        adSize = with_rhythm ? AdSize.BANNER : AdSize.SMART_BANNER;
+        adSize = WITH_RHYTHM ? AdSize.BANNER : AdSize.SMART_BANNER;
         break;
       case "FULL_BANNER":
         adSize = AdSize.FULL_BANNER;
@@ -1653,7 +1653,7 @@ public class MyExpenses extends LaunchActivity implements
         adSize = AdSize.BANNER;
     }
     admobView.setAdSize(adSize);
-    admobView.setAdUnitId(getString(with_rhythm ? R.string.admob_unitid_rhythm :
+    admobView.setAdUnitId(getString(WITH_RHYTHM ? R.string.admob_unitid_rhythm :
         R.string.admob_unitid_mainscreen));
     mAdViewContainer.addView(admobView);
     admobView.loadAd(buildAdmobRequest());
@@ -1662,7 +1662,7 @@ public class MyExpenses extends LaunchActivity implements
       public void onAdLoaded() {
         mAdMobBannerShown = true;
         admobView.setVisibility(View.VISIBLE);
-        if (with_rhythm) {
+        if (WITH_RHYTHM) {
           mAdViewContainer.getLayoutParams().height = (int) TypedValue.applyDimension(
               TypedValue.COMPLEX_UNIT_DIP, AdSize.BANNER.getHeight(),
               getResources().getDisplayMetrics());
