@@ -136,8 +136,4 @@
     <string name="vote_action_new">New</string>
     <string name="vote_action_old">Old</string>
 
-    <string name="crash_reports_user_info"/>
-    <integer name="crash_reports_welcome_visible">2</integer>
-
-
 </resources>
