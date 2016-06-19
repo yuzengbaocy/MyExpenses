@@ -185,7 +185,7 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
             PrefKey.CATEGORIES_SORT_BY_USAGES_LEGACY.getBoolean(true) ?
                 "USAGES" : "ALPHABETIC");
       }
-      if (prev_version != 254) {
+      if (prev_version < 254) {
         VersionDialogFragment.newInstance(prev_version, showImportantUpgradeInfo)
             .show(getSupportFragmentManager(), TAG_VERSION_INFO);
       }
