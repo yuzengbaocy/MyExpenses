@@ -1,8 +1,11 @@
 package org.totschnig.myexpenses.di;
 
+import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
-import org.totschnig.myexpenses.util.LicenceHandler;
+import org.totschnig.myexpenses.util.AcraWrapperIFace;
 import org.totschnig.myexpenses.util.LicenceHandlerIFace;
+import org.totschnig.myexpenses.util.NoopAcraWrapper;
+import org.totschnig.myexpenses.util.RealAcraWrapper;
 
 import javax.inject.Singleton;
 
@@ -16,5 +19,10 @@ public class AppModule {
   @Singleton
   LicenceHandlerIFace providesLicenceHandler() {
     return new InappPurchaseLicenceHandler();
+  }
+  @Provides
+  @Singleton
+  AcraWrapperIFace providesAcraWrapper() {
+    return BuildConfig.DEBUG ? new NoopAcraWrapper() : new RealAcraWrapper();
   }
 }
