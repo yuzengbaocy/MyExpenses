@@ -218,6 +218,10 @@ public class MyApplication extends Application implements
     return licenceHandler;
   }
 
+  public AcraWrapperIFace getAcraWrapper() {
+    return acraWrapper;
+  }
+
   public enum ThemeType {
     dark, light
   }

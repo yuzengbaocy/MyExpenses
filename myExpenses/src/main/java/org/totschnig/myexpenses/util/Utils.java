@@ -59,8 +59,6 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import org.acra.ErrorReporter;
-
 import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
@@ -1065,40 +1063,15 @@ public class Utils {
   }
 
   public static void reportToAcraWithDbSchema(Exception e) {
-    reportToAcraWithDbSchema(e,DbUtils.getTableDetails());
-  }
-  public static void reportToAcraWithDbSchema(Exception e,String[][] schema) {
-    if (BuildConfig.DEBUG) {
-      Log.e(MyApplication.TAG, "ACRA", e);
-    } else {
-      ErrorReporter errorReporter = org.acra.ACRA.getErrorReporter();
-      for (String[] tableInfo : schema) {
-        errorReporter.putCustomData(tableInfo[0], tableInfo[1]);
-      }
-      errorReporter.handleSilentException(e);
-      for (String[] tableInfo : schema) {
-        errorReporter.removeCustomData(tableInfo[0]);
-      }
-    }
+    MyApplication.getInstance().getAcraWrapper().reportToAcraWithDbSchema(e);
   }
 
-  public static void reportToAcra(Exception e,String key,String data) {
-    if (BuildConfig.DEBUG) {
-      Log.e(MyApplication.TAG, "ACRA: "+ key+ " : "+ data, e);
-    } else {
-      ErrorReporter errorReporter = org.acra.ACRA.getErrorReporter();
-      errorReporter.putCustomData(key, data);
-      errorReporter.handleSilentException(e);
-      errorReporter.removeCustomData(key);
-    }
+  public static void reportToAcra(Exception e, String key,String data) {
+    MyApplication.getInstance().getAcraWrapper().reportToAcra(e, key, data);
   }
 
   public static void reportToAcra(Exception e) {
-    if (BuildConfig.DEBUG || MyApplication.isInstrumentationTest()) {
-      Log.e(MyApplication.TAG, "ACRA", e);
-    } else {
-      org.acra.ACRA.getErrorReporter().handleSilentException(e);
-    }
+    MyApplication.getInstance().getAcraWrapper().reportToAcra(e);
   }
 
   public static String concatResStrings(Context ctx, String separator, Integer... resIds) {
