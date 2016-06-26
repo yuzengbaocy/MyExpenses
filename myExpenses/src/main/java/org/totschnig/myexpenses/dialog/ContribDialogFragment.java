@@ -91,7 +91,7 @@ public class ContribDialogFragment extends CommitSafeDialogFragment implements D
         .setMessage(message)
         .setNeutralButton(R.string.dialog_contrib_no, this)
         .setIcon(R.mipmap.ic_launcher_alt);
-    if (InappPurchaseLicenceHandler.HAS_EXTENDED) {
+    if (LicenceHandlerIFace.HAS_EXTENDED) {
       builder.setPositiveButton(isContrib ? R.string.dialog_contrib_upgrade_extended : R.string.dialog_contrib_buy_extended, this);
     }
     return builder.create();
