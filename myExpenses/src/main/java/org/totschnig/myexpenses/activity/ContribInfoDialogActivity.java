@@ -1,6 +1,5 @@
 package org.totschnig.myexpenses.activity;
 
-import java.io.Serializable;
 import java.util.UUID;
 
 import org.onepf.oms.OpenIabHelper;
@@ -10,21 +9,18 @@ import org.onepf.oms.appstore.googleUtils.Purchase;
 import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.contrib.Config;
-import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.dialog.ContribDialogFragment;
 import org.totschnig.myexpenses.dialog.ContribInfoDialogFragment;
-import org.totschnig.myexpenses.dialog.DonateDialogFragment;
 import org.totschnig.myexpenses.dialog.MessageDialogFragment.MessageDialogListener;
 import org.totschnig.myexpenses.model.ContribFeature;
-import org.totschnig.myexpenses.util.Distrib;
+import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
 import org.totschnig.myexpenses.util.Utils;
 
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -35,7 +31,7 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
   public static final String KEY_TAG = "tag";
   private OpenIabHelper mHelper;
   private boolean mSetupDone;
-  private String mPayload = (Distrib.IS_CHROMIUM || BuildConfig.FLAVOR.equals("amazon"))
+  private String mPayload = (InappPurchaseLicenceHandler.IS_CHROMIUM || BuildConfig.FLAVOR.equals("amazon"))
       ? null : UUID.randomUUID().toString();
   private String tag = ContribInfoDialogActivity.class.getName();
 
@@ -44,7 +40,7 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
     super.onCreate(savedInstanceState);
     setTheme(MyApplication.getThemeIdTranslucent());
 
-    mHelper = Distrib.getIabHelper(this);
+    mHelper = InappPurchaseLicenceHandler.getIabHelper(this);
     if (mHelper != null) {
       try {
         mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
@@ -156,7 +152,7 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
                         isPremium ? R.string.licence_validation_premium : R.string.licence_validation_extended,
                         R.string.thank_you),
                     Toast.LENGTH_SHORT).show();
-                Distrib.registerPurchase(ContribInfoDialogActivity.this, !isPremium);
+                InappPurchaseLicenceHandler.registerPurchase(ContribInfoDialogActivity.this, !isPremium);
               }
             }
             finish();

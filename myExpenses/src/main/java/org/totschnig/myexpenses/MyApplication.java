@@ -43,6 +43,8 @@ import com.android.calendar.CalendarContractCompat.Events;
 
 import org.acra.ACRA;
 import org.acra.annotation.ReportsCrashes;
+import org.totschnig.myexpenses.di.AppComponent;
+import org.totschnig.myexpenses.di.DaggerAppComponent;
 import org.totschnig.myexpenses.model.Template;
 import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.preference.SharedPreferencesCompat;
@@ -51,7 +53,8 @@ import org.totschnig.myexpenses.provider.DbUtils;
 import org.totschnig.myexpenses.provider.TransactionProvider;
 import org.totschnig.myexpenses.service.DailyAutoBackupScheduler;
 import org.totschnig.myexpenses.service.PlanExecutor;
-import org.totschnig.myexpenses.util.Distrib;
+import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
+import org.totschnig.myexpenses.util.LicenceHandlerIFace;
 import org.totschnig.myexpenses.util.Result;
 import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.widget.AbstractWidget;
@@ -59,9 +62,10 @@ import org.totschnig.myexpenses.widget.AccountWidget;
 import org.totschnig.myexpenses.widget.TemplateWidget;
 
 import java.io.File;
-import java.lang.reflect.Method;
 import java.util.Locale;
 import java.util.UUID;
+
+import javax.inject.Inject;
 
 @ReportsCrashes(
     formUri = "https://mtotschnig.cloudant.com/acra-myexpenses/_design/acra-storage/_update/report",
@@ -74,6 +78,14 @@ import java.util.UUID;
     )
 public class MyApplication extends Application implements
     OnSharedPreferenceChangeListener {
+
+  public AppComponent getAppComponent() {
+    return appComponent;
+  }
+
+  private AppComponent appComponent;
+  @Inject
+  LicenceHandlerIFace licenceHandler;
   private static boolean instrumentationTest = false;
   private static String testId;
   public static final String PLANNER_CALENDAR_NAME = "MyExpensesPlanner";
@@ -95,9 +107,6 @@ public class MyApplication extends Application implements
       + Calendars.ACCOUNT_TYPE + ",'') || '/' ||" + "ifnull(" + Calendars.NAME
       + ",'')";
 
-  private Utils.LicenceStatus contribEnabled = null;
-  private boolean contribEnabledInitialized = false;
-
   private long mLastPause = 0;
   public final static String TAG = "MyExpenses";
 
@@ -113,35 +122,6 @@ public class MyApplication extends Application implements
 
   public boolean isLocked() {
     return isLocked;
-  }
-
-  private String contribStatus = Distrib.STATUS_DISABLED;
-
-  public void setContribEnabled(Utils.LicenceStatus status) {
-    //TODO we urgently need to bring the handling of licence status in sync between master and distribution branch
-    //this currently is only here to prevent compile error, since the block where this is called
-    //is not executed on distribution branch
-    //this.contribEnabled = status;
-    Template.updateNewPlanEnabled();
-  }
-
-  public void setContribStatus(String contribStatus) {
-    this.contribStatus = contribStatus;
-    Template.updateNewPlanEnabled();
-  }
-  public boolean isContribEnabled() {
-    return ! contribStatus.equals(Distrib.STATUS_DISABLED);
-  }
-  public boolean isExtendedEnabled() {
-    if (!Distrib.HAS_EXTENDED) {
-      return isContribEnabled();
-    }
-    return contribStatus.equals(Distrib.STATUS_EXTENDED_PERMANENT) ||
-        contribStatus.equals(Distrib.STATUS_EXTENDED_TEMPORARY);
-  }
-
-  public String getContribStatus() {
-    return contribStatus;
   }
 
   public void setLocked(boolean isLocked) {
@@ -165,6 +145,8 @@ public class MyApplication extends Application implements
   @Override
   public void onCreate() {
     super.onCreate();
+    appComponent = DaggerAppComponent.builder().build();
+    appComponent.inject(this);
     AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
     //Maybe prevents occasional crashes on Gingerbread
     //https://code.google.com/p/android/issues/detail?id=81083
@@ -178,7 +160,7 @@ public class MyApplication extends Application implements
     if (!ACRA.isACRASenderServiceProcess()) {
       // sets up mSettings
       getSettings().registerOnSharedPreferenceChangeListener(this);
-      initContribEnabled();
+      licenceHandler.init(this);
 
       initPlanner();
       registerWidgetObservers();
@@ -195,9 +177,6 @@ public class MyApplication extends Application implements
     for (Uri uri : AccountWidget.OBSERVED_URIS) {
       r.registerContentObserver(uri, true, mAccountObserver);
     }
-  }
-  private void initContribEnabled() {
-    this.contribStatus = Distrib.getContribStatusInfo(this);
   }
 
   public static MyApplication getInstance() {
@@ -236,6 +215,10 @@ public class MyApplication extends Application implements
 
   public static int getThemeIdTranslucent() {
     return getThemeId("Translucent");
+  }
+
+  public LicenceHandlerIFace getLicenceHandler() {
+    return licenceHandler;
   }
 
   public enum ThemeType {

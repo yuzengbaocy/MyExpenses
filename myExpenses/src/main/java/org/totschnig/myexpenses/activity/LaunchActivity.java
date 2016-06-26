@@ -25,7 +25,7 @@ import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.preference.SharedPreferencesCompat;
 import org.totschnig.myexpenses.provider.TransactionProvider;
 import org.totschnig.myexpenses.provider.filter.Criteria;
-import org.totschnig.myexpenses.util.Distrib;
+import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
 import org.totschnig.myexpenses.util.Utils;
 
 import java.io.File;
@@ -42,21 +42,21 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     final String contribStatus = MyApplication.getInstance().getContribStatus();
-    if (!contribStatus.equals(Distrib.STATUS_EXTENDED_PERMANENT)) {
+    if (!contribStatus.equals(InappPurchaseLicenceHandler.STATUS_EXTENDED_PERMANENT)) {
 
 /*      String testId = "7daa6ffb95c74908";//"88ba5e514b9612fe";
       String androidId = Settings.Secure.getString(MyApplication.getInstance()
           .getContentResolver(), Settings.Secure.ANDROID_ID);
       if (BuildConfig.BUILD_TYPE.equals("beta") &&
           testId.equals(androidId)) {
-        PreferenceObfuscator p = Distrib.getLicenseStatusPrefs(this);
-        p.putString(MyApplication.PrefKey.LICENSE_STATUS.getKey(), Distrib.STATUS_EXTENDED_PERMANENT);
+        PreferenceObfuscator p = InappPurchaseLicenceHandler.getLicenseStatusPrefs(this);
+        p.putString(MyApplication.PrefKey.LICENSE_STATUS.getKey(), InappPurchaseLicenceHandler.STATUS_EXTENDED_PERMANENT);
         p.commit();
-        MyApplication.getInstance().setContribStatus(Distrib.STATUS_EXTENDED_PERMANENT);
+        MyApplication.getInstance().setContribStatus(InappPurchaseLicenceHandler.STATUS_EXTENDED_PERMANENT);
         return;
       }*/
 
-      mHelper = Distrib.getIabHelper(this);
+      mHelper = InappPurchaseLicenceHandler.getIabHelper(this);
       if (mHelper!=null) {
         try {
           mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
@@ -83,15 +83,15 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
                         inventory.getPurchase(Config.SKU_PREMIUM2EXTENDED);
                     if ((upgradePurchase  !=null && upgradePurchase .getPurchaseState() == 0) ||
                         (extendedPurchase !=null && extendedPurchase.getPurchaseState() == 0)) {
-                      if (!contribStatus.equals(Distrib.STATUS_EXTENDED_PERMANENT)) {
-                        Distrib.registerPurchase(LaunchActivity.this, true);
+                      if (!contribStatus.equals(InappPurchaseLicenceHandler.STATUS_EXTENDED_PERMANENT)) {
+                        InappPurchaseLicenceHandler.registerPurchase(LaunchActivity.this, true);
                       }
                     } else if (premiumPurchase !=null && premiumPurchase.getPurchaseState() == 0) {
-                      if (!contribStatus.equals(Distrib.STATUS_ENABLED_PERMANENT)) {
-                        Distrib.registerPurchase(LaunchActivity.this, false);
+                      if (!contribStatus.equals(InappPurchaseLicenceHandler.STATUS_ENABLED_PERMANENT)) {
+                        InappPurchaseLicenceHandler.registerPurchase(LaunchActivity.this, false);
                       }
-                    } else if (contribStatus.equals(Distrib.STATUS_ENABLED_TEMPORARY)) {
-                      Distrib.maybeCancel(LaunchActivity.this);
+                    } else if (contribStatus.equals(InappPurchaseLicenceHandler.STATUS_ENABLED_TEMPORARY)) {
+                      InappPurchaseLicenceHandler.maybeCancel(LaunchActivity.this);
                     }
                   }
                 });

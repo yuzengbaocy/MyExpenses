@@ -5,7 +5,7 @@ import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.activity.MyExpenses;
 import org.totschnig.myexpenses.preference.PrefKey;
-import org.totschnig.myexpenses.util.Distrib;
+import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
 import org.totschnig.myexpenses.util.Utils;
 
 import android.app.Notification;
@@ -34,7 +34,7 @@ public class UnlockHandler extends Handler {
   @Override
   public void handleMessage(Message msg) {
     MyApplication app = MyApplication.getInstance();
-    if (Distrib.getContribStatusInfo(app).equals(Distrib.STATUS_ENABLED_LEGACY_SECOND)) {
+    if (InappPurchaseLicenceHandler.getContribStatusInfo(app).equals(InappPurchaseLicenceHandler.STATUS_ENABLED_LEGACY_SECOND)) {
       return;
     }
     Log.i(MyApplication.TAG,"Now handling answer from license verification service; got status "+msg.what);
@@ -56,9 +56,9 @@ public class UnlockHandler extends Handler {
 
   private void doUnlock() {
     MyApplication app = MyApplication.getInstance();
-    PreferenceObfuscator mPreferences = Distrib.getLicenseStatusPrefs(app);
-    app.setContribStatus(Distrib.STATUS_ENABLED_LEGACY_SECOND);
-    mPreferences.putString(PrefKey.LICENSE_STATUS.getKey(), String.valueOf(Distrib.STATUS_ENABLED_LEGACY_SECOND));
+    PreferenceObfuscator mPreferences = InappPurchaseLicenceHandler.getLicenseStatusPrefs(app);
+    app.setContribStatus(InappPurchaseLicenceHandler.STATUS_ENABLED_LEGACY_SECOND);
+    mPreferences.putString(PrefKey.LICENSE_STATUS.getKey(), String.valueOf(InappPurchaseLicenceHandler.STATUS_ENABLED_LEGACY_SECOND));
     mPreferences.commit();
     showNotif(Utils.concatResStrings(app, " ",
             R.string.licence_validation_premium, R.string.thank_you));

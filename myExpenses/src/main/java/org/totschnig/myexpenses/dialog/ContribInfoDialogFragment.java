@@ -19,8 +19,9 @@ import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.activity.ContribInfoDialogActivity;
 import org.totschnig.myexpenses.dialog.MessageDialogFragment.MessageDialogListener;
-import org.totschnig.myexpenses.util.Distrib;
+import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
 import org.totschnig.myexpenses.model.ContribFeature;
+import org.totschnig.myexpenses.util.LicenceHandlerIFace;
 import org.totschnig.myexpenses.util.Utils;
 
 import android.support.v7.app.AlertDialog;
@@ -50,10 +51,10 @@ public class ContribInfoDialogFragment  extends CommitSafeDialogFragment impleme
   }
   @Override
   public Dialog onCreateDialog(Bundle savedInstanceState) {
-    boolean isContrib = MyApplication.getInstance().isContribEnabled();
+    boolean isContrib = MyApplication.getInstance().getLicenceHandler().isContribEnabled();
     String pro = getString(R.string.dialog_contrib_extended_gain_access);
     CharSequence extendedList = Utils.getContribFeatureLabelsAsFormattedList(
-        getActivity(),null, Utils.LicenceStatus.EXTENDED);
+        getActivity(),null, LicenceHandlerIFace.LicenceStatus.EXTENDED);
     CharSequence linefeed = Html.fromHtml("<br><br>"),
       message = TextUtils.concat(
           Utils.IS_FLAVOURED ? "" : getText(R.string.dialog_contrib_text_1),
@@ -65,8 +66,8 @@ public class ContribInfoDialogFragment  extends CommitSafeDialogFragment impleme
           getString(R.string.dialog_contrib_reminder_gain_access),
           linefeed,
           Utils.getContribFeatureLabelsAsFormattedList(getActivity(),null,
-              isContrib ? Utils.LicenceStatus.EXTENDED : Utils.LicenceStatus.CONTRIB));
-    if (!isContrib && Distrib.HAS_EXTENDED) {
+              isContrib ? LicenceHandlerIFace.LicenceStatus.EXTENDED : LicenceHandlerIFace.LicenceStatus.CONTRIB));
+    if (!isContrib  && InappPurchaseLicenceHandler.HAS_EXTENDED) {
       message = TextUtils.concat(
           message,
           linefeed,
@@ -89,7 +90,7 @@ public class ContribInfoDialogFragment  extends CommitSafeDialogFragment impleme
       } else {
         if (!isContrib) {
           builder.setNeutralButton(R.string.dialog_contrib_buy_premium, this);
-          if (Distrib.HAS_EXTENDED) {
+          if (InappPurchaseLicenceHandler.HAS_EXTENDED) {
             builder.setPositiveButton(R.string.dialog_contrib_buy_extended, this);
           }
         } else {

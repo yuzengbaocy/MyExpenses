@@ -543,7 +543,7 @@ public class MyExpenses extends LaunchActivity implements
           return;
         }
       }
-      if (!MyApplication.getInstance().isContribEnabled()) {
+      if (!MyApplication.getInstance().getLicenceHandler().isContribEnabled()) {
         nextReminder =
             PrefKey.NEXT_REMINDER_CONTRIB.getLong(TRESHOLD_REMIND_CONTRIB);
         if (nextReminder != -1 && sequenceCount >= nextReminder) {
@@ -1389,7 +1389,7 @@ public class MyExpenses extends LaunchActivity implements
     protected void onStart()
     {
         super.onStart();
-        if (Distrib.isBatchAvailable()) {
+        if (InappPurchaseLicenceHandler.isBatchAvailable()) {
           Batch.Unlock.setUnlockListener(this);  Pass this as parameter since  we're implementing BatchUnlockListener
           Batch.onStart(this);
         }
@@ -1403,7 +1403,7 @@ public class MyExpenses extends LaunchActivity implements
         if (feature.getReference().equalsIgnoreCase("PREMIUMKEY")) {
           MyApplication app = MyApplication.getInstance();
           app.setContribEnabled(true);
-          PreferenceObfuscator mPreferences = Distrib.getLicenseStatusPrefs(app);
+          PreferenceObfuscator mPreferences = InappPurchaseLicenceHandler.getLicenseStatusPrefs(app);
           mPreferences.putString(MyApplication.PrefKey.LICENSE_STATUS.getKey(), "1");
           mPreferences.commit();
           handleUnlock(R.string.promotion_appgratis_welcome);
@@ -1412,7 +1412,7 @@ public class MyExpenses extends LaunchActivity implements
     }
     @Override
     protected void onStop() {
-      if (Distrib.isBatchAvailable()) {
+      if (InappPurchaseLicenceHandler.isBatchAvailable()) {
         Batch.onStop(this);
       }
       super.onStop();
@@ -1420,7 +1420,7 @@ public class MyExpenses extends LaunchActivity implements
      @Override
      protected void onDestroy()
      {
-       if (Distrib.isBatchAvailable()) {
+       if (InappPurchaseLicenceHandler.isBatchAvailable()) {
          Batch.onDestroy(this);
        }
        super.onDestroy();
@@ -1429,7 +1429,7 @@ public class MyExpenses extends LaunchActivity implements
      @Override
      protected void onNewIntent(Intent intent)
      {
-       if (Distrib.isBatchAvailable()) {
+       if (InappPurchaseLicenceHandler.isBatchAvailable()) {
          Batch.onNewIntent(this, intent);
        }
        super.onNewIntent(intent);

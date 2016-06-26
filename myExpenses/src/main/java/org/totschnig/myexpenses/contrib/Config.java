@@ -1,11 +1,9 @@
 package org.totschnig.myexpenses.contrib;
 
 
-import android.os.Build;
-
 import org.totschnig.myexpenses.BuildConfig;
 import org.onepf.oms.OpenIabHelper;
-import org.totschnig.myexpenses.util.Distrib;
+import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -84,7 +82,7 @@ public final class Config {
       switch (BuildConfig.FLAVOR) {
         case "play":
           STORE_KEYS_MAP.put(OpenIabHelper.NAME_GOOGLE,
-              Distrib.IS_CHROMIUM ? Config.CHROME_STORE_KEY : Config.GOOGLE_PLAY_KEY);
+              InappPurchaseLicenceHandler.IS_CHROMIUM ? Config.CHROME_STORE_KEY : Config.GOOGLE_PLAY_KEY);
           break;
 /*        case "onepf":
           STORE_KEYS_MAP.put(OpenIabHelper.NAME_YANDEX, Config.YANDEX_PUBLIC_KEY);

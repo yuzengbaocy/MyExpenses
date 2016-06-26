@@ -20,11 +20,11 @@ import android.text.Html;
 
 import java.util.Locale;
 
-import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.preference.SharedPreferencesCompat;
-import org.totschnig.myexpenses.util.Distrib;
+import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
+import org.totschnig.myexpenses.util.LicenceHandlerIFace;
 import org.totschnig.myexpenses.util.Utils;
 
 public enum ContribFeature {
@@ -46,22 +46,22 @@ public enum ContribFeature {
     }
   };
 
-  private ContribFeature() {
+  ContribFeature() {
     this(true);
   }
 
-  private ContribFeature(boolean hasTrial) {
+  ContribFeature(boolean hasTrial) {
     this(hasTrial, false);
   }
 
-  private ContribFeature(boolean hasTrial, boolean isExtended) {
+  ContribFeature(boolean hasTrial, boolean isExtended) {
     this.hasTrial = hasTrial;
     //on Blackberry there is only one key
-    this.isExtended = Distrib.HAS_EXTENDED ? isExtended : false;
+    this.isExtended = InappPurchaseLicenceHandler.HAS_EXTENDED ? isExtended : false;
   }
 
-  public boolean hasTrial;
-  public boolean isExtended;
+  private boolean hasTrial;
+  private boolean isExtended;
   /**
    * how many times contrib features can be used for free
    */
@@ -96,8 +96,9 @@ public enum ContribFeature {
   }
 
   public boolean hasAccess() {
-    return isExtended ? MyApplication.getInstance().isExtendedEnabled() :
-        MyApplication.getInstance().isContribEnabled();
+    LicenceHandlerIFace licenceHandler = MyApplication.getInstance().getLicenceHandler();
+    return isExtended ? licenceHandler.isExtendedEnabled() :
+        licenceHandler.isContribEnabled();
   }
 
   public String buildRequiresString(Context ctx) {
@@ -130,5 +131,13 @@ public enum ContribFeature {
     }
     String result = ctx.getString(R.string.dialog_contrib_reminder_remove_limitation, keyName);
     return asHTML ? Html.fromHtml(result) : result;
+  }
+
+  public boolean isExtended() {
+    return isExtended;
+  }
+
+  public boolean hasTrial() {
+    return hasTrial;
   }
 }

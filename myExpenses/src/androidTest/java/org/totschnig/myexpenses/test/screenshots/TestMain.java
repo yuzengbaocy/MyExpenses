@@ -7,7 +7,6 @@ import junit.framework.Assert;
 
 import android.content.Context;
 import android.content.res.Configuration;
-import android.provider.Settings.Secure;
 import android.test.ActivityInstrumentationTestCase2;
 
 import org.junit.Ignore;
@@ -16,7 +15,7 @@ import org.totschnig.myexpenses.activity.CommonCommands;
 import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.preference.SharedPreferencesCompat;
 import org.totschnig.myexpenses.test.util.Fixture;
-import org.totschnig.myexpenses.util.Distrib;
+import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
 import org.totschnig.myexpenses.activity.MyExpenses;
 
 /**
@@ -161,7 +160,7 @@ public class TestMain extends ActivityInstrumentationTestCase2<MyExpenses> {
         .putString(PrefKey.UI_LANGUAGE.getKey(), lang + "-"+country)
         //.putString(PrefKey.ENTER_LICENCE.getKey(), l.toString())
     );
-    app.setContribStatus(Distrib.STATUS_ENABLED_PERMANENT);
+    app.setContribStatus(InappPurchaseLicenceHandler.STATUS_ENABLED_PERMANENT);
     
     getActivity();
 	  Fixture.setup(getInstrumentation(), locale, defaultCurrency);
