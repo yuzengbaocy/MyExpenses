@@ -16,6 +16,7 @@ import org.totschnig.myexpenses.dialog.ContribInfoDialogFragment;
 import org.totschnig.myexpenses.dialog.MessageDialogFragment.MessageDialogListener;
 import org.totschnig.myexpenses.model.ContribFeature;
 import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
+import org.totschnig.myexpenses.util.LicenceHandler;
 import org.totschnig.myexpenses.util.Utils;
 
 import android.content.Intent;
@@ -152,7 +153,7 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
                         isPremium ? R.string.licence_validation_premium : R.string.licence_validation_extended,
                         R.string.thank_you),
                     Toast.LENGTH_SHORT).show();
-                InappPurchaseLicenceHandler.registerPurchase(ContribInfoDialogActivity.this, !isPremium);
+                ((InappPurchaseLicenceHandler) MyApplication.getInstance().getLicenceHandler()).registerPurchase(ContribInfoDialogActivity.this, !isPremium);
               }
             }
             finish();
@@ -170,7 +171,7 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
           }
         };
     String sku = extended ?
-        (MyApplication.getInstance().isContribEnabled() ?
+        (MyApplication.getInstance().getLicenceHandler().isContribEnabled() ?
             Config.SKU_PREMIUM2EXTENDED :
             Config.SKU_EXTENDED) :
         Config.SKU_PREMIUM;

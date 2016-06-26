@@ -26,6 +26,7 @@ import org.totschnig.myexpenses.preference.SharedPreferencesCompat;
 import org.totschnig.myexpenses.provider.TransactionProvider;
 import org.totschnig.myexpenses.provider.filter.Criteria;
 import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
+import org.totschnig.myexpenses.util.LicenceHandler;
 import org.totschnig.myexpenses.util.Utils;
 
 import java.io.File;
@@ -41,7 +42,7 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    final String contribStatus = MyApplication.getInstance().getContribStatus();
+    final String contribStatus = ((InappPurchaseLicenceHandler) MyApplication.getInstance().getLicenceHandler()).getContribStatus();
     if (!contribStatus.equals(InappPurchaseLicenceHandler.STATUS_EXTENDED_PERMANENT)) {
 
 /*      String testId = "7daa6ffb95c74908";//"88ba5e514b9612fe";
@@ -74,6 +75,8 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
                     if (mHelper==null || inventory==null) {
                       return;
                     }
+                    InappPurchaseLicenceHandler licenceHandler =
+                        (InappPurchaseLicenceHandler) MyApplication.getInstance().getLicenceHandler();
                     // Do we have the premium upgrade?
                     Purchase premiumPurchase =
                         inventory.getPurchase(Config.SKU_PREMIUM);
@@ -84,14 +87,14 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
                     if ((upgradePurchase  !=null && upgradePurchase .getPurchaseState() == 0) ||
                         (extendedPurchase !=null && extendedPurchase.getPurchaseState() == 0)) {
                       if (!contribStatus.equals(InappPurchaseLicenceHandler.STATUS_EXTENDED_PERMANENT)) {
-                        InappPurchaseLicenceHandler.registerPurchase(LaunchActivity.this, true);
+                        licenceHandler.registerPurchase(LaunchActivity.this, true);
                       }
                     } else if (premiumPurchase !=null && premiumPurchase.getPurchaseState() == 0) {
                       if (!contribStatus.equals(InappPurchaseLicenceHandler.STATUS_ENABLED_PERMANENT)) {
-                        InappPurchaseLicenceHandler.registerPurchase(LaunchActivity.this, false);
+                        licenceHandler.registerPurchase(LaunchActivity.this, false);
                       }
                     } else if (contribStatus.equals(InappPurchaseLicenceHandler.STATUS_ENABLED_TEMPORARY)) {
-                      InappPurchaseLicenceHandler.maybeCancel(LaunchActivity.this);
+                      licenceHandler.maybeCancel(LaunchActivity.this);
                     }
                   }
                 });
