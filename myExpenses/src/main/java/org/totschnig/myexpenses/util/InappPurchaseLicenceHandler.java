@@ -20,7 +20,7 @@ import android.util.Log;
 import com.google.android.vending.licensing.AESObfuscator;
 import com.google.android.vending.licensing.PreferenceObfuscator;
 
-public class InappPurchaseLicenceHandler implements LicenceHandlerIFace {
+public class InappPurchaseLicenceHandler extends LicenceHandler {
 
   private String contribStatus = InappPurchaseLicenceHandler.STATUS_DISABLED;
   public static boolean HAS_EXTENDED = !BuildConfig.FLAVOR.equals("blackberry");
@@ -159,11 +159,6 @@ public class InappPurchaseLicenceHandler implements LicenceHandlerIFace {
     }
     return contribStatus.equals(InappPurchaseLicenceHandler.STATUS_EXTENDED_PERMANENT) ||
         contribStatus.equals(InappPurchaseLicenceHandler.STATUS_EXTENDED_TEMPORARY);
-  }
-
-  @Override
-  public void invalidate() {
-    Template.updateNewPlanEnabled();
   }
 
   public void setContribStatus(String contribStatus) {

@@ -9,7 +9,7 @@ import org.acra.config.ConfigurationBuilder;
 import org.acra.sender.HttpSender;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
-import org.totschnig.myexpenses.util.LicenceHandlerIFace;
+import org.totschnig.myexpenses.util.LicenceHandler;
 
 import javax.inject.Singleton;
 
@@ -26,7 +26,7 @@ public class AppModule {
 
   @Provides
   @Singleton
-  LicenceHandlerIFace providesLicenceHandler() {
+  LicenceHandler providesLicenceHandler() {
     return MyApplication.isInstrumentationTest() ? new FakeLicenceHandler() : new InappPurchaseLicenceHandler();
   }
 
