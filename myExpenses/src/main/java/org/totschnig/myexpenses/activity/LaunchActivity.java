@@ -25,9 +25,8 @@ import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.preference.SharedPreferencesCompat;
 import org.totschnig.myexpenses.provider.TransactionProvider;
 import org.totschnig.myexpenses.provider.filter.Criteria;
+import org.totschnig.myexpenses.util.AcraHelper;
 import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
-import org.totschnig.myexpenses.util.LicenceHandler;
-import org.totschnig.myexpenses.util.Utils;
 
 import java.io.File;
 import java.util.Map;
@@ -102,7 +101,7 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
             }
           });
         } catch (SecurityException e) {
-          Utils.reportToAcra(e);
+          AcraHelper.report(e);
           mHelper.dispose();
           mHelper = null;
         }

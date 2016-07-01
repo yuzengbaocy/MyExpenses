@@ -15,8 +15,8 @@ import org.totschnig.myexpenses.dialog.ContribDialogFragment;
 import org.totschnig.myexpenses.dialog.ContribInfoDialogFragment;
 import org.totschnig.myexpenses.dialog.MessageDialogFragment.MessageDialogListener;
 import org.totschnig.myexpenses.model.ContribFeature;
+import org.totschnig.myexpenses.util.AcraHelper;
 import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
-import org.totschnig.myexpenses.util.LicenceHandler;
 import org.totschnig.myexpenses.util.Utils;
 
 import android.content.Intent;
@@ -59,7 +59,7 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
           }
         });
       } catch (SecurityException e) {
-        Utils.reportToAcra(e);
+        AcraHelper.report(e);
         mHelper.dispose();
         mHelper = null;
         complain("Problem setting up in-app billing: " + e.getMessage());

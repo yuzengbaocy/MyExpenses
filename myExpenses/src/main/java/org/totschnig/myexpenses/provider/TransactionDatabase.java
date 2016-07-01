@@ -29,6 +29,7 @@ import org.totschnig.myexpenses.model.Plan;
 import org.totschnig.myexpenses.model.Template;
 import org.totschnig.myexpenses.model.Transaction;
 import org.totschnig.myexpenses.preference.PrefKey;
+import org.totschnig.myexpenses.util.AcraHelper;
 import org.totschnig.myexpenses.util.Utils;
 
 import com.android.calendar.CalendarContractCompat.Events;
@@ -301,7 +302,7 @@ public class TransactionDatabase extends SQLiteOpenHelper {
       try {
         db.delete(TABLE_TRANSACTIONS, KEY_STATUS + " = " + STATUS_UNCOMMITTED, null);
       } catch (SQLiteException e) {
-        Utils.reportToAcraWithDbSchema(e,
+        AcraHelper.reportWithTableDetails(e,
             DbUtils.getTableDetails(
                 db.query("sqlite_master",
                     new String[]{"name","sql"},
@@ -959,7 +960,7 @@ public class TransactionDatabase extends SQLiteOpenHelper {
               Environment.DIRECTORY_PICTURES);
         }
         if (!pictureDir.exists()) {
-          Utils.reportToAcra(new Exception("Unable to calculate pictureDir during upgrade"));
+          AcraHelper.report(new Exception("Unable to calculate pictureDir during upgrade"));
         }
         //if pictureDir does not exist, we use its URI nonetheless, in order to have the data around
         //for potential trouble handling
