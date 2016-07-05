@@ -453,7 +453,7 @@ public class MyExpenses extends LaunchActivity implements
       fm.beginTransaction()
           .add(WelcomeDialogFragment.newInstance(), "WELCOME")
           .add(TaskExecutionFragment.newInstance(
-                  TaskExecutionFragment.TASK_REQUIRE_ACCOUNT, new Long[]{0L}, null),
+              TaskExecutionFragment.TASK_REQUIRE_ACCOUNT, new Long[]{0L}, null),
               ProtectionDelegate.ASYNC_TAG)
           .commit();
       setupComplete = false;
