@@ -141,12 +141,6 @@ import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TOTAL;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TRANSACTIONID;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TYPE;
 
-//import com.batch.android.Batch;
-//import com.batch.android.BatchUnlockListener;
-//import com.batch.android.Offer;
-//import com.google.android.vending.licensing.PreferenceObfuscator;
-
-
 /**
  * This is the main activity where all expenses are listed
  * From the menu subactivities (Insert, Reset, SelectAccount, Help, Settings)
@@ -1383,71 +1377,6 @@ public class MyExpenses extends LaunchActivity implements
       case R.id.DELETE_COMMAND_DO:
         //Confirmation dialog was shown without Checkbox, because it was called with only void transactions
         onPositive(args, false);
-    }
-  }
-
-  /*  @Override
-    protected void onStart()
-    {
-        super.onStart();
-        if (InappPurchaseLicenceHandler.isBatchAvailable()) {
-          Batch.Unlock.setUnlockListener(this);  Pass this as parameter since  we're implementing BatchUnlockListener
-          Batch.onStart(this);
-        }
-    }
-    @Override
-    public void onRedeemAutomaticOffer(Offer offer) {
-      Log.d(MyApplication.TAG,"batch onRedeemAutomaticOffer called");
-      for(com.batch.android.Feature feature : offer.getFeatures())
-      {
-        Log.d(MyApplication.TAG,feature.getReference());
-        if (feature.getReference().equalsIgnoreCase("PREMIUMKEY")) {
-          MyApplication app = MyApplication.getInstance();
-          app.setContribEnabled(true);
-          PreferenceObfuscator mPreferences = InappPurchaseLicenceHandler.getLicenseStatusPrefs(app);
-          mPreferences.putString(MyApplication.PrefKey.LICENSE_STATUS.getKey(), "1");
-          mPreferences.commit();
-          handleUnlock(R.string.promotion_appgratis_welcome);
-        }
-      }
-    }
-    @Override
-    protected void onStop() {
-      if (InappPurchaseLicenceHandler.isBatchAvailable()) {
-        Batch.onStop(this);
-      }
-      super.onStop();
-    }
-     @Override
-     protected void onDestroy()
-     {
-       if (InappPurchaseLicenceHandler.isBatchAvailable()) {
-         Batch.onDestroy(this);
-       }
-       super.onDestroy();
-     }
-
-     @Override
-     protected void onNewIntent(Intent intent)
-     {
-       if (InappPurchaseLicenceHandler.isBatchAvailable()) {
-         Batch.onNewIntent(this, intent);
-       }
-       super.onNewIntent(intent);
-     }*/
-  private void handleUnlock(int message) {
-    FragmentManager fm = getSupportFragmentManager();
-    WelcomeDialogFragment f =
-        ((WelcomeDialogFragment) fm.findFragmentByTag("WELCOME"));
-    if (f != null) {
-      f.showUnlockWelcome(message);
-    } else {
-      MessageDialogFragment.newInstance(
-          0,
-          message,
-          MessageDialogFragment.Button.okButton(),
-          null, null)
-          .show(getSupportFragmentManager(), "UNLOCK_WELCOME");
     }
   }
 
