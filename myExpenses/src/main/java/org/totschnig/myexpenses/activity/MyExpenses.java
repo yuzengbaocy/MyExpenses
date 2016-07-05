@@ -18,7 +18,6 @@ package org.totschnig.myexpenses.activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.Cursor;
@@ -60,19 +59,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.amazon.device.ads.Ad;
-import com.amazon.device.ads.AdError;
-import com.amazon.device.ads.AdLayout;
-import com.amazon.device.ads.AdProperties;
-import com.amazon.device.ads.AdRegistration;
-import com.amazon.device.ads.DefaultAdListener;
-import com.amazon.device.ads.InterstitialAd;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdSize;
-import com.google.android.gms.ads.AdView;
-
 import org.apache.commons.lang3.ArrayUtils;
-import org.jetbrains.annotations.NotNull;
 import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.preference.PrefKey;
@@ -108,6 +95,7 @@ import org.totschnig.myexpenses.ui.CursorFragmentPagerAdapter;
 import org.totschnig.myexpenses.ui.FragmentPagerAdapter;
 import org.totschnig.myexpenses.ui.SimpleCursorAdapter;
 import org.totschnig.myexpenses.util.AcraHelper;
+import org.totschnig.myexpenses.util.AdHandler;
 import org.totschnig.myexpenses.util.FileUtils;
 import org.totschnig.myexpenses.util.Result;
 import org.totschnig.myexpenses.util.Utils;
@@ -156,18 +144,12 @@ public class MyExpenses extends LaunchActivity implements
   public static final int TYPE_TRANSACTION = 0;
   public static final int TYPE_TRANSFER = 1;
   public static final int TYPE_SPLIT = 2;
-  public static final int DAY_IN_MILLIS = BuildConfig.DEBUG ? 1 : 86400000;
-  public static final int INITIAL_GRACE_DAYS = BuildConfig.DEBUG ? 0 : 5;
-  public static final int INTERSTITIAL_MIN_INTERVAL = BuildConfig.DEBUG ? 2 : 4;
 
   public static final long TRESHOLD_REMIND_RATE = 47L;
   public static final long TRESHOLD_REMIND_CONTRIB = 113L;
 
   public static final int ACCOUNTS_CURSOR = -1;
   public static final int SPLIT_PART_CURSOR = 3;
-
-  public static final boolean WITH_AMA = true;
-  public static final boolean WITH_RHYTHM = false;
 
   private LoaderManager mManager;
 
@@ -179,16 +161,10 @@ public class MyExpenses extends LaunchActivity implements
   private ViewPager myPager;
   private long mAccountId = 0;
   int mAccountCount = 0;
-  private ViewGroup mAdViewContainer;
-  private boolean mAdMobBannerShown = false, mAmaBannerShown = false, mInterstitialShown = false;
+  private AdHandler adHandler;
   private Toolbar mToolbar;
   private String mCurrentBalance;
   private SubMenu sortMenu;
-  private AdLayout amaView;
-  private AdView admobView;
-  private InterstitialAd amaInterstitialAd;
-  private com.google.android.gms.ads.InterstitialAd admobInterstitialAd;
-  private boolean mAmaInterstitialLoaded = false;
 
   public enum HelpVariant {
     crStatus
@@ -244,16 +220,8 @@ public class MyExpenses extends LaunchActivity implements
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
 
-    mAdViewContainer = ((ViewGroup) findViewById(R.id.adContainer));
-    long now = System.currentTimeMillis();
-
-    if (isAdDisabled(now)) {
-      mAdViewContainer.setVisibility(View.GONE);
-    } else {
-      showBanner();
-      maybeRequestNewInterstitial(now);
-    }
-
+    adHandler = new AdHandler(this);
+    adHandler.init();
 
     mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
     mDrawerList = (StickyListHeadersListView) findViewById(R.id.left_drawer);
@@ -405,42 +373,6 @@ public class MyExpenses extends LaunchActivity implements
     setup();
   }
 
-  private void maybeRequestNewInterstitial(long now) {
-    if (now - PrefKey.INTERSTITIAL_LAST_SHOWN.getLong(0) > DAY_IN_MILLIS &&
-        PrefKey.ENTRIES_CREATED_SINCE_LAST_INTERSTITIAL.getInt(0) > INTERSTITIAL_MIN_INTERVAL) {
-      //last ad shown more than 24h and at least five expense entries ago,
-      requestNewInterstitial();
-    }
-  }
-
-  private void maybeShowInterstitial(long now) {
-    if (maybeShowInterstitialDo()) {
-      PrefKey.INTERSTITIAL_LAST_SHOWN.putLong(now);
-      PrefKey.ENTRIES_CREATED_SINCE_LAST_INTERSTITIAL.putInt(0);
-    } else {
-      PrefKey.ENTRIES_CREATED_SINCE_LAST_INTERSTITIAL.putInt(
-          PrefKey.ENTRIES_CREATED_SINCE_LAST_INTERSTITIAL.getInt(0) + 1
-      );
-      maybeRequestNewInterstitial(now);
-    }
-  }
-
-  private boolean isAdDisabled(long now) {
-    return !BuildConfig.DEBUG &&
-        (ContribFeature.AD_FREE.hasAccess() ||
-            isInInitialGracePeriod(now));
-  }
-
-  private boolean isInInitialGracePeriod(long now) {
-    try {
-      return now -
-          getPackageManager().getPackageInfo("org.totschnig.myexpenses", 0)
-              .firstInstallTime < DAY_IN_MILLIS * INITIAL_GRACE_DAYS;
-    } catch (PackageManager.NameNotFoundException e) {
-      return false;
-    }
-  }
-
   private void initialSetup() {
     FragmentManager fm = getSupportFragmentManager();
     if (fm.findFragmentByTag(ProtectionDelegate.ASYNC_TAG) == null) {
@@ -546,11 +478,7 @@ public class MyExpenses extends LaunchActivity implements
           return;
         }
       }
-      long now = System.currentTimeMillis();
-      if (!isAdDisabled(now)) {
-        maybeShowInterstitial(now);
-        return;
-      }
+      adHandler.onEditTransactionResult();
     }
     if (requestCode == CREATE_ACCOUNT_REQUEST && resultCode == RESULT_OK) {
       mAccountId = intent.getLongExtra(KEY_ROWID, 0);
@@ -1408,44 +1336,18 @@ public class MyExpenses extends LaunchActivity implements
   @Override
   protected void onResume() {
     super.onResume();
-    if (mAdMobBannerShown) {
-      //activity might have been resumed after user has bought contrib key
-      if (ContribFeature.AD_FREE.hasAccess()) {
-        admobView.destroy();
-        mAdViewContainer.setVisibility(View.GONE);
-        mAdMobBannerShown = false;
-      } else {
-        admobView.resume();
-      }
-    }
-    if (mAmaBannerShown) {
-      //activity might have been resumed after user has bought contrib key
-      if (ContribFeature.AD_FREE.hasAccess()) {
-        mAdViewContainer.setVisibility(View.GONE);
-        mAmaBannerShown = false;
-      }
-    }
-
+    adHandler.onResume();
   }
 
   @Override
   public void onDestroy() {
-    if (mAmaBannerShown) {
-      amaView.destroy();
-      mAmaBannerShown = false;
-    }
-    if (mAdMobBannerShown) {
-      admobView.destroy();
-      mAdMobBannerShown = false;
-    }
+    adHandler.onDestroy();
     super.onDestroy();
   }
 
   @Override
   protected void onPause() {
-    if (mAdMobBannerShown) {
-      admobView.pause();
-    }
+    adHandler.onPause();
     super.onPause();
   }
 
@@ -1529,131 +1431,6 @@ public class MyExpenses extends LaunchActivity implements
           Account.getInstanceFromDb(mAccountId).persistGrouping(newGrouping);
         }
       }
-      return true;
-    }
-    return false;
-  }
-
-  //Ads
-  private void showBanner() {
-    amaView = (AdLayout) mAdViewContainer.findViewById(R.id.amaView);
-    if (!WITH_AMA) {
-      amaView.setVisibility(View.GONE);
-      showBannerAdmob();
-      return;
-    }
-    String APP_KEY = BuildConfig.DEBUG ?
-        "sample-app-v1_pub-2" : "325c1c24185c46ccae8ec2cd4b2c290c";
-    AdRegistration.enableLogging(BuildConfig.DEBUG);
-    // For debugging purposes flag all ad requests as tests, but set to false for production builds.
-    AdRegistration.enableTesting(BuildConfig.DEBUG);
-    AdRegistration.setAppKey(APP_KEY);
-    amaView.setListener(new DefaultAdListener() {
-      @Override
-      public void onAdLoaded(Ad ad, AdProperties adProperties) {
-        super.onAdLoaded(ad, adProperties);
-        mAmaBannerShown = true;
-      }
-
-      @Override
-      public void onAdFailedToLoad(Ad ad, AdError error) {
-        super.onAdFailedToLoad(ad, error);
-        amaView.setVisibility(View.GONE);
-        showBannerAdmob();
-      }
-    });
-
-    if (!amaView.isLoading()) {
-      amaView.loadAd();
-    }
-  }
-
-  private void showBannerAdmob() {
-    admobView = new AdView(this);
-    String sizeSpec = getString(R.string.admob_banner_size);
-    AdSize adSize;
-    switch (sizeSpec) {
-      case "SMART_BANNER":
-        adSize = WITH_RHYTHM ? AdSize.BANNER : AdSize.SMART_BANNER;
-        break;
-      case "FULL_BANNER":
-        adSize = AdSize.FULL_BANNER;
-        break;
-      default:
-        adSize = AdSize.BANNER;
-    }
-    admobView.setAdSize(adSize);
-    admobView.setAdUnitId(getString(WITH_RHYTHM ? R.string.admob_unitid_rhythm :
-        R.string.admob_unitid_mainscreen));
-    mAdViewContainer.addView(admobView);
-    admobView.loadAd(buildAdmobRequest());
-    admobView.setAdListener(new com.google.android.gms.ads.AdListener() {
-      @Override
-      public void onAdLoaded() {
-        mAdMobBannerShown = true;
-        admobView.setVisibility(View.VISIBLE);
-        if (WITH_RHYTHM) {
-          mAdViewContainer.getLayoutParams().height = (int) TypedValue.applyDimension(
-              TypedValue.COMPLEX_UNIT_DIP, AdSize.BANNER.getHeight(),
-              getResources().getDisplayMetrics());
-        }
-      }
-    });
-  }
-
-  @NotNull
-  private AdRequest buildAdmobRequest() {
-    return new AdRequest.Builder()
-        //.addTestDevice("5EB15443712776CA9D760C5FF145709D")
-        //.addTestDevice("0C9A9324A2B59536C630C2571458C698")
-        .build();
-  }
-
-  private void requestNewInterstitial() {
-    mInterstitialShown = false;
-    if (!WITH_AMA) {
-      requestNewInterstitialAdMob();
-      return;
-    }
-
-    // Create the interstitial.
-    amaInterstitialAd = new InterstitialAd(this);
-
-    // Set the listener to use the callbacks below.
-    amaInterstitialAd.setListener(new DefaultAdListener() {
-
-      @Override
-      public void onAdLoaded(Ad ad, AdProperties adProperties) {
-        super.onAdLoaded(ad, adProperties);
-        mAmaInterstitialLoaded = true;
-      }
-
-      @Override
-      public void onAdFailedToLoad(Ad ad, AdError error) {
-        super.onAdFailedToLoad(ad, error);
-        requestNewInterstitialAdMob();
-      }
-    });
-    // Load the interstitial.
-    amaInterstitialAd.loadAd();
-  }
-
-  private void requestNewInterstitialAdMob() {
-    admobInterstitialAd = new com.google.android.gms.ads.InterstitialAd(MyExpenses.this);
-    admobInterstitialAd.setAdUnitId(getString(R.string.admob_unitid_interstitial));
-    admobInterstitialAd.loadAd(buildAdmobRequest());
-  }
-
-  private boolean maybeShowInterstitialDo() {
-    if (mInterstitialShown) return false;
-    if (mAmaInterstitialLoaded) {
-      amaInterstitialAd.showAd();
-      mInterstitialShown = true;
-      return true;
-    }
-    if (admobInterstitialAd != null && admobInterstitialAd.isLoaded()) {
-      admobInterstitialAd.show();
-      mInterstitialShown = true;
       return true;
     }
     return false;
