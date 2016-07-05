@@ -17,7 +17,6 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 
-import org.jetbrains.annotations.NotNull;
 import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
@@ -28,7 +27,7 @@ public class AdHandler {
   public static final int DAY_IN_MILLIS = BuildConfig.DEBUG ? 1 : 86400000;
   public static final int INITIAL_GRACE_DAYS = BuildConfig.DEBUG ? 0 : 5;
   public static final int INTERSTITIAL_MIN_INTERVAL = BuildConfig.DEBUG ? 2 : 4;
-  public static final boolean WITH_AMA = false;
+  public static final boolean WITH_AMA = true;
   public static final boolean WITH_RHYTHM = false;
   private Activity activity;
   private ViewGroup adContainer;
@@ -156,7 +155,6 @@ public class AdHandler {
     });
   }
 
-  @NotNull
   private AdRequest buildAdmobRequest() {
     return new AdRequest.Builder()
         //.addTestDevice("5EB15443712776CA9D760C5FF145709D")
