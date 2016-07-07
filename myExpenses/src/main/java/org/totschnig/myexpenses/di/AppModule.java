@@ -27,7 +27,7 @@ public class AppModule {
   @Provides
   @Singleton
   LicenceHandler providesLicenceHandler() {
-    return MyApplication.isInstrumentationTest() ? new FakeLicenceHandler() : new InappPurchaseLicenceHandler();
+    return new InappPurchaseLicenceHandler();
   }
 
   @Provides

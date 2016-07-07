@@ -161,6 +161,11 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
         contribStatus.equals(InappPurchaseLicenceHandler.STATUS_EXTENDED_TEMPORARY);
   }
 
+  @Override
+  protected void setLockStateDo(boolean locked) {
+      contribStatus = locked ? STATUS_DISABLED : STATUS_ENABLED_PERMANENT;
+  }
+
   public void setContribStatus(String contribStatus) {
     this.contribStatus = contribStatus;
     Template.updateNewPlanEnabled();
