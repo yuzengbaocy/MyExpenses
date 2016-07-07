@@ -48,13 +48,15 @@ import android.widget.Toast;
 
 import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
+import org.totschnig.myexpenses.dialog.TransactionDetailFragment;
+import org.totschnig.myexpenses.model.Transaction;
+import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.dialog.MessageDialogFragment.MessageDialogListener;
 import org.totschnig.myexpenses.dialog.ProgressDialogFragment;
 import org.totschnig.myexpenses.fragment.DbWriteFragment;
 import org.totschnig.myexpenses.model.ContribFeature;
 import org.totschnig.myexpenses.model.Model;
-import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.task.TaskExecutionFragment;
 import org.totschnig.myexpenses.util.AcraHelper;
 import org.totschnig.myexpenses.util.Utils;
@@ -284,6 +286,13 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
           Toast.makeText(this,
               "There was an error deleting the object. Please contact support@myexenses.mobi !",
               Toast.LENGTH_LONG).show();
+        }
+        break;
+      case TaskExecutionFragment.TASK_INSTANTIATE_TRANSACTION_2:
+        TransactionDetailFragment tdf = (TransactionDetailFragment)
+            getSupportFragmentManager().findFragmentByTag(TransactionDetailFragment.class.getName());
+        if (tdf != null) {
+          tdf.fillData((Transaction) o);
         }
         break;
     }
