@@ -24,6 +24,7 @@ import org.totschnig.myexpenses.model.Transaction;
 import org.totschnig.myexpenses.util.AcraHelper;
 
 import android.app.Activity;
+import android.database.sqlite.SQLiteConstraintException;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -159,6 +160,8 @@ public class DbWriteFragment extends Fragment {
         error = ERROR_PICTURE_SAVE_UNKNOWN;
       } catch (Plan.CalendarIntegrationNotAvailableException e) {
         error = ERROR_CALENDAR_INTEGRATION_NOT_AVAILABLE;
+      } catch (SQLiteConstraintException e) {
+        AcraHelper.reportWithDbSchema(e);
       } catch (Exception e) {
           AcraHelper.report(e);
       }
