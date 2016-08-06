@@ -113,7 +113,7 @@ dependencies {
     compile 'com.android.support:preference-v14:' + "23.1.1"
     compile 'com.itextpdf:itextpdf:5.5.8'
     compile 'ch.acra:acra:4.9.0'
-    compile 'com.google.android.gms:play-services-ads:9.0.2'
+    compile 'com.google.android.gms:play-services-ads:9.2.0'
     //compile 'com.google.android.gms:play-services-analytics:8.4.0'
     compile 'org.apache.commons:commons-lang3:3.4'
     compile 'org.onepf:openiab:0.9.8.7'
