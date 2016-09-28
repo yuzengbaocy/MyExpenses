@@ -709,23 +709,17 @@ public class MyPreferenceActivity extends ProtectedFragmentActivity implements
         return true;
       }
       if (preference.getKey().equals(PrefKey.APP_DIR.getKey())) {
-        DocumentFile appDir = Utils.getAppDir();
-        if (appDir == null) {
-          preference.setSummary(R.string.external_storage_unavailable);
-          preference.setEnabled(false);
-        } else {
-          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            //noinspection InlinedApi
-            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-            try {
-              startActivityForResult(intent, PICK_FOLDER_REQUEST);
-              return true;
-            } catch (ActivityNotFoundException e) {
-              AcraHelper.report(e);
-              //fallback to FolderBrowser
-            }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+          //noinspection InlinedApi
+          Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+          try {
+            startActivityForResult(intent, PICK_FOLDER_REQUEST);
+            return true;
+          } catch (ActivityNotFoundException e) {
+            AcraHelper.report(e);
+            //fallback to FolderBrowser
           }
-          startLegacyFolderRequest(appDir);
+          startLegacyFolderRequest(Utils.getAppDir());
         }
         return true;
       }
@@ -743,25 +737,23 @@ public class MyPreferenceActivity extends ProtectedFragmentActivity implements
     protected void startLegacyFolderRequest(DocumentFile appDir) {
       Intent intent;
       intent = new Intent(getActivity(), FolderBrowser.class);
-      intent.putExtra(FolderBrowser.PATH, appDir.getUri().getPath());
+      if (appDir != null) {
+        intent.putExtra(FolderBrowser.PATH, appDir.getUri().getPath());
+      }
       startActivityForResult(intent, PICK_FOLDER_REQUEST_LEGACY);
     }
 
     private void setAppDirSummary() {
       Preference pref = findPreference(PrefKey.APP_DIR.getKey());
-      if (Utils.isExternalStorageAvailable()) {
-        DocumentFile appDir = Utils.getAppDir();
-        if (appDir != null) {
-          if (Utils.dirExistsAndIsWritable(appDir))
-            pref.setSummary(FileUtils.getPath(getActivity(), appDir.getUri()));
-          else
-            pref.setSummary(getString(R.string.app_dir_not_accessible,
-                FileUtils.getPath(MyApplication.getInstance(), appDir.getUri())));
-          return;
+      DocumentFile appDir = Utils.getAppDir();
+      if (appDir != null) {
+        if (Utils.dirExistsAndIsWritable(appDir)) {
+          pref.setSummary(FileUtils.getPath(getActivity(), appDir.getUri()));
+        } else {
+          pref.setSummary(getString(R.string.app_dir_not_accessible,
+              FileUtils.getPath(MyApplication.getInstance(), appDir.getUri())));
         }
       }
-      pref.setSummary(R.string.external_storage_unavailable);
-      pref.setEnabled(false);
     }
 
     // credits Financisto

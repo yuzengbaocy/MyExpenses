@@ -486,9 +486,6 @@ public class GenericTask<T> extends AsyncTask<T, Void, Object> {
 
   @NonNull
   public static Result doBackup() {
-    if (!Utils.isExternalStorageAvailable()) {
-      return new Result(false, R.string.external_storage_unavailable);
-    }
     DocumentFile appDir = Utils.getAppDir();
     if (appDir == null) {
       return new Result(false, R.string.io_error_appdir_null);

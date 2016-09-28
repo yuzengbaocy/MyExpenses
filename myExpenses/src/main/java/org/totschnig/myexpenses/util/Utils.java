@@ -551,23 +551,7 @@ public class Utils {
     } while (true);
   }
 
-  /**
-   * Helper Method to Test if external Storage is Available from
-   * http://www.ibm.com/developerworks/xml/library/x-androidstorage/index.html
-   */
-  public static boolean isExternalStorageAvailable() {
-    boolean state = false;
-    String extStorageState = Environment.getExternalStorageState();
-    if (Environment.MEDIA_MOUNTED.equals(extStorageState)) {
-      state = true;
-    }
-    return state;
-  }
-
   public static Result checkAppDir() {
-    if (!Utils.isExternalStorageAvailable()) {
-      return new Result(false, R.string.external_storage_unavailable);
-    }
     DocumentFile appDir = getAppDir();
     if (appDir == null) {
       return new Result(false, R.string.io_error_appdir_null);
