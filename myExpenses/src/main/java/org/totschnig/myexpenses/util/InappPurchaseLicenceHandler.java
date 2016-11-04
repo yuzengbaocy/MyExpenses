@@ -168,7 +168,7 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
 
   public void setContribStatus(String contribStatus) {
     this.contribStatus = contribStatus;
-    Template.updateNewPlanEnabled();
+    invalidate();
   }
 
   public String getContribStatus() {
