@@ -144,7 +144,7 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
   @Override
   public void init(Context ctx) {
     PreferenceObfuscator p = getLicenseStatusPrefs(ctx);
-    contribStatus = p.getString(PrefKey.LICENSE_STATUS.getKey(),STATUS_DISABLED);
+    setContribStatus(p.getString(PrefKey.LICENSE_STATUS.getKey(),STATUS_DISABLED));
   }
 
   @Override
@@ -163,7 +163,7 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
 
   @Override
   protected void setLockStateDo(boolean locked) {
-      contribStatus = locked ? STATUS_DISABLED : STATUS_ENABLED_PERMANENT;
+    setContribStatus(locked ? STATUS_DISABLED : STATUS_ENABLED_PERMANENT);
   }
 
   public void setContribStatus(String contribStatus) {
