@@ -115,7 +115,6 @@ dependencies {
     compile 'ch.acra:acra:4.9.1'
     compile 'com.google.android.gms:play-services-ads:9.2.0'
     //compile 'com.google.android.gms:play-services-analytics:8.4.0'
-    compile group: 'com.google.guava', name: 'guava', version: '18.0'
     compile 'org.apache.commons:commons-lang3:3.4'
     compile 'org.onepf:openiab:0.9.8.7'
     compile fileTree(dir: 'libs', include: ['*.jar'])
