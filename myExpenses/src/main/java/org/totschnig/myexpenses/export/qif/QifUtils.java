@@ -62,7 +62,7 @@ public class QifUtils {
      */
     public static Date parseDate(String sDate, QifDateFormat format) {
         Calendar cal = Calendar.getInstance();
-        int month = cal.get(Calendar.MONTH);
+        int month = cal.get(Calendar.MONTH) + 1;
         int day = cal.get(Calendar.DAY_OF_MONTH);
         int year = cal.get(Calendar.YEAR);
 
@@ -148,20 +148,11 @@ public class QifUtils {
                 if (sMoney.startsWith("-")) {
                     buf.append('-');
                 }
-                boolean foundFirst = false;
-                for (String aSplit : split) {
-                    if (aSplit.equals("")) {
-                        continue;
-                    }
-                    if (foundFirst) {
-                        buf.append('.');
-                        buf.append(aSplit);
-                        break;
-                    } else {
-                        buf.append(aSplit);
-                        foundFirst = true;
-                    }
+                for (int i = 0; i < split.length - 1; i++) {
+                    buf.append(split[i]);
                 }
+                buf.append('.');
+                buf.append(split[split.length - 1]);
 
                 try {
                     result = new BigDecimal(buf.toString());
