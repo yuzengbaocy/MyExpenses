@@ -144,10 +144,6 @@ public class MyApplication extends Application implements
     //Maybe prevents occasional crashes on Gingerbread
     //https://code.google.com/p/android/issues/detail?id=81083
     try {Class.forName("android.os.AsyncTask");} catch(Throwable ignore) {}
-    if (!BuildConfig.DEBUG) {
-      ACRA.init(this);
-      ACRA.getErrorReporter().putCustomData("Distribution", BuildConfig.FLAVOR);
-    }
     mSelf = this;
     if (!ACRA.isACRASenderServiceProcess()) {
       // sets up mSettings
@@ -166,6 +162,7 @@ public class MyApplication extends Application implements
     appComponent.inject(this);
     if (acraConfiguration != null) {
       ACRA.init(this, acraConfiguration);
+      ACRA.getErrorReporter().putCustomData("Distribution", BuildConfig.FLAVOR);
     }
   }
 
