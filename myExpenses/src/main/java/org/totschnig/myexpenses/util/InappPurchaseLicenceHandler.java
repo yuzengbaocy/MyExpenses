@@ -108,9 +108,9 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
 
     if (IS_CHROMIUM) {
       builder.setStoreSearchStrategy(OpenIabHelper.Options.SEARCH_STRATEGY_BEST_FIT);
-    }
-
-    if (BuildConfig.FLAVOR.equals("amazon")) {
+    } else if (BuildConfig.FLAVOR.equals("play")) {
+      builder.addAvailableStoreNames("com.google.play");
+    } else if (BuildConfig.FLAVOR.equals("amazon")) {
            ArrayList<Appstore> stores = new ArrayList<Appstore>();
            stores.add(new AmazonAppstore(ctx) {
              public boolean isBillingAvailable(String packageName) {
