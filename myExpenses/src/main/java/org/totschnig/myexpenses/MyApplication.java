@@ -163,6 +163,8 @@ public class MyApplication extends Application implements
     if (acraConfiguration != null) {
       ACRA.init(this, acraConfiguration);
       ACRA.getErrorReporter().putCustomData("Distribution", BuildConfig.FLAVOR);
+      ACRA.getErrorReporter().putCustomData("Installer", getPackageManager()
+          .getInstallerPackageName(getPackageName()));
     }
   }
 
