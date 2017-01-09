@@ -1,13 +1,13 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-  <string name="crash_reports_user_info">O My Expenses enviará relatórios de erros para os programadores para ajudar a corrigir os problemas que você possa ter encontrado. Pode desativar esta opção nas definições.</string>
-  <string name="pref_category_title_crash_reports">Relatórios de erros</string>
-  <string name="pref_enable_acra">Ativar envio automático de relatórios de erro</string>
+  <string name="crash_reports_user_info">O My Expenses enviará automaticamente relatórios sobre falhas da aplicação aos seus desenvolvedores, o que permitir-lhes-á corrigir os problemas mais rapidamente. Pode desativar este comportamento nas definições.</string>
+  <string name="pref_category_title_crash_reports">Relatórios de falhas</string>
+  <string name="pref_enable_acra">Permitir o envio automático de relatórios de falhas</string>
   <string name="pref_acra_enabled">O envio automático está ativado</string>
   <string name="pref_acra_disabled">O envio automático está desativado</string>
-  <string name="pref_acra_syslog">Incluir registos do sistema no relatório</string>
-  <string name="pref_acra_syslog_enabled">Os registos do sistema serão enviados</string>
-  <string name="pref_acra_syslog_disabled">Os registos do sistema não serão enviados</string>
-  <string name="pref_acra_user_email">Endereço de e-mail a incluir nos relatórios de erro</string>
-  <string name="pref_acra_user_email_summary">Digite o seu endereço de e-mail para que nós o possamos contactar para nos ajudar a corrigir os erros.</string>
+  <string name="pref_acra_syslog">Incluir registos do sistema nos relatórios</string>
+  <string name="pref_acra_syslog_enabled">Os registos do sistema estão incluídos</string>
+  <string name="pref_acra_syslog_disabled">Os registos do sistema não estão incluídos</string>
+  <string name="pref_acra_user_email">Endereço de email a ser incluído no relatório de falha</string>
+  <string name="pref_acra_user_email_summary">Por favor introduza o seu endereço de email se estiver disposto a ajudar na depuração e permite que nós o contactemos.</string>
 </resources>
