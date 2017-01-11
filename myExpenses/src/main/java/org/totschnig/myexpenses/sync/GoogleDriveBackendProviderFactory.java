@@ -1,0 +1,32 @@
+package org.totschnig.myexpenses.sync;
+
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.content.Context;
+import android.content.Intent;
+import android.support.annotation.NonNull;
+
+import org.totschnig.myexpenses.activity.DriveSetupActivity;
+import org.totschnig.myexpenses.activity.ManageSyncBackends;
+import org.totschnig.myexpenses.activity.ProtectedFragmentActivity;
+
+public class GoogleDriveBackendProviderFactory extends SyncBackendProviderFactory {
+  public static final String LABEL = "Drive";
+
+  @NonNull
+  @Override
+  protected SyncBackendProvider _fromAccount(Context context, Account account, AccountManager accountManager) throws SyncBackendProvider.SyncParseException {
+    return new GoogleDriveBackendProvider(context, account, accountManager);
+  }
+
+  @Override
+  public String getLabel() {
+    return LABEL;
+  }
+
+  @Override
+  public void startSetup(ManageSyncBackends activity) {
+    activity.startActivityForResult(new Intent(activity, DriveSetupActivity.class),
+        ProtectedFragmentActivity.SYNC_BACKEND_SETUP_REQUEST);
+  }
+}

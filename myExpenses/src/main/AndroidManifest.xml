@@ -242,6 +242,9 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".activity.DriveSetupActivity" />
+
         <provider
             android:name=".provider.TransactionProvider"
             android:authorities="${applicationId}"
