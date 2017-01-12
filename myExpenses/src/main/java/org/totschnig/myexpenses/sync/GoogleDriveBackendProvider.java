@@ -14,7 +14,6 @@ import com.google.android.gms.drive.DriveApi;
 import com.google.android.gms.drive.DriveContents;
 import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveFolder;
-import com.google.android.gms.drive.DriveId;
 import com.google.android.gms.drive.DriveResource;
 import com.google.android.gms.drive.Metadata;
 import com.google.android.gms.drive.MetadataBuffer;
@@ -69,12 +68,10 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
 
   @Override
   public boolean setUp() {
-    if (googleApiClient.blockingConnect().isSuccess())
-      if (Drive.DriveApi.requestSync(googleApiClient).await().getStatus().isSuccess()) {
-        return true;
-      } else {
-        googleApiClient.disconnect();
-      }
+    if (googleApiClient.blockingConnect().isSuccess()) {
+      Drive.DriveApi.requestSync(googleApiClient).await();
+      return true;
+    }
     return false;
   }
 
@@ -128,12 +125,19 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
 
   @Override
   public boolean withAccount(Account account) {
-    return requireBaseFolder() && requireAccountFolder(account);
+    return requireAccountFolder(account);
   }
 
   @Override
   public boolean resetAccountData(String uuid) {
-    return false;
+    try {
+      return getExistingAccountFolder(uuid)
+          .map(driveFolder -> driveFolder.trash(googleApiClient).await().isSuccess() &&
+              Drive.DriveApi.requestSync(googleApiClient).await().getStatus().isSuccess())
+          .orElse(true);
+    } catch (IOException e) {
+      return false;
+    }
   }
 
   @Override
@@ -157,7 +161,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   }
 
   private boolean shouldOverrideLock(String locktoken) {
-     long now = System.currentTimeMillis();
+    long now = System.currentTimeMillis();
     if (locktoken.equals(sharedPreferences.getString(KEY_LOCK_TOKEN, ""))) {
       return sharedPreferences.getBoolean(KEY_OWNED_BY_US, false) ||
           now - sharedPreferences.getLong(KEY_TIMESTAMP, 0) > LOCK_TIMEOUT;
@@ -211,23 +215,27 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
 
   @Override
   public List<AccountMetaData> getRemoteAccountList() throws IOException {
-    googleApiClient.blockingConnect();
-    if (!requireBaseFolder()) {
-      return null;
+    List<AccountMetaData> result = null;
+    if (setUp()) {
+      if (requireBaseFolder()) {
+        MetadataBuffer metadataBuffer = baseFolder.listChildren(googleApiClient).await().getMetadataBuffer();
+        result = Stream.of(metadataBuffer)
+            .map(this::getAccountMetaDataFromDriveMetadata)
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(Collectors.toList());
+        metadataBuffer.release();
+      }
+      tearDown();
     }
-    MetadataBuffer metadataBuffer = baseFolder.listChildren(googleApiClient).await().getMetadataBuffer();
-    List<AccountMetaData> accountMetaDataList = Stream.of(metadataBuffer)
-        .map(this::getAccountMetaDataFromDriveMetadata)
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .collect(Collectors.toList());
-    metadataBuffer.release();
-    googleApiClient.disconnect();
-    return accountMetaDataList;
+    return result;
   }
 
   private Optional<AccountMetaData> getAccountMetaDataFromDriveMetadata(Metadata metadata) {
     Map<CustomPropertyKey, String> customProperties = metadata.getCustomProperties();
+    if (metadata.isTrashed()) {
+      return Optional.empty();
+    }
     String uuid = customProperties.get(ACCOUNT_METADATA_UUID_KEY);
     if (uuid == null) {
       return Optional.empty();
@@ -242,13 +250,32 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
         .setLabel(metadata.getTitle()).build());
   }
 
-  private boolean requireAccountFolder(Account account)  {
-    boolean result = false;
-    MetadataBuffer metadataBuffer = baseFolder.listChildren(googleApiClient).await().getMetadataBuffer();
-    Optional<DriveFolder> driveFolderOptional = Stream.of(metadataBuffer)
-        .filter(metadata -> account.uuid.equals(metadata.getCustomProperties().get(ACCOUNT_METADATA_UUID_KEY)))
+  private Optional<DriveFolder> getExistingAccountFolder(String uuid) throws IOException {
+    if (!requireBaseFolder()) {
+      throw new IOException("Base folder not available");
+    }
+    DriveApi.MetadataBufferResult metadataBufferResult = baseFolder.listChildren(googleApiClient).await();
+    if (!metadataBufferResult.getStatus().isSuccess()) {
+      throw new IOException("Unable to list children of base folder");
+    }
+    MetadataBuffer metadataBuffer = metadataBufferResult.getMetadataBuffer();
+    Optional<DriveFolder> result = Stream.of(metadataBuffer)
+        .filter(metadata -> uuid.equals(metadata.getCustomProperties().get(ACCOUNT_METADATA_UUID_KEY)) &&
+            !metadata.isTrashed())
         .findFirst()
         .map(metadata -> metadata.getDriveId().asDriveFolder());
+    metadataBuffer.release();
+    return result;
+  }
+
+  private boolean requireAccountFolder(Account account) {
+    boolean result = false;
+    Optional<DriveFolder> driveFolderOptional;
+    try {
+      driveFolderOptional = getExistingAccountFolder(account.uuid);
+    } catch (IOException e) {
+      return false;
+    }
     if (driveFolderOptional.isPresent()) {
       accountFolder = driveFolderOptional.get();
       result = true;
@@ -268,26 +295,16 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
         result = true;
       }
     }
-    metadataBuffer.release();
     return result;
   }
 
-  private Optional<DriveFolder> getFolder(String folderId) {
-    DriveApi.DriveIdResult driveIdResult = Drive.DriveApi.fetchDriveId(googleApiClient, folderId).await();
-    if (!driveIdResult.getStatus().isSuccess()) {
-      return Optional.empty();
-    }
-    DriveId driveId = driveIdResult.getDriveId();
-    return Optional.of(driveId.asDriveFolder());
-  }
-
-  private boolean requireBaseFolder()  {
+  private boolean requireBaseFolder() {
     if (baseFolder != null) {
       return true;
     }
-    Optional<DriveFolder> driveFolderOptional = getFolder(folderId);
-    if (driveFolderOptional.isPresent()) {
-      baseFolder = driveFolderOptional.get();
+    DriveApi.DriveIdResult driveIdResult = Drive.DriveApi.fetchDriveId(googleApiClient, folderId).await();
+    if (driveIdResult.getStatus().isSuccess()) {
+      baseFolder = driveIdResult.getDriveId().asDriveFolder();
       return true;
     }
     return false;
