@@ -34,9 +34,9 @@ import java.util.List;
 import java.util.Map;
 
 public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
-  public static final String KEY_LOCK_TOKEN = "lockToken";
-  public static final String KEY_OWNED_BY_US = "ownedByUs";
-  public static final String KEY_TIMESTAMP = "timestamp";
+  private static final String KEY_LOCK_TOKEN = "lockToken";
+  private static final String KEY_OWNED_BY_US = "ownedByUs";
+  private static final String KEY_TIMESTAMP = "timestamp";
   private static final CustomPropertyKey ACCOUNT_METADATA_CURRENCY_KEY =
       new CustomPropertyKey("accountMetadataCurrency", CustomPropertyKey.PRIVATE);
   private static final CustomPropertyKey ACCOUNT_METADATA_COLOR_KEY =
@@ -68,7 +68,22 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   }
 
   @Override
+  public boolean setUp() {
+    if (googleApiClient.blockingConnect().isSuccess())
+      if (Drive.DriveApi.requestSync(googleApiClient).await().getStatus().isSuccess()) {
+        return true;
+      } else {
+        googleApiClient.disconnect();
+      }
+    return false;
+  }
 
+  @Override
+  public void tearDown() {
+    googleApiClient.disconnect();
+  }
+
+  @Override
   protected InputStream getInputStreamForPicture(String relativeUri) throws IOException {
     return null;
   }
@@ -113,15 +128,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
 
   @Override
   public boolean withAccount(Account account) {
-    boolean result = false;
-    googleApiClient.blockingConnect();
-    if (requireBaseFolder()) {
-      result = requireAccountFolder(account);
-    }
-    if (!result) {
-      googleApiClient.disconnect();
-    }
-    return result;
+    return requireBaseFolder() && requireAccountFolder(account);
   }
 
   @Override
@@ -131,21 +138,20 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
 
   @Override
   public boolean lock() {
-    Metadata metadata = accountFolder.getMetadata(googleApiClient).await().getMetadata();
-    if (metadata.getCustomProperties().containsKey(LOCK_TOKEN_KEY) &&
-        !shouldOverrideLock(metadata.getCustomProperties().get(LOCK_TOKEN_KEY))) {
-      googleApiClient.disconnect();
-      return false;
-    }
-    MetadataChangeSet.Builder changeSetBuilder = new MetadataChangeSet.Builder();
-
-    String lockToken = Model.generateUuid();
-    changeSetBuilder.setCustomProperty(LOCK_TOKEN_KEY, lockToken);
-    DriveResource.MetadataResult metadataResult =
-        accountFolder.updateMetadata(googleApiClient, changeSetBuilder.build()).await();
+    DriveResource.MetadataResult metadataResult = accountFolder.getMetadata(googleApiClient).await();
     if (metadataResult.getStatus().isSuccess()) {
-      saveLockTokenToPreferences(lockToken, System.currentTimeMillis(), true);
-      return true;
+      Metadata metadata = metadataResult.getMetadata();
+      if (!metadata.getCustomProperties().containsKey(LOCK_TOKEN_KEY) ||
+          shouldOverrideLock(metadata.getCustomProperties().get(LOCK_TOKEN_KEY))) {
+        MetadataChangeSet.Builder changeSetBuilder = new MetadataChangeSet.Builder();
+        String lockToken = Model.generateUuid();
+        changeSetBuilder.setCustomProperty(LOCK_TOKEN_KEY, lockToken);
+        metadataResult = accountFolder.updateMetadata(googleApiClient, changeSetBuilder.build()).await();
+        if (metadataResult.getStatus().isSuccess()) {
+          saveLockTokenToPreferences(lockToken, System.currentTimeMillis(), true);
+          return true;
+        }
+      }
     }
     return false;
   }
@@ -169,7 +175,8 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   @Override
   public ChangeSet getChangeSetSince(long sequenceNumber, Context context) throws IOException {
     MetadataBuffer metadataBuffer = accountFolder.listChildren(googleApiClient).await().getMetadataBuffer();
-    ChangeSet result = merge(Stream.of(metadataBuffer).filter(metadata -> isNewerJsonFile(0, metadata.getTitle()))
+    ChangeSet result = merge(Stream.of(metadataBuffer)
+        .filter(metadata -> isNewerJsonFile(sequenceNumber, metadata.getTitle()))
         .map(this::getChangeSetFromMetadata))
         .orElse(ChangeSet.empty(sequenceNumber));
     metadataBuffer.release();
@@ -198,10 +205,8 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     MetadataChangeSet.Builder changeSetBuilder = new MetadataChangeSet.Builder();
 
     changeSetBuilder.deleteCustomProperty(LOCK_TOKEN_KEY);
-    boolean result = accountFolder.updateMetadata(googleApiClient, changeSetBuilder.build())
+    return accountFolder.updateMetadata(googleApiClient, changeSetBuilder.build())
         .await().getStatus().isSuccess();
-    googleApiClient.disconnect();
-    return result;
   }
 
   @Override
