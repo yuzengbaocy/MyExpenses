@@ -4,6 +4,8 @@ import android.accounts.AccountManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.support.annotation.NonNull;
+import android.webkit.MimeTypeMap;
 
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Optional;
@@ -19,12 +21,17 @@ import com.google.android.gms.drive.Metadata;
 import com.google.android.gms.drive.MetadataBuffer;
 import com.google.android.gms.drive.MetadataChangeSet;
 import com.google.android.gms.drive.metadata.CustomPropertyKey;
+import com.google.android.gms.drive.query.Filters;
+import com.google.android.gms.drive.query.Query;
+import com.google.android.gms.drive.query.SearchableField;
 
 import org.totschnig.myexpenses.BuildConfig;
+import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.model.Account;
 import org.totschnig.myexpenses.model.Model;
 import org.totschnig.myexpenses.sync.json.AccountMetaData;
 import org.totschnig.myexpenses.sync.json.ChangeSet;
+import org.totschnig.myexpenses.util.FileCopyUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -80,14 +87,40 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     googleApiClient.disconnect();
   }
 
+  @NonNull
   @Override
   protected InputStream getInputStreamForPicture(String relativeUri) throws IOException {
-    return null;
+    Query query = new Query.Builder()
+        .addFilter(Filters.eq(SearchableField.TITLE, relativeUri))
+        .build();
+    DriveApi.MetadataBufferResult metadataBufferResult =
+        accountFolder.queryChildren(googleApiClient, query).await();
+    if (!metadataBufferResult.getStatus().isSuccess()) {
+      throw new IOException("Unable to find picture");
+    }
+    MetadataBuffer metadataBuffer = metadataBufferResult.getMetadataBuffer();
+    if (metadataBuffer.getCount() != 1) {
+      metadataBuffer.release();
+      throw new IOException("Unable to find picture");
+    }
+    DriveApi.DriveContentsResult driveContentsResult = metadataBuffer.get(0).getDriveId()
+        .asDriveFile().open(googleApiClient, DriveFile.MODE_READ_ONLY, null).await();
+    if (!driveContentsResult.getStatus().isSuccess()) {
+      metadataBuffer.release();
+      throw new IOException("Unable to open picture");
+    }
+    return driveContentsResult.getDriveContents().getInputStream();
   }
 
   @Override
   protected void saveUri(String fileName, Uri uri) throws IOException {
-
+    InputStream in = MyApplication.getInstance().getContentResolver()
+        .openInputStream(uri);
+    if (in == null) {
+      throw new IOException("Could not read " + uri.toString());
+    }
+    saveBytes(fileName, FileCopyUtils.toByteArray(in),
+        MimeTypeMap.getSingleton().getMimeTypeFromExtension(getFileExtension(fileName)));
   }
 
   @Override
@@ -104,6 +137,10 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
 
   @Override
   void saveFileContents(String fileName, String fileContents) throws IOException {
+    saveBytes(fileName, fileContents.getBytes(), MIMETYPE_JSON);
+  }
+
+  private void saveBytes(String fileName, byte[] contents, String mimeType) throws IOException {
     DriveApi.DriveContentsResult driveContentsResult =
         Drive.DriveApi.newDriveContents(googleApiClient).await();
     if (!driveContentsResult.getStatus().isSuccess()) {
@@ -111,10 +148,10 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     }
     DriveContents driveContents = driveContentsResult.getDriveContents();
     OutputStream outputStream = driveContents.getOutputStream();
-    outputStream.write(fileContents.getBytes());
+    outputStream.write(contents);
     MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
         .setTitle(fileName)
-        .setMimeType(MIMETYPE_JSON)
+        .setMimeType(mimeType)
         .build();
     DriveFolder.DriveFileResult driveFileResult =
         accountFolder.createFile(googleApiClient, changeSet, driveContents).await();
