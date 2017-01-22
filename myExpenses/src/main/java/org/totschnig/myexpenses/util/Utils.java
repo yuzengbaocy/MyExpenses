@@ -78,12 +78,9 @@ import org.totschnig.myexpenses.ui.SimpleCursorAdapter;
 import org.xml.sax.SAXException;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -582,33 +579,6 @@ public class Utils {
     return appdir.exists() && appdir.canWrite();
   }
 
-  public static boolean copy(File src, File dst) {
-    FileInputStream srcStream = null;
-    FileOutputStream dstStream = null;
-    try {
-      srcStream = new FileInputStream(src);
-      dstStream = new FileOutputStream(dst);
-      dstStream.getChannel().transferFrom(srcStream.getChannel(), 0,
-          srcStream.getChannel().size());
-      return true;
-    } catch (FileNotFoundException e) {
-      Log.e("MyExpenses", e.getLocalizedMessage());
-      return false;
-    } catch (IOException e) {
-      Log.e("MyExpenses", e.getLocalizedMessage());
-      return false;
-    } finally {
-      try {
-        srcStream.close();
-      } catch (Exception e) {
-      }
-      try {
-        dstStream.close();
-      } catch (Exception e) {
-      }
-    }
-  }
-
   /** Create a File for saving an image or video */
   // Source
   // http://developer.android.com/guide/topics/media/camera.html#saving-media
@@ -639,6 +609,7 @@ public class Utils {
     } while (result.exists());
     return result;
   }
+
   public static Uri getOutputMediaUri(boolean temp) {
     String fileName = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US)
         .format(new Date());
@@ -650,8 +621,8 @@ public class Utils {
                  "org.totschnig.myexpenses.fileprovider",
           outputMediaFile);
     } else {
-      outputMediaFile = getOutputMediaFile(fileName,temp);
-      if (outputMediaFile==null) return null;
+      outputMediaFile = getOutputMediaFile(fileName, temp);
+      if (outputMediaFile == null) return null;
       return Uri.fromFile(outputMediaFile);
     }
   }
@@ -663,9 +634,9 @@ public class Utils {
     return uriString.substring(0,uriString.lastIndexOf('/'));
   }
 
-  private static String getOutputMediaFileName(String base,int postfix) {
-      if (postfix>0) {
-        base+= "_"+postfix;
+  private static String getOutputMediaFileName(String base, int postfix) {
+      if (postfix > 0) {
+        base+= "_" + postfix;
       }
       return base + ".jpg";
   }
@@ -684,47 +655,6 @@ public class Utils {
     if (result==null) return null;
     result.mkdir();
     return result.exists() ? result : null;
-  }
-
-  /**
-   * copy src uri to dest uri
-   *
-   * @param src
-   * @param dest
-   * @return
-   */
-  public static void copy(Uri src, Uri dest) throws IOException {
-    InputStream input = null;
-    OutputStream output = null;
-
-    try {
-      input = MyApplication.getInstance().getContentResolver()
-          .openInputStream(src);
-      if (input==null) {
-        throw new IOException("Could not open InputStream "+src.toString());
-      }
-      output = MyApplication.getInstance().getContentResolver()
-              .openOutputStream(dest);
-      if (output==null) {
-        throw new IOException("Could not open OutputStream "+dest.toString());
-      }
-      final byte[] buffer = new byte[1024];
-      int read;
-
-      while ((read = input.read(buffer)) != -1) {
-        output.write(buffer, 0, read);
-      }
-      output.flush();
-    } finally {
-      try {
-        if (input!=null) input.close();
-      } catch (IOException e) {
-      }
-      try {
-        if (output!=null) output.close();
-      } catch (IOException e) {
-      }
-    }
   }
 
   public static void share(Context ctx, ArrayList<Uri> fileUris, String target,
@@ -976,17 +906,6 @@ public class Utils {
     public void clear() {
       sb = new StringBuilder();
     }
-  }
-
-  public static <E extends Enum<E>> String joinEnum(Class<E> enumClass) {
-    String result = "";
-    Iterator<E> iterator = EnumSet.allOf(enumClass).iterator();
-    while (iterator.hasNext()) {
-      result += "'" + iterator.next().name() + "'";
-      if (iterator.hasNext())
-        result += ",";
-    }
-    return result;
   }
 
   /**

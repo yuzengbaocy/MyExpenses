@@ -344,6 +344,7 @@
         <item>currency</item>
         <item>type</item>
         <item>color</item>
+        <item>synchronization</item>
     </string-array>
     <string-array name="form_opening_balance_help_text" tools:ignore="UnusedResources">
         <item>form_AccountEdit_amount_switch_help_text</item>
@@ -364,6 +365,24 @@
         <item>create_folder</item>
         <item>select_folder</item>
         <item>up</item>
+    </string-array>
+
+    <string-array name="help_ManageSyncBackends_info">
+        <item>help_ManageSyncBackends_intro</item>
+        <item>help_ManageSyncBackends_webdav</item>
+        <item>help_ManageSyncBackends_drive</item>
+    </string-array>
+
+    <string-array name="ManageSyncBackends_cabitems" tools:ignore="UnusedResources">
+        <item>sync_now</item>
+        <item>remove</item>
+        <item>sync_download</item>
+        <item>sync_link</item>
+        <item>sync_unlink</item>
+    </string-array>
+
+    <string-array name="ManageSyncBackends_menuitems" tools:ignore="UnusedResources">
+        <item>create_sync_backend</item>
     </string-array>
 
     <integer-array name="version_codes">

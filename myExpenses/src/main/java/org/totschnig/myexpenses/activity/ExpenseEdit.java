@@ -104,7 +104,6 @@ import org.totschnig.myexpenses.model.Transaction;
 import org.totschnig.myexpenses.model.Transaction.CrStatus;
 import org.totschnig.myexpenses.model.Transfer;
 import org.totschnig.myexpenses.preference.PrefKey;
-import org.totschnig.myexpenses.preference.SharedPreferencesCompat;
 import org.totschnig.myexpenses.provider.TransactionProvider;
 import org.totschnig.myexpenses.task.TaskExecutionFragment;
 import org.totschnig.myexpenses.ui.AmountEditText;
@@ -176,8 +175,7 @@ public class ExpenseEdit extends AmountActivity implements
   private EditText mCommentText, mTitleText, mReferenceNumberText;
   private AmountEditText mTransferAmountText, mExchangeRate1Text, mExchangeRate2Text;
   private Button mCategoryButton, mPlanButton;
-  private Spinner mMethodSpinner;
-  private SpinnerHelper mAccountSpinner, mTransferAccountSpinner, mStatusSpinner,
+  private SpinnerHelper mMethodSpinner, mAccountSpinner, mTransferAccountSpinner, mStatusSpinner,
       mOperationTypeSpinner, mReccurenceSpinner;
   private SimpleCursorAdapter mMethodsAdapter, mAccountsAdapter, mTransferAccountsAdapter, mPayeeAdapter;
   private OperationTypeAdapter mOperationTypeAdapter;
@@ -344,7 +342,7 @@ public class ExpenseEdit extends AmountActivity implements
 
     mCategoryButton = (Button) findViewById(R.id.Category);
     mPlanButton = (Button) findViewById(R.id.Plan);
-    mMethodSpinner = (Spinner) findViewById(R.id.Method);
+    mMethodSpinner = new SpinnerHelper(findViewById(R.id.Method));
     mAccountSpinner = new SpinnerHelper(findViewById(R.id.Account));
     mTransferAccountSpinner = new SpinnerHelper(findViewById(R.id.TransferAccount));
     mTransferAccountSpinner.setOnItemSelectedListener(this);
@@ -569,8 +567,7 @@ public class ExpenseEdit extends AmountActivity implements
         new String[]{KEY_LABEL}, new int[]{android.R.id.text1}, 0);
     mAccountsAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
     mAccountSpinner.setAdapter(mAccountsAdapter);
-    if (mTransaction instanceof SplitPartCategory ||
-        mTransaction instanceof SplitPartTransfer) {
+    if (isSplitPart()) {
       disableAccountSpinner();
     }
     mIsMainTransactionOrTemplate = mOperationType != MyExpenses.TYPE_TRANSFER && !(mTransaction instanceof SplitPartCategory);
@@ -708,9 +705,7 @@ public class ExpenseEdit extends AmountActivity implements
       setTitle(R.string.menu_clone_transaction);
     }
 
-    if (mTransaction instanceof Template ||
-        mTransaction instanceof SplitPartCategory ||
-        mTransaction instanceof SplitPartTransfer) {
+    if (isNoMainTransaction()) {
       findViewById(R.id.DateTimeRow).setVisibility(View.GONE);
     } else {
       //noinspection SetTextI18n
@@ -734,7 +729,7 @@ public class ExpenseEdit extends AmountActivity implements
       populateFields();
     }
 
-    if (!(mTransaction instanceof SplitPartCategory || mTransaction instanceof SplitPartTransfer)) {
+    if (!(isSplitPart())) {
       setDateTime();
     }
     //after setdatetime, so that the plan info can override the date
@@ -786,7 +781,7 @@ public class ExpenseEdit extends AmountActivity implements
     linkInputWithLabel(mCommentText, commentLabel);
     linkInputWithLabel(mCategoryButton, findViewById(R.id.CategoryLabel));
     View methodLabel = findViewById(R.id.MethodLabel);
-    linkInputWithLabel(mMethodSpinner, methodLabel);
+    linkInputWithLabel(mMethodSpinner.getSpinner(), methodLabel);
     linkInputWithLabel(mReferenceNumberText, methodLabel);
     View planLabel = findViewById(R.id.PlanLabel);
     linkInputWithLabel(mPlanButton, planLabel);
@@ -825,9 +820,9 @@ public class ExpenseEdit extends AmountActivity implements
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
     super.onCreateOptionsMenu(menu);
-    if (!(mTransaction instanceof SplitPartCategory || mTransaction instanceof SplitPartTransfer ||
-        mTransaction instanceof Template ||
-        (mTransaction instanceof SplitTransaction && !MyApplication.getInstance().getLicenceHandler().isContribEnabled()))) {
+    if (!(isNoMainTransaction() ||
+        (mTransaction instanceof SplitTransaction &&
+            !MyApplication.getInstance().getLicenceHandler().isContribEnabled()))) {
       MenuItemCompat.setShowAsAction(
           menu.add(Menu.NONE, R.id.SAVE_AND_NEW_COMMAND, 0, R.string.menu_save_and_new)
               .setIcon(R.drawable.ic_action_save_new),
@@ -1036,7 +1031,7 @@ public class ExpenseEdit extends AmountActivity implements
       case 1:
         mType = INCOME;
     }
-    if (!mNewInstance) {
+    if (signum != 0 ) {
       mAmountText.setAmount(amount);
     }
     mAmountText.requestFocus();
@@ -1071,19 +1066,19 @@ public class ExpenseEdit extends AmountActivity implements
       mIsSaving = true;
       startDbWriteTask(true);
       if (getIntent().getBooleanExtra(AbstractWidget.EXTRA_START_FROM_WIDGET, false)) {
-        SharedPreferences.Editor e = MyApplication.getInstance().getSettings().edit();
+        SharedPreferences.Editor editor = MyApplication.getInstance().getSettings().edit();
         switch (mOperationType) {
           case MyExpenses.TYPE_TRANSACTION:
-            e.putLong(PREFKEY_TRANSACTION_LAST_ACCOUNT_FROM_WIDGET, mTransaction.accountId);
+            editor.putLong(PREFKEY_TRANSACTION_LAST_ACCOUNT_FROM_WIDGET, mTransaction.accountId);
             break;
           case MyExpenses.TYPE_TRANSFER:
-            e.putLong(PREFKEY_TRANSFER_LAST_ACCOUNT_FROM_WIDGET, mTransaction.accountId);
-            e.putLong(PREFKEY_TRANSFER_LAST_TRANSFER_ACCOUNT_FROM_WIDGET, mTransaction.transfer_account);
+            editor.putLong(PREFKEY_TRANSFER_LAST_ACCOUNT_FROM_WIDGET, mTransaction.accountId);
+            editor.putLong(PREFKEY_TRANSFER_LAST_TRANSFER_ACCOUNT_FROM_WIDGET, mTransaction.transfer_account);
             break;
           case MyExpenses.TYPE_SPLIT:
-            e.putLong(PREFKEY_SPLIT_LAST_ACCOUNT_FROM_WIDGET, mTransaction.accountId);
+            editor.putLong(PREFKEY_SPLIT_LAST_ACCOUNT_FROM_WIDGET, mTransaction.accountId);
         }
-        SharedPreferencesCompat.apply(e);
+        editor.apply();
       }
     } else {
       //prevent this flag from being sticky if form was not valid
@@ -1120,7 +1115,7 @@ public class ExpenseEdit extends AmountActivity implements
 
     mTransaction.comment = mCommentText.getText().toString();
 
-    if (!(mTransaction instanceof SplitPartCategory || mTransaction instanceof SplitPartTransfer)) {
+    if (!isSplitPart()) {
       mTransaction.setDate(mCalendar.getTime());
     }
 
@@ -1195,7 +1190,7 @@ public class ExpenseEdit extends AmountActivity implements
       }
     } else {
       mTransaction.referenceNumber = mReferenceNumberText.getText().toString();
-      if (forSave && !(mTransaction instanceof SplitPartCategory || mTransaction instanceof SplitPartTransfer)) {
+      if (forSave && !(isSplitPart())) {
         if (mReccurenceSpinner.getSelectedItemPosition() > 0) {
           title = TextUtils.isEmpty(mTransaction.payee) ?
               (TextUtils.isEmpty(mLabel) ?
@@ -1217,6 +1212,14 @@ public class ExpenseEdit extends AmountActivity implements
 
     mTransaction.setPictureUri(mPictureUri);
     return validP;
+  }
+
+  private boolean isSplitPart() {
+    return mTransaction instanceof SplitPartCategory || mTransaction instanceof SplitPartTransfer;
+  }
+
+  private boolean isNoMainTransaction() {
+    return isSplitPart() || mTransaction instanceof Template;
   }
 
   /* (non-Javadoc)
@@ -1347,11 +1350,8 @@ public class ExpenseEdit extends AmountActivity implements
 
   private void configureStatusSpinner() {
     Account a = getCurrentAccount();
-    mStatusSpinner.getSpinner().setVisibility((mTransaction instanceof Template ||
-        mTransaction instanceof SplitPartCategory ||
-        mTransaction instanceof SplitPartTransfer ||
-        a == null ||
-        a.type.equals(AccountType.CASH)) ? View.GONE : View.VISIBLE);
+    mStatusSpinner.getSpinner().setVisibility((isNoMainTransaction() ||
+        a == null || a.type.equals(AccountType.CASH)) ? View.GONE : View.VISIBLE);
   }
 
   /**
@@ -1541,7 +1541,7 @@ public class ExpenseEdit extends AmountActivity implements
           updateAccount(account);
         } else {
           for (int i = 0; i < mAccounts.length; i++) {
-            if (mAccounts[i].getId() == mTransaction.accountId) {
+            if (mAccounts[i].getId().equals(mTransaction.accountId)) {
               mAccountSpinner.setSelection(i);
               break;
             }
@@ -2175,9 +2175,9 @@ public class ExpenseEdit extends AmountActivity implements
     BigDecimal exchangeRate =
         (amount != null && transferAmount != null && amount.compareTo(nullValue) != 0) ?
             transferAmount.divide(amount, EXCHANGE_RATE_FRACTION_DIGITS, RoundingMode.DOWN) : nullValue;
-    BigDecimal inverseExchangeRate = exchangeRate.compareTo(nullValue) != 0 ?
-        new BigDecimal(1).divide(exchangeRate, EXCHANGE_RATE_FRACTION_DIGITS, RoundingMode.DOWN) :
-        nullValue;
+    BigDecimal inverseExchangeRate =
+        (amount != null && transferAmount != null && transferAmount.compareTo(nullValue) != 0) ?
+            amount.divide(transferAmount, EXCHANGE_RATE_FRACTION_DIGITS, RoundingMode.DOWN) : nullValue;
     mExchangeRate1Text.setAmount(exchangeRate);
     mExchangeRate2Text.setAmount(inverseExchangeRate);
   }

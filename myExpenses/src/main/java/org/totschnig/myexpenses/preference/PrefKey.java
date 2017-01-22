@@ -44,7 +44,6 @@ public enum PrefKey  {
   APP_DIR(R.string.pref_app_dir_key),
   CATEGORY_CONTRIB(R.string.pref_category_contrib_key),
   CATEGORY_MANAGE(R.string.pref_category_manage_key),
-  CATEGORY_ADVANCED(R.string.pref_category_advanced_key),
   ACCOUNT_GROUPING(R.string.pref_account_grouping_key),
   PLANNER_CALENDAR_PATH("planner_calendar_path"),
   CURRENT_VERSION("currentversion"),
@@ -75,7 +74,9 @@ public enum PrefKey  {
   LICENSE_RETRY_COUNT("retryCount"),
   LICENSE_INITIAL_TIMESTAMP("licenseInitialTimeStamp"),
   INTERSTITIAL_LAST_SHOWN("interstitialLastShown"),
-  ENTRIES_CREATED_SINCE_LAST_INTERSTITIAL("entriesCreatedSinceLastInterstitial");
+  ENTRIES_CREATED_SINCE_LAST_INTERSTITIAL("entriesCreatedSinceLastInterstitial"),
+  NEW_ACCOUNT_ENABLED("new_account_enabled"),
+  SYNC_FREQUCENCY(R.string.pref_sync_frequency_key);
 
   private int resId = 0;
   private String key = null;
@@ -89,8 +90,7 @@ public enum PrefKey  {
   }
 
   public void putString(String value) {
-    SharedPreferencesCompat.apply(MyApplication.getInstance().getSettings().edit().putString(getKey(),
-        value));
+    MyApplication.getInstance().getSettings().edit().putString(getKey(), value).apply();
   }
 
   public boolean getBoolean(boolean defValue) {
@@ -98,8 +98,7 @@ public enum PrefKey  {
   }
 
   public void putBoolean(boolean value) {
-    SharedPreferencesCompat.apply(MyApplication.getInstance().getSettings().edit().putBoolean(getKey(),
-        value));
+    MyApplication.getInstance().getSettings().edit().putBoolean(getKey(), value).apply();
   }
 
   public int getInt(int defValue) {
@@ -107,8 +106,7 @@ public enum PrefKey  {
   }
 
   public void putInt(int value) {
-    SharedPreferencesCompat.apply(MyApplication.getInstance().getSettings().edit().putInt(getKey(),
-        value));
+    MyApplication.getInstance().getSettings().edit().putInt(getKey(), value).apply();
   }
 
   public long getLong(long defValue) {
@@ -116,12 +114,11 @@ public enum PrefKey  {
   }
 
   public void putLong(long value) {
-    SharedPreferencesCompat.apply(MyApplication.getInstance().getSettings().edit().putLong(getKey(),
-        value));
+    MyApplication.getInstance().getSettings().edit().putLong(getKey(), value).apply();
   }
 
   public void remove() {
-    SharedPreferencesCompat.apply(MyApplication.getInstance().getSettings().edit().remove(getKey()));
+    MyApplication.getInstance().getSettings().edit().remove(getKey()).apply();
   }
 
   public boolean isSet() {

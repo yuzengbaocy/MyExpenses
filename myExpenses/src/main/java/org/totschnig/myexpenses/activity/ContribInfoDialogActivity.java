@@ -1,6 +1,10 @@
 package org.totschnig.myexpenses.activity;
 
-import java.util.UUID;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.util.Log;
+import android.widget.Toast;
 
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
@@ -8,22 +12,18 @@ import org.onepf.oms.appstore.googleUtils.IabResult;
 import org.onepf.oms.appstore.googleUtils.Purchase;
 import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
-import org.totschnig.myexpenses.contrib.Config;
 import org.totschnig.myexpenses.R;
-import org.totschnig.myexpenses.preference.PrefKey;
+import org.totschnig.myexpenses.contrib.Config;
 import org.totschnig.myexpenses.dialog.ContribDialogFragment;
 import org.totschnig.myexpenses.dialog.ContribInfoDialogFragment;
 import org.totschnig.myexpenses.dialog.MessageDialogFragment.MessageDialogListener;
 import org.totschnig.myexpenses.model.ContribFeature;
+import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.util.AcraHelper;
 import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
 import org.totschnig.myexpenses.util.Utils;
 
-import android.content.Intent;
-import android.net.Uri;
-import android.os.Bundle;
-import android.util.Log;
-import android.widget.Toast;
+import java.util.UUID;
 
 public class ContribInfoDialogActivity extends ProtectedFragmentActivity
     implements MessageDialogListener {
@@ -191,17 +191,17 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
 
   @Override
   public void onMessageDialogDismissOrCancel() {
-    finish();
+    finish(true);
   }
 
-  @Override
-  public void finish() {
+  public void finish(boolean canceled) {
     final ContribFeature feature = (ContribFeature) getIntent().getSerializableExtra(KEY_FEATURE);
     if (feature != null) {
+      int usagesLeft = feature.usagesLeft();
       Intent i = new Intent();
       i.putExtra(KEY_FEATURE, feature);
       i.putExtra(KEY_TAG, getIntent().getSerializableExtra(KEY_TAG));
-      if (feature.hasAccess() || feature.usagesLeft() > 0) {
+      if (feature.hasAccess() || (!canceled && usagesLeft > 0)) {
         setResult(RESULT_OK, i);
       } else {
         setResult(RESULT_CANCELED, i);
@@ -221,7 +221,7 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
       // not handled, so handle it ourselves (here's where you'd
       // perform any handling of activity results not related to in-app
       // billing...
-      finish();
+      finish(false);
     } else {
       Log.d(tag, "onActivityResult handled by IABUtil.");
     }

@@ -16,10 +16,13 @@
 package org.totschnig.myexpenses.activity;
 
 import android.Manifest;
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.annotation.TargetApi;
 import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -57,6 +60,9 @@ import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.annimon.stream.Collectors;
+import com.annimon.stream.Stream;
+
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.dialog.DialogUtils;
@@ -74,6 +80,9 @@ import org.totschnig.myexpenses.preference.TimePreferenceDialogFragmentCompat;
 import org.totschnig.myexpenses.provider.DatabaseConstants;
 import org.totschnig.myexpenses.provider.TransactionProvider;
 import org.totschnig.myexpenses.service.DailyAutoBackupScheduler;
+import org.totschnig.myexpenses.sync.GenericAccountService;
+import org.totschnig.myexpenses.sync.ServiceLoader;
+import org.totschnig.myexpenses.sync.SyncBackendProviderFactory;
 import org.totschnig.myexpenses.ui.PreferenceDividerItemDecoration;
 import org.totschnig.myexpenses.util.AcraHelper;
 import org.totschnig.myexpenses.util.FileUtils;
@@ -89,6 +98,8 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Calendar;
 import java.util.Locale;
+
+import static org.totschnig.myexpenses.sync.GenericAccountService.HOUR_IN_SECONDS;
 
 /**
  * Present references screen defined in Layout file
@@ -223,6 +234,12 @@ public class MyPreferenceActivity extends ProtectedFragmentActivity implements
       CommonCommands.dispatchCommand(this, R.id.VERIFY_LICENCE_COMMAND, null);
       getFragment().setProtectionDependentsState();
       getFragment().configureContribPrefs();
+    } else if (key.equals(PrefKey.SYNC_FREQUCENCY.getKey())) {
+      AccountManager accountManager = (AccountManager) getSystemService(ACCOUNT_SERVICE);
+      for (Account account : accountManager.getAccountsByType(GenericAccountService.ACCOUNT_TYPE)) {
+        ContentResolver.addPeriodicSync(account, TransactionProvider.AUTHORITY, Bundle.EMPTY,
+            PrefKey.SYNC_FREQUCENCY.getInt(GenericAccountService.DEFAULT_SYNC_FREQUENCY_HOURS) * HOUR_IN_SECONDS);
+      }
     }
   }
 
@@ -318,34 +335,31 @@ public class MyPreferenceActivity extends ProtectedFragmentActivity implements
       }
     }
 
-    Preference.OnPreferenceClickListener homeScreenShortcutPrefClickHandler =
-        new Preference.OnPreferenceClickListener() {
-          @Override
-          public boolean onPreferenceClick(Preference preference) {
-            Bundle extras = new Bundle();
-            extras.putBoolean(AbstractWidget.EXTRA_START_FROM_WIDGET, true);
-            extras.putBoolean(AbstractWidget.EXTRA_START_FROM_WIDGET_DATA_ENTRY, true);
-            int nameId = 0, iconId = 0;
-            if (preference.getKey().equals(PrefKey.SHORTCUT_CREATE_TRANSACTION.getKey())) {
-              nameId = R.string.transaction;
-              iconId = R.drawable.shortcut_create_transaction_icon;
-            }
-            if (preference.getKey().equals(PrefKey.SHORTCUT_CREATE_TRANSFER.getKey())) {
-              extras.putInt(MyApplication.KEY_OPERATION_TYPE, MyExpenses.TYPE_TRANSFER);
-              nameId = R.string.transfer;
-              iconId = R.drawable.shortcut_create_transfer_icon;
-            }
-            if (preference.getKey().equals(PrefKey.SHORTCUT_CREATE_SPLIT.getKey())) {
-              extras.putInt(MyApplication.KEY_OPERATION_TYPE, MyExpenses.TYPE_SPLIT);
-              nameId = R.string.split_transaction;
-              iconId = R.drawable.shortcut_create_split_icon;
-            }
-            if (nameId != 0) {
-              addShortcut(".activity.ExpenseEdit", nameId, iconId, extras);
-              return true;
-            }
-            return false;
+    private Preference.OnPreferenceClickListener homeScreenShortcutPrefClickHandler =
+        preference -> {
+          Bundle extras = new Bundle();
+          extras.putBoolean(AbstractWidget.EXTRA_START_FROM_WIDGET, true);
+          extras.putBoolean(AbstractWidget.EXTRA_START_FROM_WIDGET_DATA_ENTRY, true);
+          int nameId = 0, iconId = 0;
+          if (preference.getKey().equals(PrefKey.SHORTCUT_CREATE_TRANSACTION.getKey())) {
+            nameId = R.string.transaction;
+            iconId = R.drawable.shortcut_create_transaction_icon;
           }
+          if (preference.getKey().equals(PrefKey.SHORTCUT_CREATE_TRANSFER.getKey())) {
+            extras.putInt(MyApplication.KEY_OPERATION_TYPE, MyExpenses.TYPE_TRANSFER);
+            nameId = R.string.transfer;
+            iconId = R.drawable.shortcut_create_transfer_icon;
+          }
+          if (preference.getKey().equals(PrefKey.SHORTCUT_CREATE_SPLIT.getKey())) {
+            extras.putInt(MyApplication.KEY_OPERATION_TYPE, MyExpenses.TYPE_SPLIT);
+            nameId = R.string.split_transaction;
+            iconId = R.drawable.shortcut_create_split_icon;
+          }
+          if (nameId != 0) {
+            addShortcut(".activity.ExpenseEdit", nameId, iconId, extras);
+            return true;
+          }
+          return false;
         };
 
     @Override
@@ -371,10 +385,6 @@ public class MyPreferenceActivity extends ProtectedFragmentActivity implements
         findPreference(PrefKey.RATE.getKey())
             .setOnPreferenceClickListener(this);
 
-        pref = findPreference(PrefKey.ENTER_LICENCE.getKey());
-        if (pref != null) //does not exist in Play Store version
-          pref.setOnPreferenceChangeListener(this);
-
         pref = findPreference(PrefKey.CUSTOM_DECIMAL_FORMAT.getKey());
         pref.setOnPreferenceChangeListener(this);
         if (PrefKey.CUSTOM_DECIMAL_FORMAT.getString("").equals("")) {
@@ -397,6 +407,13 @@ public class MyPreferenceActivity extends ProtectedFragmentActivity implements
         pref.setSummary(getString(R.string.pref_import_summary, "CSV"));
         pref.setTitle(getString(R.string.pref_import_title, "CSV"));
         pref.setOnPreferenceClickListener(this);
+
+        findPreference(getString(R.string.pref_manage_sync_backends_key)).setSummary(
+            getString(R.string.pref_manage_sync_backends_summary,
+                Stream.of(ServiceLoader.load())
+                    .map(SyncBackendProviderFactory::getLabel)
+                    .collect(Collectors.joining(", "))) +
+                " " + ContribFeature.SYNCHRONIZATION.buildRequiresString(getActivity()));
 
         new AsyncTask<Void, Void, Boolean>() {
           @Override
@@ -755,16 +772,17 @@ public class MyPreferenceActivity extends ProtectedFragmentActivity implements
       if (Utils.isExternalStorageAvailable()) {
         DocumentFile appDir = Utils.getAppDir();
         if (appDir != null) {
-          if (Utils.dirExistsAndIsWritable(appDir))
+          if (Utils.dirExistsAndIsWritable(appDir)) {
             pref.setSummary(FileUtils.getPath(getActivity(), appDir.getUri()));
-          else
+          } else {
             pref.setSummary(getString(R.string.app_dir_not_accessible,
                 FileUtils.getPath(MyApplication.getInstance(), appDir.getUri())));
-          return;
+          }
         }
+      } else {
+        pref.setSummary(R.string.external_storage_unavailable);
+        pref.setEnabled(false);
       }
-      pref.setSummary(R.string.external_storage_unavailable);
-      pref.setEnabled(false);
     }
 
     // credits Financisto

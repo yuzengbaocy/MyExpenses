@@ -19,7 +19,6 @@
     <string name="pref_category_export_key">category_export</string>
     <string name="pref_category_contrib_key">category_contrib</string>
     <string name="pref_category_manage_key">category_manage</string>
-    <string name="pref_category_advanced_key">category_manage</string>
     <string name="pref_sort_order_key">sort_order</string>
     <string name="pref_categories_sort_by_usages_key">categories_sort_by_usages</string>
     <!-- legacy -->
@@ -68,6 +67,8 @@
     <string name="pref_grouping_start">grouping_start</string>
     <string name="pref_group_week_starts_key">group_week_start</string>
     <string name="pref_group_month_starts_key">group_month_start</string>
+    <string name="pref_sync_frequency_key">sync_frequency</string>
+    <string name="pref_manage_sync_backends_key">manage_sync_backends</string>
 
     <string name="help_licence_gpl">GNU General Public License version 3\nhttp://www.gnu.org/licenses/gpl.html .</string>
   <string name="help_licence_financisto">CalculatorInput, QifParser, FolderBrowser, HomeScreenWidgets, WhereFilter and AutoBackupService inspired by https://launchpad.net/financisto ,
@@ -90,6 +91,7 @@
     <string name="help_licence_picasso">Picasso from http://square.github.io/picasso/, licensed under Apache License, Version 2.0 .</string>
     <string name="help_licence_caldroid">Caldroid from https://github.com/roomorama/Caldroid, licensed under MIT License .</string>
     <string name="help_licence_icepick">Icepic from https://github.com/frankiesardo/icepick, licensed under Eclipse Public License -v 1.0 .</string>
+    <string name="help_licence_dav4android">dav4android from https://gitlab.com/bitfireAT/dav4android, licensed under GPL v3.0 .</string>
     <string name="donate_button_paypal">Paypal</string>
     <string name="donate_button_bitcoin">Bitcoin</string>
     <!-- User retrieving MyExpenses from a repository should not hit this message,
@@ -112,6 +114,7 @@
     <string name="help_ManageStaleImages_title" tools:ignore="UnusedResources">@string/pref_manage_stale_images_title</string>
     <string name="help_CsvImportActivity_title" tools:ignore="UnusedResources">@string/contrib_feature_csv_import_label</string>
     <string name="help_NavigationDrawer_title" tools:ignore="UnusedResources">@string/pref_manage_accounts_title</string>
+    <string name="help_ManageSyncBackends_title" tools:ignore="UnusedResources">@string/pref_manage_sync_backends_title</string>
     <string name="help_ExpenseEdit_plans_title">@string/help_ManageTemplates_plans_title</string>
     <string name="help_ExpenseEdit_plans_info">@string/help_ManageTemplates_plans_info</string>
     <string name="instant_plan">@string/plan</string>
@@ -135,5 +138,6 @@
     <string name="contrib_feature_security_question_label" tools:ignore="UnusedResources">@string/pref_security_question_title</string>
     <string name="vote_action_new">New</string>
     <string name="vote_action_old">Old</string>
+    <string name="contrib_feature_synchronization_label" tools:ignore="UnusedResources">@string/synchronization</string>
 
 </resources>

@@ -26,6 +26,15 @@
         android:name="org.totschnig.myexpenses.UNLOCK_PREMIUM"
         android:protectionLevel="signature" />
 
+    <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
+    <uses-permission
+        android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS"/>
+    <uses-permission
+        android:name="android.permission.READ_SYNC_SETTINGS"/>
+    <uses-permission
+        android:name="android.permission.WRITE_SYNC_SETTINGS"/>
+    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="org.totschnig.myexpenses.UNLOCK_PREMIUM" />
     <uses-permission android:name="android.permission.WRITE_CALENDAR" />
@@ -41,7 +50,7 @@
     <uses-sdk tools:overrideLibrary="android.support.v14.preference,com.facebook.ads" />
 
     <application
-        tools:ignore="UnusedAttribute"
+        tools:replace="android:label"
         android:name="org.totschnig.myexpenses.MyApplication"
         android:icon="@mipmap/ic_myexpenses"
         android:label="${appName}"
@@ -220,10 +229,20 @@
         <activity
             android:name=".activity.ContribInfoDialogActivity"
             android:theme="@style/Theme.AppCompat.Light.Dialog" />
+
         <activity android:name=".activity.ManageCurrencies"
                   android:theme="@style/Theme.AppCompat.Light.DialogWhenLarge">
             <intent-filter>
                 <action android:name="myexpenses.intent.manage.currencies" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".activity.ManageSyncBackends"
+                  android:theme="@style/Theme.AppCompat.Light.DialogWhenLarge" >
+            <intent-filter>
+                <action android:name="myexpenses.intent.manage.sync_backends" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
@@ -240,6 +259,7 @@
         <provider
             android:name=".provider.TransactionProvider"
             android:authorities="${applicationId}"
+            android:syncable="true"
             android:exported="false" />
 
         <provider
@@ -257,7 +277,7 @@
             android:name=".provider.CalendarProviderProxy"
             android:exported="false" />
 
-        <service android:name=".service.PlanExecutor" />
+        <service android:name=".service.PlanExecutor" android:exported="${debug}" />
 
         <service android:name=".service.PlanNotificationClickHandler" />
 
@@ -268,16 +288,39 @@
             </intent-filter>
         </service>
 
-        <receiver android:name=".service.ScheduledAlarmReceiver" >
+        <service
+            android:exported="false"
+            android:name=".sync.GenericAccountService">
+            <intent-filter>
+                <action android:name="android.accounts.AccountAuthenticator"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.accounts.AccountAuthenticator"
+                android:resource="@xml/authenticator" />
+        </service>
+
+        <service
+            android:name=".sync.SyncService"
+            android:exported="true"
+            android:process=":sync">
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter"/>
+            </intent-filter>
+            <meta-data android:name="android.content.SyncAdapter"
+                       android:resource="@xml/sync_adapter" />
+        </service>
+
+        <receiver android:name=".service.GenericAlarmReceiver" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="org.totschnig.myexpenses.SCHEDULED_BACKUP" />
+                <action android:name="android.accounts.LOGIN_ACCOUNTS_CHANGED" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.PACKAGE_REPLACED" />
 
                 <data
-                    android:path="org.toschnig.myexpenses"
+                    android:path="org.totschnig.myexpenses"
                     android:scheme="package" />
             </intent-filter>
         </receiver>

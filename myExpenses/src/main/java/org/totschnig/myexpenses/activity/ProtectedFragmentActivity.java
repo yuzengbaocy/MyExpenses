@@ -16,6 +16,7 @@
 package org.totschnig.myexpenses.activity;
 
 import android.Manifest;
+import android.accounts.AccountManager;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
@@ -48,6 +49,7 @@ import android.widget.Toast;
 
 import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
+import org.totschnig.myexpenses.dialog.ConfirmationDialogFragment;
 import org.totschnig.myexpenses.dialog.TransactionDetailFragment;
 import org.totschnig.myexpenses.model.Transaction;
 import org.totschnig.myexpenses.preference.PrefKey;
@@ -59,16 +61,20 @@ import org.totschnig.myexpenses.model.ContribFeature;
 import org.totschnig.myexpenses.model.Model;
 import org.totschnig.myexpenses.task.TaskExecutionFragment;
 import org.totschnig.myexpenses.util.AcraHelper;
+import org.totschnig.myexpenses.util.Result;
 import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.widget.AbstractWidget;
 
 import java.io.Serializable;
+
+import static org.totschnig.myexpenses.task.TaskExecutionFragment.TASK_CREATE_SYNC_ACCOUNT;
 
 /**
  * @author Michael Totschnig
  */
 public abstract class ProtectedFragmentActivity extends AppCompatActivity
     implements MessageDialogListener, OnSharedPreferenceChangeListener,
+    ConfirmationDialogFragment.ConfirmationDialogListener,
     TaskExecutionFragment.TaskCallbacks, DbWriteFragment.TaskCallbacks {
   public static final int CALCULATOR_REQUEST = 0;
   public static final int EDIT_TRANSACTION_REQUEST = 1;
@@ -85,6 +91,7 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
   public static final int CONTRIB_REQUEST = 13;
   public static final int PICTURE_REQUEST_CODE = 14;
   public static final int IMPORT_FILENAME_REQUESTCODE = 15;
+  public static final int SYNC_BACKEND_SETUP_REQUEST = 16;
   public static final String SAVE_TAG = "SAVE_TASK";
   public static final String SORT_ORDER_USAGES = "USAGES";
   public static final String SORT_ORDER_LAST_USED = "LAST_USED";
@@ -281,8 +288,8 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
       case TaskExecutionFragment.TASK_DELETE_PAYEES:
       case TaskExecutionFragment.TASK_DELETE_TEMPLATES:
       case TaskExecutionFragment.TASK_UNDELETE_TRANSACTION:
-        Boolean success = (Boolean) o;
-        if (!success) {
+        Result result = (Result) o;
+        if (!result.success) {
           Toast.makeText(this,
               "There was an error deleting the object. Please contact support@myexenses.mobi !",
               Toast.LENGTH_LONG).show();
@@ -449,5 +456,31 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
           new String[]{Manifest.permission.WRITE_CALENDAR},
           ProtectionDelegate.PERMISSIONS_REQUEST_WRITE_CALENDAR);
     }
+  }
+
+
+  protected void createAccount(String accountName, String password, Bundle bundle) {
+    Bundle args = new Bundle();
+    args.putString(AccountManager.KEY_ACCOUNT_NAME, accountName);
+    args.putString(AccountManager.KEY_PASSWORD, password);
+    args.putParcelable(AccountManager.KEY_USERDATA, bundle);
+    getSupportFragmentManager()
+        .beginTransaction()
+        .add(TaskExecutionFragment.newInstanceWithBundle(args, TASK_CREATE_SYNC_ACCOUNT), ProtectionDelegate.ASYNC_TAG)
+        .commit();
+  }
+
+  @Override
+  public void onPositive(Bundle args) {
+    dispatchCommand(args.getInt(ConfirmationDialogFragment.KEY_COMMAND_POSITIVE), null);
+  }
+
+  @Override
+  public void onNegative(Bundle args) {
+  }
+
+  @Override
+  public void onDismissOrCancel(Bundle args) {
+
   }
 }
