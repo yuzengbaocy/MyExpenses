@@ -256,6 +256,8 @@
             </intent-filter>
         </service>
 
+        <activity android:name=".activity.DriveSetupActivity" />
+
         <provider
             android:name=".provider.TransactionProvider"
             android:authorities="${applicationId}"
