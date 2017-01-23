@@ -31,6 +31,8 @@ import com.google.android.gms.drive.DriveId;
 import com.google.android.gms.drive.Metadata;
 import com.google.android.gms.drive.OpenFileActivityBuilder;
 
+import org.totschnig.myexpenses.R;
+import org.totschnig.myexpenses.sync.GoogleDriveBackendProvider;
 import org.totschnig.myexpenses.sync.GoogleDriveBackendProviderFactory;
 
 import static org.totschnig.myexpenses.sync.GenericAccountService.KEY_SYNC_PROVIDER_URL;
@@ -133,10 +135,15 @@ public class DriveSetupActivity extends ProtectedFragmentActivity implements
           .setResultCallback(result -> {
             if (result.getStatus().isSuccess()) {
               Metadata metadata = result.getMetadata();
-              Bundle bundle = new Bundle(1);
-              bundle.putString(KEY_SYNC_PROVIDER_URL, metadata.getDriveId().getResourceId());
-              createAccount(GoogleDriveBackendProviderFactory.LABEL + " - " + metadata.getTitle(),
-                  null, bundle);
+              if (metadata.getCustomProperties().containsKey(GoogleDriveBackendProvider.ACCOUNT_METADATA_UUID_KEY)) {
+                showMessage(getString(R.string.warning_synchronization_select_parent));
+                finish();
+              } else {
+                Bundle bundle = new Bundle(1);
+                bundle.putString(KEY_SYNC_PROVIDER_URL, metadata.getDriveId().getResourceId());
+                createAccount(GoogleDriveBackendProviderFactory.LABEL + " - " + metadata.getTitle(),
+                    null, bundle);
+              }
 
             } else {
               showMessage("Problem while trying to fetch metadata");

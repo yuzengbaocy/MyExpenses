@@ -49,7 +49,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
       new CustomPropertyKey("accountMetadataCurrency", CustomPropertyKey.PRIVATE);
   private static final CustomPropertyKey ACCOUNT_METADATA_COLOR_KEY =
       new CustomPropertyKey("accountMetadataColor", CustomPropertyKey.PRIVATE);
-  private static final CustomPropertyKey ACCOUNT_METADATA_UUID_KEY =
+  public static final CustomPropertyKey ACCOUNT_METADATA_UUID_KEY =
       new CustomPropertyKey("accountMetadataUuid", CustomPropertyKey.PRIVATE);
   private static final CustomPropertyKey ACCOUNT_METADATA_OPENING_BALANCE_KEY =
       new CustomPropertyKey("accountMetadataOpeningBalance", CustomPropertyKey.PRIVATE);
