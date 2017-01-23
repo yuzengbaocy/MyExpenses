@@ -5,12 +5,14 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.webkit.MimeTypeMap;
 
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveApi;
 import com.google.android.gms.drive.DriveContents;
@@ -58,6 +60,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   private static final CustomPropertyKey LOCK_TOKEN_KEY =
       new CustomPropertyKey(KEY_LOCK_TOKEN, CustomPropertyKey.PRIVATE);
   private static final long LOCK_TIMEOUT = BuildConfig.DEBUG ? 60 * 1000 : 30 * 60 * 1000;
+  private static final String TAG = GoogleDriveBackendProvider.class.getSimpleName();
   private String folderId;
   private DriveFolder baseFolder, accountFolder;
 
@@ -75,9 +78,19 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
 
   @Override
   public boolean setUp() {
+   return setUp(true);
+  }
+
+  private boolean setUp(boolean requireSync) {
     if (googleApiClient.blockingConnect().isSuccess()) {
-      Drive.DriveApi.requestSync(googleApiClient).await();
-      return true;
+      Status status = Drive.DriveApi.requestSync(googleApiClient).await();
+      if (!status.isSuccess()) {
+        Log.e(TAG, "Sync failed with code " + status.getStatusCode());
+        return !requireSync;
+      } else {
+        Log.i(TAG, "Sync succeeded");
+        return true;
+      }
     }
     return false;
   }
@@ -253,7 +266,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   @Override
   public List<AccountMetaData> getRemoteAccountList() throws IOException {
     List<AccountMetaData> result = null;
-    if (setUp()) {
+    if (setUp(false)) {
       if (requireBaseFolder()) {
         MetadataBuffer metadataBuffer = baseFolder.listChildren(googleApiClient).await().getMetadataBuffer();
         result = Stream.of(metadataBuffer)

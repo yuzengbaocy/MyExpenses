@@ -80,3 +80,5 @@
 -keep public class com.google.ads.** {
    public *;
 }
+
+-keep class org.totschnig.myexpenses.sync.GoogleDriveBackendProviderFactory
