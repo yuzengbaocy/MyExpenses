@@ -149,8 +149,8 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
 
 
   @Override
-  void saveFileContents(String fileName, String fileContents) throws IOException {
-    saveBytes(fileName, fileContents.getBytes(), MIMETYPE_JSON);
+  void saveFileContents(String fileName, String fileContents, String mimeType) throws IOException {
+    saveBytes(fileName, fileContents.getBytes(), mimeType);
   }
 
   private void saveBytes(String fileName, byte[] contents, String mimeType) throws IOException {
@@ -342,6 +342,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
       DriveFolder.DriveFolderResult driveFolderResult = baseFolder.createFolder(googleApiClient, changeSet).await();
       if (driveFolderResult.getStatus().isSuccess()) {
         accountFolder = driveFolderResult.getDriveFolder();
+        createWarningFile();
         result = true;
       }
     }
