@@ -455,7 +455,8 @@ public class Transaction extends Model {
   public Uri save() {
     Uri uri;
     try {
-      ContentProviderResult[] result = cr().applyBatch(TransactionProvider.AUTHORITY, buildSaveOperations(0, -1, false));
+      ContentProviderResult[] result = cr().applyBatch(TransactionProvider.AUTHORITY,
+          buildSaveOperations(0, -1, false));
       if (getId() == 0) {
         //we need to find a uri, otherwise we would crash. Need to handle?
         uri = result[0].uri;
@@ -521,7 +522,7 @@ public class Transaction extends Model {
     ContentValues initialValues = buildInitialValues();
     if (getId() == 0) {
       //if transaction is added via sync adapter uuid is already set
-      initialValues.put(KEY_UUID, android.text.TextUtils.isEmpty(uuid) ? generateUuid() : uuid);
+      initialValues.put(KEY_UUID, requireUuid());
       ContentProviderOperation.Builder builder = ContentProviderOperation.newInsert(uri).withValues(initialValues);
       if (parentOffset != -1) {
         builder.withValueBackReference(KEY_PARENTID, parentOffset);
@@ -635,9 +636,8 @@ public class Transaction extends Model {
 
   public Uri saveAsNew() {
     setId(0L);
-    setDate(new Date());
-    Uri result = save();
-    return result;
+    uuid = null;
+    return save();
   }
 
   /**

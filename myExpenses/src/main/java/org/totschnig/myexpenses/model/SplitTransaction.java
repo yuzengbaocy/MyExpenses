@@ -23,6 +23,7 @@ import android.net.Uri;
 import org.totschnig.myexpenses.provider.DatabaseConstants;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_DATE;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_PARENTID;
@@ -40,6 +41,7 @@ public class SplitTransaction extends Transaction {
   private String PART_OR_PEER_SELECT = "(" + KEY_PARENTID + "= ? OR " + KEY_TRANSFER_PEER
       + " IN (SELECT " + KEY_ROWID + " FROM " + TABLE_TRANSACTIONS + " where "
       + KEY_PARENTID + " = ?))";
+  private boolean inEditState = false;
 
   public SplitTransaction(long accountId, Long amount) {
     super(accountId, amount);
@@ -62,7 +64,7 @@ public class SplitTransaction extends Transaction {
 
   /**
    * @param accountId if account no longer exists {@link Account#getInstanceFromDb(long) is called with 0}
-   * @param forEdit   if true transaction is immediately persisted to DB in uncommited state
+   * @param forEdit   if true transaction is immediately persisted to DB in uncommitted state
    * @return new SplitTransactionw with Account set to accountId
    */
   public static SplitTransaction getNewInstance(long accountId, boolean forEdit) {
@@ -84,11 +86,14 @@ public class SplitTransaction extends Transaction {
     if (status == STATUS_UNCOMMITTED) {
       ContribFeature.SPLIT_TRANSACTION.recordUsage();
     }
-    return super.save();
+    Uri uri = super.save();
+    inEditState = false;
+    return uri;
   }
 
   public void persistForEdit() {
     super.save();
+    inEditState = true;
   }
 
   @Override
@@ -97,8 +102,8 @@ public class SplitTransaction extends Transaction {
     Uri uri = getUriForSave(callerIsSyncAdapter);
     if (getId() != 0) {
       String idStr = String.valueOf(getId());
-      ContentValues statusValues = new ContentValues();
-
+      if (inEditState) {
+        ContentValues statusValues = new ContentValues();
         ops.add(ContentProviderOperation.newDelete(uri).withSelection(
             PART_OR_PEER_SELECT + "  AND " + KEY_STATUS + " != ?",
             new String[]{idStr, idStr, String.valueOf(STATUS_UNCOMMITTED)}).build());
@@ -113,6 +118,7 @@ public class SplitTransaction extends Transaction {
         ops.add(ContentProviderOperation.newUpdate(uri).withValues(statusValues).withSelection(
             KEY_STATUS + " = ? AND " + PART_OR_PEER_SELECT,
             new String[]{String.valueOf(STATUS_UNCOMMITTED), idStr, idStr}).build());
+      }
 
       //make sure that parts have the same date as their parent,
       //otherwise they might be incorrectly counted in groups
@@ -133,6 +139,7 @@ public class SplitTransaction extends Transaction {
     Long oldId = getId();
     if (clone) {
       status = STATUS_UNCOMMITTED;
+      setDate(new Date());
       super.saveAsNew();
     }
     String idStr = String.valueOf(oldId);
@@ -149,6 +156,7 @@ public class SplitTransaction extends Transaction {
       c.moveToNext();
     }
     c.close();
+    inEditState = true;
   }
 
   /**
