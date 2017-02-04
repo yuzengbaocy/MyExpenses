@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<resources>
+  <string name="vote_intro">Nire gastuak ikono berria izango du. Emaguzu zure iritzia mesedez oraingo zirriborroari buruz nahiago duzun ikonoan klik eginez.</string>
+  <string name="vote_cancel">Berdin dit edo ez dut esan nahi</string>
+  <string name="vote_outro">Zure botoa gorde da. Eskerrik asko parte hartzeagatik.</string>
+</resources>

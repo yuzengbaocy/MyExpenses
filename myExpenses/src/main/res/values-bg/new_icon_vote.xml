@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<resources>
+  <string name="vote_intro">Моите разходи ще получи нова икона. Моля, кажете ни мнението си относно предложението, като натиснете предпочитаната от Вас икона.</string>
+  <string name="vote_cancel">Не се интересувам или не искам да кажа</string>
+  <string name="vote_outro">Вашият глас е отбелязан. Благодарим Ви за участието.</string>
+</resources>
