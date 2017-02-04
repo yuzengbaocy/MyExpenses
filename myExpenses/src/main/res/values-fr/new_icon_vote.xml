@@ -1,6 +1,0 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<resources>
-  <string name="vote_intro">Mes dépenses aura une nouvelle icône. S\'il vous plaît, dites-nous votre opinion sur les brouillons actuels en cliquant sur l\'icône que vous préférez.</string>
-  <string name="vote_cancel">Cela ne m\'intéresse pas ou ne veux pas le dire.</string>
-  <string name="vote_outro">Votre vote a bien été enregistré. Merci de votre participation. </string>
-</resources>

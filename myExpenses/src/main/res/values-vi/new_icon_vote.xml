@@ -1,6 +1,0 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<resources>
-  <string name="vote_intro">Chi Tiêu Của Tôi sẽ sử dụng một biểu tượng mới. Vui lòng cho chúng tôi biết ý kién của bạn bằng cách chọn biểu tượng bạn thích.</string>
-  <string name="vote_cancel">Tôi không quan tâm hoặc không muốn nói</string>
-  <string name="vote_outro">Ý kiến của bạn đã được ghi nhận. Cảm ơn bạn.</string>
-</resources>

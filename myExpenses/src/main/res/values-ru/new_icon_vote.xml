@@ -1,6 +1,0 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<resources>
-  <string name="vote_intro">Приложение Мои расходы получит новую иконку. Пожалуйста, поделитесь с нами вашим мнением о текущем эскизе, нажав на иконку, которая вам больше нравится.</string>
-  <string name="vote_cancel">Мне не важно или я не хочу говорить</string>
-  <string name="vote_outro">Ваш голос был записан. Спасибо за участие.</string>
-</resources>

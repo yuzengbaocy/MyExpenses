@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="vote_intro">My Expenses will get a new icon. Please tell us your opinion about the current draft by clicking on the icon that you prefer.</string>
-    <string name="vote_cancel">I do not care or do not want to say</string>
-    <string name="vote_outro">Your vote has been recorded. Thank you for your participation.</string>
-</resources>

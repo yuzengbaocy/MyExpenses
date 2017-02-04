@@ -1,6 +1,0 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<resources>
-  <string name="vote_intro">マイエクスペンスは、新しいアイコンになります。お好みのアイコンをクリックして、現在の案についてのご意見を私たちにお聞かせください。</string>
-  <string name="vote_cancel">私は気にしないか、回答したくありません</string>
-  <string name="vote_outro">投票が記録されました。ご参加ありがとうございました。</string>
-</resources>

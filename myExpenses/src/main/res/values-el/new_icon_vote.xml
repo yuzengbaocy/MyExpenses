@@ -1,6 +1,0 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<resources>
-  <string name="vote_intro">Το Τα έξοδά μου θα αποκτήσει νέο εικονίδιο. Μοιραστείτε μαζί μας την άποψή σας για το προσχέδιο πατώντας στο εικονίδιο που προτιμάτε</string>
-  <string name="vote_cancel">Δεν με ενδιαφέρει ή δεν θέλω να πω</string>
-  <string name="vote_outro">Η ψήφος σας έχει καταγραφεί. Σας ευχαριστούμε για την συμμετοχή</string>
-</resources>
