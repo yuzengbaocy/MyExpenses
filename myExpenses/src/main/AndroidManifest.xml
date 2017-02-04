@@ -57,7 +57,8 @@
         android:allowBackup="true"
         android:fullBackupContent="@xml/mybackupscheme"
         android:supportsRtl="true"
-        android:hardwareAccelerated="true">
+        android:hardwareAccelerated="true"
+        tools:ignore="UnusedAttribute">
 
         <activity
             android:name=".activity.MyExpenses"
