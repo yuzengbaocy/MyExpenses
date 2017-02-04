@@ -206,8 +206,6 @@
   <!--This command inverts the direction of a transfer-->
   <string name="menu_invert_transfer">반전</string>
   <string name="menu_manage_plans">템플릿과 재무 계획</string>
-  <string name="menu_manage_plans_tab_templates">템플릿</string>
-  <string name="menu_manage_plans_tab_plans">재무 계획</string>
   <string name="menu_open">열기</string>
   <string name="menu_import">가져오기</string>
   <string name="menu_print">인쇄</string>
@@ -315,6 +313,7 @@
   <string name="pref_manage_methods_title">지불 방식</string>
   <string name="pref_manage_parties_summary">구성원을 추가, 편집, 삭제하세요 (수취인/납부인).</string>
   <string name="pref_manage_parties_title">구성원</string>
+  <!--%s will be replaced with list of backends-->
   <string name="pref_more_info_dialog_summary">halcyonest
 </string>
   <!--this is empty for English and gives credit to translators in the other languages-->

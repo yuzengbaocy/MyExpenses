@@ -170,8 +170,6 @@
   <!--This command inverts the direction of a transfer-->
   <string name="menu_invert_transfer">ត្រឡប់មកវិញ</string>
   <string name="menu_manage_plans">ទិន្នន័យ​គំរូ និងផែនការ</string>
-  <string name="menu_manage_plans_tab_templates">ពុម្ព</string>
-  <string name="menu_manage_plans_tab_plans">គម្រោង</string>
   <string name="menu_open">បើក</string>
   <string name="menu_import">នាំចូល</string>
   <string name="menu_print">ព្រីន</string>
@@ -262,6 +260,7 @@
   <string name="pref_manage_methods_title">វិធីសាស្ត្រទូទាត់​ប្រាក់</string>
   <string name="pref_manage_parties_summary">បញ្ចូល កែ លុប ភាគី (អ្នក​បង់​ចំណាយ និង​អ្នក​ទទួល)។</string>
   <string name="pref_manage_parties_title">ភាគី</string>
+  <!--%s will be replaced with list of backends-->
   <string name="pref_more_info_dialog_summary">
         
     <!-- My Expenses បក​ប្រែ​ដោយ Pongsametrey SOK, http://osify.com, 2013 រួមគ្នា​​ដើម្បី​​អក្សរ​សាស្ត្រ​ខ្មែរ នៅ​កម្ពុជា --></string>
@@ -400,4 +399,5 @@
   <!--describes the state of a plan instance that has been cancelled, i.e. it has been flagged it to be skipped. Used as content description for icon in list.-->
   <!--describes the state of a plan instance that has been applied, i.e. a transaction has been entered into the database for it. Used as content description for icon in list.-->
   <!--Sort plans (recurring transactions) by the next instance-->
+  <string name="template">ទិន្ន​ន័យ​គំរូ</string>
 </resources>

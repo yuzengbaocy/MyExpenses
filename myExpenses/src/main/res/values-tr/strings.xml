@@ -209,8 +209,6 @@
   <!--This command inverts the direction of a transfer-->
   <string name="menu_invert_transfer">Ters Çevir</string>
   <string name="menu_manage_plans">Şablonlar ve planlar</string>
-  <string name="menu_manage_plans_tab_templates">Şablonlar</string>
-  <string name="menu_manage_plans_tab_plans">Planlar</string>
   <string name="menu_open">Aç</string>
   <string name="menu_import">İçe aktar</string>
   <string name="menu_print">Yazdır</string>
@@ -320,6 +318,7 @@
   <string name="pref_manage_methods_title">Ödeme metotları</string>
   <string name="pref_manage_parties_summary">Borçlu/alacaklı ekle, düzenle veya sil.</string>
   <string name="pref_manage_parties_title">Bölümler</string>
+  <!--%s will be replaced with list of backends-->
   <string name="pref_more_info_dialog_summary">Türkçe tercüme: mauron, Caner BAŞARAN</string>
   <!--this is empty for English and gives credit to translators in the other languages-->
   <string name="pref_more_info_dialog_title">Lisans &amp; Hazırlayanlar</string>
@@ -596,4 +595,5 @@
   <string name="crash_dialog_title">Harcamalarım çöktü</string>
   <string name="crash_dialog_text">Uygulamanın çıkmasının zorlanması sırasında beklenmeyen bir hata meydana geldi. Lütfen bu hatayı düzeltmemize kullanıcı verileri yollayarak yardımcı olun, tüm yapmanız gereken Tamam\'a dokunmaktır.</string>
   <string name="crash_dialog_comment_prompt">Problemle ilgili yorumlarınızı aşağıda ekleyebilirsiniz:</string>
+  <string name="template">Şablon</string>
 </resources>

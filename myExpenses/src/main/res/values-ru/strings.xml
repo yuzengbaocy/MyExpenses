@@ -213,8 +213,6 @@
   <!--This command inverts the direction of a transfer-->
   <string name="menu_invert_transfer">Инвертировать</string>
   <string name="menu_manage_plans">Шаблоны и планы</string>
-  <string name="menu_manage_plans_tab_templates">Шаблоны</string>
-  <string name="menu_manage_plans_tab_plans">Планы</string>
   <string name="menu_open">Открыть</string>
   <string name="menu_import">Импорт</string>
   <string name="menu_print">Печать</string>
@@ -327,6 +325,7 @@
   <string name="pref_manage_methods_title">Способы оплаты</string>
   <string name="pref_manage_parties_summary">Добавление, редактирование, удаление участников (плательщиков и получателей).</string>
   <string name="pref_manage_parties_title">Участники</string>
+  <!--%s will be replaced with list of backends-->
   <string name="pref_more_info_dialog_summary">
 
 Перевод на русский язык: Дмитрий Куренков, Дмитрий Стрельников</string>
@@ -491,4 +490,5 @@
   <!--describes the state of a plan instance that has been cancelled, i.e. it has been flagged it to be skipped. Used as content description for icon in list.-->
   <!--describes the state of a plan instance that has been applied, i.e. a transaction has been entered into the database for it. Used as content description for icon in list.-->
   <!--Sort plans (recurring transactions) by the next instance-->
+  <string name="template">Шаблон</string>
 </resources>

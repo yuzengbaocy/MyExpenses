@@ -178,8 +178,6 @@
   <!--This command inverts the direction of a transfer-->
   <string name="menu_invert_transfer">Inverteix</string>
   <string name="menu_manage_plans">Plantilles i planificacions</string>
-  <string name="menu_manage_plans_tab_templates">Plantilles</string>
-  <string name="menu_manage_plans_tab_plans">Planificacions</string>
   <string name="menu_import">Importació</string>
   <string name="menu_reset">Exporta i reinicia</string>
   <string name="menu_reset_all">Exporta i reinicia-ho tot</string>
@@ -260,6 +258,7 @@
   <string name="pref_manage_methods_title">Formes de pagament</string>
   <string name="pref_manage_parties_summary">Afegiu, modifiqueu i suprimiu tercers (pagadors i beneficiaris)</string>
   <string name="pref_manage_parties_title">Tercers</string>
+  <!--%s will be replaced with list of backends-->
   <string name="pref_more_info_dialog_summary">Traducció de Paco Rivière http://pacoriviere.cat</string>
   <!--this is empty for English and gives credit to translators in the other languages-->
   <string name="pref_more_info_dialog_title">Llicència i Crèdits</string>
@@ -366,4 +365,5 @@
   <!--describes the state of a plan instance that has been cancelled, i.e. it has been flagged it to be skipped. Used as content description for icon in list.-->
   <!--describes the state of a plan instance that has been applied, i.e. a transaction has been entered into the database for it. Used as content description for icon in list.-->
   <!--Sort plans (recurring transactions) by the next instance-->
+  <string name="template">Plantilla</string>
 </resources>

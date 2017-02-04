@@ -209,8 +209,6 @@
   <!--This command inverts the direction of a transfer-->
   <string name="menu_invert_transfer">Invertir</string>
   <string name="menu_manage_plans">Plantillas y planes</string>
-  <string name="menu_manage_plans_tab_templates">Plantillas</string>
-  <string name="menu_manage_plans_tab_plans">Planes</string>
   <string name="menu_open">Abierto</string>
   <string name="menu_import">Importación</string>
   <string name="menu_print">Imprimir</string>
@@ -320,6 +318,7 @@
   <string name="pref_manage_methods_title">Métodos de pago</string>
   <string name="pref_manage_parties_summary">Añadir, modificar y borrar partidos (pagador y beneficiario)</string>
   <string name="pref_manage_parties_title">Partidos</string>
+  <!--%s will be replaced with list of backends-->
   <string name="pref_more_info_dialog_summary">Traducción por Tulliver, gudrunto, christoft, Laurent Collombet y Elier Espinoza</string>
   <!--this is empty for English and gives credit to translators in the other languages-->
   <string name="pref_more_info_dialog_title">Licencia &amp; Créditos</string>
@@ -596,4 +595,5 @@
   <string name="crash_dialog_title">Mis gastos se ha estrellado</string>
   <string name="crash_dialog_text">Un error inesperado ocurrió forzar la aplicación para detener. Por favor ayúdenos a solucionar este problema enviando datos de error, todo lo que tienes que hacer es haga clic en Aceptar.</string>
   <string name="crash_dialog_comment_prompt">Puede añadir sus comentarios sobre el problema a continuación:</string>
+  <string name="template">Plantilla</string>
 </resources>
