@@ -45,6 +45,8 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   private static final String KEY_LOCK_TOKEN = "lockToken";
   private static final String KEY_OWNED_BY_US = "ownedByUs";
   private static final String KEY_TIMESTAMP = "timestamp";
+  private static final String KEY_LAST_FAILED_SYNC = "lastFailedSync";
+  private static final String KEY_SYNC_BACKOFF = "syncBackOff";
   private static final CustomPropertyKey ACCOUNT_METADATA_CURRENCY_KEY =
       new CustomPropertyKey("accountMetadataCurrency", CustomPropertyKey.PRIVATE);
   private static final CustomPropertyKey ACCOUNT_METADATA_COLOR_KEY =
@@ -68,7 +70,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   private SharedPreferences sharedPreferences;
 
   GoogleDriveBackendProvider(Context context, android.accounts.Account account, AccountManager accountManager) {
-    sharedPreferences = context.getSharedPreferences("google_drive_backend_lock", 0);
+    sharedPreferences = context.getSharedPreferences("google_drive_backend", 0);
     folderId = accountManager.getUserData(account, GenericAccountService.KEY_SYNC_PROVIDER_URL);
     googleApiClient = new GoogleApiClient.Builder(context)
         .addApi(Drive.API)
@@ -82,13 +84,24 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   }
 
   private boolean setUp(boolean requireSync) {
+    long lastFailedSync = sharedPreferences.getLong(KEY_LAST_FAILED_SYNC, 0);
+    long currentBackOff = sharedPreferences.getLong(KEY_SYNC_BACKOFF, 0);
+    long now = System.currentTimeMillis();
+    if (lastFailedSync != 0 && lastFailedSync + currentBackOff > now) {
+      Log.e(TAG, String.format("Not syncing, waiting for another %d milliseconds", lastFailedSync + currentBackOff - now));
+      return false;
+    }
     if (googleApiClient.blockingConnect().isSuccess()) {
       Status status = Drive.DriveApi.requestSync(googleApiClient).await();
       if (!status.isSuccess()) {
         Log.e(TAG, "Sync failed with code " + status.getStatusCode());
+        long newBackOff = Math.max(sharedPreferences.getLong(KEY_SYNC_BACKOFF, 5000) * 2, 3600000);
+        Log.e(TAG, String.format("Backing off for %d milliseconds ", newBackOff));
+        sharedPreferences.edit().putLong(KEY_LAST_FAILED_SYNC, now).putLong(KEY_SYNC_BACKOFF, newBackOff).apply();
         return !requireSync;
       } else {
         Log.i(TAG, "Sync succeeded");
+        sharedPreferences.edit().remove(KEY_LAST_FAILED_SYNC).remove(KEY_SYNC_BACKOFF).apply();
         return true;
       }
     }
