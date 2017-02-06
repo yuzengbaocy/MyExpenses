@@ -15,6 +15,7 @@
 package org.totschnig.myexpenses.activity;
 
 import android.accounts.AccountManager;
+import android.app.Dialog;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.IntentSender.SendIntentException;
@@ -178,7 +179,9 @@ public class DriveSetupActivity extends ProtectedFragmentActivity implements
     Log.i(TAG, "GoogleApiClient connection failed: " + result.toString());
     if (!result.hasResolution()) {
       // show the localized error dialog.
-      GoogleApiAvailability.getInstance().getErrorDialog(this, result.getErrorCode(), 0).show();
+      Dialog errorDialog = GoogleApiAvailability.getInstance().getErrorDialog(this, result.getErrorCode(), 0);
+      errorDialog.setOnDismissListener(dialog -> finish());
+      errorDialog.show();
       return;
     }
     try {
