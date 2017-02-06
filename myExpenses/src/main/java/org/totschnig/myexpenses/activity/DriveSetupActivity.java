@@ -14,6 +14,7 @@
 
 package org.totschnig.myexpenses.activity;
 
+import android.accounts.AccountManager;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.IntentSender.SendIntentException;
@@ -137,27 +138,26 @@ public class DriveSetupActivity extends ProtectedFragmentActivity implements
               Metadata metadata = result.getMetadata();
               if (metadata.getCustomProperties().containsKey(GoogleDriveBackendProvider.ACCOUNT_METADATA_UUID_KEY)) {
                 showMessage(getString(R.string.warning_synchronization_select_parent));
+                setResult(RESULT_CANCELED);
                 finish();
               } else {
+                Intent intent = new Intent();
                 Bundle bundle = new Bundle(1);
                 bundle.putString(KEY_SYNC_PROVIDER_URL, metadata.getDriveId().getResourceId());
-                createAccount(GoogleDriveBackendProviderFactory.LABEL + " - " + metadata.getTitle(),
-                    null, bundle);
+                intent.putExtra(AccountManager.KEY_USERDATA, bundle);
+                intent.putExtra(AccountManager.KEY_ACCOUNT_NAME,
+                    GoogleDriveBackendProviderFactory.LABEL + " - " + metadata.getTitle());
+                setResult(RESULT_OK, intent);
+                finish();
               }
 
             } else {
               showMessage("Problem while trying to fetch metadata");
+              setResult(RESULT_CANCELED);
               finish();
             }
           });
     }
-  }
-
-  @Override
-  public void onPostExecute(int taskId, Object o) {
-    super.onPostExecute(taskId, o);
-    setResult(RESULT_OK);
-    finish();
   }
 
   /**
