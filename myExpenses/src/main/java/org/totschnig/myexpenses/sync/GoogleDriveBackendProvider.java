@@ -95,7 +95,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
       Status status = Drive.DriveApi.requestSync(googleApiClient).await();
       if (!status.isSuccess()) {
         Log.e(TAG, "Sync failed with code " + status.getStatusCode());
-        long newBackOff = Math.max(sharedPreferences.getLong(KEY_SYNC_BACKOFF, 5000) * 2, 3600000);
+        long newBackOff = Math.min(sharedPreferences.getLong(KEY_SYNC_BACKOFF, 5000) * 2, 3600000);
         Log.e(TAG, String.format("Backing off for %d milliseconds ", newBackOff));
         sharedPreferences.edit().putLong(KEY_LAST_FAILED_SYNC, now).putLong(KEY_SYNC_BACKOFF, newBackOff).apply();
         return !requireSync;
