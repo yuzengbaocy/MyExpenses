@@ -1,6 +1,7 @@
 package org.totschnig.myexpenses.sync;
 
 import android.accounts.AccountManager;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -83,6 +84,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
    return setUp(true);
   }
 
+  @SuppressLint("CommitPrefEdits")
   private boolean setUp(boolean requireSync) {
     long lastFailedSync = sharedPreferences.getLong(KEY_LAST_FAILED_SYNC, 0);
     long currentBackOff = sharedPreferences.getLong(KEY_SYNC_BACKOFF, 0);
@@ -97,7 +99,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
         Log.e(TAG, "Sync failed with code " + status.getStatusCode());
         long newBackOff = Math.min(sharedPreferences.getLong(KEY_SYNC_BACKOFF, 5000) * 2, 3600000);
         Log.e(TAG, String.format("Backing off for %d milliseconds ", newBackOff));
-        sharedPreferences.edit().putLong(KEY_LAST_FAILED_SYNC, now).putLong(KEY_SYNC_BACKOFF, newBackOff).apply();
+        sharedPreferences.edit().putLong(KEY_LAST_FAILED_SYNC, now).putLong(KEY_SYNC_BACKOFF, newBackOff).commit();
         return !requireSync;
       } else {
         Log.i(TAG, "Sync succeeded");
