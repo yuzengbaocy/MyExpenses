@@ -943,7 +943,7 @@ public class TransactionProvider extends ContentProvider {
         } else {
           ContentValues v = new ContentValues();
           v.put(KEY_CR_STATUS, Transaction.CrStatus.VOID.name());
-          count = db.update(TABLE_TRANSACTIONS, v, WHERE_SELF_OR_DEPENDENT, new String[] {segment, segment, segment, segment});
+          count = db.update(TABLE_TRANSACTIONS, v, WHERE_SELF_OR_DEPENDENT, new String[] {segment, segment, segment});
         }
         db.setTransactionSuccessful();
       }    finally {
@@ -1072,7 +1072,7 @@ public class TransactionProvider extends ContentProvider {
       break;
     case TRANSACTION_UNDELETE:
       segment = uri.getPathSegments().get(1);
-      whereArgs = new String[] {segment,segment, segment, segment};
+      whereArgs = new String[] {segment,segment, segment};
       ContentValues v = new ContentValues();
       v.put(KEY_CR_STATUS, Transaction.CrStatus.UNRECONCILED.name());
       count = db.update(TABLE_TRANSACTIONS, v, WHERE_SELF_OR_DEPENDENT, whereArgs);
@@ -1303,11 +1303,12 @@ public class TransactionProvider extends ContentProvider {
       if ("1".equals(uri.getQueryParameter(QUERY_PARAMETER_INIT))) {
         db.beginTransaction();
         try {
-          c = db.query(TABLE_TRANSACTIONS, new String[]{KEY_ROWID}, KEY_UUID + " IS NULL", null, null, null, null);
+          c = db.query(TABLE_TRANSACTIONS, new String[]{KEY_ROWID}, KEY_UUID + " IS NULL AND " + KEY_ROWID + " < " + KEY_TRANSFER_PEER, null, null, null, null);
           if (c.moveToFirst()) {
             while (!c.isAfterLast()) {
-              db.execSQL("UPDATE " + TABLE_TRANSACTIONS + " SET " + KEY_UUID + " = ? WHERE " + KEY_ROWID + " = ?",
-                new String[] {Model.generateUuid(), c.getString(0)});
+              String idString = c.getString(0);
+              db.execSQL("UPDATE " + TABLE_TRANSACTIONS + " SET " + KEY_UUID + " = ? WHERE " + KEY_ROWID + " = ? OR " + KEY_TRANSFER_PEER + " = ?",
+                new String[] {Model.generateUuid(), idString, idString});
               c.moveToNext();
             }
           }
