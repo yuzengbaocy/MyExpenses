@@ -81,7 +81,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
 
   @Override
   public boolean setUp() {
-   return setUp(true);
+   return setUp(false);
   }
 
   @SuppressLint("CommitPrefEdits")
