@@ -28,6 +28,7 @@ import com.google.android.gms.drive.query.Filters;
 import com.google.android.gms.drive.query.Query;
 import com.google.android.gms.drive.query.SearchableField;
 
+import org.apache.commons.lang3.StringUtils;
 import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.model.Account;
@@ -350,7 +351,8 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
           .setCustomProperty(ACCOUNT_METADATA_UUID_KEY, account.uuid)
           .setCustomProperty(ACCOUNT_METADATA_COLOR_KEY, String.valueOf(account.color))
           .setCustomProperty(ACCOUNT_METADATA_CURRENCY_KEY, account.currency.getCurrencyCode())
-          .setCustomProperty(ACCOUNT_METADATA_DESCRIPTION_KEY, account.description)
+          // The total size of key string and value string of a custom property must be no more than 124 bytes (124 - ACCOUNT_METADATA_DESCRIPTION_KEY.length = 98
+          .setCustomProperty(ACCOUNT_METADATA_DESCRIPTION_KEY, StringUtils.abbreviate(account.description, 98))
           .setCustomProperty(ACCOUNT_METADATA_TYPE_KEY, account.type.name())
           .setCustomProperty(ACCOUNT_METADATA_OPENING_BALANCE_KEY, String.valueOf(account.openingBalance.getAmountMinor()))
           .build();
