@@ -6,6 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+
 import org.totschnig.myexpenses.activity.DriveSetupActivity;
 import org.totschnig.myexpenses.activity.ManageSyncBackends;
 import org.totschnig.myexpenses.activity.ProtectedFragmentActivity;
@@ -28,5 +31,12 @@ public class GoogleDriveBackendProviderFactory extends SyncBackendProviderFactor
   public void startSetup(ManageSyncBackends activity) {
     activity.startActivityForResult(new Intent(activity, DriveSetupActivity.class),
         ProtectedFragmentActivity.SYNC_BACKEND_SETUP_REQUEST);
+  }
+
+  @Override
+  public boolean isEnabled(Context context) {
+    GoogleApiAvailability googleApiAvailability = GoogleApiAvailability.getInstance();
+    int result = googleApiAvailability.isGooglePlayServicesAvailable(context);
+    return result != ConnectionResult.SERVICE_MISSING && result != ConnectionResult.SERVICE_INVALID;
   }
 }
