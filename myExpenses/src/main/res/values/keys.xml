@@ -138,6 +138,4 @@
     <string name="contrib_feature_security_question_label" tools:ignore="UnusedResources">@string/pref_security_question_title</string>
     <string name="vote_action_new">New</string>
     <string name="vote_action_old">Old</string>
-    <string name="contrib_feature_synchronization_label" tools:ignore="UnusedResources">@string/synchronization</string>
-
 </resources>
