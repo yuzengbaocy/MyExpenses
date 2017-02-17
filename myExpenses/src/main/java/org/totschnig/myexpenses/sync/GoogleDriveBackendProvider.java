@@ -35,11 +35,13 @@ import org.totschnig.myexpenses.model.Account;
 import org.totschnig.myexpenses.model.Model;
 import org.totschnig.myexpenses.sync.json.AccountMetaData;
 import org.totschnig.myexpenses.sync.json.ChangeSet;
+import org.totschnig.myexpenses.util.AcraHelper;
 import org.totschnig.myexpenses.util.FileCopyUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -346,16 +348,23 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
       accountFolder = driveFolderOptional.get();
       result = true;
     } else {
-      MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-          .setTitle(account.label)
-          .setCustomProperty(ACCOUNT_METADATA_UUID_KEY, account.uuid)
-          .setCustomProperty(ACCOUNT_METADATA_COLOR_KEY, String.valueOf(account.color))
-          .setCustomProperty(ACCOUNT_METADATA_CURRENCY_KEY, account.currency.getCurrencyCode())
-          // The total size of key string and value string of a custom property must be no more than 124 bytes (124 - ACCOUNT_METADATA_DESCRIPTION_KEY.length = 98
-          .setCustomProperty(ACCOUNT_METADATA_DESCRIPTION_KEY, StringUtils.abbreviate(account.description, 98))
-          .setCustomProperty(ACCOUNT_METADATA_TYPE_KEY, account.type.name())
-          .setCustomProperty(ACCOUNT_METADATA_OPENING_BALANCE_KEY, String.valueOf(account.openingBalance.getAmountMinor()))
-          .build();
+      MetadataChangeSet.Builder builder = new MetadataChangeSet.Builder()
+              .setTitle(account.label)
+              .setCustomProperty(ACCOUNT_METADATA_UUID_KEY, account.uuid)
+              .setCustomProperty(ACCOUNT_METADATA_COLOR_KEY, String.valueOf(account.color))
+              .setCustomProperty(ACCOUNT_METADATA_CURRENCY_KEY, account.currency.getCurrencyCode())
+              .setCustomProperty(ACCOUNT_METADATA_TYPE_KEY, account.type.name())
+              .setCustomProperty(ACCOUNT_METADATA_OPENING_BALANCE_KEY, String.valueOf(account.openingBalance.getAmountMinor()));
+      try {
+        // The total size of key string and value string of a custom property must be no more than 124 bytes (124 - ACCOUNT_METADATA_DESCRIPTION_KEY.length = 98
+        builder.setCustomProperty(ACCOUNT_METADATA_DESCRIPTION_KEY, StringUtils.abbreviate(account.description, 98));
+      } catch (IllegalArgumentException e) {
+        HashMap<String, String> customData = new HashMap<>();
+        customData.put("accountDescription", account.description);
+        customData.put("accountDescriptionAbbreviated", StringUtils.abbreviate(account.description, 98));
+        AcraHelper.report(e, customData);
+      }
+      MetadataChangeSet changeSet = builder.build();
       DriveFolder.DriveFolderResult driveFolderResult = baseFolder.createFolder(googleApiClient, changeSet).await();
       if (driveFolderResult.getStatus().isSuccess()) {
         accountFolder = driveFolderResult.getDriveFolder();
