@@ -94,7 +94,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     long now = System.currentTimeMillis();
     if (lastFailedSync != 0 && lastFailedSync + currentBackOff > now) {
       Log.e(TAG, String.format("Not syncing, waiting for another %d milliseconds", lastFailedSync + currentBackOff - now));
-      return false;
+      return !requireSync;
     }
     if (googleApiClient.blockingConnect().isSuccess()) {
       Status status = Drive.DriveApi.requestSync(googleApiClient).await();
