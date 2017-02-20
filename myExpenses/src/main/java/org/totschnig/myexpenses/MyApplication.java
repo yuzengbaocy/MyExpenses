@@ -151,7 +151,7 @@ public class MyApplication extends MultiDexApplication implements
     if (!ACRA.isACRASenderServiceProcess() && !isSyncService()) {
       // sets up mSettings
       getSettings().registerOnSharedPreferenceChangeListener(this);
-      licenceHandler.init(this);
+      licenceHandler.init();
       initPlannerInternal(60000);
       registerWidgetObservers();
     }
@@ -204,7 +204,7 @@ public class MyApplication extends MultiDexApplication implements
 
   public SharedPreferences getSettings() {
     if (mSettings == null) {
-      mSettings = instrumentationTest ? getSharedPreferences(getTestId(), Context.MODE_PRIVATE) :
+      mSettings = instrumentationTest ? getSharedPreferences(getTestId(), Context.MODE_MULTI_PROCESS) :
           PreferenceManager.getDefaultSharedPreferences(this);
     }
     return mSettings;
