@@ -1,14 +1,5 @@
 package org.totschnig.myexpenses.service;
 
-import org.totschnig.myexpenses.BuildConfig;
-import org.totschnig.myexpenses.MyApplication;
-import org.totschnig.myexpenses.R;
-import org.totschnig.myexpenses.activity.MyExpenses;
-import org.totschnig.myexpenses.preference.PrefKey;
-import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
-import org.totschnig.myexpenses.util.LicenceHandler;
-import org.totschnig.myexpenses.util.Utils;
-
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -20,6 +11,14 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.google.android.vending.licensing.PreferenceObfuscator;
+
+import org.totschnig.myexpenses.BuildConfig;
+import org.totschnig.myexpenses.MyApplication;
+import org.totschnig.myexpenses.R;
+import org.totschnig.myexpenses.activity.MyExpenses;
+import org.totschnig.myexpenses.preference.PrefKey;
+import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
+import org.totschnig.myexpenses.util.Utils;
 
 /**
  * This handler is used in two different scenarios:
@@ -58,9 +57,10 @@ public class UnlockHandler extends Handler {
   private void doUnlock() {
     MyApplication app = MyApplication.getInstance();
     PreferenceObfuscator mPreferences = InappPurchaseLicenceHandler.getLicenseStatusPrefs(app);
-    ((InappPurchaseLicenceHandler) app.getLicenceHandler()).setContribStatus(InappPurchaseLicenceHandler.STATUS_ENABLED_LEGACY_SECOND);
+    InappPurchaseLicenceHandler licenceHandler = (InappPurchaseLicenceHandler) app.getLicenceHandler();
     mPreferences.putString(PrefKey.LICENSE_STATUS.getKey(), String.valueOf(InappPurchaseLicenceHandler.STATUS_ENABLED_LEGACY_SECOND));
     mPreferences.commit();
+    licenceHandler.refresh(true);
     showNotif(Utils.concatResStrings(app, " ",
             R.string.licence_validation_premium, R.string.thank_you));
   }

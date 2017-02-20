@@ -27,7 +27,7 @@ public class AppModule {
   @Provides
   @Singleton
   LicenceHandler providesLicenceHandler() {
-    return new InappPurchaseLicenceHandler();
+    return new InappPurchaseLicenceHandler(application);
   }
 
   @Provides

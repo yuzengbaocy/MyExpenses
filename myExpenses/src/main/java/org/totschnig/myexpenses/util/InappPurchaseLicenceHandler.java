@@ -1,16 +1,5 @@
 package org.totschnig.myexpenses.util;
 
-import java.util.ArrayList;
-
-import org.onepf.oms.Appstore;
-import org.onepf.oms.OpenIabHelper;
-import org.onepf.oms.appstore.AmazonAppstore;
-import org.totschnig.myexpenses.BuildConfig;
-import org.totschnig.myexpenses.MyApplication;
-import org.totschnig.myexpenses.contrib.Config;
-import org.totschnig.myexpenses.model.Template;
-import org.totschnig.myexpenses.preference.PrefKey;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
@@ -20,11 +9,22 @@ import android.util.Log;
 import com.google.android.vending.licensing.AESObfuscator;
 import com.google.android.vending.licensing.PreferenceObfuscator;
 
+import org.onepf.oms.Appstore;
+import org.onepf.oms.OpenIabHelper;
+import org.onepf.oms.appstore.AmazonAppstore;
+import org.totschnig.myexpenses.BuildConfig;
+import org.totschnig.myexpenses.MyApplication;
+import org.totschnig.myexpenses.contrib.Config;
+import org.totschnig.myexpenses.preference.PrefKey;
+
+import java.util.ArrayList;
+
 public class InappPurchaseLicenceHandler extends LicenceHandler {
 
   private String contribStatus = InappPurchaseLicenceHandler.STATUS_DISABLED;
   public static boolean HAS_EXTENDED = !BuildConfig.FLAVOR.equals("blackberry");
   public static boolean IS_CHROMIUM = Build.BRAND.equals("chromium");
+  private static final String TAG = InappPurchaseLicenceHandler.class.getSimpleName();
 
   public static final long REFUND_WINDOW = 172800000L;
   public static String STATUS_DISABLED = "0";
@@ -57,11 +57,18 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
   public static String STATUS_EXTENDED_TEMPORARY = "6";
 
   public static String STATUS_EXTENDED_PERMANENT = "7";
+  private Context context;
+
+  public InappPurchaseLicenceHandler(MyApplication application) {
+    super();
+    context = application;
+  }
 
   public static PreferenceObfuscator getLicenseStatusPrefs(Context ctx) {
     String PREFS_FILE = "license_status";
     String deviceId = Secure.getString(ctx.getContentResolver(), Secure.ANDROID_ID);
-    SharedPreferences sp = ctx.getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE);
+    //TODO move to content provider, eventually https://github.com/grandcentrix/tray
+    SharedPreferences sp = ctx.getSharedPreferences(PREFS_FILE, Context.MODE_MULTI_PROCESS);
     byte[] SALT = new byte[] {
         -1, -124, -4, -59, -52, 1, -97, -32, 38, 59, 64, 13, 45, -104, -3, -92, -56, -49, 65, -25
     };
@@ -94,7 +101,7 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
     }
     p.putString(PrefKey.LICENSE_STATUS.getKey(), status);
     p.commit();
-    setContribStatus(status);
+    refresh(true);
   }
 
   public static OpenIabHelper getIabHelper(Context ctx) {
@@ -137,14 +144,19 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
       String status = STATUS_DISABLED;
       p.putString(PrefKey.LICENSE_STATUS.getKey(), status);
       p.commit();
-      setContribStatus(status);
+      refresh(true);
     }
   }
 
   @Override
-  public void init(Context ctx) {
-    PreferenceObfuscator p = getLicenseStatusPrefs(ctx);
-    setContribStatus(p.getString(PrefKey.LICENSE_STATUS.getKey(),STATUS_DISABLED));
+  public void refresh(boolean invalidate) {
+    PreferenceObfuscator p = getLicenseStatusPrefs(context);
+    String contribStatus = p.getString(PrefKey.LICENSE_STATUS.getKey(), STATUS_DISABLED);
+    Log.d(TAG, "contrib status is now " + contribStatus);
+    setContribStatus(contribStatus);
+    if (invalidate) {
+      invalidate();
+    }
   }
 
   @Override
@@ -164,11 +176,11 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
   @Override
   protected void setLockStateDo(boolean locked) {
     setContribStatus(locked ? STATUS_DISABLED : STATUS_ENABLED_PERMANENT);
+    invalidate();
   }
 
   public void setContribStatus(String contribStatus) {
     this.contribStatus = contribStatus;
-    invalidate();
   }
 
   public String getContribStatus() {
