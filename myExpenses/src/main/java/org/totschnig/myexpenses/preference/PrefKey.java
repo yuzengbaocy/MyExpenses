@@ -76,7 +76,8 @@ public enum PrefKey  {
   INTERSTITIAL_LAST_SHOWN("interstitialLastShown"),
   ENTRIES_CREATED_SINCE_LAST_INTERSTITIAL("entriesCreatedSinceLastInterstitial"),
   NEW_ACCOUNT_ENABLED("new_account_enabled"),
-  SYNC_FREQUCENCY(R.string.pref_sync_frequency_key);
+  SYNC_FREQUCENCY(R.string.pref_sync_frequency_key),
+  SYNC_UPSELL_NOTIFICATION_SHOWN("sync_upsell_notification_shown");
 
   private int resId = 0;
   private String key = null;

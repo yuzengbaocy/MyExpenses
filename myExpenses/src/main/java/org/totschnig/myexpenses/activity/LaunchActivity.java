@@ -20,12 +20,14 @@ import org.onepf.oms.appstore.googleUtils.Purchase;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.contrib.Config;
 import org.totschnig.myexpenses.dialog.VersionDialogFragment;
+import org.totschnig.myexpenses.model.ContribFeature;
 import org.totschnig.myexpenses.model.Transaction;
 import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.provider.TransactionProvider;
 import org.totschnig.myexpenses.provider.filter.Criteria;
 import org.totschnig.myexpenses.util.AcraHelper;
 import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
+import org.totschnig.myexpenses.util.ContribUtils;
 
 import java.io.File;
 import java.util.Map;
@@ -175,6 +177,12 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
       }
       VersionDialogFragment.newInstance(prev_version, showImportantUpgradeInfo)
           .show(getSupportFragmentManager(), TAG_VERSION_INFO);
+    } else {
+      if (ContribFeature.SYNCHRONIZATION.usagesLeft() < 1 &&
+          !PrefKey.SYNC_UPSELL_NOTIFICATION_SHOWN.getBoolean(false)) {
+        PrefKey.SYNC_UPSELL_NOTIFICATION_SHOWN.putBoolean(true);
+        ContribUtils.showContribNotification(this, ContribFeature.SYNCHRONIZATION);
+      }
     }
     checkCalendarPermission();
   }
