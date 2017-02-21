@@ -149,14 +149,11 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
   }
 
   @Override
-  public void refresh(boolean invalidate) {
+  public void refreshDo() {
     PreferenceObfuscator p = getLicenseStatusPrefs(context);
     String contribStatus = p.getString(PrefKey.LICENSE_STATUS.getKey(), STATUS_DISABLED);
     Log.d(TAG, "contrib status is now " + contribStatus);
     setContribStatus(contribStatus);
-    if (invalidate) {
-      invalidate();
-    }
   }
 
   @Override
