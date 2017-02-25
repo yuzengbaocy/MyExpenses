@@ -166,6 +166,8 @@ public class DatabaseConstants {
   public static final String KEY_PLAN_INFO = "plan_info";
   public static final String KEY_PARENT_UUID = "parent_uuid";
   public static final String KEY_SYNC_SEQUENCE_LOCAL = "sync_sequence_local";
+  public static final String KEY_ACCOUNT_LABEL = "account_label";
+  public static final String KEY_IS_SAME_CURRENCY = "is_same_currency";
   /**
    * This flag is set to true during changes written by sync adapter, and used to suspend triggers that
    * write change log
@@ -361,6 +363,9 @@ public class DatabaseConstants {
   public static final String WHERE_SELF_OR_PEER = KEY_TRANSFER_PEER + " = ? OR " + KEY_ROWID + " = ?";
 
   public static final String WHERE_SELF_OR_DEPENDENT = KEY_ROWID + " = ? OR "  + WHERE_DEPENDENT;
+
+  public static final String IS_SAME_CURRENCY = KEY_CURRENCY  + " = (SELECT " + KEY_CURRENCY + " from " +
+      TABLE_ACCOUNTS + " WHERE " + KEY_ROWID + " = " + KEY_TRANSFER_ACCOUNT + ")";
 
   public static String getYearOfWeekStart() {
     ensureLocalized();

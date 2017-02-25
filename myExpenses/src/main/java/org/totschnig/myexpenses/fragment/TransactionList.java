@@ -78,8 +78,8 @@ import org.totschnig.myexpenses.model.Account;
 import org.totschnig.myexpenses.model.AccountType;
 import org.totschnig.myexpenses.model.ContribFeature;
 import org.totschnig.myexpenses.model.Grouping;
-import org.totschnig.myexpenses.model.Transaction;
 import org.totschnig.myexpenses.model.Transaction.CrStatus;
+import org.totschnig.myexpenses.model.Transfer;
 import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.provider.DatabaseConstants;
 import org.totschnig.myexpenses.provider.DbUtils;
@@ -440,7 +440,7 @@ public class TransactionList extends ContextualActionBarFragment implements
     if (mAccount.getId() < 0) {
       selection = KEY_ACCOUNTID + " IN " +
           "(SELECT " + KEY_ROWID + " from " + TABLE_ACCOUNTS + " WHERE " + KEY_CURRENCY + " = ? AND " +
-          KEY_EXCLUDE_FROM_TOTALS + "=0)";
+          KEY_EXCLUDE_FROM_TOTALS + " = 0)";
       selectionArgs = new String[]{mAccount.currency.getCurrencyCode()};
     } else {
       selection = KEY_ACCOUNTID + " = ?";
@@ -456,7 +456,9 @@ public class TransactionList extends ContextualActionBarFragment implements
           }
         }
         cursorLoader = new CursorLoader(getActivity(),
-            Transaction.EXTENDED_URI, null, selection + " AND " + KEY_PARENTID + " is null",
+            mAccount.getExtendedUriForTransactionList(),
+            mAccount.getExtendedProjectionForTransactionList(),
+            selection + " AND " + KEY_PARENTID + " is null",
             selectionArgs, null);
         break;
       //TODO: probably we can get rid of SUM_CURSOR, if we also aggregate unmapped transactions
@@ -698,7 +700,7 @@ public class TransactionList extends ContextualActionBarFragment implements
           sumIncome,
           mAccount.currency));
       Long sumTransfer = DbUtils.getLongOr0L(mGroupingCursor, columnIndexGroupSumTransfer);
-      holder.sumTransfer.setText("<-> " + Utils.convAmount(
+      holder.sumTransfer.setText(Transfer.BI_ARROW + " " + Utils.convAmount(
           sumTransfer,
           mAccount.currency));
       Long delta = sumIncome - sumExpense + sumTransfer;

@@ -67,6 +67,7 @@ import static org.totschnig.myexpenses.provider.DatabaseConstants.FULL_LABEL;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.HAS_EXPORTED;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.HAS_FUTURE;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.INCOME_SUM;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.IS_SAME_CURRENCY;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_ACCOUNTID;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_AMOUNT;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_CATID;
@@ -229,6 +230,7 @@ public class TransactionProvider extends ContentProvider {
   public static final String QUERY_PARAMETER_WITH_PLAN_INFO = "withPlanInfo";
   public static final String QUERY_PARAMETER_INIT = "init";
   public static final String QUERY_PARAMETER_CALLER_IS_SYNCADAPTER = "caller_is_syncadapter";
+  public static final String QUERY_PARAMETER_MERGE_TRANSFERS = "mergeTransfers";
 
   
   static final String TAG = "TransactionProvider";
@@ -321,8 +323,15 @@ public class TransactionProvider extends ContentProvider {
         qb.setDistinct(true);
       }
       defaultOrderBy = KEY_DATE + " DESC";
-      if (projection == null)
+      if (projection == null) {
         projection = extended ? Transaction.PROJECTION_EXTENDED : Transaction.PROJECTION_BASE;
+      }
+      if (uri.getQueryParameter(QUERY_PARAMETER_MERGE_TRANSFERS) != null) {
+        String mergeTransferSelection = KEY_TRANSFER_PEER + " IS NULL OR " + IS_SAME_CURRENCY +
+            " != 1 OR " + KEY_AMOUNT + " > 0";
+        selection = selection == null ? mergeTransferSelection :
+            selection + " AND " + mergeTransferSelection;
+      }
       break;
     case UNCOMMITTED:
       qb.setTables(VIEW_UNCOMMITTED);

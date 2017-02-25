@@ -23,7 +23,17 @@ import android.net.Uri;
 
 import java.util.ArrayList;
 
-import static org.totschnig.myexpenses.provider.DatabaseConstants.*;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_ACCOUNTID;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_AMOUNT;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_COMMENT;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_CR_STATUS;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_DATE;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_PARENTID;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_ROWID;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_STATUS;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TRANSFER_ACCOUNT;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TRANSFER_PEER;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_UUID;
 
 /**
  * a transfer consists of a pair of transactions, one for each account
@@ -32,6 +42,11 @@ import static org.totschnig.myexpenses.provider.DatabaseConstants.*;
  *
  */
 public class Transfer extends Transaction {
+
+  public static String RIGHT_ARROW = "▶";
+  public static String LEFT_ARROW = "◀";
+  public static String BI_ARROW = "⇄";
+
   
   public Transfer(long accountId, Long amount) {
     super(accountId,amount);
@@ -150,5 +165,13 @@ public class Transfer extends Transaction {
 
   public boolean isSameCurrency() {
     return amount.getCurrency().equals(transferAmount.getCurrency());
+  }
+
+  public static String getIndicatorPrefixForLabel(long amount) {
+    return ((amount < 0) ? RIGHT_ARROW : LEFT_ARROW) + " ";
+  }
+
+  public String printLabelWithPrefix() {
+    return getIndicatorPrefixForLabel(getAmount().getAmountMinor()) + " " + label;
   }
 }
