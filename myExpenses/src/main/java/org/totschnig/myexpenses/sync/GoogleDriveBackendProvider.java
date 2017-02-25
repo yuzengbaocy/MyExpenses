@@ -73,9 +73,12 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   private GoogleApiClient googleApiClient;
   private SharedPreferences sharedPreferences;
 
-  GoogleDriveBackendProvider(Context context, android.accounts.Account account, AccountManager accountManager) {
+  GoogleDriveBackendProvider(Context context, android.accounts.Account account, AccountManager accountManager) throws SyncParseException {
     sharedPreferences = context.getSharedPreferences("google_drive_backend", 0);
     folderId = accountManager.getUserData(account, GenericAccountService.KEY_SYNC_PROVIDER_URL);
+    if (folderId == null) {
+      throw new SyncParseException("Drive folder not set");
+    }
     googleApiClient = new GoogleApiClient.Builder(context)
         .addApi(Drive.API)
         .addScope(Drive.SCOPE_FILE)

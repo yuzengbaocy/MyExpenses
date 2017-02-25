@@ -138,27 +138,33 @@ public class DriveSetupActivity extends ProtectedFragmentActivity implements
             if (result.getStatus().isSuccess()) {
               Metadata metadata = result.getMetadata();
               if (metadata.getCustomProperties().containsKey(GoogleDriveBackendProvider.ACCOUNT_METADATA_UUID_KEY)) {
-                showMessage(getString(R.string.warning_synchronization_select_parent));
-                setResult(RESULT_CANCELED);
-                finish();
+                reportProblemToUser(getString(R.string.warning_synchronization_select_parent));
               } else {
                 Intent intent = new Intent();
                 Bundle bundle = new Bundle(1);
-                bundle.putString(KEY_SYNC_PROVIDER_URL, metadata.getDriveId().getResourceId());
-                intent.putExtra(AccountManager.KEY_USERDATA, bundle);
-                intent.putExtra(AccountManager.KEY_ACCOUNT_NAME,
-                    GoogleDriveBackendProviderFactory.LABEL + " - " + metadata.getTitle());
-                setResult(RESULT_OK, intent);
-                finish();
+                String resourceId = metadata.getDriveId().getResourceId();
+                if (resourceId != null) {
+                  bundle.putString(KEY_SYNC_PROVIDER_URL, resourceId);
+                  intent.putExtra(AccountManager.KEY_USERDATA, bundle);
+                  intent.putExtra(AccountManager.KEY_ACCOUNT_NAME,
+                      GoogleDriveBackendProviderFactory.LABEL + " - " + metadata.getTitle());
+                  setResult(RESULT_OK, intent);
+                  finish();
+                } else {
+                  reportProblemToUser("Problem while trying to fetch metadata");
+                }
               }
-
             } else {
-              showMessage("Problem while trying to fetch metadata");
-              setResult(RESULT_CANCELED);
-              finish();
+              reportProblemToUser("Problem while trying to fetch metadata");
             }
           });
     }
+  }
+
+  private void reportProblemToUser(String message) {
+    showMessage(message);
+    setResult(RESULT_CANCELED);
+    finish();
   }
 
   /**
