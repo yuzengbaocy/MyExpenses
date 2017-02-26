@@ -32,6 +32,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.model.Account;
+import org.totschnig.myexpenses.model.AccountType;
 import org.totschnig.myexpenses.model.Model;
 import org.totschnig.myexpenses.sync.json.AccountMetaData;
 import org.totschnig.myexpenses.sync.json.ChangeSet;
@@ -41,8 +42,10 @@ import org.totschnig.myexpenses.util.FileCopyUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Currency;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
@@ -311,16 +314,39 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     if (uuid == null) {
       return Optional.empty();
     }
+    //TODO add default values
     return Optional.of(AccountMetaData.builder()
-        .setType(customProperties.get(ACCOUNT_METADATA_TYPE_KEY))
-        .setOpeningBalance(Long.parseLong(customProperties.get(ACCOUNT_METADATA_OPENING_BALANCE_KEY)))
-        .setDescription(customProperties.get(ACCOUNT_METADATA_DESCRIPTION_KEY))
-        .setColor(Integer.parseInt(customProperties.get(ACCOUNT_METADATA_COLOR_KEY)))
-        .setCurrency(customProperties.get(ACCOUNT_METADATA_CURRENCY_KEY))
+        .setType(getPropertyWithDefault(customProperties, ACCOUNT_METADATA_TYPE_KEY, AccountType.CASH.name()))
+        .setOpeningBalance(getPropertyWithDefault(customProperties, ACCOUNT_METADATA_OPENING_BALANCE_KEY, 0L))
+        .setDescription(getPropertyWithDefault(customProperties, ACCOUNT_METADATA_DESCRIPTION_KEY, ""))
+        .setColor(getPropertyWithDefault(customProperties, ACCOUNT_METADATA_COLOR_KEY, Account.DEFAULT_COLOR))
+        .setCurrency(getPropertyWithDefault(customProperties, ACCOUNT_METADATA_CURRENCY_KEY,
+            Currency.getInstance(Locale.getDefault()).getCurrencyCode()))
         .setUuid(uuid)
         .setLabel(metadata.getTitle()).build());
   }
 
+  private String getPropertyWithDefault(Map<CustomPropertyKey, String> customProperties,
+                                        CustomPropertyKey key,
+                                        String defaultValue) {
+    String result = customProperties.get(key);
+    return result != null ? result : defaultValue;
+  }
+
+  private long getPropertyWithDefault(Map<CustomPropertyKey, String> customProperties,
+                                        CustomPropertyKey key,
+                                        long defaultValue) {
+    String result = customProperties.get(key);
+    return result != null ? Long.parseLong(result) : defaultValue;
+  }
+
+  private int getPropertyWithDefault(Map<CustomPropertyKey, String> customProperties,
+                                      CustomPropertyKey key,
+                                      int defaultValue) {
+    String result = customProperties.get(key);
+    return result != null ? Integer.parseInt(result) : defaultValue;
+  }
+  
   private Optional<DriveFolder> getExistingAccountFolder(String uuid) throws IOException {
     if (!requireBaseFolder()) {
       throw new IOException("Base folder not available");
