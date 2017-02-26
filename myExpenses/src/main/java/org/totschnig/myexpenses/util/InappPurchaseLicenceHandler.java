@@ -110,24 +110,25 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
     }
     OpenIabHelper.Options.Builder builder =
         new OpenIabHelper.Options.Builder()
-           .setVerifyMode(OpenIabHelper.Options.VERIFY_EVERYTHING)
-           .addStoreKeys(Config.STORE_KEYS_MAP);
+            .setVerifyMode(OpenIabHelper.Options.VERIFY_EVERYTHING)
+            .addStoreKeys(Config.STORE_KEYS_MAP);
 
-    if (IS_CHROMIUM) {
-      builder.setStoreSearchStrategy(OpenIabHelper.Options.SEARCH_STRATEGY_BEST_FIT);
-    } else if (BuildConfig.FLAVOR.equals("play")) {
-      builder.addAvailableStoreNames("com.google.play");
-    } else if (BuildConfig.FLAVOR.equals("amazon")) {
-           ArrayList<Appstore> stores = new ArrayList<Appstore>();
-           stores.add(new AmazonAppstore(ctx) {
-             public boolean isBillingAvailable(String packageName) {
-               return true;
-             }
-           });
-           builder.addAvailableStores(stores);
+
+    builder.setStoreSearchStrategy(OpenIabHelper.Options.SEARCH_STRATEGY_INSTALLER_THEN_BEST_FIT);
+    if (!IS_CHROMIUM) {
+      if (BuildConfig.FLAVOR.equals("play")) {
+        builder.addAvailableStoreNames("com.google.play");
+      } else if (BuildConfig.FLAVOR.equals("amazon")) {
+        ArrayList<Appstore> stores = new ArrayList<Appstore>();
+        stores.add(new AmazonAppstore(ctx) {
+          public boolean isBillingAvailable(String packageName) {
+            return true;
+          }
+        });
+        builder.addAvailableStores(stores);
+      }
     }
-
-    return new OpenIabHelper(ctx,builder.build());
+    return new OpenIabHelper(ctx, builder.build());
   }
 
   /**
