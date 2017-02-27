@@ -127,7 +127,7 @@ dependencies {
     compile 'com.android.support:gridlayout-v7:' + project.androidSupportLibraryVersion
     compile 'com.android.support:preference-v14:' + "23.1.1"
     compile 'com.itextpdf:itextg:5.5.10'
-    compile 'ch.acra:acra:4.9.1'
+    compile 'ch.acra:acra:4.9.2'
     compile 'com.google.android.gms:play-services-ads:10.0.1'
     //compile 'com.google.android.gms:play-services-analytics:8.4.0'
     compile 'org.apache.commons:commons-lang3:3.4'
