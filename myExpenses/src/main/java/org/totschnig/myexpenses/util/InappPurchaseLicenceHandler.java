@@ -68,7 +68,7 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
     String PREFS_FILE = "license_status";
     String deviceId = Secure.getString(ctx.getContentResolver(), Secure.ANDROID_ID);
     //TODO move to content provider, eventually https://github.com/grandcentrix/tray
-    SharedPreferences sp = ctx.getSharedPreferences(PREFS_FILE, Context.MODE_MULTI_PROCESS);
+    SharedPreferences sp = ctx.getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE);
     byte[] SALT = new byte[] {
         -1, -124, -4, -59, -52, 1, -97, -32, 38, 59, 64, 13, 45, -104, -3, -92, -56, -49, 65, -25
     };
