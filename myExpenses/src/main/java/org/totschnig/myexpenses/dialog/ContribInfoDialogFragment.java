@@ -19,6 +19,7 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.text.Html;
 import android.text.TextUtils;
@@ -27,7 +28,6 @@ import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.activity.ContribInfoDialogActivity;
 import org.totschnig.myexpenses.dialog.MessageDialogFragment.MessageDialogListener;
-import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
 import org.totschnig.myexpenses.model.ContribFeature;
 import org.totschnig.myexpenses.util.LicenceHandler;
 import org.totschnig.myexpenses.util.Utils;
@@ -51,6 +51,7 @@ public class ContribInfoDialogFragment extends CommitSafeDialogFragment implemen
     return dialogFragment;
   }
 
+  @NonNull
   @Override
   public Dialog onCreateDialog(Bundle savedInstanceState) {
     boolean isContrib = MyApplication.getInstance().getLicenceHandler().isContribEnabled();
