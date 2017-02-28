@@ -76,6 +76,7 @@ android {
         blackberry {
             versionName buildVersionNumberBlackBerry()
             buildConfigField "String", "PLATTFORM", "\"Blackberry\""
+            minSdkVersion 10
         }
     }
 
