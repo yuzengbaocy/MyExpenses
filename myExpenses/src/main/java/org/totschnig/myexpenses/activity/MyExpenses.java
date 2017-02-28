@@ -99,6 +99,7 @@ import org.totschnig.myexpenses.ui.FragmentPagerAdapter;
 import org.totschnig.myexpenses.ui.SimpleCursorAdapter;
 import org.totschnig.myexpenses.util.AcraHelper;
 import org.totschnig.myexpenses.util.AdHandler;
+import org.totschnig.myexpenses.util.AmaAndAdmobAdHandler;
 import org.totschnig.myexpenses.util.FileUtils;
 import org.totschnig.myexpenses.util.Result;
 import org.totschnig.myexpenses.util.Utils;
@@ -223,7 +224,7 @@ public class MyExpenses extends LaunchActivity implements
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
 
-    adHandler = new AdHandler(this);
+    adHandler = new AmaAndAdmobAdHandler(this);
     adHandler.init();
 
     mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
