@@ -51,6 +51,7 @@ import org.totschnig.myexpenses.provider.TransactionProvider;
 import org.totschnig.myexpenses.util.Utils;
 
 import static android.appwidget.AppWidgetManager.INVALID_APPWIDGET_ID;
+import static org.totschnig.myexpenses.activity.ContribInfoDialogActivity.KEY_FEATURE;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_PLANID;
 
 public class TemplateWidget extends AbstractWidget<Template> {
@@ -225,10 +226,8 @@ public class TemplateWidget extends AbstractWidget<Template> {
   }
 
   public static void showContribMessage(Context context) {
-    String message = context.getString(
-        R.string.dialog_contrib_premium_feature,
-        context.getString(R.string.contrib_feature_template_widget_label)) +
-        ContribFeature.TEMPLATE_WIDGET.buildUsagesString(context);
+    String message = ContribFeature.TEMPLATE_WIDGET.buildFullInfoString(context) + " " +
+        ContribFeature.TEMPLATE_WIDGET.buildUsagesLefString(context);
     Toast.makeText(context, message, Toast.LENGTH_LONG).show();
     if (ContribFeature.TEMPLATE_WIDGET.usagesLeft() == 0) {
       updateWidgets(context, TemplateWidget.class);
@@ -247,12 +246,11 @@ public class TemplateWidget extends AbstractWidget<Template> {
         for (int id : appWidgetIds) {
           AppWidgetProviderInfo appWidgetInfo = manager.getAppWidgetInfo(id);
           if (appWidgetInfo != null) {
-            String message = context.getString(
-                R.string.dialog_contrib_premium_feature,
-                context.getString(R.string.contrib_feature_template_widget_label)) +
+            String message = ContribFeature.TEMPLATE_WIDGET.buildFullInfoString(context) + " " +
                 context.getString(R.string.dialog_contrib_no_usages_left);
             RemoteViews updateViews = errorUpdate(context, message);
             Intent intent = new Intent(context, ContribInfoDialogActivity.class);
+            intent.putExtra(KEY_FEATURE, ContribFeature.TEMPLATE_WIDGET);
             updateViews.setOnClickPendingIntent(R.id.object_info,
                 PendingIntent.getActivity(context, 0, intent, 0));
             manager.updateAppWidget(id, updateViews);

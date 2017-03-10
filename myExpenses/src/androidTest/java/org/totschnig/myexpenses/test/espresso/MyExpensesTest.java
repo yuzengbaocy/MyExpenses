@@ -16,8 +16,6 @@ import android.support.v4.view.ViewPager;
 import android.widget.AdapterView;
 import android.widget.Button;
 
-import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,7 +25,6 @@ import org.totschnig.myexpenses.activity.ExpenseEdit;
 import org.totschnig.myexpenses.activity.ManageTemplates;
 import org.totschnig.myexpenses.activity.MyExpenses;
 import org.totschnig.myexpenses.activity.MyPreferenceActivity;
-import org.totschnig.myexpenses.dialog.ContribInfoDialogFragment;
 import org.totschnig.myexpenses.model.Account;
 import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.provider.DatabaseConstants;
@@ -36,6 +33,7 @@ import org.totschnig.myexpenses.util.Utils;
 
 import static android.support.test.espresso.Espresso.onData;
 import static android.support.test.espresso.Espresso.onView;
+import static org.totschnig.myexpenses.activity.MyExpenses.KEY_SEQUENCE_COUNT;
 import static org.totschnig.myexpenses.test.util.Espresso.openActionBarOverflowOrOptionsMenu;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
@@ -82,16 +80,6 @@ public final class MyExpensesTest extends MyExpensesTestBase {
   public void floatingActionButtonOpensForm() {
     onView(withId(R.id.CREATE_COMMAND)).perform(click());
     intended(hasComponent(ExpenseEdit.class.getName()));
-  }
-
-  @Test
-  public void contribDialogIsShown() {
-    PrefKey.NEXT_REMINDER_RATE.putLong(-1);//assumption rating dialog is no longer showable
-    PrefKey.NEXT_REMINDER_CONTRIB.remove();
-    stubExpenseEditIntentWithSequenceCount(MyExpenses.TRESHOLD_REMIND_CONTRIB + 1);
-    onView(withId(R.id.CREATE_COMMAND)).perform(click());
-    onView(withText(containsString(mActivityRule.getActivity().getString(R.string.menu_contrib))))
-        .check(matches(isDisplayed()));
   }
 
   @Test
@@ -243,7 +231,7 @@ public final class MyExpensesTest extends MyExpensesTestBase {
 
   private void stubExpenseEditIntentWithSequenceCount(long count) {
     Bundle bundle = new Bundle();
-    bundle.putLong(ContribInfoDialogFragment.KEY_SEQUENCE_COUNT, count);
+    bundle.putLong(KEY_SEQUENCE_COUNT, count);
     Intent resultData = new Intent();
     resultData.putExtras(bundle);
 

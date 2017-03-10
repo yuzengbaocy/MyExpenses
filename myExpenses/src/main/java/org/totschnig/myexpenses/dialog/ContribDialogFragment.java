@@ -15,14 +15,20 @@
 
 package org.totschnig.myexpenses.dialog;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
-import android.content.res.Resources;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.text.Html;
 import android.text.TextUtils;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.RadioButton;
+import android.widget.TextView;
 
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
@@ -33,10 +39,11 @@ import org.totschnig.myexpenses.util.Utils;
 
 import java.io.Serializable;
 
-public class ContribDialogFragment extends CommitSafeDialogFragment implements DialogInterface.OnClickListener {
-  ContribFeature feature;
+public class ContribDialogFragment extends CommitSafeDialogFragment implements DialogInterface.OnClickListener, View.OnClickListener {
+  private ContribFeature feature;
+  RadioButton contribButton, extendedButton;
 
-  public static final ContribDialogFragment newInstance(ContribFeature feature, Serializable tag) {
+  public static ContribDialogFragment newInstance(ContribFeature feature, Serializable tag) {
     ContribDialogFragment dialogFragment = new ContribDialogFragment();
     Bundle bundle = new Bundle();
     bundle.putSerializable(ContribInfoDialogActivity.KEY_FEATURE, feature);
@@ -52,49 +59,82 @@ public class ContribDialogFragment extends CommitSafeDialogFragment implements D
     feature = (ContribFeature) bundle.getSerializable(ContribInfoDialogActivity.KEY_FEATURE);
   }
 
+  @NonNull
   @Override
   public Dialog onCreateDialog(Bundle savedInstanceState) {
     Activity ctx = getActivity();
-    Resources res = getResources();
-    CharSequence featureDescription;
-    if (feature.hasTrial()) {
-      featureDescription = Html.fromHtml(feature.buildFullInfoString(ctx));
+    @SuppressLint("InflateParams")
+    final View view = LayoutInflater.from(ctx).inflate(R.layout.contrib_dialog, null);
+    AlertDialog.Builder builder = new AlertDialog.Builder(ctx,
+        MyApplication.getThemeType().equals(MyApplication.ThemeType.dark) ?
+            R.style.ContribDialogThemeDark : R.style.ContribDialogThemeLight);
+    CharSequence message;
+    if (feature != null) {
+      CharSequence featureDescription = feature.buildFullInfoString(ctx),
+          linefeed = Html.fromHtml("<br>"),
+          removePhrase = feature.buildRemoveLimitation(getActivity(), true);
+      message = TextUtils.concat(featureDescription, linefeed, removePhrase);
+      if (feature.hasTrial()) {
+        TextView usagesLeftTextView = (TextView) view.findViewById(R.id.usages_left);
+        usagesLeftTextView.setText(feature.buildUsagesLefString(ctx));
+        usagesLeftTextView.setVisibility(View.VISIBLE);
+      }
     } else {
-      featureDescription = getText(res.getIdentifier("contrib_feature_" + feature + "_description", "string", ctx.getPackageName()));
-    }
-    AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
-    CharSequence
-        linefeed = Html.fromHtml("<br><br>"),
-        removePhrase = feature.buildRemoveLimitation(getActivity(), true),
-        message = TextUtils.concat(
-            featureDescription, " ",
-            removePhrase);
-    boolean isContrib = MyApplication.getInstance().getLicenceHandler().isContribEnabled();
-    if (!isContrib) {
-      CharSequence featureList = Utils.getContribFeatureLabelsAsFormattedList(ctx, feature,
-          feature.isExtended() ? null : LicenceHandler.LicenceStatus.CONTRIB); //if feature is extended, we list all features
-      //if user has contrib key, he already has access to premium features,
-      message = TextUtils.concat(message, " ",
-          getString(R.string.dialog_contrib_reminder_gain_access),
-          linefeed, featureList);
-      if (!feature.isExtended()) {
-        if (LicenceHandler.HAS_EXTENDED) {
-          String pro = getString(R.string.dialog_contrib_extended_gain_access);
-          CharSequence extendedList = Utils.getContribFeatureLabelsAsFormattedList(ctx, feature, LicenceHandler.LicenceStatus.EXTENDED);
-          message = TextUtils.concat(message, linefeed, pro, linefeed, extendedList);
-        }
-        builder.setNegativeButton(R.string.dialog_contrib_buy_premium, this);
+      message = getText(R.string.dialog_contrib_text_2);
+      if (!Utils.IS_FLAVOURED) {
+        message = TextUtils.concat(getText(R.string.dialog_contrib_text_1), " ",
+            getText(R.string.dialog_contrib_text_2));
       }
     }
-    builder
-        .setTitle(feature.isExtended() ? R.string.dialog_title_extended_feature : R.string.dialog_title_contrib_feature)
-        .setMessage(message)
-        .setNeutralButton(R.string.dialog_contrib_no, this)
-        .setIcon(R.mipmap.ic_launcher_alt);
-    if (LicenceHandler.HAS_EXTENDED) {
-      builder.setPositiveButton(isContrib ? R.string.dialog_contrib_upgrade_extended : R.string.dialog_contrib_buy_extended, this);
+    ((TextView) view.findViewById(R.id.feature_info)).setText(message);
+    boolean isContrib = MyApplication.getInstance().getLicenceHandler().isContribEnabled();
+    boolean userCanChoose = true;
+    contribButton = (RadioButton) view.findViewById(R.id.contrib_button);
+    extendedButton = (RadioButton) view.findViewById(R.id.extended_button);
+    if (isFeatureExtended() || (feature == null && isContrib)) {
+      view.findViewById(R.id.contrib_feature_container).setVisibility(View.GONE);
+      userCanChoose = false;
+      extendedButton.setChecked(true);
+    } else {
+      ((TextView) view.findViewById(R.id.contrib_feature_list)).setText(
+          Utils.makeBulletList(ctx, Utils.getContribFeatureLabelsAsList(ctx, LicenceHandler.LicenceStatus.CONTRIB)));
     }
-    return builder.create();
+    if (LicenceHandler.HAS_EXTENDED) {
+      String[] lines;
+      if (isFeatureExtended() && !isContrib) {
+        lines = Utils.getContribFeatureLabelsAsList(ctx, null);
+      } else {
+        String[] extendedFeatures = Utils.getContribFeatureLabelsAsList(ctx, LicenceHandler.LicenceStatus.EXTENDED);
+        lines = feature == null || feature.isExtended()  ? extendedFeatures : //user is Contrib
+            Utils.joinArrays(new String[]{getString(R.string.all_contrib_key_features) + "\n+"},
+                extendedFeatures);
+      }
+      ((TextView) view.findViewById(R.id.extended_feature_list)).setText(
+          Utils.makeBulletList(ctx, lines));
+    } else {
+      view.findViewById(R.id.extended_feature_container).setVisibility(View.GONE);
+      contribButton.setChecked(true);
+      userCanChoose = false;
+    }
+    builder
+        .setTitle(feature == null ? R.string.menu_contrib :
+            feature.isExtended() ? R.string.dialog_title_extended_feature :
+                R.string.dialog_title_contrib_feature)
+        .setView(view)
+        .setNegativeButton(R.string.dialog_contrib_no, this)
+        .setIcon(R.mipmap.ic_launcher_alt)
+        .setPositiveButton(R.string.upgrade_now, this);
+    AlertDialog dialog = builder.create();
+    if (userCanChoose) {
+      contribButton.setOnClickListener(this);
+      extendedButton.setOnClickListener(this);
+      dialog.setOnShowListener(new ButtonOnShowDisabler());
+    }
+    return dialog;
+  }
+
+  protected boolean isFeatureExtended() {
+    return feature != null && feature.isExtended();
   }
 
   @Override
@@ -104,11 +144,15 @@ public class ContribDialogFragment extends CommitSafeDialogFragment implements D
       return;
     }
     if (which == AlertDialog.BUTTON_POSITIVE) {
-      ctx.contribBuyDo(true);
-    } else if (which == AlertDialog.BUTTON_NEGATIVE) {
-      ctx.contribBuyDo(false);
+      if(extendedButton.isChecked()) {
+        ctx.contribBuyDo(true);
+      } else if (contribButton.isChecked()) {
+        ctx.contribBuyDo(false);
+      } else {
+        Log.w(MyApplication.TAG, "Neither premium nor extended button checked, should not happen");
+      }
     } else {
-      //BUTTON_NEUTRAL
+      //BUTTON_NEGATIV
       ctx.finish(false);
     }
   }
@@ -120,5 +164,11 @@ public class ContribDialogFragment extends CommitSafeDialogFragment implements D
       return;
     }
     ctx.finish(true);
+  }
+
+  @Override
+  public void onClick(View v) {
+    (v.equals(contribButton) ? extendedButton : contribButton).setChecked(false);
+    ((AlertDialog) getDialog()).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
   }
 }

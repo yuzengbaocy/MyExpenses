@@ -15,22 +15,37 @@
 
 package org.totschnig.myexpenses.model;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
+import android.support.annotation.NonNull;
 import android.text.Html;
 
 import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.util.LicenceHandler;
-import org.totschnig.myexpenses.util.Utils;
 
 import java.util.Date;
 import java.util.Locale;
 
 public enum ContribFeature {
-  ACCOUNTS_UNLIMITED(false),
-  PLANS_UNLIMITED(false),
+  ACCOUNTS_UNLIMITED(false) {
+    private int FREE_ACCOUNTS = 5;
+    @Override
+    public String buildUsageLimitString(Context context) {
+      String currentLicence = getCurrentLicence(context);
+      return context.getString(R.string.dialog_contrib_usage_limit_accounts, FREE_ACCOUNTS, currentLicence);
+    }
+  },
+  PLANS_UNLIMITED(false){
+    private int FREE_PLANS = 5;
+    @Override
+    public String buildUsageLimitString(Context context) {
+      String currentLicence = getCurrentLicence(context);
+      return context.getString(R.string.dialog_contrib_usage_limit_plans, FREE_PLANS, currentLicence);
+    }
+  },
   SECURITY_QUESTION,
   SPLIT_TRANSACTION,
   DISTRIBUTION,
@@ -41,7 +56,7 @@ public enum ContribFeature {
   CSV_IMPORT(true, true),
   AUTO_BACKUP(true, true) {
     @Override
-    public String buildUsagesString(Context ctx) {
+    public String buildUsagesLefString(Context ctx) {
       int usagesLeft = usagesLeft();
       return usagesLeft > 0 ? ctx.getString(R.string.warning_auto_backup_limited_trial, usagesLeft) :
           ctx.getString(R.string.warning_auto_backup_limit_reached);
@@ -49,7 +64,8 @@ public enum ContribFeature {
   },
   SYNCHRONIZATION(true, true) {
     private String PREF_KEY = "FEATURE_SYNCHRONIZATION_FIRST_USAGE";
-    private long TRIAL_DURATION = (10 * 24 * 60) * 60 * 1000;
+    private int TRIAL_DURATION_DAYS = 10;
+    private long TRIAL_DURATION_MILLIS = (TRIAL_DURATION_DAYS * 24 * 60) * 60 * 1000;
 
     @Override
     public int recordUsage() {
@@ -76,11 +92,11 @@ public enum ContribFeature {
     }
 
     private long getEndOfTrial(long now) {
-      return getStartOfTrial(now) + TRIAL_DURATION;
+      return getStartOfTrial(now) + TRIAL_DURATION_MILLIS;
     }
 
     @Override
-    public String buildUsagesString(Context ctx) {
+    public String buildUsagesLefString(Context ctx) {
       long now = System.currentTimeMillis();
       long endOfTrial = getEndOfTrial(now);
       if (endOfTrial < now) {
@@ -89,6 +105,12 @@ public enum ContribFeature {
         return ctx.getString(R.string.warning_synchronization_limited_trial,
             android.text.format.DateFormat.getDateFormat(ctx).format(new Date(endOfTrial)));
       }
+    }
+
+    @Override
+    public String buildUsageLimitString(Context context) {
+      String currentLicence = getCurrentLicence(context);
+      return context.getString(R.string.dialog_contrib_usage_limit_synchronization, TRIAL_DURATION_DAYS, currentLicence);
     }
   };
 
@@ -110,7 +132,7 @@ public enum ContribFeature {
   /**
    * how many times contrib features can be used for free
    */
-  public static final int USAGES_LIMIT = 10;
+  public static final int USAGES_LIMIT = 3;
 
   public String toString() {
     return name().toLowerCase(Locale.US);
@@ -163,7 +185,7 @@ public enum ContribFeature {
   }
 
   public String buildRequiresString(Context ctx) {
-    return ctx.getString(R.string.contrib_key_requires, buildKeyFullName(ctx, isExtended));
+    return ctx.getString(R.string.contrib_key_requires, buildKeyName(ctx, isExtended));
   }
 
   public int getLabelResIdOrThrow(Context ctx) {
@@ -184,32 +206,40 @@ public enum ContribFeature {
     return resId;
   }
 
-  public String buildFullInfoString(Context ctx) {
-    return ctx.getString(
-        isExtended ? R.string.dialog_contrib_extended_feature : R.string.dialog_contrib_premium_feature,
-        "<i>" + ctx.getString(getLabelResIdOrThrow(ctx)) + "</i>") + " " +
-        buildUsagesString(ctx);
+  public CharSequence buildFullInfoString(Context ctx) {
+    return Html.fromHtml(ctx.getString(R.string.dialog_contrib_premium_feature,
+        "<i>" + ctx.getString(getLabelResIdOrThrow(ctx)) + "</i>",
+        buildKeyName(ctx, isExtended)) + " " +
+        buildUsageLimitString(ctx));
   }
 
-  public static String buildKeyFullName(Context ctx, boolean extended) {
-    return Utils.concatResStrings(ctx, " ", R.string.app_name,
-        extended ? R.string.extended_key : R.string.contrib_key);
+  public static String buildKeyName(Context ctx, boolean extended) {
+    return ctx.getString(extended ? R.string.extended_key : R.string.contrib_key);
   }
 
-  public String buildUsagesString(Context ctx) {
+  @SuppressLint("DefaultLocale")
+  public CharSequence buildUsagesLefString(Context ctx) {
     int usagesLeft = usagesLeft();
-    return usagesLeft > 0 ?
-        ctx.getResources().getQuantityString(R.plurals.dialog_contrib_usage_count, usagesLeft, usagesLeft) :
-        ctx.getString(R.string.dialog_contrib_no_usages_left);
+    return ctx.getText(R.string.dialog_contrib_usage_count) + " : " +
+        String.format("%d/%d", usagesLeft, USAGES_LIMIT);
+  }
+
+  public String buildUsageLimitString(Context context) {
+    String currentLicence = getCurrentLicence(context);
+    return context.getString(R.string.dialog_contrib_usage_limit, USAGES_LIMIT, currentLicence);
+  }
+
+  @NonNull
+  protected String getCurrentLicence(Context context) {
+    LicenceHandler licenceHandler = MyApplication.getInstance().getLicenceHandler();
+    return licenceHandler.isExtendedEnabled() ?
+        context.getString(R.string.extended_key) : (licenceHandler.isContribEnabled() ?
+        context.getString(R.string.contrib_key) : context.getString(R.string.licence_status_free));
   }
 
   public CharSequence buildRemoveLimitation(Context ctx, boolean asHTML) {
-    String keyName = buildKeyFullName(ctx, isExtended);
-    if (asHTML) {
-      keyName = "<i>" + keyName + "</i>";
-    }
-    String result = ctx.getString(R.string.dialog_contrib_reminder_remove_limitation, keyName);
-    return asHTML ? Html.fromHtml(result) : result;
+    int resId = R.string.dialog_contrib_reminder_remove_limitation;
+    return asHTML ? ctx.getText(resId) : ctx.getString(resId);
   }
 
   public boolean isExtended() {
