@@ -13,8 +13,10 @@ package org.totschnig.myexpenses.service;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
@@ -22,8 +24,12 @@ import com.commonsware.cwac.wakeful.WakefulIntentService;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.activity.MyPreferenceActivity;
 import org.totschnig.myexpenses.model.ContribFeature;
+import org.totschnig.myexpenses.preference.AccountPreference;
 import org.totschnig.myexpenses.preference.PrefKey;
-import org.totschnig.myexpenses.task.GenericTask;
+import org.totschnig.myexpenses.provider.TransactionProvider;
+import org.totschnig.myexpenses.sync.GenericAccountService;
+import org.totschnig.myexpenses.sync.SyncAdapter;
+import org.totschnig.myexpenses.util.BackupUtils;
 import org.totschnig.myexpenses.util.ContribUtils;
 import org.totschnig.myexpenses.util.Result;
 import org.totschnig.myexpenses.util.Utils;
@@ -47,11 +53,19 @@ public class AutoBackupService extends WakefulIntentService {
 	protected void doWakefulWork(Intent intent) {
         String action = intent.getAction();
         if (ACTION_AUTO_BACKUP.equals(action)) {
-            Result result = GenericTask.doBackup();
+            Result result = BackupUtils.doBackup();
             if (result.success) {
                 int remaining = ContribFeature.AUTO_BACKUP.recordUsage();
                 if (remaining < 1) {
                     ContribUtils.showContribNotification(this, ContribFeature.AUTO_BACKUP);
+                }
+                String syncAccount = PrefKey.AUTO_BACUP_CLOUD.getString(AccountPreference.SYNCHRONIZATION_NONE);
+                if (!syncAccount.equals(AccountPreference.SYNCHRONIZATION_NONE)) {
+                    Bundle bundle = new Bundle();
+                    bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+                    bundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+                    bundle.putString(SyncAdapter.KEY_UPLOAD_AUTO_BACKUP, result.extra[0].toString());
+                    ContentResolver.requestSync(GenericAccountService.GetAccount(syncAccount), TransactionProvider.AUTHORITY, bundle);
                 }
             } else {
                 String notifTitle = Utils.concatResStrings(this, " ", R.string.app_name, R.string.contrib_feature_auto_backup_label);

@@ -8,7 +8,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.preference.ListPreference;
-import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceDialogFragmentCompat;
 import android.widget.Toast;
 
@@ -16,15 +15,11 @@ import com.android.calendar.CalendarContractCompat;
 
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
-import org.totschnig.myexpenses.activity.MyPreferenceActivity;
 import org.totschnig.myexpenses.provider.DbUtils;
 
-/**
- * Created by privat on 07.11.15.
- */
 public class CalendarListPreferenceDialogFragmentCompat extends PreferenceDialogFragmentCompat {
   @Override
-  protected void onPrepareDialogBuilder( AlertDialog.Builder builder ) {
+  protected void onPrepareDialogBuilder(AlertDialog.Builder builder) {
     final ListPreference preference = (ListPreference) getPreference();
     boolean localExists = false;
     Cursor selectionCursor;
@@ -57,26 +52,26 @@ public class CalendarListPreferenceDialogFragmentCompat extends PreferenceDialog
             selectedIndex = calCursor.getPosition();
           }
           if (DbUtils.getString(calCursor, 1).equals(MyApplication.PLANNER_ACCOUNT_NAME)
-              && DbUtils.getString(calCursor,2).equals(CalendarContractCompat.ACCOUNT_TYPE_LOCAL)
-              && DbUtils.getString(calCursor,3).equals(MyApplication.PLANNER_CALENDAR_NAME))
+              && DbUtils.getString(calCursor, 2).equals(CalendarContractCompat.ACCOUNT_TYPE_LOCAL)
+              && DbUtils.getString(calCursor, 3).equals(MyApplication.PLANNER_CALENDAR_NAME))
             localExists = true;
         } while (calCursor.moveToNext());
       }
       if (localExists || Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
         selectionCursor = calCursor;
       } else {
-        MatrixCursor extras = new MatrixCursor(new String[] {
+        MatrixCursor extras = new MatrixCursor(new String[]{
             CalendarContractCompat.Calendars._ID,
             CalendarContractCompat.Calendars.ACCOUNT_NAME,
             CalendarContractCompat.Calendars.ACCOUNT_TYPE,
             CalendarContractCompat.Calendars.NAME,
             "full_name"});
-        extras.addRow(new String[] {
-            "-1", "","","",
-            getContext().getString(R.string.pref_planning_calendar_create_local) });
-        selectionCursor = new MergeCursor(new Cursor[] {calCursor,extras});
+        extras.addRow(new String[]{
+            "-1", "", "", "",
+            getContext().getString(R.string.pref_planning_calendar_create_local)});
+        selectionCursor = new MergeCursor(new Cursor[]{calCursor, extras});
       }
-      builder.setSingleChoiceItems(selectionCursor,selectedIndex,"full_name",
+      builder.setSingleChoiceItems(selectionCursor, selectedIndex, "full_name",
           new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
               long itemId = ((AlertDialog) dialog).getListView().getItemIdAtPosition(which);
@@ -92,7 +87,7 @@ public class CalendarListPreferenceDialogFragmentCompat extends PreferenceDialog
                   preference.setValue(plannerId);
                 }
               } else {
-                if(preference.callChangeListener(itemId)) {
+                if (preference.callChangeListener(itemId)) {
                   preference.setValue(String.valueOf(itemId));
                 }
               }
@@ -104,18 +99,18 @@ public class CalendarListPreferenceDialogFragmentCompat extends PreferenceDialog
     } else {
       builder.setMessage("Calendar provider not available");
     }
-    builder.setPositiveButton( null, null );
+    builder.setPositiveButton(null, null);
   }
 
   @Override
   public void onDialogClosed(boolean b) {
-    //nothing to do since directly handlind in onClickListener of SinglechoiceItems
+    //nothing to do since directly handled in onClickListener of SingleChoiceItems
   }
 
   public static CalendarListPreferenceDialogFragmentCompat newInstance(String key) {
     CalendarListPreferenceDialogFragmentCompat fragment = new CalendarListPreferenceDialogFragmentCompat();
     Bundle bundle = new Bundle(1);
-    bundle.putString("key", key);
+    bundle.putString(ARG_KEY, key);
     fragment.setArguments(bundle);
     return fragment;
   }

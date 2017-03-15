@@ -840,8 +840,13 @@ public class MyPreferenceActivity extends ProtectedFragmentActivity implements
         fragment = TimePreferenceDialogFragmentCompat.newInstance(key);
       } else if (preference instanceof PasswordPreference) {
         fragment = PasswordPreferenceDialogFragmentCompat.newInstance(key);
-      } else if (preference.getKey().equals(PrefKey.SECURITY_QUESTION.getKey())) {
+      } else if (key.equals(PrefKey.SECURITY_QUESTION.getKey())) {
         fragment = SecurityQuestionDialogFragmentCompat.newInstance(key);
+      } else if (key.equals(PrefKey.AUTO_BACUP_CLOUD.getKey())) {
+        if (((ListPreference) preference).getEntries().length == 1) {
+          Toast.makeText(getContext(), R.string.auto_backup_cloud_create_backend, Toast.LENGTH_LONG).show();
+          return;
+        }
       }
       if (fragment != null) {
         fragment.setTargetFragment(this, 0);

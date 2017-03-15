@@ -95,6 +95,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
   }
 
   public static final String KEY_RESET_REMOTE_ACCOUNT = "reset_remote_account";
+  public static final String KEY_UPLOAD_AUTO_BACKUP = "upload_auto_backup";
 
   private Map<String, Long> categoryToId;
   private Map<String, Long> payeeToId;
@@ -132,7 +133,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     AccountManager accountManager = AccountManager.get(getContext());
 
     Optional<SyncBackendProvider> backendProviderOptional = SyncBackendProviderFactory.get(
-        getContext(), account, accountManager);
+        getContext(), account);
     if (!backendProviderOptional.isPresent()) {
       AcraHelper.report(new Exception("Could not find backend for account " + account.name));
       syncResult.databaseError = true;
@@ -142,6 +143,17 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     if (!backend.setUp()) {
       syncResult.stats.numIoExceptions++;
       syncResult.delayUntil = 300;
+      return;
+    }
+
+    String autoBackupFileUri = extras.getString(KEY_UPLOAD_AUTO_BACKUP);
+    if (autoBackupFileUri != null) {
+      try {
+        backend.storeBackup(Uri.parse(autoBackupFileUri));
+      } catch (IOException e) {
+        //TODO display notification
+        e.printStackTrace();
+      }
       return;
     }
 
