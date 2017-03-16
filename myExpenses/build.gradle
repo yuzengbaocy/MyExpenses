@@ -67,7 +67,9 @@ android {
             // https://code.google.com/p/android/issues/detail?id=79325
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-project.txt', 'proguard-flavored.txt'
         }
-        //beta.initWith(buildTypes.release)
+        forTest {
+            initWith release
+        }
     }
 
     productFlavors {
@@ -100,7 +102,7 @@ android {
         exclude 'META-INF/dependencies.txt'
         exclude 'META-INF/LGPL2.1'
     }
-    testBuildType "release"
+    testBuildType "forTest"
 }
 
 dependencies {
