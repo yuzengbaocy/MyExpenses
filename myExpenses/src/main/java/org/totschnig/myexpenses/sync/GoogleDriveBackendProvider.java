@@ -93,7 +93,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
    return setUp(false);
   }
 
-  @SuppressLint("CommitPrefEdits")
+  @SuppressLint("ApplySharedPref")
   private boolean setUp(boolean requireSync) {
     long lastFailedSync = sharedPreferences.getLong(KEY_LAST_FAILED_SYNC, 0);
     long currentBackOff = sharedPreferences.getLong(KEY_SYNC_BACKOFF, 0);
@@ -150,14 +150,23 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   }
 
   @Override
-  protected void saveUri(String fileName, Uri uri) throws IOException {
+  protected void saveUriToAccountDir(String fileName, Uri uri) throws IOException {
+    saveUriToFolder(fileName, uri, accountFolder);
+  }
+
+  private void saveUriToFolder(String fileName, Uri uri, DriveFolder driveFolder) throws IOException {
     InputStream in = MyApplication.getInstance().getContentResolver()
         .openInputStream(uri);
     if (in == null) {
       throw new IOException("Could not read " + uri.toString());
     }
     saveBytes(fileName, FileCopyUtils.toByteArray(in),
-        MimeTypeMap.getSingleton().getMimeTypeFromExtension(getFileExtension(fileName)));
+        MimeTypeMap.getSingleton().getMimeTypeFromExtension(getFileExtension(fileName)), driveFolder);
+  }
+
+  @Override
+  public void storeBackup(Uri uri) throws IOException {
+    saveUriToFolder(uri.getLastPathSegment(), uri, getBackupFolder());
   }
 
   @Override
@@ -171,13 +180,12 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     return result;
   }
 
-
   @Override
   void saveFileContents(String fileName, String fileContents, String mimeType) throws IOException {
-    saveBytes(fileName, fileContents.getBytes(), mimeType);
+    saveBytes(fileName, fileContents.getBytes(), mimeType, accountFolder);
   }
 
-  private void saveBytes(String fileName, byte[] contents, String mimeType) throws IOException {
+  private void saveBytes(String fileName, byte[] contents, String mimeType, DriveFolder driveFolder) throws IOException {
     DriveApi.DriveContentsResult driveContentsResult =
         Drive.DriveApi.newDriveContents(googleApiClient).await();
     if (!driveContentsResult.getStatus().isSuccess()) {
@@ -191,7 +199,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
         .setMimeType(mimeType)
         .build();
     DriveFolder.DriveFileResult driveFileResult =
-        accountFolder.createFile(googleApiClient, changeSet, driveContents).await();
+        driveFolder.createFile(googleApiClient, changeSet, driveContents).await();
     if (!driveFileResult.getStatus().isSuccess()) {
       throw new IOException("Error while trying to create file");
     }
@@ -345,6 +353,31 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
                                       int defaultValue) {
     String result = customProperties.get(key);
     return result != null ? Integer.parseInt(result) : defaultValue;
+  }
+
+  private DriveFolder getBackupFolder() throws IOException {
+    if (!requireBaseFolder()) {
+      throw new IOException("Base folder not available");
+    }
+    Query query = new Query.Builder()
+        .addFilter(Filters.eq(SearchableField.TITLE, BACKUP_FOLDER_NAME))
+        .build();
+    DriveApi.MetadataBufferResult metadataBufferResult =
+        baseFolder.queryChildren(googleApiClient, query).await();
+    if (!metadataBufferResult.getStatus().isSuccess()) {
+      throw new IOException("Unable to query for backup folder");
+    }
+    MetadataBuffer metadataBuffer = metadataBufferResult.getMetadataBuffer();
+    if (metadataBuffer.getCount() == 0) {
+      metadataBuffer.release();
+      MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
+          .setTitle(BACKUP_FOLDER_NAME).build();
+      return baseFolder.createFolder(googleApiClient, changeSet).await().getDriveFolder();
+    } else {
+      DriveFolder result = metadataBuffer.get(0).getDriveId().asDriveFolder();
+      metadataBuffer.release();
+      return result;
+    }
   }
   
   private Optional<DriveFolder> getExistingAccountFolder(String uuid) throws IOException {
