@@ -62,6 +62,7 @@ import org.totschnig.myexpenses.provider.TransactionProvider;
 import org.totschnig.myexpenses.sync.json.ChangeSet;
 import org.totschnig.myexpenses.sync.json.TransactionChange;
 import org.totschnig.myexpenses.util.AcraHelper;
+import org.totschnig.myexpenses.util.NotificationBuilderWrapper;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -148,15 +149,15 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
       AcraHelper.report(throwable instanceof Exception ? ((Exception) throwable) : new Exception(throwable));
       GenericAccountService.deactivateSync(account);
       accountManager.setUserData(account, GenericAccountService.KEY_BROKEN, "1");
-      String content = "The backend could not be instantiated. Please try to delete and recreate it.";
+      String content = String.format(Locale.ROOT,
+          "The backend could not be instantiated.Reason: %s. Please try to delete and recreate it.",
+          throwable.getMessage());
       Intent manageIntent = new Intent(getContext(), ManageSyncBackends.class);
-      NotificationCompat.Builder builder =
-          new NotificationCompat.Builder(getContext())
-              .setSmallIcon(R.drawable.ic_notification)
-              .setContentTitle("Synchronization backend deactivated")
-              .setContentText(content)
-              .setContentIntent(PendingIntent.getActivity(getContext(), 0, manageIntent, PendingIntent.FLAG_CANCEL_CURRENT))
-              .setStyle(new NotificationCompat.BigTextStyle().bigText(content));
+      NotificationBuilderWrapper builder =
+          NotificationBuilderWrapper.defaultBigTextStyleBuilder(
+              getContext(), "Synchronization backend deactivated", content)
+          .setContentIntent(PendingIntent.getActivity(
+              getContext(), 0, manageIntent, PendingIntent.FLAG_CANCEL_CURRENT));
       Notification notification = builder.build();
       notification.flags = Notification.FLAG_AUTO_CANCEL;
       ((NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE)).notify(0,notification);
@@ -173,8 +174,13 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
       try {
         backend.storeBackup(Uri.parse(autoBackupFileUri));
       } catch (IOException e) {
-        //TODO display notification
-        e.printStackTrace();
+        String content = getContext().getString(
+            R.string.auto_backup_cloud_failure, autoBackupFileUri, account.name)
+            + " " + e.getMessage();
+        Notification notification = NotificationBuilderWrapper.defaultBigTextStyleBuilder(
+            getContext(),getContext().getString(R.string.pref_auto_backup_title), content).build();
+        notification.flags = Notification.FLAG_AUTO_CANCEL;
+        ((NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE)).notify(0,notification);
       }
       return;
     }
