@@ -82,3 +82,4 @@
 }
 
 -keep class org.totschnig.myexpenses.sync.GoogleDriveBackendProviderFactory
+-keep class org.totschnig.myexpenses.activity.PlatformImageViewIntentProvider

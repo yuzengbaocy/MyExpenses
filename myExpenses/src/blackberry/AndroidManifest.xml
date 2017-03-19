@@ -1,0 +1,9 @@
+<manifest package="org.totschnig.myexpenses"
+          xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <activity
+            android:name=".activity.SimpleImageActivity"
+            android:theme="@style/Launch"/>
+    </application>
+</manifest>
