@@ -77,6 +77,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   private SharedPreferences sharedPreferences;
 
   GoogleDriveBackendProvider(Context context, android.accounts.Account account, AccountManager accountManager) throws SyncParseException {
+    super(context);
     sharedPreferences = context.getSharedPreferences("google_drive_backend", 0);
     folderId = accountManager.getUserData(account, GenericAccountService.KEY_SYNC_PROVIDER_URL);
     if (folderId == null) {
