@@ -7,7 +7,7 @@ GPL licenced Android Expense Tracking App.
   track of your expenses and incomes, and to export them as QIF files into a desktop
   finance tool, like <a href="http://www.grisbi.org">Grisbi</a> (Open Source), <a
   href="http://www.gnucash.org">Gnucash</a> (Open Source), MS Money, Quicken or Wiso Mein Geld.<br />
-  Requires Android 2.1 and above.
+  Requires Android 2.3 and above.
   
   [![Bountysource](https://www.bountysource.com/badge/tracker?tracker_id=267118)](https://www.bountysource.com/trackers/267118-myexpenses?utm_source=267118&utm_medium=shield&utm_campaign=TRACKER_BADGE)
 
@@ -58,8 +58,6 @@ Build
 ```
 git clone --depth 1 https://github.com/mtotschnig/MyExpenses.git
 cd MyExpenses
-git submodule init
-git submodule update
 export ANDROID_HOME={sdk-dir}
 ./gradlew build
 ```

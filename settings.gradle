@@ -1,4 +1,2 @@
-include ':StickyListHeaders:library'
 include ':PlayLicensingOrig'
 include ':myExpenses'
-include ':dav4android'

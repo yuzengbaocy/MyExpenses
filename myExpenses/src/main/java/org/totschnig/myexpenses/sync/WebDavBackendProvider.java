@@ -47,7 +47,8 @@ public class WebDavBackendProvider extends AbstractSyncBackendProvider {
    */
   private String accountUuid;
 
-  WebDavBackendProvider(android.accounts.Account account, AccountManager accountManager) throws SyncParseException {
+  WebDavBackendProvider(Context context, android.accounts.Account account, AccountManager accountManager) throws SyncParseException {
+    super(context);
     String url = accountManager.getUserData(account, GenericAccountService.KEY_SYNC_PROVIDER_URL);
     String userName = accountManager.getUserData(account, GenericAccountService.KEY_SYNC_PROVIDER_USERNAME);
     String password = accountManager.getPassword(account);
@@ -79,7 +80,7 @@ public class WebDavBackendProvider extends AbstractSyncBackendProvider {
         metaData.put(RequestBody.create(MIME_JSON, buildMetadata(account)), null, false);
         createWarningFile();
       }
-    } catch (HttpException | at.bitfire.dav4android.exception.HttpException | IOException e) {
+    } catch (at.bitfire.dav4android.exception.HttpException | IOException e) {
       return false;
     }
     return true;
@@ -108,7 +109,7 @@ public class WebDavBackendProvider extends AbstractSyncBackendProvider {
           lockfile.put(RequestBody.create(MediaType.parse("text/plain; charset=utf-8"), ""), null, false);
           return true;
         }
-      } catch (HttpException | IOException | at.bitfire.dav4android.exception.HttpException e) {
+      } catch (IOException | at.bitfire.dav4android.exception.HttpException e) {
         return false;
       }
     } else {
@@ -156,27 +157,19 @@ public class WebDavBackendProvider extends AbstractSyncBackendProvider {
   }
 
   private void saveUriToFolder(String fileName, Uri uri, String folder) throws IOException {
-    try {
-      InputStream in = MyApplication.getInstance().getContentResolver()
-          .openInputStream(uri);
-      if (in == null) {
-        throw new IOException("Could not read " + uri.toString());
-      }
-      webDavClient.upload(folder, fileName, toByteArray(in),
-          MediaType.parse(MimeTypeMap.getSingleton().getMimeTypeFromExtension(
-              getFileExtension(fileName))));
-    } catch (HttpException e) {
-      throw e.toIOException();
+    InputStream in = MyApplication.getInstance().getContentResolver()
+        .openInputStream(uri);
+    if (in == null) {
+      throw new IOException("Could not read " + uri.toString());
     }
+    webDavClient.upload(folder, fileName, toByteArray(in),
+        MediaType.parse(MimeTypeMap.getSingleton().getMimeTypeFromExtension(
+            getFileExtension(fileName))));
   }
 
   @Override
   public void storeBackup(Uri uri) throws IOException {
-    try {
-      webDavClient.mkCol(BACKUP_FOLDER_NAME);
-    } catch (HttpException e) {
-      throw e.toIOException();
-    }
+    webDavClient.mkCol(BACKUP_FOLDER_NAME);
     saveUriToFolder(uri.getLastPathSegment(), uri, BACKUP_FOLDER_NAME);
   }
 

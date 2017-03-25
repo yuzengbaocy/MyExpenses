@@ -52,11 +52,13 @@ android {
             signingConfig signingConfigs.release
             manifestPlaceholders = [appName: "@string/app_name", debug: "false"]
             resValue "string", "content_authority", "org.totschnig.myexpenses"
+            resValue "string", "sync_account_type", "org.totschnig.myexpenses.sync"
         }
         beta {
             initWith release
             applicationIdSuffix ".beta"
             resValue "string", "content_authority", "org.totschnig.myexpenses.beta"
+            resValue "string", "sync_account_type", "org.totschnig.myexpenses.beta.sync"
         }
         debug {
             applicationIdSuffix ".debug"
@@ -66,6 +68,7 @@ android {
             //shrinkResources true // need to wait for resolution
             // https://code.google.com/p/android/issues/detail?id=79325
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-project.txt', 'proguard-flavored.txt'
+            resValue "string", "sync_account_type", "org.totschnig.myexpenses.debug.sync"
         }
         forTest {
             initWith release
@@ -118,17 +121,17 @@ dependencies {
     provided 'javax.annotation:jsr250-api:1.0'
     compile 'frankiesardo:icepick:3.2.0'
     apt 'frankiesardo:icepick-processor:3.2.0'
-    compile 'com.google.code.gson:gson:2.7'
-    provided 'com.google.auto.value:auto-value:1.2'
-    apt 'com.google.auto.value:auto-value:1.2'
-    apt 'com.ryanharter.auto.value:auto-value-gson:0.4.2'
-    provided 'com.ryanharter.auto.value:auto-value-gson:0.4.2'
-    apt 'com.gabrielittner.auto.value:auto-value-cursor:1.0.0'
+    compile 'com.google.code.gson:gson:2.8.0'
+    provided 'com.google.auto.value:auto-value:1.4'
+    apt 'com.google.auto.value:auto-value:1.4'
+    apt 'com.ryanharter.auto.value:auto-value-gson:0.4.6'
+    provided 'com.ryanharter.auto.value:auto-value-gson:0.4.6'
+    apt 'com.gabrielittner.auto.value:auto-value-cursor:1.0.1'
     compile 'com.gabrielittner.auto.value:auto-value-cursor-annotations:1.0.0'
-    compile project(':StickyListHeaders:library')
+    compile 'com.github.mtotschnig:StickyListHeaders:master-SNAPSHOT'
     compile 'com.pavelsikun:material-seekbar-preference:2.3.0'
     compile project(':PlayLicensingOrig')
-    compile project(':dav4android')
+    compile 'com.gitlab.bitfireAT:dav4android:master-SNAPSHOT'
     compile 'com.android.support:appcompat-v7:' + project.androidSupportLibraryVersion
     compile 'com.android.support:support-v4:' + project.androidSupportLibraryVersion
     compile 'com.android.support:recyclerview-v7:' + project.androidSupportLibraryVersion
