@@ -172,7 +172,11 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
 
   @Override
   protected long getLastSequence() throws IOException {
-    MetadataBuffer metadataBuffer = accountFolder.listChildren(googleApiClient).await().getMetadataBuffer();
+    DriveApi.MetadataBufferResult metadataBufferResult = accountFolder.listChildren(googleApiClient).await();
+    if (!metadataBufferResult.getStatus().isSuccess()) {
+      throw new IOException("Error while trying to get last sequence");
+    }
+    MetadataBuffer metadataBuffer = metadataBufferResult.getMetadataBuffer();
     Long result = Stream.of(metadataBuffer).filter(metadata -> isNewerJsonFile(0, metadata.getTitle()))
         .map(metadata -> getSequenceFromFileName(metadata.getTitle()))
         .max(this::compareInt)
@@ -260,8 +264,12 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   }
 
   @Override
-  public ChangeSet getChangeSetSince(long sequenceNumber, Context context) throws IOException {
-    MetadataBuffer metadataBuffer = accountFolder.listChildren(googleApiClient).await().getMetadataBuffer();
+  public @NonNull ChangeSet getChangeSetSince(long sequenceNumber, Context context) throws IOException {
+    DriveApi.MetadataBufferResult metadataBufferResult = accountFolder.listChildren(googleApiClient).await();
+    if (!metadataBufferResult.getStatus().isSuccess()) {
+      throw new IOException("Error while trying to get change set");
+    }
+    MetadataBuffer metadataBuffer = metadataBufferResult.getMetadataBuffer();
     ChangeSet result = merge(Stream.of(metadataBuffer)
         .filter(metadata -> isNewerJsonFile(sequenceNumber, metadata.getTitle()))
         .map(this::getChangeSetFromMetadata))
@@ -301,7 +309,11 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     List<AccountMetaData> result = null;
     if (setUp(false)) {
       if (requireBaseFolder()) {
-        MetadataBuffer metadataBuffer = baseFolder.listChildren(googleApiClient).await().getMetadataBuffer();
+        DriveApi.MetadataBufferResult metadataBufferResult = baseFolder.listChildren(googleApiClient).await();
+        if (!metadataBufferResult.getStatus().isSuccess()) {
+          throw new IOException("Error while trying to get account list");
+        }
+        MetadataBuffer metadataBuffer = metadataBufferResult.getMetadataBuffer();
         result = Stream.of(metadataBuffer)
             .map(this::getAccountMetaDataFromDriveMetadata)
             .filter(Optional::isPresent)
@@ -373,7 +385,11 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
       metadataBuffer.release();
       MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
           .setTitle(BACKUP_FOLDER_NAME).build();
-      return baseFolder.createFolder(googleApiClient, changeSet).await().getDriveFolder();
+      DriveFolder.DriveFolderResult driveFolderResult = baseFolder.createFolder(googleApiClient, changeSet).await();
+      if (!driveFolderResult.getStatus().isSuccess()) {
+        throw new IOException("Unable to create backup folder");
+      }
+      return driveFolderResult.getDriveFolder();
     } else {
       DriveFolder result = metadataBuffer.get(0).getDriveId().asDriveFolder();
       metadataBuffer.release();
