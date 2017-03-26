@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.webkit.MimeTypeMap;
 
 import com.annimon.stream.Collectors;
@@ -48,6 +47,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import timber.log.Timber;
+
 public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   private static final String KEY_LOCK_TOKEN = "lockToken";
   private static final String KEY_OWNED_BY_US = "ownedByUs";
@@ -69,7 +70,6 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   private static final CustomPropertyKey LOCK_TOKEN_KEY =
       new CustomPropertyKey(KEY_LOCK_TOKEN, CustomPropertyKey.PRIVATE);
   private static final long LOCK_TIMEOUT = BuildConfig.DEBUG ? 60 * 1000 : 30 * 60 * 1000;
-  private static final String TAG = GoogleDriveBackendProvider.class.getSimpleName();
   private String folderId;
   private DriveFolder baseFolder, accountFolder;
 
@@ -100,19 +100,19 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     long currentBackOff = sharedPreferences.getLong(KEY_SYNC_BACKOFF, 0);
     long now = System.currentTimeMillis();
     if (lastFailedSync != 0 && lastFailedSync + currentBackOff > now) {
-      Log.e(TAG, String.format("Not syncing, waiting for another %d milliseconds", lastFailedSync + currentBackOff - now));
+      Timber.e("Not syncing, waiting for another %d milliseconds", lastFailedSync + currentBackOff - now);
       return !requireSync;
     }
     if (googleApiClient.blockingConnect().isSuccess()) {
       Status status = Drive.DriveApi.requestSync(googleApiClient).await();
       if (!status.isSuccess()) {
-        Log.e(TAG, "Sync failed with code " + status.getStatusCode());
+        Timber.e("Sync failed with code %d", status.getStatusCode());
         long newBackOff = Math.min(sharedPreferences.getLong(KEY_SYNC_BACKOFF, 5000) * 2, 3600000);
-        Log.e(TAG, String.format("Backing off for %d milliseconds ", newBackOff));
+        Timber.e("Backing off for %d milliseconds ", newBackOff);
         sharedPreferences.edit().putLong(KEY_LAST_FAILED_SYNC, now).putLong(KEY_SYNC_BACKOFF, newBackOff).commit();
         return !requireSync;
       } else {
-        Log.i(TAG, "Sync succeeded");
+        Timber.i("Sync succeeded");
         sharedPreferences.edit().remove(KEY_LAST_FAILED_SYNC).remove(KEY_SYNC_BACKOFF).apply();
         return true;
       }
