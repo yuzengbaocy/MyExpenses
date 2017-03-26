@@ -1,7 +1,6 @@
 package org.totschnig.myexpenses.di;
 
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import org.acra.config.ACRAConfiguration;
 import org.acra.config.ACRAConfigurationException;
@@ -15,6 +14,7 @@ import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
+import timber.log.Timber;
 
 @Module
 public class AppModule {
@@ -46,7 +46,7 @@ public class AppModule {
           .setExcludeMatchingSharedPreferencesKeys(new String[]{"planner_calendar_path","password"})
           .build();
     } catch (ACRAConfigurationException e) {
-      Log.e("ACRA", "ACRA not initialized", e);
+      Timber.e(e, "ACRA not initialized");
       return null;
     }
   }

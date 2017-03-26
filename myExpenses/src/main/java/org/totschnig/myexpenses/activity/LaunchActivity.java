@@ -9,7 +9,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
@@ -31,6 +30,8 @@ import org.totschnig.myexpenses.util.ContribUtils;
 
 import java.io.File;
 import java.util.Map;
+
+import timber.log.Timber;
 
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_ACCOUNTID;
 
@@ -120,9 +121,9 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
         edit.apply();
       }
       if (prev_version < 28) {
-        Log.i("MyExpenses", String.format("Upgrading to version 28: Purging %d transactions from datbase",
+        Timber.i("Upgrading to version 28: Purging %d transactions from datbase",
             getContentResolver().delete(TransactionProvider.TRANSACTIONS_URI,
-                KEY_ACCOUNTID + " not in (SELECT _id FROM accounts)", null)));
+                KEY_ACCOUNTID + " not in (SELECT _id FROM accounts)", null));
       }
       if (prev_version < 30) {
         if (!"".equals(PrefKey.SHARE_TARGET.getString(""))) {

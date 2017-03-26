@@ -37,7 +37,6 @@ import android.support.v4.provider.DocumentFile;
 import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.preference.PreferenceManager;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.android.calendar.CalendarContractCompat;
 import com.android.calendar.CalendarContractCompat.Calendars;
@@ -75,6 +74,8 @@ import java.util.UUID;
 
 import javax.inject.Inject;
 
+import timber.log.Timber;
+
 public class MyApplication extends MultiDexApplication implements
     OnSharedPreferenceChangeListener {
 
@@ -106,7 +107,6 @@ public class MyApplication extends MultiDexApplication implements
       + ",'')";
 
   private long mLastPause = 0;
-  public final static String TAG = "MyExpenses";
 
   private boolean isLocked;
 
@@ -165,6 +165,9 @@ public class MyApplication extends MultiDexApplication implements
       licenceHandler.init();
       initPlannerInternal(60000);
       registerWidgetObservers();
+    }
+    if (BuildConfig.DEBUG) {
+      Timber.plant(new Timber.DebugTree());
     }
   }
 
@@ -408,9 +411,7 @@ public class MyApplication extends MultiDexApplication implements
         String found = DbUtils.getString(c, 0);
         String expected = PrefKey.PLANNER_CALENDAR_PATH.getString("");
         if (!found.equals(expected)) {
-          Log.w(TAG, String.format(
-              "found calendar, but path did not match; expected %s ; got %s",
-              expected, found));
+          Timber.w("found calendar, but path did not match; expected %s ; got %s", expected, found);
           result = false;
         } else {
           int syncEvents = c.getInt(1);
@@ -426,12 +427,12 @@ public class MyApplication extends MultiDexApplication implements
               ContentValues values = new ContentValues(1);
               values.put(CalendarContractCompat.Calendars.SYNC_EVENTS, 1);
               getContentResolver().update(builder.build(), values, null, null);
-              Log.i(TAG, "Fixing sync_events for planning calendar ");
+              Timber.i("Fixing sync_events for planning calendar ");
             }
           }
         }
       } else {
-        Log.i(TAG, "configured calendar has been deleted: " + calendarId);
+        Timber.i("configured calendar %s has been deleted: ", calendarId);
         result = false;
       }
       c.close();
@@ -488,7 +489,7 @@ public class MyApplication extends MultiDexApplication implements
     }
     if (c.moveToFirst()) {
       plannerCalendarId = String.valueOf(c.getLong(0));
-      Log.i(TAG, "found a preexisting calendar: " + plannerCalendarId);
+      Timber.i("found a preexisting calendar %d " + plannerCalendarId);
       c.close();
     } else {
       c.close();
@@ -522,7 +523,7 @@ public class MyApplication extends MultiDexApplication implements
             "Inserting planner calendar failed, last path segment is %s", plannerCalendarId)));
         return INVALID_CALENDAR_ID;
       }
-      Log.i(TAG, "successfully set up new calendar: " + plannerCalendarId);
+      Timber.i("successfully set up new calendar: %s" + plannerCalendarId);
     }
     if (persistToSharedPref) {
       // onSharedPreferenceChanged should now trigger initPlanner
@@ -540,7 +541,7 @@ public class MyApplication extends MultiDexApplication implements
   }
 
   private void initPlannerInternal(long delay) {
-    Log.i(TAG, "initPlanner called, setting plan executor to run with delay " + delay);
+    Timber.i("initPlanner called, setting plan executor to run with delay %d", delay);
     PlanExecutor.setAlarm(this, System.currentTimeMillis() + delay);
   }
 
@@ -570,7 +571,7 @@ public class MyApplication extends MultiDexApplication implements
   public static void copyEventData(Cursor eventCursor, ContentValues eventValues) {
     eventValues.put(Events.DTSTART, DbUtils.getLongOrNull(eventCursor, 0));
     //older Android versions have populated both dtend and duration
-    //restoring those on newer versions leads to IllegalArgumentexception
+    //restoring those on newer versions leads to IllegalArgumentException
     Long dtEnd = DbUtils.getLongOrNull(eventCursor, 1);
     String dtDuration = dtEnd != null ? null : eventCursor.getString(6);
     eventValues.put(Events.DTEND, dtEnd);
@@ -590,7 +591,7 @@ public class MyApplication extends MultiDexApplication implements
                                            long templateId) {
     Uri uri = getContentResolver().insert(Events.CONTENT_URI, eventValues);
     long planId = ContentUris.parseId(uri);
-    Log.i(TAG, "event copied with new id: " + planId);
+    Timber.i("event copied with new id: ", planId);
     ContentValues planValues = new ContentValues();
     planValues.put(DatabaseConstants.KEY_PLANID, planId);
     int updated = getContentResolver().update(
@@ -633,7 +634,7 @@ public class MyApplication extends MultiDexApplication implements
           + " AS path"}, null, null, null);
       if (c != null && c.moveToFirst()) {
         String path = c.getString(0);
-        Log.i(TAG, "storing calendar path : " + path);
+        Timber.i("storing calendar path %s ", path);
         PrefKey.PLANNER_CALENDAR_PATH.putString(path);
       } else {
         AcraHelper.report(new IllegalStateException(
@@ -668,13 +669,11 @@ public class MyApplication extends MultiDexApplication implements
                   Events.CALENDAR_ID + " = ?", new String[]{oldValue}, null);
               if (eventCursor != null) {
                 if (eventCursor.moveToFirst()) {
-                  // Log.i("DEBUG",
-                  // DatabaseUtils.dumpCursorToString(eventCursor));
                   copyEventData(eventCursor, eventValues);
                   if (insertEventAndUpdatePlan(eventValues, templateId)) {
-                    Log.i(TAG, "updated plan id in template:" + templateId);
+                    Timber.i("updated plan id in template %d" + templateId);
                     int deleted = cr.delete(eventUri, null, null);
-                    Log.i(TAG, "deleted old event: " + deleted);
+                    Timber.i("deleted old event %d", deleted);
                   }
                 }
                 eventCursor.close();
@@ -711,6 +710,7 @@ public class MyApplication extends MultiDexApplication implements
     return am.getMemoryClass();
   }
 
+  //TODO move out to helper class
   /**
    * 1.check if a planner is configured. If no, nothing to do 2.check if the
    * configured planner exists on the device 2.1 if yes go through all events
@@ -725,9 +725,8 @@ public class MyApplication extends MultiDexApplication implements
     String TAG = "restorePlanner";
     String calendarId = PrefKey.PLANNER_CALENDAR_ID.getString("-1");
     String calendarPath = PrefKey.PLANNER_CALENDAR_PATH.getString("");
-    Log.d(TAG, String.format(
-        "restore plans to calendar with id %s and path %s", calendarId,
-        calendarPath));
+    Timber.d("restore plans to calendar with id %s and path %s", calendarId,
+        calendarPath);
     int restoredPlansCount = 0;
     if (!(calendarId.equals("-1") || calendarPath.equals(""))) {
       Cursor c = cr.query(Calendars.CONTENT_URI,
@@ -736,8 +735,7 @@ public class MyApplication extends MultiDexApplication implements
       if (c != null) {
         if (c.moveToFirst()) {
           mPlannerCalendarId = c.getString(0);
-          Log.d(TAG, String.format("restorePlaner: found calendar with id %s",
-              mPlannerCalendarId));
+          Timber.d(String.format("restorePlaner: found calendar with id %s", mPlannerCalendarId));
           PrefKey.PLANNER_CALENDAR_ID.putString(mPlannerCalendarId);
           ContentValues planValues = new ContentValues(), eventValues = new ContentValues();
           eventValues.put(Events.CALENDAR_ID,
@@ -760,17 +758,15 @@ public class MyApplication extends MultiDexApplication implements
                 if (eventCursor != null) {
                   if (eventCursor.moveToFirst()) {
                     long newPlanId = eventCursor.getLong(0);
-                    Log.d(TAG, String.format(
-                        "Looking for event with uuid %s: found id %d. "
-                            + "Original event had id %d", uuid, newPlanId,
-                        oldPlanId));
+                    Timber.d("Looking for event with uuid %s: found id %d. Original event had id %d",
+                        uuid, newPlanId, oldPlanId);
                     if (newPlanId != oldPlanId) {
                       planValues.put(DatabaseConstants.KEY_PLANID, newPlanId);
                       int updated = cr.update(ContentUris.withAppendedId(
                           Template.CONTENT_URI, templateId), planValues, null,
                           null);
                       if (updated > 0) {
-                        Log.i(TAG, "updated plan id in template:" + templateId);
+                        Timber.i("updated plan id in template: %d", templateId);
                         restoredPlansCount++;
                       }
                     } else {
@@ -780,12 +776,8 @@ public class MyApplication extends MultiDexApplication implements
                   }
                   eventCursor.close();
                 }
-                Log.d(
-                    TAG,
-                    String
-                        .format(
-                            "Looking for event with uuid %s did not find, now reconstructing from cache",
-                            uuid));
+                Timber.d("Looking for event with uuid %s did not find, now reconstructing from cache",
+                    uuid);
                 eventCursor = cr.query(TransactionProvider.EVENT_CACHE_URI,
                     buildEventProjection(), Events.DESCRIPTION + " LIKE ?",
                     new String[]{"%" + uuid + "%"}, null);
@@ -795,7 +787,7 @@ public class MyApplication extends MultiDexApplication implements
                     found = true;
                     copyEventData(eventCursor, eventValues);
                     if (insertEventAndUpdatePlan(eventValues, templateId)) {
-                      Log.i(TAG, "updated plan id in template:" + templateId);
+                      Timber.i("updated plan id in template %d", templateId);
                       restoredPlansCount++;
                     }
                   }

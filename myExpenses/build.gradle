@@ -131,7 +131,7 @@ dependencies {
     compile 'com.github.mtotschnig:StickyListHeaders:master-SNAPSHOT'
     compile 'com.pavelsikun:material-seekbar-preference:2.3.0'
     compile project(':PlayLicensingOrig')
-    compile 'com.gitlab.bitfireAT:dav4android:master-SNAPSHOT'
+    compile 'com.gitlab.mtotschn:dav4android:fbaa5b51'
     compile 'com.android.support:appcompat-v7:' + project.androidSupportLibraryVersion
     compile 'com.android.support:support-v4:' + project.androidSupportLibraryVersion
     compile 'com.android.support:recyclerview-v7:' + project.androidSupportLibraryVersion
@@ -161,6 +161,8 @@ dependencies {
     compile 'com.android.support:multidex:1.0.1'
 
     compile 'org.apache.commons:commons-collections4:4.1'
+
+    compile 'com.jakewharton.timber:timber:4.5.1'
 
     playCompile gmsCompile
     amazonCompile gmsCompile
