@@ -39,7 +39,6 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
 
   public static final String TAG_VERSION_INFO = "VERSION_INFO";
   private OpenIabHelper mHelper;
-  private String tag = LaunchActivity.class.getName();
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -50,7 +49,7 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
         try {
           mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
             public void onIabSetupFinished(IabResult result) {
-              Log.d(tag, "Setup finished.");
+              Timber.d("Setup finished.");
               if (mHelper==null) {
                 return;
               }
@@ -238,7 +237,7 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
       super.onDestroy();
 
       // very important:
-      Log.d(tag, "Destroying helper.");
+      Timber.d("Destroying helper.");
       if (mHelper != null) mHelper.dispose();
       mHelper = null;
   }

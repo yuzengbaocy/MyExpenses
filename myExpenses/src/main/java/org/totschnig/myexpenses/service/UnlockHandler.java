@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 
 import com.google.android.vending.licensing.PreferenceObfuscator;
 
@@ -20,6 +19,8 @@ import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
 import org.totschnig.myexpenses.util.Utils;
 
+import timber.log.Timber;
+
 /**
  * This handler is used in two different scenarios:
  * 1) MyExpensesContrib calls MyExpenses.MyService when having retrieved the license status and posts a message to this handler
@@ -30,15 +31,15 @@ public class UnlockHandler extends Handler {
   private static final int STATUS_TEMPORARY = 3;
   private static final int STATUS_PERMANENT = 4;
   private static final int STATUS_FINAL = 7;
-  
+
   @Override
   public void handleMessage(Message msg) {
     MyApplication app = MyApplication.getInstance();
     if (((InappPurchaseLicenceHandler) app.getLicenceHandler()).getContribStatus().equals(InappPurchaseLicenceHandler.STATUS_ENABLED_LEGACY_SECOND)) {
       return;
     }
-    Log.i(MyApplication.TAG,"Now handling answer from license verification service; got status "+msg.what);
-    switch(msg.what) {
+    Timber.i("Now handling answer from license verification service; got status %d.", msg.what);
+    switch (msg.what) {
       case STATUS_FINAL:
         doUnlock();
         break;
@@ -62,7 +63,7 @@ public class UnlockHandler extends Handler {
     mPreferences.commit();
     licenceHandler.refresh(true);
     showNotif(Utils.concatResStrings(app, " ",
-            R.string.licence_validation_premium, R.string.thank_you));
+        R.string.licence_validation_premium, R.string.thank_you));
   }
 
   private void showNotif(String text) {
@@ -79,7 +80,7 @@ public class UnlockHandler extends Handler {
                 .setBigContentTitle(title)
                 .bigText(text))
             .setContentIntent(PendingIntent.getActivity(app, 0, new Intent(app, MyExpenses.class), 0));
-    Notification notification  = builder.build();
+    Notification notification = builder.build();
     notification.flags = Notification.FLAG_AUTO_CANCEL;
     notificationManager.notify(0, notification);
   }

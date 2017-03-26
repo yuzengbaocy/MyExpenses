@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.provider.Settings.Secure;
-import android.util.Log;
 
 import com.google.android.vending.licensing.AESObfuscator;
 import com.google.android.vending.licensing.PreferenceObfuscator;
@@ -18,6 +17,8 @@ import org.totschnig.myexpenses.contrib.Config;
 import org.totschnig.myexpenses.preference.PrefKey;
 
 import java.util.ArrayList;
+
+import timber.log.Timber;
 
 public class InappPurchaseLicenceHandler extends LicenceHandler {
 
@@ -93,7 +94,7 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
           String.valueOf(now));
     } else {
       long timeSincePurchase = now - timestamp;
-      Log.d(MyApplication.TAG,"time since initial check : " + timeSincePurchase);
+      Timber.d("time since initial check : %d", timeSincePurchase);
         //give user 2 days to request refund
       if (timeSincePurchase> REFUND_WINDOW) {
         status = extended ? STATUS_EXTENDED_PERMANENT : STATUS_ENABLED_PERMANENT;
@@ -153,7 +154,7 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
   public void refreshDo() {
     PreferenceObfuscator p = getLicenseStatusPrefs(context);
     String contribStatus = p.getString(PrefKey.LICENSE_STATUS.getKey(), STATUS_DISABLED);
-    Log.d(TAG, "contrib status is now " + contribStatus);
+    Timber.d("contrib status is now %s", contribStatus);
     setContribStatus(contribStatus);
   }
 
