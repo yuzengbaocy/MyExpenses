@@ -90,7 +90,6 @@ public class AmaAndAdmobAdHandler extends AdHandler {
   //Ads
   private void showBanner() {
     if (!WITH_AMA) {
-      amaView.setVisibility(View.GONE);
       showBannerAdmob();
       return;
     }
