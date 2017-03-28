@@ -4,7 +4,8 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 import android.os.Messenger;
-import android.util.Log;
+
+import timber.log.Timber;
 
 public class MyService extends Service {
 
@@ -19,7 +20,7 @@ public class MyService extends Service {
    */
   @Override
   public IBinder onBind(Intent intent) {
-    Log.i("DEBUG","binding");
+    Timber.d("binding");
     return mMessenger.getBinder();
   }
 }

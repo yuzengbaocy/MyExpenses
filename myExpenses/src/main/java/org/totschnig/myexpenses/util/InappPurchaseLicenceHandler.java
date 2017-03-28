@@ -23,7 +23,6 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
 
   private String contribStatus = InappPurchaseLicenceHandler.STATUS_DISABLED;
   public static boolean IS_CHROMIUM = Build.BRAND.equals("chromium");
-  private static final String TAG = InappPurchaseLicenceHandler.class.getSimpleName();
 
   public static final long REFUND_WINDOW = 172800000L;
   public static String STATUS_DISABLED = "0";

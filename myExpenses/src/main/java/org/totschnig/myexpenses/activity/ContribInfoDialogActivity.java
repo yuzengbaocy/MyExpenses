@@ -3,26 +3,26 @@ package org.totschnig.myexpenses.activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Toast;
 
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabResult;
 import org.onepf.oms.appstore.googleUtils.Purchase;
-import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.contrib.Config;
 import org.totschnig.myexpenses.dialog.ContribDialogFragment;
 import org.totschnig.myexpenses.dialog.MessageDialogFragment.MessageDialogListener;
 import org.totschnig.myexpenses.model.ContribFeature;
-import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.util.AcraHelper;
+import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
 import org.totschnig.myexpenses.util.Utils;
 
 import java.util.UUID;
+
+import timber.log.Timber;
 
 
 public class ContribInfoDialogActivity extends ProtectedFragmentActivity
@@ -31,9 +31,8 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
   public static final String KEY_TAG = "tag";
   private OpenIabHelper mHelper;
   private boolean mSetupDone;
-  private String mPayload = (InappPurchaseLicenceHandler.IS_CHROMIUM || BuildConfig.FLAVOR.equals("amazon"))
+  private String mPayload = (InappPurchaseLicenceHandler.IS_CHROMIUM || DistribHelper.isAmazon())
       ? null : UUID.randomUUID().toString();
-  private String tag = ContribInfoDialogActivity.class.getName();
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +44,7 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
       try {
         mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
           public void onIabSetupFinished(IabResult result) {
-            Log.d(tag, "Setup finished.");
+            Timber.d("Setup finished.");
 
             if (!result.isSuccess()) {
               mSetupDone = false;
@@ -54,7 +53,7 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
               return;
             }
             mSetupDone = true;
-            Log.d(tag, "Setup successful.");
+            Timber.d("Setup successful.");
           }
         });
       } catch (SecurityException e) {
@@ -90,7 +89,7 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
   }
 
   public void contribBuyDo(boolean extended) {
-    if (BuildConfig.FLAVOR.equals("blackberry")) {
+    if (DistribHelper.isBlackberry()) {
       contribBuyBlackBerry();
       return;
     }
@@ -106,24 +105,21 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
     final IabHelper.OnIabPurchaseFinishedListener mPurchaseFinishedListener =
         new IabHelper.OnIabPurchaseFinishedListener() {
           public void onIabPurchaseFinished(IabResult result, Purchase purchase) {
-            Log.d(tag,
-                "Purchase finished: " + result + ", purchase: " + purchase);
+            Timber.d("Purchase finished: %s, purchase: %s", result, purchase);
             if (result.isFailure()) {
-              Log.w(tag,
-                  "Purchase failed: " + result + ", purchase: " + purchase);
+              Timber.w("Purchase failed: %s, purchase: %s", result, purchase);
               complain(getString(R.string.premium_failed_or_canceled));
             } else if (!verifyDeveloperPayload(purchase)) {
               complain("Error purchasing. Authenticity verification failed.");
             } else {
-              Log.d(tag, "Purchase successful.");
+              Timber.d("Purchase successful.");
 
               boolean isPremium = purchase.getSku().equals(Config.SKU_PREMIUM);
               if (isPremium ||
                   purchase.getSku().equals(Config.SKU_EXTENDED) ||
                   purchase.getSku().equals(Config.SKU_PREMIUM2EXTENDED)) {
                 // bought the premium upgrade!
-                Log.d(tag,
-                    "Purchase is premium upgrade. Congratulating user.");
+                Timber.d("Purchase is premium upgrade. Congratulating user.");
                 Toast.makeText(
                     ContribInfoDialogActivity.this,
                     Utils.concatResStrings(
@@ -163,7 +159,7 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
   }
 
   void complain(String message) {
-    Log.e(tag, "**** InAppPurchase Error: " + message);
+    Timber.e("**** InAppPurchase Error: %s", message);
     Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
   }
 
@@ -190,9 +186,7 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
 
   @Override
   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-    Log.d(tag,
-        "onActivityResult() requestCode: " + requestCode +
-            " resultCode: " + resultCode + " data: " + data);
+    Timber.d("onActivityResult() requestCode: %d resultCode: %d data: %s", requestCode, resultCode, data);
 
     // Pass on the activity result to the helper for handling
     if (mHelper == null || !mHelper.handleActivityResult(requestCode, resultCode, data)) {
@@ -201,7 +195,7 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
       // billing...
       finish(false);
     } else {
-      Log.d(tag, "onActivityResult handled by IABUtil.");
+      Timber.d("onActivityResult handled by IABUtil.");
     }
   }
 
@@ -211,7 +205,7 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
     super.onDestroy();
 
     // very important:
-    Log.d(tag, "Destroying helper.");
+    Timber.d("Destroying helper.");
     if (mHelper != null) mHelper.dispose();
     mHelper = null;
   }
