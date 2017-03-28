@@ -7,8 +7,4 @@
     android:layout_height="wrap_content"
     tools:ignore="MergeRootFrame">
 
-    <com.amazon.device.ads.AdLayout
-        android:id="@+id/amaView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
 </FrameLayout>

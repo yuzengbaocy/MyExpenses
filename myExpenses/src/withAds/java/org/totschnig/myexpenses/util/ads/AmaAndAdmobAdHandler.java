@@ -1,6 +1,6 @@
-package org.totschnig.myexpenses.util;
+package org.totschnig.myexpenses.util.ads;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.util.TypedValue;
 import android.view.View;
@@ -23,14 +23,13 @@ import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.model.ContribFeature;
 import org.totschnig.myexpenses.preference.PrefKey;
 
-public class AmaAndAdmobAdHandler implements AdHandler {
+public class AmaAndAdmobAdHandler extends AdHandler {
   public static final int DAY_IN_MILLIS = BuildConfig.DEBUG ? 1 : 86400000;
   public static final int INITIAL_GRACE_DAYS = BuildConfig.DEBUG ? 0 : 5;
   public static final int INTERSTITIAL_MIN_INTERVAL = BuildConfig.DEBUG ? 2 : 4;
   public static final boolean WITH_AMA = true;
   public static final boolean WITH_RHYTHM = false;
-  private Activity activity;
-  private ViewGroup adContainer;
+  private Context context;
   private AdLayout amaView;
   private AdView admobView;
   private InterstitialAd amaInterstitialAd;
@@ -38,9 +37,9 @@ public class AmaAndAdmobAdHandler implements AdHandler {
   private boolean mAmaInterstitialLoaded = false;
   private boolean mAdMobBannerShown = false, mAmaBannerShown = false, mInterstitialShown = false;
 
-  public AmaAndAdmobAdHandler(Activity activity) {
-    this.activity = activity;
-    this.adContainer = (ViewGroup) activity.findViewById(R.id.adContainer);
+  public AmaAndAdmobAdHandler(ViewGroup adContainer) {
+    super(adContainer);
+    this.context = adContainer.getContext();
   }
 
   public void init() {
@@ -90,12 +89,13 @@ public class AmaAndAdmobAdHandler implements AdHandler {
 
   //Ads
   private void showBanner() {
-    amaView = (AdLayout) adContainer.findViewById(R.id.amaView);
     if (!WITH_AMA) {
       amaView.setVisibility(View.GONE);
       showBannerAdmob();
       return;
     }
+    amaView = new AdLayout(context);
+    adContainer.addView(amaView);
     String APP_KEY = BuildConfig.DEBUG ?
         "sample-app-v1_pub-2" : "325c1c24185c46ccae8ec2cd4b2c290c";
     AdRegistration.enableLogging(BuildConfig.DEBUG);
@@ -123,8 +123,8 @@ public class AmaAndAdmobAdHandler implements AdHandler {
   }
 
   private void showBannerAdmob() {
-    admobView = new AdView(activity);
-    String sizeSpec = activity.getString(R.string.admob_banner_size);
+    admobView = new AdView(context);
+    String sizeSpec = context.getString(R.string.admob_banner_size);
     AdSize adSize;
     switch (sizeSpec) {
       case "SMART_BANNER":
@@ -137,7 +137,7 @@ public class AmaAndAdmobAdHandler implements AdHandler {
         adSize = AdSize.BANNER;
     }
     admobView.setAdSize(adSize);
-    admobView.setAdUnitId(activity.getString(WITH_RHYTHM ? R.string.admob_unitid_rhythm :
+    admobView.setAdUnitId(context.getString(WITH_RHYTHM ? R.string.admob_unitid_rhythm :
         R.string.admob_unitid_mainscreen));
     adContainer.addView(admobView);
     admobView.loadAd(buildAdmobRequest());
@@ -149,7 +149,7 @@ public class AmaAndAdmobAdHandler implements AdHandler {
         if (WITH_RHYTHM) {
           adContainer.getLayoutParams().height = (int) TypedValue.applyDimension(
               TypedValue.COMPLEX_UNIT_DIP, AdSize.BANNER.getHeight(),
-              activity.getResources().getDisplayMetrics());
+              context.getResources().getDisplayMetrics());
         }
       }
     });
@@ -170,7 +170,7 @@ public class AmaAndAdmobAdHandler implements AdHandler {
     }
 
     // Create the interstitial.
-    amaInterstitialAd = new InterstitialAd(activity);
+    amaInterstitialAd = new InterstitialAd(context);
 
     // Set the listener to use the callbacks below.
     amaInterstitialAd.setListener(new DefaultAdListener() {
@@ -192,8 +192,8 @@ public class AmaAndAdmobAdHandler implements AdHandler {
   }
 
   private void requestNewInterstitialAdMob() {
-    admobInterstitialAd = new com.google.android.gms.ads.InterstitialAd(activity);
-    admobInterstitialAd.setAdUnitId(activity.getString(R.string.admob_unitid_interstitial));
+    admobInterstitialAd = new com.google.android.gms.ads.InterstitialAd(context);
+    admobInterstitialAd.setAdUnitId(context.getString(R.string.admob_unitid_interstitial));
     admobInterstitialAd.loadAd(buildAdmobRequest());
   }
 

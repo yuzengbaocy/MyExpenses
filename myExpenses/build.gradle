@@ -79,18 +79,34 @@ android {
         }
     }
 
+    flavorDimensions "distribution", "drive", "ads"
+
     productFlavors {
-        play {}
-        amazon {}
-        blackberry {
-            versionName buildVersionNumberBlackBerry()
-            buildConfigField "String", "PLATTFORM", "\"Blackberry\""
-            minSdkVersion 10
+        play {
+            dimension "distribution"
+            buildConfigField "String", "DISTRIBUTION", "\"PLAY\""
         }
-    }
-    sourceSets {
-        play.java.srcDirs += "src/drive/java"
-        amazon.java.srcDirs += "src/drive/java"
+        amazon {
+            dimension "distribution"
+            buildConfigField "String", "DISTRIBUTION", "\"AMAZON\""
+        }
+        blackberry {
+            dimension "distribution"
+            versionName buildVersionNumberBlackBerry()
+            buildConfigField "String", "DISTRIBUTION", "\"BLACKBERRY\""
+        }
+        withDrive {
+            dimension "drive"
+        }
+        withoutDrive {
+            dimension "drive"
+        }
+        withAds {
+            dimension "ads"
+        }
+        withoutAds {
+            dimension "ads"
+        }
     }
 
     lintOptions {
@@ -116,8 +132,6 @@ android {
 
 }
 
-List gmsCompile = ['com.google.android.gms:play-services-ads:' + project.gmsVersion,
-                   'com.google.android.gms:play-services-drive:' + project.gmsVersion]
 
 dependencies {
     apt 'com.google.dagger:dagger-compiler:' + project.daggerVersion
@@ -147,9 +161,8 @@ dependencies {
     compile 'ch.acra:acra:4.9.2'
     compile 'org.apache.commons:commons-lang3:3.4'
     compile 'org.onepf:openiab:0.9.8.7'
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(dir: 'libs', include: ['fortumo-in-app-9.1.2.jar', 'in-app-purchasing-2.0.61.jar'])
     //noinspection GradleDynamicVersion
-    compile 'com.amazon.android:mobile-ads:5.+'
     compile 'org.apache.commons:commons-csv:1.1'
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.github.PhilJay:MPAndroidChart:bd75e6c'
@@ -168,9 +181,13 @@ dependencies {
 
     compile 'com.jakewharton.timber:timber:4.5.1'
 
-    playCompile gmsCompile
-    amazonCompile gmsCompile
-    blackberryCompile 'com.google.android.gms:play-services-ads:' + project.gmsVersionLegagy
+    withDriveCompile 'com.google.android.gms:play-services-drive:' + project.gmsVersion
+    withAdsCompile 'com.google.android.gms:play-services-ads:' + project.gmsVersion
+    //noinspection GradleDynamicVersion
+    withAdsCompile  'com.amazon.android:mobile-ads:5.+'
+    //noinspection GradleDynamicVersion
+    withAdsCompile 'com.facebook.android:audience-network-sdk:4.+'
+    withAdsCompile fileTree(dir: 'libs', include: ['FacebookAdapter.jar'])
 
     androidTestCompile 'com.android.support.test.espresso:espresso-core:' + project.espressoVersion
     androidTestCompile 'junit:junit:4.12'
@@ -181,8 +198,6 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-contrib:' + project.espressoVersion) {
         exclude module: 'accessibility-test-framework'
     }
-    //noinspection GradleDynamicVersion
-    compile 'com.facebook.android:audience-network-sdk:4.+'
     androidTestCompile 'org.mockito:mockito-core:1.10.19'
     androidTestCompile 'com.crittercism.dexmaker:dexmaker:1.4'
     androidTestCompile 'com.crittercism.dexmaker:dexmaker-dx:1.4'
