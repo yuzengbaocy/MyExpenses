@@ -11,11 +11,11 @@ import android.support.v4.app.NotificationCompat;
 
 import com.google.android.vending.licensing.PreferenceObfuscator;
 
-import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.activity.MyExpenses;
 import org.totschnig.myexpenses.preference.PrefKey;
+import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
 import org.totschnig.myexpenses.util.Utils;
 
@@ -45,7 +45,7 @@ public class UnlockHandler extends Handler {
         break;
       case STATUS_TEMPORARY:
       case STATUS_PERMANENT:
-        if (!BuildConfig.FLAVOR.equals("play")) {
+        if (!DistribHelper.isPlay()) {
           doUnlock();
         } else {
           showNotif(Utils.concatResStrings(app, " ", R.string.licence_validation_failure,

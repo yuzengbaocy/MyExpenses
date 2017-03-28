@@ -11,7 +11,6 @@ import com.google.android.vending.licensing.PreferenceObfuscator;
 import org.onepf.oms.Appstore;
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.AmazonAppstore;
-import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.contrib.Config;
 import org.totschnig.myexpenses.preference.PrefKey;
@@ -23,7 +22,6 @@ import timber.log.Timber;
 public class InappPurchaseLicenceHandler extends LicenceHandler {
 
   private String contribStatus = InappPurchaseLicenceHandler.STATUS_DISABLED;
-  public static boolean HAS_EXTENDED = !BuildConfig.FLAVOR.equals("blackberry");
   public static boolean IS_CHROMIUM = Build.BRAND.equals("chromium");
   private static final String TAG = InappPurchaseLicenceHandler.class.getSimpleName();
 
@@ -106,7 +104,7 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
   }
 
   public static OpenIabHelper getIabHelper(Context ctx) {
-    if (BuildConfig.FLAVOR.equals("blackberry")) {
+    if (DistribHelper.isBlackberry()) {
       return null;
     }
     OpenIabHelper.Options.Builder builder =
@@ -117,9 +115,9 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
 
     builder.setStoreSearchStrategy(OpenIabHelper.Options.SEARCH_STRATEGY_INSTALLER_THEN_BEST_FIT);
     if (!IS_CHROMIUM) {
-      if (BuildConfig.FLAVOR.equals("play")) {
+      if (DistribHelper.isPlay()) {
         builder.addAvailableStoreNames("com.google.play");
-      } else if (BuildConfig.FLAVOR.equals("amazon")) {
+      } else if (DistribHelper.isAmazon()) {
         ArrayList<Appstore> stores = new ArrayList<Appstore>();
         stores.add(new AmazonAppstore(ctx) {
           public boolean isBillingAvailable(String packageName) {
@@ -165,7 +163,7 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
 
   @Override
   public boolean isExtendedEnabled() {
-    if (!InappPurchaseLicenceHandler.HAS_EXTENDED) {
+    if (!HAS_EXTENDED) {
       return isContribEnabled();
     }
     return contribStatus.equals(InappPurchaseLicenceHandler.STATUS_EXTENDED_PERMANENT) ||
