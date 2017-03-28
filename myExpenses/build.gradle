@@ -68,10 +68,6 @@ android {
             applicationIdSuffix ".debug"
             manifestPlaceholders = [appName: "My Expenses Debug", debug: "true"]
             resValue "string", "content_authority", "org.totschnig.myexpenses.debug"
-            minifyEnabled true
-            //shrinkResources true // need to wait for resolution
-            // https://code.google.com/p/android/issues/detail?id=79325
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-project.txt', 'proguard-flavored.txt'
             resValue "string", "sync_account_type", "org.totschnig.myexpenses.debug.sync"
         }
         forTest {
