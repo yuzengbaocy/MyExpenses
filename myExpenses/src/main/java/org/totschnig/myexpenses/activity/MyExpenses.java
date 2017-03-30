@@ -95,9 +95,11 @@ import org.totschnig.myexpenses.ui.CursorFragmentPagerAdapter;
 import org.totschnig.myexpenses.ui.FragmentPagerAdapter;
 import org.totschnig.myexpenses.ui.SimpleCursorAdapter;
 import org.totschnig.myexpenses.util.AcraHelper;
+import org.totschnig.myexpenses.util.AppDirHelper;
 import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.FileUtils;
 import org.totschnig.myexpenses.util.Result;
+import org.totschnig.myexpenses.util.ShareUtils;
 import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.util.ads.AdHandler;
 import org.totschnig.myexpenses.util.ads.AdHandlerFactory;
@@ -570,7 +572,7 @@ public class MyExpenses extends LaunchActivity implements
       case R.id.RESET_COMMAND:
         tl = getCurrentFragment();
         if (tl != null && tl.hasItems) {
-          Result appDirStatus = Utils.checkAppDir();
+          Result appDirStatus = AppDirHelper.checkAppDir();
           if (appDirStatus.success) {
             ExportDialogFragment.newInstance(mAccountId, tl.isFiltered())
                 .show(this.getSupportFragmentManager(), "WARNING_RESET");
@@ -661,8 +663,9 @@ public class MyExpenses extends LaunchActivity implements
       case R.id.OPEN_PDF_COMMAND:
         i = new Intent();
         i.setAction(Intent.ACTION_VIEW);
-        Uri data = Uri.parse((String) tag);
+        Uri data = AppDirHelper.ensureContentUri(Uri.parse((String) tag));
         i.setDataAndType(data, "application/pdf");
+        i.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         if (!Utils.isIntentAvailable(this, i)) {
           Toast.makeText(this, R.string.no_app_handling_pdf_available, Toast.LENGTH_LONG).show();
         } else {
@@ -1003,7 +1006,7 @@ public class MyExpenses extends LaunchActivity implements
       case TaskExecutionFragment.TASK_EXPORT:
         ArrayList<Uri> files = (ArrayList<Uri>) o;
         if (files != null && !files.isEmpty())
-          Utils.share(this, files,
+          ShareUtils.share(this, files,
               PrefKey.SHARE_TARGET.getString("").trim(),
               "text/" + mExportFormat.toLowerCase(Locale.US));
         break;
@@ -1014,7 +1017,7 @@ public class MyExpenses extends LaunchActivity implements
           MessageDialogFragment f = MessageDialogFragment.newInstance(
               0,
               getString(result.getMessage(), FileUtils.getPath(this, (Uri) result.extra[0])),
-              new MessageDialogFragment.Button(R.string.menu_open, R.id.OPEN_PDF_COMMAND, ((Uri) result.extra[0]).toString()),
+              new MessageDialogFragment.Button(R.string.menu_open, R.id.OPEN_PDF_COMMAND, result.extra[0].toString()),
               null,
               MessageDialogFragment.Button.nullButton(android.R.string.cancel));
           f.setCancelable(false);

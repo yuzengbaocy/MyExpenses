@@ -15,7 +15,6 @@
 
 package org.totschnig.myexpenses.util;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -34,15 +33,11 @@ import android.graphics.drawable.InsetDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.VisibleForTesting;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.LoaderManager;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.content.FileProvider;
 import android.support.v4.graphics.drawable.DrawableCompat;
-import android.support.v4.provider.DocumentFile;
 import android.support.v7.widget.AppCompatDrawableManager;
 import android.telephony.TelephonyManager;
 import android.text.Html;
@@ -62,7 +57,6 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import com.annimon.stream.Stream;
 
@@ -82,7 +76,6 @@ import org.totschnig.myexpenses.task.GrisbiImportTask;
 import org.totschnig.myexpenses.ui.SimpleCursorAdapter;
 import org.xml.sax.SAXException;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -280,28 +273,6 @@ public class Utils {
     }
   }
 
-  public static URI validateUri(String target) {
-    boolean targetParsable;
-    URI uri = null;
-    if (!target.equals("")) {
-      try {
-        uri = new URI(target);
-        String scheme = uri.getScheme();
-        // strangely for mailto URIs getHost returns null,
-        // so we make sure that mailto URIs handled as valid
-        targetParsable = scheme != null
-            && (scheme.equals("mailto") || uri.getHost() != null);
-      } catch (URISyntaxException e1) {
-        targetParsable = false;
-      }
-      if (!targetParsable) {
-        return null;
-      }
-      return uri;
-    }
-    return null;
-  }
-
   /**
    * formats an amount with a currency
    *
@@ -445,295 +416,6 @@ public class Utils {
    */
   public static String convAmount(Long amount, Currency currency) {
     return formatCurrency(new Money(currency, amount));
-  }
-
-  /**
-   * @return the directory user has configured in the settings, if not configured yet
-   * returns {@link android.content.ContextWrapper#getExternalFilesDir(String)} with argument null
-   */
-  public static DocumentFile getAppDir() {
-    String prefString = PrefKey.APP_DIR.getString(null);
-    if (prefString != null) {
-      Uri pref = Uri.parse(prefString);
-      if (pref.getScheme().equals("file")) {
-        File appDir = new File(pref.getPath());
-        if (appDir.mkdir() || appDir.isDirectory()) {
-          return DocumentFile.fromFile(appDir);
-        }/* else {
-          Utils.reportToAcra(new Exception("Found invalid preference value " + prefString));
-        }*/
-      } else {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-          //this will return null, if called on a pre-Lolipop device
-          DocumentFile documentFile = DocumentFile.fromTreeUri(MyApplication.getInstance(), pref);
-          if (dirExistsAndIsWritable(documentFile)) {
-            return documentFile;
-          }
-        }
-      }
-    }
-    File externalFilesDir = MyApplication.getInstance().getExternalFilesDir(null);
-    if (externalFilesDir != null) {
-      return DocumentFile.fromFile(externalFilesDir);
-    } else {
-      String permission = Manifest.permission.WRITE_EXTERNAL_STORAGE;
-      AcraHelper.report(new Exception("getExternalFilesDir returned null; " + permission + " : " +
-          ContextCompat.checkSelfPermission(MyApplication.getInstance(), permission)));
-      return null;
-    }
-  }
-
-  public static File getCacheDir() {
-    File external = MyApplication.getInstance().getExternalCacheDir();
-    return external != null ? external : MyApplication.getInstance()
-        .getCacheDir();
-  }
-
-  /**
-   * @param parentDir
-   * @param prefix
-   * @param addExtension
-   * @return creates a file object in parentDir, with a timestamp appended to
-   * prefix as name, if the file already exists it appends a numeric
-   * postfix
-   */
-  public static DocumentFile timeStampedFile(DocumentFile parentDir, String prefix,
-                                             String mimeType, boolean addExtension) {
-    String now = new SimpleDateFormat("yyyMMdd-HHmmss", Locale.US)
-        .format(new Date());
-    return newFile(parentDir, prefix + "-" + now, mimeType, addExtension);
-  }
-
-  public static DocumentFile newFile(DocumentFile parentDir, String base,
-                                     String mimeType, boolean addExtension) {
-    int postfix = 0;
-    do {
-      String name = base;
-      if (postfix > 0) {
-        name += "_" + postfix;
-      }
-      if (addExtension) {
-        name += "." + mimeType.split("/")[1];
-      }
-      if (parentDir.findFile(name) == null) {
-        DocumentFile result = null;
-        try {
-          result = parentDir.createFile(mimeType, name);
-          if (result == null) {
-            AcraHelper.report(new Exception(String.format(
-                "createFile returned null: mimeType %s; name %s; parent %s",
-                mimeType, name, parentDir.getUri().toString())));
-          }
-        } catch (SecurityException e) {
-          AcraHelper.report(new Exception(String.format(
-              "createFile threw SecurityException: mimeType %s; name %s; parent %s",
-              mimeType, name, parentDir.getUri().toString())));
-        }
-        return result;
-      }
-      postfix++;
-    } while (true);
-  }
-
-
-  public static DocumentFile newDirectory(DocumentFile parentDir, String base) {
-    int postfix = 0;
-    do {
-      String name = base;
-      if (postfix > 0) {
-        name += "_" + postfix;
-      }
-      if (parentDir.findFile(name) == null) {
-        return parentDir.createDirectory(name);
-      }
-      postfix++;
-    } while (true);
-  }
-
-  /**
-   * Helper Method to Test if external Storage is Available from
-   * http://www.ibm.com/developerworks/xml/library/x-androidstorage/index.html
-   */
-  public static boolean isExternalStorageAvailable() {
-    boolean state = false;
-    String extStorageState = Environment.getExternalStorageState();
-    if (Environment.MEDIA_MOUNTED.equals(extStorageState)) {
-      state = true;
-    }
-    return state;
-  }
-
-  public static Result checkAppDir() {
-    if (!Utils.isExternalStorageAvailable()) {
-      return new Result(false, R.string.external_storage_unavailable);
-    }
-    DocumentFile appDir = getAppDir();
-    if (appDir == null) {
-      return new Result(false, R.string.io_error_appdir_null);
-    }
-    return dirExistsAndIsWritable(appDir) ?
-        new Result(true) : new Result(false, R.string.app_dir_not_accessible,
-        FileUtils.getPath(MyApplication.getInstance(), appDir.getUri()));
-  }
-
-  @NonNull
-  public static boolean dirExistsAndIsWritable(DocumentFile appdir) {
-    return appdir.exists() && appdir.canWrite();
-  }
-
-  /** Create a File for saving an image or video */
-  // Source
-  // http://developer.android.com/guide/topics/media/camera.html#saving-media
-
-  /**
-   * create a File object for storage of picture data
-   *
-   * @param temp if true the returned file is suitable for temporary storage while
-   *             the user is editing the transaction if false the file will serve
-   *             as permanent storage,
-   *             care is taken that the file does not yet exist
-   * @return a file on the external storage
-   */
-  public static File getOutputMediaFile(String fileName, boolean temp) {
-    // To be safe, you should check that the SDCard is mounted
-    // using Environment.getExternalStorageState() before doing this.
-
-    File mediaStorageDir = temp ? getCacheDir() : getPictureDir();
-    if (mediaStorageDir == null) return null;
-    int postfix = 0;
-    File result;
-    do {
-      result = new File(mediaStorageDir, getOutputMediaFileName(
-          fileName,
-          postfix));
-      postfix++;
-    } while (result.exists());
-    return result;
-  }
-
-  public static Uri getOutputMediaUri(boolean temp) {
-    String fileName = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US)
-        .format(new Date());
-    File outputMediaFile;
-    if (MyApplication.getInstance().isProtected() && !temp) {
-      outputMediaFile = getOutputMediaFile(fileName, false);
-      if (outputMediaFile == null) return null;
-      return FileProvider.getUriForFile(MyApplication.getInstance(),
-          MyApplication.getInstance().getPackageName() +".fileprovider",
-          outputMediaFile);
-    } else {
-      outputMediaFile = getOutputMediaFile(fileName, temp);
-      if (outputMediaFile == null) return null;
-      return Uri.fromFile(outputMediaFile);
-    }
-  }
-
-  public static String getPictureUriBase(boolean temp) {
-    Uri sampleUri = getOutputMediaUri(temp);
-    if (sampleUri == null) return null;
-    String uriString = sampleUri.toString();
-    return uriString.substring(0, uriString.lastIndexOf('/'));
-  }
-
-  private static String getOutputMediaFileName(String base, int postfix) {
-    if (postfix > 0) {
-      base += "_" + postfix;
-    }
-    return base + ".jpg";
-  }
-
-  public static File getPictureDir() {
-    return getPictureDir(MyApplication.getInstance().isProtected());
-  }
-
-  public static File getPictureDir(boolean secure) {
-    File result;
-    if (secure) {
-      result = new File(MyApplication.getInstance().getFilesDir(),
-          "images");
-    } else {
-      result = MyApplication.getInstance().getExternalFilesDir(
-          Environment.DIRECTORY_PICTURES);
-    }
-    if (result == null) return null;
-    result.mkdir();
-    return result.exists() ? result : null;
-  }
-
-  public static void share(Context ctx, ArrayList<Uri> fileUris, String target,
-                           String mimeType) {
-    URI uri = null;
-    Intent intent;
-    String scheme = "mailto";
-    boolean multiple = fileUris.size() > 1;
-    if (!target.equals("")) {
-      uri = Utils.validateUri(target);
-      if (uri == null) {
-        Toast.makeText(ctx, ctx.getString(R.string.ftp_uri_malformed, target),
-            Toast.LENGTH_LONG).show();
-        return;
-      }
-      scheme = uri.getScheme();
-    }
-    // if we get a String that does not include a scheme,
-    // we interpret it as a mail address
-    if (scheme == null) {
-      scheme = "mailto";
-    }
-    if (scheme.equals("ftp")) {
-      if (multiple) {
-        Toast.makeText(ctx,
-            "sending multiple file through ftp is not supported",
-            Toast.LENGTH_LONG).show();
-        return;
-      }
-      intent = new Intent(android.content.Intent.ACTION_SENDTO);
-      intent.putExtra(Intent.EXTRA_STREAM, fileUris.get(0));
-      intent.setDataAndType(android.net.Uri.parse(target), mimeType);
-      if (!isIntentAvailable(ctx, intent)) {
-        Toast.makeText(ctx, R.string.no_app_handling_ftp_available,
-            Toast.LENGTH_LONG).show();
-        return;
-      }
-      ctx.startActivity(intent);
-    } else if (scheme.equals("mailto")) {
-      if (multiple) {
-        intent = new Intent(android.content.Intent.ACTION_SEND_MULTIPLE);
-        ArrayList<Uri> uris = new ArrayList<>();
-        for (Uri fileUri : fileUris) {
-          uris.add(fileUri);
-        }
-        intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
-      } else {
-        intent = new Intent(android.content.Intent.ACTION_SEND);
-        intent.putExtra(Intent.EXTRA_STREAM, fileUris.get(0));
-      }
-      intent.setType(mimeType);
-      if (uri != null) {
-        String address = uri.getSchemeSpecificPart();
-        intent.putExtra(Intent.EXTRA_EMAIL, new String[]{address});
-      }
-      intent.putExtra(Intent.EXTRA_SUBJECT, R.string.export_expenses);
-      if (!isIntentAvailable(ctx, intent)) {
-        Toast.makeText(ctx, R.string.no_app_handling_email_available,
-            Toast.LENGTH_LONG).show();
-        return;
-      }
-      // if we got mail address, we launch the default application
-      // if we are called without target, we launch the chooser
-      // in order to make action more explicit
-      if (uri != null) {
-        ctx.startActivity(intent);
-      } else {
-        ctx.startActivity(Intent.createChooser(intent,
-            ctx.getString(R.string.share_sending)));
-      }
-    } else {
-      Toast.makeText(ctx,
-          ctx.getString(R.string.share_scheme_not_supported, scheme),
-          Toast.LENGTH_LONG).show();
-      return;
-    }
   }
 
   public static void setBackgroundFilter(View v, int c) {
@@ -1039,43 +721,6 @@ public class Utils {
       }
     }
     return result;
-  }
-
-  /**
-   * @return false if the configured folder is inside the application folder
-   * that will be deleted upon app uninstall and hence user should be
-   * warned about the situation, unless he already has opted to no
-   * longer see this warning
-   */
-  @SuppressLint("NewApi")
-  public static boolean checkAppFolderWarning() {
-    // if (Build.VERSION.SDK_INT < Build.VERSION_CODES.FROYO) {
-    // return true;
-    // }
-    if (PrefKey.APP_FOLDER_WARNING_SHOWN.getBoolean(false)) {
-      return true;
-    }
-    try {
-      DocumentFile configuredDir = Utils.getAppDir();
-      if (configuredDir == null) {
-        return true;
-      }
-      File externalFilesDir = MyApplication.getInstance().getExternalFilesDir(
-          null);
-      if (externalFilesDir == null) {
-        return true;
-      }
-      Uri dirUri = configuredDir.getUri();
-      if (!dirUri.getScheme().equals("file")) {
-        return true; //nothing we can do if we can not compare paths
-      }
-      URI defaultDir = externalFilesDir.getParentFile().getCanonicalFile()
-          .toURI();
-      return defaultDir.relativize(new File(dirUri.getPath()).getCanonicalFile().toURI())
-          .isAbsolute();
-    } catch (IOException e) {
-      return true;
-    }
   }
 
   // From Financisto

@@ -84,9 +84,11 @@ import org.totschnig.myexpenses.sync.ServiceLoader;
 import org.totschnig.myexpenses.sync.SyncBackendProviderFactory;
 import org.totschnig.myexpenses.ui.PreferenceDividerItemDecoration;
 import org.totschnig.myexpenses.util.AcraHelper;
+import org.totschnig.myexpenses.util.AppDirHelper;
 import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.FileUtils;
 import org.totschnig.myexpenses.util.LicenceHandler;
+import org.totschnig.myexpenses.util.ShareUtils;
 import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.widget.AbstractWidget;
 import org.totschnig.myexpenses.widget.AccountWidget;
@@ -657,7 +659,7 @@ public class MyPreferenceActivity extends ProtectedFragmentActivity implements
         String target = (String) value;
         URI uri;
         if (!target.equals("")) {
-          uri = Utils.validateUri(target);
+          uri = ShareUtils.parseUri(target);
           if (uri == null) {
             Toast.makeText(getActivity(), getString(R.string.ftp_uri_malformed, target), Toast.LENGTH_LONG).show();
             return false;
@@ -737,7 +739,7 @@ public class MyPreferenceActivity extends ProtectedFragmentActivity implements
         return true;
       }
       if (preference.getKey().equals(PrefKey.APP_DIR.getKey())) {
-        DocumentFile appDir = Utils.getAppDir();
+        DocumentFile appDir = AppDirHelper.getAppDir();
         if (appDir == null) {
           preference.setSummary(R.string.external_storage_unavailable);
           preference.setEnabled(false);
@@ -778,10 +780,10 @@ public class MyPreferenceActivity extends ProtectedFragmentActivity implements
 
     private void setAppDirSummary() {
       Preference pref = findPreference(PrefKey.APP_DIR.getKey());
-      if (Utils.isExternalStorageAvailable()) {
-        DocumentFile appDir = Utils.getAppDir();
+      if (AppDirHelper.isExternalStorageAvailable()) {
+        DocumentFile appDir = AppDirHelper.getAppDir();
         if (appDir != null) {
-          if (Utils.dirExistsAndIsWritable(appDir)) {
+          if (AppDirHelper.dirExistsAndIsWritable(appDir)) {
             pref.setSummary(FileUtils.getPath(getActivity(), appDir.getUri()));
           } else {
             pref.setSummary(getString(R.string.app_dir_not_accessible,
@@ -889,7 +891,7 @@ public class MyPreferenceActivity extends ProtectedFragmentActivity implements
             //String error = String.format(Locale.ROOT, "PICK_FOLDER_REQUEST returned after %d millis with request code %d",
             //    pickFolderRequestDuration, requestCode);
             //AcraHelper.report(new Exception(error));
-            startLegacyFolderRequest(Utils.getAppDir());
+            startLegacyFolderRequest(AppDirHelper.getAppDir());
           }
         }
       } else if (requestCode == PICK_FOLDER_REQUEST_LEGACY && resultCode == RESULT_OK) {
