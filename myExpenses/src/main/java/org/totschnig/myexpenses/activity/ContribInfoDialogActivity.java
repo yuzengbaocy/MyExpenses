@@ -191,16 +191,17 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
     if (featureStringFromExtra != null) {
       ContribFeature feature = ContribFeature.valueOf(featureStringFromExtra);
       int usagesLeft = feature.usagesLeft();
+      boolean shouldCallFeature = feature.hasAccess() || (!canceled && usagesLeft > 0);
       if (callerIsContribIface()) {
         Intent i = new Intent();
         i.putExtra(KEY_FEATURE, featureStringFromExtra);
         i.putExtra(KEY_TAG, getIntent().getSerializableExtra(KEY_TAG));
-        if (feature.hasAccess() || (!canceled && usagesLeft > 0)) {
+        if (shouldCallFeature) {
           setResult(RESULT_OK, i);
         } else {
           setResult(RESULT_CANCELED, i);
         }
-      } else {
+      } else if (shouldCallFeature) {
         callFeature(feature);
       }
     }
@@ -211,7 +212,7 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
     switch (feature) {
       case SPLIT_TRANSACTION:
         startActivity(ShortcutHelper.createIntentForNewSplit(this));
-      break;
+        break;
       default:
         //should not happen
         AcraHelper.report(new IllegalStateException(
@@ -226,7 +227,8 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
       try {
         Class<?> caller = Class.forName(callingActivity.getClassName());
         result = ContribIFace.class.isAssignableFrom(caller);
-      } catch (ClassNotFoundException ignored) {}
+      } catch (ClassNotFoundException ignored) {
+      }
     }
     return result;
   }
