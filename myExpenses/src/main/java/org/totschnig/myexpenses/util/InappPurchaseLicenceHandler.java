@@ -11,7 +11,6 @@ import com.google.android.vending.licensing.PreferenceObfuscator;
 import org.onepf.oms.Appstore;
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.AmazonAppstore;
-import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.contrib.Config;
 import org.totschnig.myexpenses.preference.PrefKey;
 
@@ -55,11 +54,9 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
   public static String STATUS_EXTENDED_TEMPORARY = "6";
 
   public static String STATUS_EXTENDED_PERMANENT = "7";
-  private Context context;
 
-  public InappPurchaseLicenceHandler(MyApplication application) {
-    super();
-    context = application;
+  public InappPurchaseLicenceHandler(Context context) {
+    super(context);
   }
 
   public static PreferenceObfuscator getLicenseStatusPrefs(Context ctx) {
