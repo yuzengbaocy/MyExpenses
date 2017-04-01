@@ -65,7 +65,7 @@ android {
             manifestPlaceholders = [appName: "My Expenses Debug", debug: "true"]
         }
         forTest {
-            initWith debug
+            initWith release
             applicationIdSuffix ".fortest"
         }
     }
