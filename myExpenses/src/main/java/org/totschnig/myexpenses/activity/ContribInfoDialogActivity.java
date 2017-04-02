@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.widget.Toast;
 
 import org.onepf.oms.OpenIabHelper;
@@ -20,15 +21,13 @@ import org.totschnig.myexpenses.model.ContribFeature;
 import org.totschnig.myexpenses.util.AcraHelper;
 import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
+import org.totschnig.myexpenses.util.ShortcutHelper;
 import org.totschnig.myexpenses.util.Utils;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 import timber.log.Timber;
-
-import org.totschnig.myexpenses.util.ShortcutHelper;
-
-import java.io.Serializable;
 
 /**
  * Manages the dialog shown to user when they request usage of a premium functionality or click on
@@ -47,10 +46,12 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
   private String mPayload = (InappPurchaseLicenceHandler.IS_CHROMIUM || DistribHelper.isAmazon())
       ? null : UUID.randomUUID().toString();
 
-  public static Intent getIntentFor(Context context, ContribFeature feature) {
+  public static Intent getIntentFor(Context context, @Nullable ContribFeature feature) {
     Intent intent = new Intent(context, ContribInfoDialogActivity.class);
     intent.setAction(Intent.ACTION_MAIN);
-    intent.putExtra(KEY_FEATURE, feature.name());
+    if (feature != null) {
+      intent.putExtra(KEY_FEATURE, feature.name());
+    }
     return intent;
   }
 
