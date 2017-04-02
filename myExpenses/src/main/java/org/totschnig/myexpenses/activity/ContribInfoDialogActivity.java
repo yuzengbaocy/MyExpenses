@@ -29,6 +29,7 @@ import java.util.UUID;
 
 import timber.log.Timber;
 
+
 /**
  * Manages the dialog shown to user when they request usage of a premium functionality or click on
  * the dedicated entry on the preferences screen. If called from an activity extending
