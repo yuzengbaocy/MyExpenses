@@ -23,7 +23,7 @@
         android:xlargeScreens="true" />
 
     <permission
-        android:name="org.totschnig.myexpenses.UNLOCK_PREMIUM"
+        android:name="${applicationId}.UNLOCK_PREMIUM"
         android:protectionLevel="signature" />
 
     <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
@@ -36,7 +36,7 @@
         android:name="android.permission.WRITE_SYNC_SETTINGS"/>
     <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="org.totschnig.myexpenses.UNLOCK_PREMIUM" />
+    <uses-permission android:name="${applicationId}.UNLOCK_PREMIUM" />
     <uses-permission android:name="android.permission.WRITE_CALENDAR" />
     <uses-permission android:name="android.permission.READ_CALENDAR" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
