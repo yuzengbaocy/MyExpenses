@@ -74,14 +74,14 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
                     if ((upgradePurchase  !=null && upgradePurchase .getPurchaseState() == 0) ||
                         (extendedPurchase !=null && extendedPurchase.getPurchaseState() == 0)) {
                       if (!contribStatus.equals(InappPurchaseLicenceHandler.STATUS_EXTENDED_PERMANENT)) {
-                        licenceHandler.registerPurchase(LaunchActivity.this, true);
+                        licenceHandler.registerPurchase(true);
                       }
                     } else if (premiumPurchase !=null && premiumPurchase.getPurchaseState() == 0) {
                       if (!contribStatus.equals(InappPurchaseLicenceHandler.STATUS_ENABLED_PERMANENT)) {
-                        licenceHandler.registerPurchase(LaunchActivity.this, false);
+                        licenceHandler.registerPurchase(false);
                       }
                     } else if (contribStatus.equals(InappPurchaseLicenceHandler.STATUS_ENABLED_TEMPORARY)) {
-                      licenceHandler.maybeCancel(LaunchActivity.this);
+                      licenceHandler.maybeCancel();
                     }
                   }
                 });

@@ -147,7 +147,7 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
                         isPremium ? R.string.licence_validation_premium : R.string.licence_validation_extended,
                         R.string.thank_you),
                     Toast.LENGTH_SHORT).show();
-                ((InappPurchaseLicenceHandler) MyApplication.getInstance().getLicenceHandler()).registerPurchase(ContribInfoDialogActivity.this, isExtended);
+                ((InappPurchaseLicenceHandler) MyApplication.getInstance().getLicenceHandler()).registerPurchase(isExtended);
               }
             }
             finish();
