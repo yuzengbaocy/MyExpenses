@@ -135,9 +135,9 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
               Timber.d("Purchase successful.");
 
               boolean isPremium = purchase.getSku().equals(Config.SKU_PREMIUM);
-              if (isPremium ||
-                  purchase.getSku().equals(Config.SKU_EXTENDED) ||
-                  purchase.getSku().equals(Config.SKU_PREMIUM2EXTENDED)) {
+              boolean isExtended = purchase.getSku().equals(Config.SKU_EXTENDED) ||
+                  purchase.getSku().equals(Config.SKU_PREMIUM2EXTENDED);
+              if (isPremium || isExtended) {
                 // bought the premium upgrade!
                 Timber.d("Purchase is premium upgrade. Congratulating user.");
                 Toast.makeText(
@@ -147,7 +147,7 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
                         isPremium ? R.string.licence_validation_premium : R.string.licence_validation_extended,
                         R.string.thank_you),
                     Toast.LENGTH_SHORT).show();
-                ((InappPurchaseLicenceHandler) MyApplication.getInstance().getLicenceHandler()).registerPurchase(ContribInfoDialogActivity.this, !isPremium);
+                ((InappPurchaseLicenceHandler) MyApplication.getInstance().getLicenceHandler()).registerPurchase(ContribInfoDialogActivity.this, isExtended);
               }
             }
             finish();
