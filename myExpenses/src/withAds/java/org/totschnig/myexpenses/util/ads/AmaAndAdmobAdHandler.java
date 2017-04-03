@@ -24,11 +24,11 @@ import org.totschnig.myexpenses.model.ContribFeature;
 import org.totschnig.myexpenses.preference.PrefKey;
 
 public class AmaAndAdmobAdHandler extends AdHandler {
-  public static final int DAY_IN_MILLIS = BuildConfig.DEBUG ? 1 : 86400000;
-  public static final int INITIAL_GRACE_DAYS = BuildConfig.DEBUG ? 0 : 5;
-  public static final int INTERSTITIAL_MIN_INTERVAL = BuildConfig.DEBUG ? 2 : 4;
-  public static final boolean WITH_AMA = true;
-  public static final boolean WITH_RHYTHM = false;
+  private static final int DAY_IN_MILLIS = BuildConfig.DEBUG ? 1 : 86400000;
+  private static final int INITIAL_GRACE_DAYS = BuildConfig.DEBUG ? 0 : 5;
+  private static final int INTERSTITIAL_MIN_INTERVAL = BuildConfig.DEBUG ? 2 : 4;
+  private static final boolean WITH_AMA = true;
+  private static final boolean WITH_RHYTHM = false;
   private Context context;
   private AdLayout amaView;
   private AdView admobView;
