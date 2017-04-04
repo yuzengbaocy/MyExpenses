@@ -42,7 +42,10 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    final String contribStatus = ((InappPurchaseLicenceHandler) MyApplication.getInstance().getLicenceHandler()).getContribStatus();
+    InappPurchaseLicenceHandler licenceHandler =
+        (InappPurchaseLicenceHandler) MyApplication.getInstance().getLicenceHandler();
+    final String contribStatus = licenceHandler.getContribStatus();
+    //TODO improve encapsulation of different stati
     if (!contribStatus.equals(InappPurchaseLicenceHandler.STATUS_EXTENDED_PERMANENT)) {
       mHelper = InappPurchaseLicenceHandler.getIabHelper(this);
       if (mHelper!=null) {
@@ -62,8 +65,6 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
                     if (mHelper==null || inventory==null) {
                       return;
                     }
-                    InappPurchaseLicenceHandler licenceHandler =
-                        (InappPurchaseLicenceHandler) MyApplication.getInstance().getLicenceHandler();
                     // Do we have the premium upgrade?
                     Purchase premiumPurchase =
                         inventory.getPurchase(Config.SKU_PREMIUM);
