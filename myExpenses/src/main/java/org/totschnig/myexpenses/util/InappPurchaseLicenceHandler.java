@@ -54,12 +54,19 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
   public static final String STATUS_EXTENDED_TEMPORARY = "6";
 
   public static final String STATUS_EXTENDED_PERMANENT = "7";
+  private PreferenceObfuscator licenseStatusPrefs;
 
   public InappPurchaseLicenceHandler(Context context) {
     super(context);
   }
 
-  private PreferenceObfuscator getLicenseStatusPrefs() {
+  @Override
+  public void init() {
+    super.init();
+    buildLicenseStatusPrefs();
+  }
+
+  private void buildLicenseStatusPrefs() {
     String PREFS_FILE = "license_status";
     String deviceId = Secure.getString(context.getContentResolver(), Secure.ANDROID_ID);
     //TODO move to content provider, eventually https://github.com/grandcentrix/tray
@@ -67,7 +74,7 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
     byte[] SALT = new byte[] {
         -1, -124, -4, -59, -52, 1, -97, -32, 38, 59, 64, 13, 45, -104, -3, -92, -56, -49, 65, -25
     };
-    return new PreferenceObfuscator(
+    licenseStatusPrefs=  new PreferenceObfuscator(
         sp, new AESObfuscator(SALT, context.getPackageName(), deviceId));
   }
 
@@ -77,13 +84,13 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
    * @param extended if true user has purchase extended licence
    */
   public void registerPurchase(boolean extended) {
-    PreferenceObfuscator p = getLicenseStatusPrefs();
+    Preconditions.checkNotNull(licenseStatusPrefs);
     String status = extended ? STATUS_EXTENDED_TEMPORARY : STATUS_ENABLED_TEMPORARY;
-    long timestamp = Long.parseLong(p.getString(
+    long timestamp = Long.parseLong(licenseStatusPrefs.getString(
         PrefKey.LICENSE_INITIAL_TIMESTAMP.getKey(),"0"));
     long now = System.currentTimeMillis();
     if (timestamp == 0L) {
-      p.putString(PrefKey.LICENSE_INITIAL_TIMESTAMP.getKey(),
+      licenseStatusPrefs.putString(PrefKey.LICENSE_INITIAL_TIMESTAMP.getKey(),
           String.valueOf(now));
     } else {
       long timeSincePurchase = now - timestamp;
@@ -93,13 +100,13 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
         status = extended ? STATUS_EXTENDED_PERMANENT : STATUS_ENABLED_PERMANENT;
       }
     }
-    p.putString(PrefKey.LICENSE_STATUS.getKey(), status);
-    p.commit();
+    licenseStatusPrefs.putString(PrefKey.LICENSE_STATUS.getKey(), status);
+    licenseStatusPrefs.commit();
     refresh(true);
   }
 
   public void registerUnlockLegacy() {
-    PreferenceObfuscator licenseStatusPrefs = getLicenseStatusPrefs();
+    Preconditions.checkNotNull(licenseStatusPrefs);
     licenseStatusPrefs.putString(PrefKey.LICENSE_STATUS.getKey(), String.valueOf(InappPurchaseLicenceHandler.STATUS_ENABLED_LEGACY_SECOND));
     licenseStatusPrefs.commit();
     refresh(true);
@@ -136,22 +143,22 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
    * After 2 days, if purchase cannot be verified, we set back
    */
   public void maybeCancel() {
-    PreferenceObfuscator p = getLicenseStatusPrefs();
-    long timestamp = Long.parseLong(p.getString(
+    Preconditions.checkNotNull(licenseStatusPrefs);
+    long timestamp = Long.parseLong(licenseStatusPrefs.getString(
         PrefKey.LICENSE_INITIAL_TIMESTAMP.getKey(), "0"));
     long now = System.currentTimeMillis();
     long timeSincePurchase = now - timestamp;
     if (timeSincePurchase> REFUND_WINDOW) {
-      p.putString(PrefKey.LICENSE_STATUS.getKey(), STATUS_DISABLED);
-      p.commit();
+       licenseStatusPrefs.putString(PrefKey.LICENSE_STATUS.getKey(), STATUS_DISABLED);
+      licenseStatusPrefs.commit();
       refresh(true);
     }
   }
 
   @Override
   public void refreshDo() {
-    PreferenceObfuscator p = getLicenseStatusPrefs();
-    String contribStatus = p.getString(PrefKey.LICENSE_STATUS.getKey(), STATUS_DISABLED);
+    Preconditions.checkNotNull(licenseStatusPrefs);
+    String contribStatus = licenseStatusPrefs.getString(PrefKey.LICENSE_STATUS.getKey(), STATUS_DISABLED);
     Timber.d("contrib status is now %s", contribStatus);
     setContribStatus(contribStatus);
   }
@@ -176,7 +183,7 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
     invalidate();
   }
 
-  public void setContribStatus(String contribStatus) {
+  private void setContribStatus(String contribStatus) {
     this.contribStatus = contribStatus;
   }
 
