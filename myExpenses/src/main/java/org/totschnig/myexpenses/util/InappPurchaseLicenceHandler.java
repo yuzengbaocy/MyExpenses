@@ -82,7 +82,6 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
     }
   }
 
-
   /**
    * this is used from in-app billing
    * @param extended if true user has purchase extended licence
