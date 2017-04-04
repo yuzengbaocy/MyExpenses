@@ -62,8 +62,8 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
 
   @Override
   public void init() {
-    super.init();
     buildLicenseStatusPrefs();
+    super.init();
   }
 
   private void buildLicenseStatusPrefs() {
