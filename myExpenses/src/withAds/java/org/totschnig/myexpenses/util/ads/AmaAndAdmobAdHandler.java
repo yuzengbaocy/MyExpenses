@@ -46,7 +46,11 @@ public class AmaAndAdmobAdHandler extends AdHandler {
     if (isAdDisabled()) {
       adContainer.setVisibility(View.GONE);
     } else {
-      showBanner();
+      if (WITH_AMA) {
+        showBannerAma();
+      } else {
+        showBannerAdmob();
+      }
       maybeRequestNewInterstitial();
     }
   }
@@ -55,7 +59,11 @@ public class AmaAndAdmobAdHandler extends AdHandler {
     if (now - PrefKey.INTERSTITIAL_LAST_SHOWN.getLong(0) > DAY_IN_MILLIS &&
         PrefKey.ENTRIES_CREATED_SINCE_LAST_INTERSTITIAL.getInt(0) > INTERSTITIAL_MIN_INTERVAL) {
       //last ad shown more than 24h and at least five expense entries ago,
-      requestNewInterstitial();
+      if (WITH_AMA) {
+        requestNewInterstitialAma();
+      } else {
+        requestNewInterstitialAdMob();
+      }
     }
   }
 
@@ -87,12 +95,7 @@ public class AmaAndAdmobAdHandler extends AdHandler {
     }
   }
 
-  //Ads
-  private void showBanner() {
-    if (!WITH_AMA) {
-      showBannerAdmob();
-      return;
-    }
+  private void showBannerAma() {
     amaView = new AdLayout(context);
     adContainer.addView(amaView);
     String APP_KEY = BuildConfig.DEBUG ?
@@ -161,12 +164,8 @@ public class AmaAndAdmobAdHandler extends AdHandler {
         .build();
   }
 
-  private void requestNewInterstitial() {
+  private void requestNewInterstitialAma() {
     mInterstitialShown = false;
-    if (!WITH_AMA) {
-      requestNewInterstitialAdMob();
-      return;
-    }
 
     // Create the interstitial.
     amaInterstitialAd = new InterstitialAd(context);
@@ -191,6 +190,7 @@ public class AmaAndAdmobAdHandler extends AdHandler {
   }
 
   private void requestNewInterstitialAdMob() {
+    mInterstitialShown = false;
     admobInterstitialAd = new com.google.android.gms.ads.InterstitialAd(context);
     admobInterstitialAd.setAdUnitId(context.getString(R.string.admob_unitid_interstitial));
     admobInterstitialAd.loadAd(buildAdmobRequest());
