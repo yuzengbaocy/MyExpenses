@@ -62,20 +62,22 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
 
   @Override
   public void init() {
-    buildLicenseStatusPrefs();
+    requireLicenseStatusPrefs();
     super.init();
   }
 
-  private void buildLicenseStatusPrefs() {
-    String PREFS_FILE = "license_status";
-    String deviceId = Secure.getString(context.getContentResolver(), Secure.ANDROID_ID);
-    //TODO move to content provider, eventually https://github.com/grandcentrix/tray
-    SharedPreferences sp = context.getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE);
-    byte[] SALT = new byte[] {
-        -1, -124, -4, -59, -52, 1, -97, -32, 38, 59, 64, 13, 45, -104, -3, -92, -56, -49, 65, -25
-    };
-    licenseStatusPrefs=  new PreferenceObfuscator(
-        sp, new AESObfuscator(SALT, context.getPackageName(), deviceId));
+  private void requireLicenseStatusPrefs() {
+    if (licenseStatusPrefs == null) {
+      String PREFS_FILE = "license_status";
+      String deviceId = Secure.getString(context.getContentResolver(), Secure.ANDROID_ID);
+      //TODO move to content provider, eventually https://github.com/grandcentrix/tray
+      SharedPreferences sp = context.getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE);
+      byte[] SALT = new byte[]{
+          -1, -124, -4, -59, -52, 1, -97, -32, 38, 59, 64, 13, 45, -104, -3, -92, -56, -49, 65, -25
+      };
+      licenseStatusPrefs = new PreferenceObfuscator(
+          sp, new AESObfuscator(SALT, context.getPackageName(), deviceId));
+    }
   }
 
 
@@ -84,7 +86,7 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
    * @param extended if true user has purchase extended licence
    */
   public void registerPurchase(boolean extended) {
-    Preconditions.checkNotNull(licenseStatusPrefs);
+    requireLicenseStatusPrefs();
     String status = extended ? STATUS_EXTENDED_TEMPORARY : STATUS_ENABLED_TEMPORARY;
     long timestamp = Long.parseLong(licenseStatusPrefs.getString(
         PrefKey.LICENSE_INITIAL_TIMESTAMP.getKey(),"0"));
@@ -106,7 +108,7 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
   }
 
   public void registerUnlockLegacy() {
-    Preconditions.checkNotNull(licenseStatusPrefs);
+    requireLicenseStatusPrefs();
     licenseStatusPrefs.putString(PrefKey.LICENSE_STATUS.getKey(), String.valueOf(InappPurchaseLicenceHandler.STATUS_ENABLED_LEGACY_SECOND));
     licenseStatusPrefs.commit();
     refresh(true);
@@ -143,7 +145,7 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
    * After 2 days, if purchase cannot be verified, we set back
    */
   public void maybeCancel() {
-    Preconditions.checkNotNull(licenseStatusPrefs);
+    requireLicenseStatusPrefs();
     long timestamp = Long.parseLong(licenseStatusPrefs.getString(
         PrefKey.LICENSE_INITIAL_TIMESTAMP.getKey(), "0"));
     long now = System.currentTimeMillis();
@@ -157,7 +159,7 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
 
   @Override
   public void refreshDo() {
-    Preconditions.checkNotNull(licenseStatusPrefs);
+    requireLicenseStatusPrefs();
     String contribStatus = licenseStatusPrefs.getString(PrefKey.LICENSE_STATUS.getKey(), STATUS_DISABLED);
     Timber.d("contrib status is now %s", contribStatus);
     setContribStatus(contribStatus);
