@@ -18,8 +18,8 @@ public abstract class LicenceHandler {
 
   protected LicenceHandler(Context context) {
     this.context = context;
+    refresh(false);
   }
-
 
   public void init() {
     if (PrefKey.CURRENT_VERSION.getInt(-1) != -1) {
