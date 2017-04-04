@@ -88,7 +88,7 @@ public class AmaAndAdmobAdHandler extends AdHandler {
   private boolean isInInitialGracePeriod() {
     try {
       return System.currentTimeMillis() -
-          MyApplication.getInstance().getPackageManager().getPackageInfo("org.totschnig.myexpenses", 0)
+          context.getPackageManager().getPackageInfo(context.getPackageName(), 0)
               .firstInstallTime < DAY_IN_MILLIS * INITIAL_GRACE_DAYS;
     } catch (PackageManager.NameNotFoundException e) {
       return false;
