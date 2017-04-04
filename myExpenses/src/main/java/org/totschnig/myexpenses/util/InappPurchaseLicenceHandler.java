@@ -20,7 +20,7 @@ import timber.log.Timber;
 
 public class InappPurchaseLicenceHandler extends LicenceHandler {
 
-  private String contribStatus = InappPurchaseLicenceHandler.STATUS_DISABLED;
+  private String contribStatus;
   public static boolean IS_CHROMIUM = Build.BRAND.equals("chromium");
 
   private static final long REFUND_WINDOW = 172800000L;
@@ -63,11 +63,13 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
   @Override
   public void init() {
     requireLicenseStatusPrefs();
-    super.init();
+    d("init");
+    setContribStatus(licenseStatusPrefs.getString(PrefKey.LICENSE_STATUS.getKey(), STATUS_DISABLED));
   }
 
   private void requireLicenseStatusPrefs() {
     if (licenseStatusPrefs == null) {
+      d("building prefs");
       String PREFS_FILE = "license_status";
       String deviceId = Secure.getString(context.getContentResolver(), Secure.ANDROID_ID);
       //TODO move to content provider, eventually https://github.com/grandcentrix/tray
@@ -102,16 +104,25 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
         status = extended ? STATUS_EXTENDED_PERMANENT : STATUS_ENABLED_PERMANENT;
       }
     }
-    licenseStatusPrefs.putString(PrefKey.LICENSE_STATUS.getKey(), status);
-    licenseStatusPrefs.commit();
-    refresh(true);
+    updateContribStatus(status);
+  }
+
+  /**
+   * After 2 days, if purchase cannot be verified, we set back
+   */
+  public void maybeCancel() {
+    requireLicenseStatusPrefs();
+    long timestamp = Long.parseLong(licenseStatusPrefs.getString(
+        PrefKey.LICENSE_INITIAL_TIMESTAMP.getKey(), "0"));
+    long now = System.currentTimeMillis();
+    long timeSincePurchase = now - timestamp;
+    if (timeSincePurchase> REFUND_WINDOW) {
+      updateContribStatus(STATUS_DISABLED);
+    }
   }
 
   public void registerUnlockLegacy() {
-    requireLicenseStatusPrefs();
-    licenseStatusPrefs.putString(PrefKey.LICENSE_STATUS.getKey(), String.valueOf(InappPurchaseLicenceHandler.STATUS_ENABLED_LEGACY_SECOND));
-    licenseStatusPrefs.commit();
-    refresh(true);
+    updateContribStatus(STATUS_ENABLED_LEGACY_SECOND);
   }
 
   public static OpenIabHelper getIabHelper(Context ctx) {
@@ -141,33 +152,10 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
     return new OpenIabHelper(ctx, builder.build());
   }
 
-  /**
-   * After 2 days, if purchase cannot be verified, we set back
-   */
-  public void maybeCancel() {
-    requireLicenseStatusPrefs();
-    long timestamp = Long.parseLong(licenseStatusPrefs.getString(
-        PrefKey.LICENSE_INITIAL_TIMESTAMP.getKey(), "0"));
-    long now = System.currentTimeMillis();
-    long timeSincePurchase = now - timestamp;
-    if (timeSincePurchase> REFUND_WINDOW) {
-       licenseStatusPrefs.putString(PrefKey.LICENSE_STATUS.getKey(), STATUS_DISABLED);
-      licenseStatusPrefs.commit();
-      refresh(true);
-    }
-  }
-
-  @Override
-  public void refreshDo() {
-    requireLicenseStatusPrefs();
-    String contribStatus = licenseStatusPrefs.getString(PrefKey.LICENSE_STATUS.getKey(), STATUS_DISABLED);
-    Timber.d("contrib status is now %s", contribStatus);
-    setContribStatus(contribStatus);
-  }
-
   @Override
   public boolean isContribEnabled() {
-    return ! contribStatus.equals(InappPurchaseLicenceHandler.STATUS_DISABLED);
+    d("query");
+    return ! getContribStatus().equals(InappPurchaseLicenceHandler.STATUS_DISABLED);
   }
 
   @Override
@@ -175,22 +163,32 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
     if (!HAS_EXTENDED) {
       return isContribEnabled();
     }
-    return contribStatus.equals(InappPurchaseLicenceHandler.STATUS_EXTENDED_PERMANENT) ||
-        contribStatus.equals(InappPurchaseLicenceHandler.STATUS_EXTENDED_TEMPORARY);
+    return getContribStatus().equals(InappPurchaseLicenceHandler.STATUS_EXTENDED_PERMANENT) ||
+        getContribStatus().equals(InappPurchaseLicenceHandler.STATUS_EXTENDED_TEMPORARY);
   }
 
   @Override
   protected void setLockStateDo(boolean locked) {
     setContribStatus(locked ? STATUS_DISABLED : STATUS_ENABLED_PERMANENT);
-    invalidate();
   }
 
-  private void setContribStatus(String contribStatus) {
+  private void updateContribStatus(String contribStatus) {
+    requireLicenseStatusPrefs();
+    licenseStatusPrefs.putString(PrefKey.LICENSE_STATUS.getKey(), contribStatus);
+    licenseStatusPrefs.commit();
+    setContribStatus(contribStatus);
+    update();
+  }
+
+  synchronized private void setContribStatus(String contribStatus) {
     this.contribStatus = contribStatus;
+    d("valueSet");
   }
 
-  public String getContribStatus() {
+  synchronized public String getContribStatus() {
     return contribStatus;
   }
-
+  private void d(String event) {
+    Timber.d("ADBUG-%s: %s-%s, contrib status %s", event, this, Thread.currentThread(), contribStatus);
+  }
 }
