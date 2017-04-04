@@ -164,9 +164,6 @@ public class MyApplication extends MultiDexApplication implements
       initPlannerInternal(60000);
       registerWidgetObservers();
     }
-    if (BuildConfig.DEBUG) {
-      Timber.plant(new Timber.DebugTree());
-    }
   }
 
   private boolean isSyncService() {
@@ -187,6 +184,9 @@ public class MyApplication extends MultiDexApplication implements
   @Override
   protected void attachBaseContext(Context base) {
     super.attachBaseContext(base);
+    if (BuildConfig.DEBUG) {
+      Timber.plant(new Timber.DebugTree());
+    }
     appComponent = DaggerAppComponent.builder()
         .appModule(new AppModule(this))
         .uiModule(new UiModule())
