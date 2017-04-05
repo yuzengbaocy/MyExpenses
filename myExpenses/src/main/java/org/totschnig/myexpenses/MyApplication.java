@@ -163,6 +163,7 @@ public class MyApplication extends MultiDexApplication implements
       getSettings().registerOnSharedPreferenceChangeListener(this);
       initPlannerInternal(60000);
       registerWidgetObservers();
+      licenceHandler.init();
     }
   }
 
@@ -198,7 +199,6 @@ public class MyApplication extends MultiDexApplication implements
       ACRA.getErrorReporter().putCustomData("Installer", getPackageManager()
           .getInstallerPackageName(getPackageName()));
     }
-    licenceHandler.init();
   }
 
   private void registerWidgetObservers() {
