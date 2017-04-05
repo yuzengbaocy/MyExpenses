@@ -42,7 +42,7 @@ public class AppModule {
           .setHttpMethod(HttpSender.Method.PUT)
           .setFormUriBasicAuthLogin("thapponcedonventseliance")
           .setFormUriBasicAuthPassword("8xVV4Rw5SVpkhHFahqF1W3ww")
-          .setLogcatArguments(new String[]{"-t", "250", "-v", "long", "ActivityManager:I", "MyExpenses:V", "*:S"})
+          .setLogcatArguments("-t", "250", "-v", "long", "ActivityManager:I", "MyExpenses:V", "*:S")
           .setExcludeMatchingSharedPreferencesKeys(new String[]{"planner_calendar_path","password"})
           .build();
     } catch (ACRAConfigurationException e) {
