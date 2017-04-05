@@ -187,7 +187,8 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
   synchronized public String getContribStatus() {
     return contribStatus;
   }
+
   private void d(String event) {
-    Timber.d("ADBUG-%s: %s-%s, contrib status %s", event, this, Thread.currentThread(), contribStatus);
+    //Timber.d("ADBUG-%s: %s-%s, contrib status %s", event, this, Thread.currentThread(), contribStatus);
   }
 }
