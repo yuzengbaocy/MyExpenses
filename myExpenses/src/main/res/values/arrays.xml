@@ -390,7 +390,7 @@
     </string-array>
 
     <integer-array name="version_codes">
-        <item>282</item>
+        <item>283</item>
         <item>281</item>
         <item>279</item>
         <item>275</item>
@@ -410,7 +410,7 @@
         <item>222</item>
     </integer-array>
     <string-array name="version_names">
-        <item>2.7.8.2</item>
+        <item>2.7.8.3</item>
         <item>2.7.8.1</item>
         <item>2.7.8</item>
         <item>2.7.7</item>
@@ -494,6 +494,10 @@
     <string-array name="version_more_info_278" tools:ignore="UnusedResources">
         <item>photos/a.1450395311888609.1073741827.1450391968555610/1878781945716608</item>
         <item>PkJQQPgqJdZ</item>
+    </string-array>
+    <string-array name="version_more_info_2783" tools:ignore="UnusedResources">
+        <item>posts/1880830098845126</item>
+        <item>5xWLRCQq8wv</item>
     </string-array>
 
     <string-array name="comparison_operator_entries">

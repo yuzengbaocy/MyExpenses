@@ -18,8 +18,8 @@
   <!ENTITY app_name "My Expenses">
 ]>
 <resources>
-  <string-array name="whats_new_2782">
-    <item>Problem of ads showing up for contributing users solved</item>
+  <string-array name="whats_new_2783">
+    <item>Problem of ads showing up for contributing users finally solved</item>
   </string-array>
   <string-array name="whats_new_2781">
     <item>@string/bug_fixes</item>
