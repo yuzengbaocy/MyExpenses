@@ -25,6 +25,7 @@ import org.totschnig.myexpenses.provider.TransactionDatabase;
 import org.totschnig.myexpenses.provider.TransactionProvider;
 import org.totschnig.myexpenses.util.AcraHelper;
 import org.totschnig.myexpenses.util.AppDirHelper;
+import org.totschnig.myexpenses.util.BackupUtils;
 import org.totschnig.myexpenses.util.FileCopyUtils;
 import org.totschnig.myexpenses.util.PictureDirHelper;
 import org.totschnig.myexpenses.util.Result;
@@ -116,19 +117,19 @@ public class RestoreTask extends AsyncTask<Void, Result, Result> {
     } else {
       workingDir = new File(AppDirHelper.getAppDir().getUri().getPath(), dirNameLegacy);
     }
-    File backupFile = MyApplication.getBackupDbFile(workingDir);
-    File backupPrefFile = MyApplication.getBackupPrefFile(workingDir);
+    File backupFile = BackupUtils.getBackupDbFile(workingDir);
+    File backupPrefFile = BackupUtils.getBackupPrefFile(workingDir);
     if (!backupFile.exists()) {
       return new Result(
           false,
           R.string.restore_backup_file_not_found,
-          MyApplication.BACKUP_DB_FILE_NAME, workingDir);
+          BackupUtils.BACKUP_DB_FILE_NAME, workingDir);
     }
     if (!backupPrefFile.exists()) {
       return new Result(
           false,
           R.string.restore_backup_file_not_found,
-          MyApplication.BACKUP_PREF_FILE_NAME,
+          BackupUtils.BACKUP_PREF_FILE_NAME,
           workingDir);
     }
 
@@ -222,16 +223,21 @@ public class RestoreTask extends AsyncTask<Void, Result, Result> {
       //getSharedPreferences does not allow to access file if it not in private data directory
       //hence we copy it there first
       //upon application install does not exist yet
-      String oldLicenceKey = PrefKey.ENTER_LICENCE.getString("");
 
       application.getSettings()
           .unregisterOnSharedPreferenceChangeListener(application);
-      Editor edit = application.getSettings().edit().clear();
-      String key;
-      Object val;
+
+      Editor edit = application.getSettings().edit();
+      for(Map.Entry<String,?> entry : application.getSettings().getAll().entrySet()) {
+        String key = entry.getKey();
+        if (!key.equals(PrefKey.ENTER_LICENCE.getKey()) && !key.startsWith("acra")) {
+          edit.remove(key);
+        }
+      }
+
       for (Map.Entry<String, ?> entry : backupPref.getAll().entrySet()) {
-        key = entry.getKey();
-        val = entry.getValue();
+        String key = entry.getKey();
+        Object val = entry.getValue();
         if (val.getClass() == Long.class) {
           edit.putLong(key, backupPref.getLong(key, 0));
         } else if (val.getClass() == Integer.class) {
@@ -244,9 +250,7 @@ public class RestoreTask extends AsyncTask<Void, Result, Result> {
           Timber.i("Found: %s of type %s", key, val.getClass().getName());
         }
       }
-      if (!oldLicenceKey.equals("")) {
-        edit.putString(PrefKey.ENTER_LICENCE.getKey(), oldLicenceKey);
-      }
+
       if (restorePlanStrategy == R.id.restore_calendar_handling_configured) {
         edit.putString(PrefKey.PLANNER_CALENDAR_PATH.getKey(), currentPlannerPath);
         edit.putString(PrefKey.PLANNER_CALENDAR_ID.getKey(), currentPlannerId);
@@ -298,19 +302,18 @@ public class RestoreTask extends AsyncTask<Void, Result, Result> {
       if (c.moveToFirst()) {
         do {
           ContentValues uriValues = new ContentValues();
+          int rowId = c.getInt(0);
           Uri fromBackup = Uri.parse(c.getString(1));
           String fileName = fromBackup.getLastPathSegment();
           File backupImage = new File(backupPictureDir, fileName);
           Uri restored = null;
           if (backupImage.exists()) {
-            File restoredImage = PictureDirHelper.getOutputMediaFile(fileName.substring(0, fileName.lastIndexOf('.')), false);
+            File restoredImage = PictureDirHelper.getOutputMediaFile(
+                fileName.substring(0, fileName.lastIndexOf('.')), false, application.isProtected());
             if (restoredImage == null || !FileCopyUtils.copy(backupImage, restoredImage)) {
               Timber.e("Could not restore file %s from backup", fromBackup.toString());
             } else {
-              restored = application.isProtected() ?
-                  FileProvider.getUriForFile(application,
-                      "org.totschnig.myexpenses.fileprovider", restoredImage) :
-                  Uri.fromFile(restoredImage);
+              restored = AppDirHelper.getContentUriForFile(restoredImage);
             }
           } else {
             Timber.e("Could not restore file %s from backup", fromBackup.toString());
@@ -323,7 +326,8 @@ public class RestoreTask extends AsyncTask<Void, Result, Result> {
           cr.update(
               TransactionProvider.TRANSACTIONS_URI,
               uriValues,
-              DatabaseConstants.KEY_PICTURE_URI + " = " + c.getInt(0), null);
+              DatabaseConstants.KEY_ROWID + " = ?",
+              new String[]{String.valueOf(rowId)});
         } while (c.moveToNext());
       }
       c.close();

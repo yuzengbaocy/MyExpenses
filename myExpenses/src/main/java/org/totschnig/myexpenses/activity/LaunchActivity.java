@@ -27,6 +27,7 @@ import org.totschnig.myexpenses.provider.filter.Criteria;
 import org.totschnig.myexpenses.util.AcraHelper;
 import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
 import org.totschnig.myexpenses.util.ContribUtils;
+import org.totschnig.myexpenses.util.DistribHelper;
 
 import java.io.File;
 import java.util.Map;
@@ -106,7 +107,7 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
    */
   public void newVersionCheck() {
     int prev_version = PrefKey.CURRENT_VERSION.getInt(-1);
-    int current_version = CommonCommands.getVersionNumber(this);
+    int current_version = DistribHelper.getVersionNumber();
     boolean showImportantUpgradeInfo = false;
     if (prev_version < current_version) {
       if (prev_version == -1) {

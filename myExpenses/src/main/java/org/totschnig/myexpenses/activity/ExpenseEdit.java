@@ -110,6 +110,7 @@ import org.totschnig.myexpenses.ui.SpinnerHelper;
 import org.totschnig.myexpenses.util.AcraHelper;
 import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.FilterCursorWrapper;
+import org.totschnig.myexpenses.util.PermissionHelper;
 import org.totschnig.myexpenses.util.PictureDirHelper;
 import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.widget.AbstractWidget;
@@ -1272,13 +1273,13 @@ public class ExpenseEdit extends AmountActivity implements
         uri = mPictureUriTemp;
       }
       if (uri != null) {
-        if (isFileAndNotExists(uri)) {
-          errorMsg = "Error while retrieving image: File not found: " + uri;
-        } else {
+        if (PermissionHelper.canReadUri(uri, this)) {
           mPictureUri = uri;
           setPicture();
           setDirty(true);
           return;
+        } else {
+          errorMsg = getString(R.string.import_source_select_not_readable);
         }
       } else {
         errorMsg = "Error while retrieving image: No data found.";
@@ -1537,13 +1538,11 @@ public class ExpenseEdit extends AmountActivity implements
           // arriving here, in this case it takes precedence
           mPictureUri = mTransaction.getPictureUri();
           if (mPictureUri != null) {
-            boolean doShowPicture = true;
-            if (isFileAndNotExists(mTransaction.getPictureUri())) {
-              Toast.makeText(this, R.string.image_deleted, Toast.LENGTH_SHORT).show();
-              doShowPicture = false;
-            }
-            if (doShowPicture) {
+            if (PictureDirHelper.doesPictureExist(mTransaction.getPictureUri())) {
               setPicture();
+            } else {
+              mPictureUri = null;
+              Toast.makeText(this, R.string.image_deleted, Toast.LENGTH_SHORT).show();
             }
           }
         }

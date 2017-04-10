@@ -2,11 +2,15 @@ package org.totschnig.myexpenses.di;
 
 import android.support.annotation.Nullable;
 
+import org.acra.ReportingInteractionMode;
 import org.acra.config.ACRAConfiguration;
 import org.acra.config.ACRAConfigurationException;
 import org.acra.config.ConfigurationBuilder;
 import org.acra.sender.HttpSender;
+import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
+import org.totschnig.myexpenses.R;
+import org.totschnig.myexpenses.util.AcraHelper;
 import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
 import org.totschnig.myexpenses.util.LicenceHandler;
 
@@ -36,15 +40,23 @@ public class AppModule {
   ACRAConfiguration providesAcraConfiguration() {
     if (MyApplication.isInstrumentationTest()) return null;
     try {
-      return new ConfigurationBuilder(application)
-          .setFormUri("https://mtotschnig.cloudant.com/acra-myexpenses/_design/acra-storage/_update/report")
-          .setReportType(HttpSender.Type.JSON)
-          .setHttpMethod(HttpSender.Method.PUT)
-          .setFormUriBasicAuthLogin("thapponcedonventseliance")
-          .setFormUriBasicAuthPassword("8xVV4Rw5SVpkhHFahqF1W3ww")
-          .setLogcatArguments("-t", "250", "-v", "long", "ActivityManager:I", "MyExpenses:V", "*:S")
-          .setExcludeMatchingSharedPreferencesKeys(new String[]{"planner_calendar_path","password"})
-          .build();
+      ConfigurationBuilder configurationBuilder = new ConfigurationBuilder(application);
+      if (AcraHelper.DO_REPORT) {
+        configurationBuilder.setFormUri(BuildConfig.ACRA_FORM_URI)
+            .setReportType(HttpSender.Type.JSON)
+            .setHttpMethod(HttpSender.Method.PUT)
+            .setFormUriBasicAuthLogin(BuildConfig.ACRA_FORM_URI_BASIC_AUTH_LOGIN)
+            .setFormUriBasicAuthPassword(BuildConfig.ACRA_FORM_URI_BASIC_AUTH_PASSWORD)
+            .setLogcatArguments("-t", "250", "-v", "long", "ActivityManager:I", "MyExpenses:V", "*:S")
+            .setExcludeMatchingSharedPreferencesKeys("planner_calendar_path","password");
+      } else {
+        configurationBuilder.setReportingInteractionMode(ReportingInteractionMode.DIALOG)
+            .setMailTo("bug-reports@myexpenses.mobi")
+            .setResDialogText(R.string.crash_dialog_text)
+            .setResDialogTitle(R.string.crash_dialog_title)
+            .setResDialogCommentPrompt(R.string.crash_dialog_comment_prompt);
+      }
+      return configurationBuilder.build();
     } catch (ACRAConfigurationException e) {
       Timber.e(e, "ACRA not initialized");
       return null;

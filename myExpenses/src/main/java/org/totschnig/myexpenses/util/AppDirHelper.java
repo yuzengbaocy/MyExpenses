@@ -18,7 +18,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 public class AppDirHelper {
   /**
@@ -40,7 +42,7 @@ public class AppDirHelper {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
           //this will return null, if called on a pre-Lolipop device
           DocumentFile documentFile = DocumentFile.fromTreeUri(MyApplication.getInstance(), pref);
-          if (dirExistsAndIsWritable(documentFile)) {
+          if (existsAndIsWritable(documentFile)) {
             return documentFile;
           }
         }
@@ -93,15 +95,16 @@ public class AppDirHelper {
         DocumentFile result = null;
         try {
           result = parentDir.createFile(mimeType, name);
-          if (result == null) {
-            AcraHelper.report(new Exception(String.format(
-                "createFile returned null: mimeType %s; name %s; parent %s",
-                mimeType, name, parentDir.getUri().toString())));
+          if (result == null || !result.canWrite()) {
+            String message = result == null ? "createFile returned null" : "createFile returned unwritable file";
+            Map<String, String> customData = new HashMap<>();
+            customData.put("mimeType", mimeType);
+            customData.put("name", name);
+            customData.put("parent", parentDir.getUri().toString());
+            AcraHelper.report(new Exception(message), customData);
           }
         } catch (SecurityException e) {
-          AcraHelper.report(new Exception(String.format(
-              "createFile threw SecurityException: mimeType %s; name %s; parent %s",
-              mimeType, name, parentDir.getUri().toString())));
+          AcraHelper.report(e);
         }
         return result;
       }
@@ -154,13 +157,13 @@ public class AppDirHelper {
         }
       }
     }
-    return dirExistsAndIsWritable(appDir) ?
-        new Result(true) : new Result(false, R.string.app_dir_not_accessible,
-        FileUtils.getPath(MyApplication.getInstance(), appDir.getUri()));
+    return existsAndIsWritable(appDir) ? new Result(true) :
+        new Result(false, R.string.app_dir_not_accessible,
+            FileUtils.getPath(MyApplication.getInstance(), appDir.getUri()));
   }
 
   @NonNull
-  public static boolean dirExistsAndIsWritable(DocumentFile appdir) {
+  public static boolean existsAndIsWritable(DocumentFile appdir) {
     return appdir.exists() && appdir.canWrite();
   }
 
@@ -186,10 +189,15 @@ public class AppDirHelper {
     return uri;
   }
 
-  static Uri getContentUriForFile(File file) {
+  public static Uri getContentUriForFile(File file) {
     return FileProvider.getUriForFile(MyApplication.getInstance(),
-        MyApplication.getInstance().getPackageName() + ".fileprovider",
+        getFileProviderAuthority(),
         file);
+  }
+
+  @NonNull
+  public static String getFileProviderAuthority() {
+    return MyApplication.getInstance().getPackageName() + ".fileprovider";
   }
 
   /**

@@ -10,6 +10,12 @@ def buildVersionNumberBlackBerry() {
         return result + ".0"
 }
 
+def getPropertyIfDefined(property) {
+    if (project.hasProperty(property)) {
+        return "\"" + project.ext.properties[property] + "\""
+    }
+    return "\"\""
+}
 
 android {
     compileSdkVersion project.compileSdkVersion
@@ -23,12 +29,15 @@ android {
             minSdkVersion project.minSdkVersion
         }
         targetSdkVersion project.targetSdkVersion
-        versionCode 283
-        versionName '2.7.8.3'
+        versionCode 284
+        versionName '2.7.9'
         multiDexEnabled true
 
         buildConfigField "String", "BUILD_DATE", "\"" + getDate() + "\""
         buildConfigField "String", "DISTRIBUTION", "\"GITHUB\""
+        buildConfigField "String", "ACRA_FORM_URI", getPropertyIfDefined("ACRA_FORM_URI")
+        buildConfigField "String", "ACRA_FORM_URI_BASIC_AUTH_LOGIN", getPropertyIfDefined("ACRA_FORM_URI_BASIC_AUTH_LOGIN")
+        buildConfigField "String", "ACRA_FORM_URI_BASIC_AUTH_PASSWORD", getPropertyIfDefined("ACRA_FORM_URI_BASIC_AUTH_PASSWORD")
         testInstrumentationRunner "org.totschnig.myexpenses.MyTestRunner"
         testProguardFile "proguard-test.txt"
 
@@ -152,7 +161,7 @@ dependencies {
     apt 'com.gabrielittner.auto.value:auto-value-cursor:1.0.1'
     compile 'com.gabrielittner.auto.value:auto-value-cursor-annotations:1.0.0'
     compile 'com.github.mtotschnig:StickyListHeaders:master-SNAPSHOT'
-    compile 'com.pavelsikun:material-seekbar-preference:2.3.0'
+    compile 'com.github.mtotschnig:MaterialSeekBarPreference:improvement~align-with-layout-specific-to-each-level-SNAPSHOT'
     compile project(':PlayLicensingOrig')
     compile('com.gitlab.mtotschn:dav4android:fbaa5b51') {
         exclude group: "com.android.support", module: "support-annotations"
@@ -207,7 +216,9 @@ dependencies {
 
     testCompile 'junit:junit:4.12'
     testCompile 'pl.pragmatists:JUnitParams:1.0.5'
+    testCompile 'org.mockito:mockito-core:1.10.19'
 }
+
 def getDate() {
     def date = new Date()
     def formattedDate = date.format('yyyyMMdd-HHmm')

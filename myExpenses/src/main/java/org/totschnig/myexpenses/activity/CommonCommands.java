@@ -17,27 +17,26 @@ package org.totschnig.myexpenses.activity;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
-import android.text.TextUtils;
 import android.widget.Toast;
 
-import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.dialog.HelpDialogFragment;
 import org.totschnig.myexpenses.model.ContribFeature;
-import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.HashLicenceHandler;
 import org.totschnig.myexpenses.util.LicenceHandler;
 import org.totschnig.myexpenses.util.Utils;
 
 import java.io.Serializable;
+import java.util.Locale;
 
-import timber.log.Timber;
+import static org.totschnig.myexpenses.util.DistribHelper.getMarketSelfUri;
+import static org.totschnig.myexpenses.util.DistribHelper.getVersionInfo;
 
 public class CommonCommands {
   private CommonCommands() {
@@ -48,7 +47,7 @@ public class CommonCommands {
     switch (command) {
       case R.id.RATE_COMMAND:
         i = new Intent(Intent.ACTION_VIEW);
-        i.setData(Uri.parse(DistribHelper.getMarketSelfUri()));
+        i.setData(Uri.parse(getMarketSelfUri()));
         if (Utils.isIntentAvailable(ctx, i)) {
           ctx.startActivity(i);
         } else {
@@ -74,7 +73,11 @@ public class CommonCommands {
         i.putExtra(android.content.Intent.EXTRA_SUBJECT,
             "[" + ctx.getString(R.string.app_name) + "] Feedback"
         );
-        i.putExtra(android.content.Intent.EXTRA_TEXT, getVersionInfo(ctx) + "\n" + ctx.getString(R.string.feedback_email_message));
+        String messageBody = String.format(Locale.ROOT,
+            "APP_VERSION:%s\nANDROID_VERSION:%s\nBRAND:%s\nMODEL:%s\n\n%s\n\n",
+            getVersionInfo(ctx), Build.VERSION.RELEASE, Build.BRAND, Build.MODEL,
+            ctx.getString(R.string.feedback_email_message));
+        i.putExtra(android.content.Intent.EXTRA_TEXT, messageBody);
         if (!Utils.isIntentAvailable(ctx, i)) {
           Toast.makeText(ctx, R.string.no_app_handling_email_available, Toast.LENGTH_LONG).show();
         } else {
@@ -143,58 +146,4 @@ public class CommonCommands {
     ctx.startActivityForResult(i, ProtectionDelegate.CONTRIB_REQUEST);
   }
 
-  /**
-   * retrieve information about the current version
-   *
-   * @return concatenation of versionName, versionCode and buildTime
-   * buildTime is automatically stored in property file during build process
-   */
-  public static String getVersionInfo(Activity ctx) {
-    String version = "";
-    String versionname = "";
-    try {
-      PackageInfo pi = ctx.getPackageManager().getPackageInfo(ctx.getPackageName(), 0);
-      version = " (revision " + pi.versionCode + ") ";
-      versionname = pi.versionName;
-      //versiontime = ", " + R.string.installed + " " + sdf.format(new Date(pi.lastUpdateTime));
-    } catch (Exception e) {
-      Timber.e(e, "Package info not found");
-    }
-    String buildDate = BuildConfig.BUILD_DATE;
-
-    final String flavor = DistribHelper.getDistributionAsString();
-    String installer = ctx.getPackageManager()
-        .getInstallerPackageName(ctx.getPackageName());
-    installer = TextUtils.isEmpty(installer) ?
-        "" : " " + installer;
-    return versionname + version + buildDate + flavor + installer;
-  }
-
-  /**
-   * @return version name
-   */
-  public static String getVersionName(Activity ctx) {
-    String version = "";
-    try {
-      PackageInfo pi = ctx.getPackageManager().getPackageInfo(ctx.getPackageName(), 0);
-      version = pi.versionName;
-    } catch (Exception e) {
-      Timber.e(e, "Package name not found");
-    }
-    return version;
-  }
-
-  /**
-   * @return version number (versionCode)
-   */
-  public static int getVersionNumber(Activity ctx) {
-    int version = -1;
-    try {
-      PackageInfo pi = ctx.getPackageManager().getPackageInfo(ctx.getPackageName(), 0);
-      version = pi.versionCode;
-    } catch (Exception e) {
-      Timber.e(e, "Package name not found");
-    }
-    return version;
-  }
 }
