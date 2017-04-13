@@ -96,6 +96,7 @@ import org.totschnig.myexpenses.ui.FragmentPagerAdapter;
 import org.totschnig.myexpenses.ui.SimpleCursorAdapter;
 import org.totschnig.myexpenses.util.AcraHelper;
 import org.totschnig.myexpenses.util.AppDirHelper;
+import org.totschnig.myexpenses.util.CurrencyFormatter;
 import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.FileUtils;
 import org.totschnig.myexpenses.util.Result;
@@ -202,6 +203,9 @@ public class MyExpenses extends LaunchActivity implements
   private String mExportFormat = null;
   public boolean setupComplete;
   private AccountGrouping mAccountGrouping;
+
+  @Inject
+  CurrencyFormatter currencyFormatter;
 
 
   /* (non-Javadoc)
@@ -552,10 +556,10 @@ public class MyExpenses extends LaunchActivity implements
           bundle.putString(KEY_LABEL,
               mAccountsCursor.getString(columnIndexLabel));
           bundle.putString(KEY_RECONCILED_TOTAL,
-              Utils.formatCurrency(
+              currencyFormatter.formatCurrency(
                   new Money(currency,
                       mAccountsCursor.getLong(mAccountsCursor.getColumnIndex(KEY_RECONCILED_TOTAL)))));
-          bundle.putString(KEY_CLEARED_TOTAL, Utils.formatCurrency(
+          bundle.putString(KEY_CLEARED_TOTAL, currencyFormatter.formatCurrency(
               new Money(currency,
                   mAccountsCursor.getLong(mAccountsCursor.getColumnIndex(KEY_CLEARED_TOTAL)))));
           BalanceDialogFragment.newInstance(bundle)
@@ -648,7 +652,7 @@ public class MyExpenses extends LaunchActivity implements
             TaskExecutionFragment.TASK_DELETE_ACCOUNT,
             new Long[]{(Long) tag},
             null,
-            0);
+            R.string.progress_dialog_deleting);
         return true;
       case R.id.SHARE_COMMAND:
         i = new Intent();
@@ -677,9 +681,7 @@ public class MyExpenses extends LaunchActivity implements
         return true;
       case R.id.EDIT_ACCOUNT_COMMAND:
         closeDrawer();
-        int position = (Integer) tag;
-        mAccountsCursor.moveToPosition(position);
-        long accountId = mAccountsCursor.getLong(columnIndexRowId);
+        long accountId = (Long) tag;
         if (accountId > 0) { //do nothing if accidentally we are positioned at an aggregate account
           i = new Intent(this, AccountEdit.class);
           i.putExtra(KEY_ROWID, accountId);
@@ -688,9 +690,7 @@ public class MyExpenses extends LaunchActivity implements
         return true;
       case R.id.DELETE_ACCOUNT_COMMAND:
         closeDrawer();
-        position = (Integer) tag;
-        mAccountsCursor.moveToPosition(position);
-        accountId = mAccountsCursor.getLong(columnIndexRowId);
+        accountId = (Long) tag;
         //do nothing if accidentally we are positioned at an aggregate account or try to delete the last account
         if (mAccountsCursor.getCount() > 1 && accountId > 0) {
           MessageDialogFragment.newInstance(
@@ -1046,7 +1046,7 @@ public class MyExpenses extends LaunchActivity implements
   }
 
   private void setConvertedAmount(TextView tv, Currency currency) {
-    tv.setText(Utils.convAmount(tv.getText().toString(), currency));
+    tv.setText(currencyFormatter.convAmount(tv.getText().toString(), currency));
   }
 
   @Override
@@ -1079,7 +1079,7 @@ public class MyExpenses extends LaunchActivity implements
   private void setBalance() {
     long balance = mAccountsCursor.getLong(mAccountsCursor.getColumnIndex
         (KEY_CURRENT_BALANCE));
-    mCurrentBalance = Utils.formatCurrency(new Money(Utils.getSaveInstance(mAccountsCursor
+    mCurrentBalance = currencyFormatter.formatCurrency(new Money(Utils.getSaveInstance(mAccountsCursor
         .getString(columnIndexCurrency)), balance));
     TextView balanceTextView = (TextView) mToolbar.findViewById(R.id.end);
     balanceTextView.setTextColor(balance < 0 ? colorExpense : colorIncome);
@@ -1222,7 +1222,7 @@ public class MyExpenses extends LaunchActivity implements
               @Override
               public boolean onMenuItemClick(MenuItem item) {
                 return handleSwap(item.getItemId(), position) ||
-                    dispatchCommand(item.getItemId(), position);
+                    dispatchCommand(item.getItemId(), rowId);
               }
 
               private boolean handleSwap(int itemId, int position) {

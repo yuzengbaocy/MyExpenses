@@ -94,7 +94,6 @@
   <string name="dialog_title_extended_feature">Funcionalidade extended</string>
   <!--the dialog where this title is displayed allows the user to customize the number of fraction digits for a currency
     e.g. 3 instead of 2 for € if you want to calculate with 1/10s of a ¢-->
-  <string name="dialog_title_set_fraction_digits">Defina o número de dígitos de fracionários</string>
   <string name="dialog_title_template_title">Definir o título</string>
   <string name="dialog_title_warning_delete_account">Eliminar conta?</string>
   <string name="dialog_title_warning_delete_main_category">Eliminar categoria principal?</string>
@@ -440,7 +439,7 @@ Traduzido por Sérgio Marques</string>
   <string name="warning_restore">A base de dados e as preferências serão restauradas a partir do ficheiro \"%1$s\". Os dados atuais serão eliminados. Pretende continuar?</string>
   <string name="warning_app_folder_will_be_deleted_upon_uninstall">A pasta para cópias de segurança e exportações atualmente selecionada será eliminada automaticamente pelo Android se desinstalar o My Expenses. Pode prevenir isso de acontecer ao selecionar uma pasta diferente no ecrã de Definições.</string>
   <string name="warning_splitpartcategory_context">Transferências que fazem parte de uma divisão apenas podem ser editadas no contexto da divisão.</string>
-  <string name="warning_fraction_digits_out_of_range">Defina um número entre 0 e 8</string>
+  <string name="validation_error_number_out_of_range">Defina um número entre %1$d e %2$d</string>
   <string name="warning_change_fraction_digits_1">As quantias na base de dados precisam de ser atualizadas para corresponderem com o novo número de dígitos fracionários.</string>
   <string name="warning_change_fraction_digits_2_multiplied" tools:ignore="PluralsCandidate">Se as quantias não forem atualizadas, as mesmas serão exibidas multiplicadas por %d após a alteração.</string>
   <string name="warning_change_fraction_digits_2_divided" tools:ignore="PluralsCandidate">Se as quantias não forem atualizadas, as mesmas serão exibidas divididas por %d após a alteração.</string>

@@ -15,6 +15,9 @@
 
 package org.totschnig.myexpenses.model;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
 import org.totschnig.myexpenses.MyApplication;
 
 import java.io.Serializable;
@@ -23,7 +26,8 @@ import java.math.RoundingMode;
 import java.util.Currency;
 
 public class Money implements Serializable {
-  public static final String KEY_CUSTOM_FRACTION_DIGITS = "CustomFractionDigits";
+  private static final String KEY_CUSTOM_FRACTION_DIGITS = "CustomFractionDigits";
+  private static final String KEY_CUSTOM_CURRENCY_SYMBOL = "CustomCurrencySymbol";
   private Currency currency;
   private Long amountMinor;
   private int fractionDigits;
@@ -130,5 +134,26 @@ public class Money implements Serializable {
 
   public static void ensureFractionDigitsAreCached(Currency currency) {
     storeCustomFractionDigits(currency.getCurrencyCode(), getFractionDigits(currency));
+  }
+
+  @Nullable
+  public static String getCustomSymbol(@NonNull Currency currencyCode) {
+    return MyApplication.getInstance().getSettings()
+        .getString(currencyCode + KEY_CUSTOM_CURRENCY_SYMBOL, null);
+  }
+
+  @NonNull
+  public static String getSymbol(@NonNull Currency currency) {
+    String custom = getCustomSymbol(currency);
+    return custom != null ? custom : currency.getSymbol();
+  }
+
+  public static boolean storeCustomSymbol(String currencyCode, String symbol) {
+    if (!Currency.getInstance(currencyCode).getSymbol().equals(symbol)) {
+      MyApplication.getInstance().getSettings().edit()
+          .putString(currencyCode + KEY_CUSTOM_CURRENCY_SYMBOL, symbol).apply();
+      return true;
+    }
+    return false;
   }
 }
