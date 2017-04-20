@@ -81,25 +81,28 @@ public class DriveSetupActivity extends ProtectedFragmentActivity implements
 
   @Override
   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-    switch (requestCode) {
-      case REQUEST_CODE_OPENER:
-        if (resultCode == RESULT_OK) {
-          DriveId driveId = data.getParcelableExtra(
-              OpenFileActivityBuilder.EXTRA_RESPONSE_DRIVE_ID);
-          driveFolder = driveId.asDriveFolder();
-        } else {
-          setResult(RESULT_CANCELED);
-          finish();
+    switch (resultCode) {
+      case RESULT_OK: {
+        switch (requestCode) {
+          case REQUEST_CODE_OPENER:
+            DriveId driveId = data.getParcelableExtra(
+                OpenFileActivityBuilder.EXTRA_RESPONSE_DRIVE_ID);
+            driveFolder = driveId.asDriveFolder();
+            break;
+          case REQUEST_CODE_RESOLUTION:
+            mGoogleApiClient.connect();
+            break;
+          default:
+            super.onActivityResult(requestCode, resultCode, data);
+            break;
         }
         break;
-      case REQUEST_CODE_RESOLUTION:
-        if (resultCode == RESULT_OK) {
-          mGoogleApiClient.connect();
-        }
+      }
+      case RESULT_CANCELED: {
+        setResult(RESULT_CANCELED);
+        finish();
         break;
-      default:
-        super.onActivityResult(requestCode, resultCode, data);
-        break;
+      }
     }
   }
 
