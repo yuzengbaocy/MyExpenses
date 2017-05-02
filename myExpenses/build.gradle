@@ -209,6 +209,8 @@ dependencies {
     withAdsCompile 'com.facebook.android:audience-network-sdk:4.+'
     withAdsCompile fileTree(dir: 'libs', include: ['FacebookAdapter.jar'])
 
+    compile 'com.google.firebase:firebase-core:10.2.4'
+
     compile supportCompile
 
     androidTestCompile 'com.android.support.test.espresso:espresso-core:' + project.espressoVersion
@@ -279,3 +281,5 @@ afterEvaluate {
         }
     }
 }
+
+apply plugin: 'com.google.gms.google-services'

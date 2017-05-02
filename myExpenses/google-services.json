@@ -1,35 +1,52 @@
 {
   "project_info": {
-    "project_number": "725385967731",
-    "project_id": "my-expenses-61c7f"
+    "project_number": "442888290118",
+    "firebase_url": "https://myexpenses-3e9c4.firebaseio.com",
+    "project_id": "myexpenses-3e9c4",
+    "storage_bucket": "myexpenses-3e9c4.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:725385967731:android:d22ed7d7b0fe469f",
+        "mobilesdk_app_id": "1:442888290118:android:77df75bd4c5b9849",
         "android_client_info": {
-          "package_name": "org.totschnig.myexpenses"
+          "package_name": "org.totschnig.myexpenses.debug"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "442888290118-d1fv9e4b61stqa01q37qv6dnnarbknhm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.totschnig.myexpenses.debug",
+            "certificate_hash": "6493d402773387614ceeeb7374d4685895853c37"
+          }
+        },
+        {
+          "client_id": "442888290118-kkh175ovbk66p3b4s9178am520qbshi9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyA38l4-CVV325k9cXGbg4NrTWcCFiRclu4"
+          "current_key": "AIzaSyDQz7SD4YjsCRnL4gEUvqc4rYEvf9EushY"
         }
       ],
       "services": {
         "analytics_service": {
-          "status": 2,
-          "analytics_property": {
-            "tracking_id": "UA-40789280-1"
-          }
+          "status": 1
         },
         "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "442888290118-kkh175ovbk66p3b4s9178am520qbshi9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         },
         "ads_service": {
-          "status": 1
+          "status": 2
         }
       }
     }
