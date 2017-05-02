@@ -202,6 +202,14 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
             categoryManage.addPreference(prefStaleImages);
         }
       }.execute();
+
+      pref = findPreference(TRACKING);
+      try {
+        Class.forName("org.totschnig.myexpenses.util.tracking.PlatformTracker");
+      } catch (ClassNotFoundException e) {
+        pref.setEnabled(false);
+      }
+      pref.setOnPreferenceChangeListener(this);
     }
     //SHORTCUTS screen
     else if (rootKey.equals(UI_HOME_SCREEN_SHORTCUTS.getKey())) {
@@ -450,6 +458,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
         Toast.makeText(getActivity(), R.string.number_format_illegal, Toast.LENGTH_LONG).show();
         return false;
       }
+    } else if (matches(pref, TRACKING)) {
+      ((ProtectedFragmentActivity) getActivity()).setTrackingEnabled((boolean) value);
     }
     return true;
   }
@@ -497,7 +507,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
       return true;
     }
     if (matches(preference, APP_DIR)) {
-      DocumentFile appDir = AppDirHelper.getAppDir();
+      DocumentFile appDir = AppDirHelper.getAppDir(getActivity());
       if (appDir == null) {
         preference.setSummary(R.string.external_storage_unavailable);
         preference.setEnabled(false);
@@ -539,7 +549,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
   private void setAppDirSummary() {
     Preference pref = findPreference(APP_DIR);
     if (AppDirHelper.isExternalStorageAvailable()) {
-      DocumentFile appDir = AppDirHelper.getAppDir();
+      DocumentFile appDir = AppDirHelper.getAppDir(getActivity());
       if (appDir != null) {
         if (AppDirHelper.existsAndIsWritable(appDir)) {
           pref.setSummary(FileUtils.getPath(getActivity(), appDir.getUri()));
@@ -547,6 +557,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
           pref.setSummary(getString(R.string.app_dir_not_accessible,
               FileUtils.getPath(MyApplication.getInstance(), appDir.getUri())));
         }
+      } else {
+        pref.setSummary(R.string.io_error_appdir_null);
       }
     } else {
       pref.setSummary(R.string.external_storage_unavailable);
@@ -638,7 +650,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
           //String error = String.format(Locale.ROOT, "PICK_FOLDER_REQUEST returned after %d millis with request code %d",
           //    pickFolderRequestDuration, requestCode);
           //AcraHelper.report(new Exception(error));
-          startLegacyFolderRequest(AppDirHelper.getAppDir());
+          startLegacyFolderRequest(AppDirHelper.getAppDir(getActivity()));
         }
       }
     } else if (requestCode == PICK_FOLDER_REQUEST_LEGACY && resultCode == Activity.RESULT_OK) {

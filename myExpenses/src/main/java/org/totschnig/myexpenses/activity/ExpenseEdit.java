@@ -266,7 +266,7 @@ public class ExpenseEdit extends AmountActivity implements
     MyApplication.getInstance().getAppComponent().inject(this);
 
 
-    mDateFormat = android.text.format.DateFormat.getDateFormat(this);
+    mDateFormat = Utils.getDateFormatSafe(this);
     mTimeFormat = android.text.format.DateFormat.getTimeFormat(this);
 
     setupToolbar();
@@ -395,8 +395,9 @@ public class ExpenseEdit extends AmountActivity implements
       if ((mCatId = savedInstanceState.getLong(KEY_CATID)) == 0L) {
         mCatId = null;
       }
-      if ((mMethodId = savedInstanceState.getLong(KEY_METHODID)) == 0L)
+      if ((mMethodId = savedInstanceState.getLong(KEY_METHODID)) == 0L) {
         mMethodId = null;
+      }
       if ((mAccountId = savedInstanceState.getLong(KEY_ACCOUNTID)) == 0L) {
         mAccountId = null;
       } else {
@@ -1920,7 +1921,7 @@ public class ExpenseEdit extends AmountActivity implements
             mTransaction.methodId = mMethodId;
           }
           if (mTransaction.methodId != null) {
-            while (data.isAfterLast() == false) {
+            while (!data.isAfterLast()) {
               if (data.getLong(data.getColumnIndex(KEY_ROWID)) == mTransaction.methodId) {
                 mMethodSpinner.setSelection(data.getPosition() + 1);
                 break;
@@ -1940,7 +1941,7 @@ public class ExpenseEdit extends AmountActivity implements
           return;
         }
         mAccounts = new Account[data.getCount()];
-        if (mSavedInstance) {
+        if (didUserSetAccount) {
           mTransaction.accountId = mAccountId;
           mTransaction.transfer_account = mTransferAccountId;
         }
