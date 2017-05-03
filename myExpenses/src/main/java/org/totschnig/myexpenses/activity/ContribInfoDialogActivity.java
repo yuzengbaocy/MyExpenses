@@ -23,6 +23,7 @@ import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
 import org.totschnig.myexpenses.util.ShortcutHelper;
 import org.totschnig.myexpenses.util.Utils;
+import org.totschnig.myexpenses.util.tracking.Tracker;
 
 import java.io.Serializable;
 import java.util.UUID;
@@ -109,6 +110,9 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
   }
 
   public void contribBuyDo(boolean extended) {
+    Bundle bundle = new Bundle(1);
+    bundle.putBoolean(Tracker.EVENT_PARAM_EXTENDED, extended);
+    logEvent(Tracker.EVENT_CONTRIB_DIALOG_BUY, bundle);
     if (DistribHelper.isBlackberry()) {
       contribBuyBlackBerry();
       return;
