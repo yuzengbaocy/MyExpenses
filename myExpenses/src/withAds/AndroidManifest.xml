@@ -1,7 +1,8 @@
-<manifest package="org.totschnig.myexpenses"
+<manifest xmlns:tools="http://schemas.android.com/tools"
+          package="org.totschnig.myexpenses"
           xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <application>
+    <application tools:ignore="AllowBackup,GoogleAppIndexingWarning">
         <activity
             android:name="com.google.android.gms.ads.AdActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"

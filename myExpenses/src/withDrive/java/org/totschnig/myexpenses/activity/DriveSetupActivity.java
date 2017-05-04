@@ -21,7 +21,6 @@ import android.content.IntentSender;
 import android.content.IntentSender.SendIntentException;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -37,13 +36,13 @@ import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.sync.GoogleDriveBackendProvider;
 import org.totschnig.myexpenses.sync.GoogleDriveBackendProviderFactory;
 
+import timber.log.Timber;
+
 import static org.totschnig.myexpenses.sync.GenericAccountService.KEY_SYNC_PROVIDER_URL;
 
 public class DriveSetupActivity extends ProtectedFragmentActivity implements
     GoogleApiClient.ConnectionCallbacks,
     GoogleApiClient.OnConnectionFailedListener {
-
-  private static final String TAG = DriveSetupActivity.class.getSimpleName();
 
   /**
    * Request code for auto Google Play Services error resolution.
@@ -123,7 +122,7 @@ public class DriveSetupActivity extends ProtectedFragmentActivity implements
    */
   @Override
   public void onConnected(Bundle connectionHint) {
-    Log.i(TAG, "GoogleApiClient connected");
+    Timber.i("GoogleApiClient connected");
     if (driveFolder == null) {
       IntentSender intentSender = Drive.DriveApi
           .newOpenFileActivityBuilder()
@@ -133,7 +132,7 @@ public class DriveSetupActivity extends ProtectedFragmentActivity implements
         startIntentSenderForResult(
             intentSender, REQUEST_CODE_OPENER, null, 0, 0, 0);
       } catch (SendIntentException e) {
-        Log.w(TAG, "Unable to send intent", e);
+        Timber.e(e, "Unable to send intent");
       }
     } else {
       driveFolder.getMetadata(getGoogleApiClient())
@@ -175,7 +174,7 @@ public class DriveSetupActivity extends ProtectedFragmentActivity implements
    */
   @Override
   public void onConnectionSuspended(int cause) {
-    Log.i(TAG, "GoogleApiClient connection suspended");
+    Timber.i("GoogleApiClient connection suspended");
   }
 
   /**
@@ -185,7 +184,7 @@ public class DriveSetupActivity extends ProtectedFragmentActivity implements
    */
   @Override
   public void onConnectionFailed(@NonNull ConnectionResult result) {
-    Log.i(TAG, "GoogleApiClient connection failed: " + result.toString());
+    Timber.i("GoogleApiClient connection failed: %s", result);
     if (!result.hasResolution()) {
       // show the localized error dialog.
       Dialog errorDialog = GoogleApiAvailability.getInstance().getErrorDialog(this, result.getErrorCode(), 0);
@@ -196,7 +195,7 @@ public class DriveSetupActivity extends ProtectedFragmentActivity implements
     try {
       result.startResolutionForResult(this, REQUEST_CODE_RESOLUTION);
     } catch (SendIntentException e) {
-      Log.e(TAG, "Exception while starting resolution activity", e);
+      Timber.e(e, "Exception while starting resolution activity");
     }
   }
 
