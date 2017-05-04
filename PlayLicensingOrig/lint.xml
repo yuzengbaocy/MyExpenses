@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <lint>
-    <issue id="LogNotTimber" severity="ignore" />
+    <!-- TODO check for newer version -->
+    <issue id="all" severity="ignore" />
 </lint>

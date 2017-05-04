@@ -144,6 +144,21 @@ android {
     }
     testBuildType "forTest"
 
+    variantFilter { variant ->
+        def names = variant.flavors*.name
+        if (names.contains("withoutAds")) {
+            setIgnore(true)
+        }
+        if (name.contains("blackberry")) {
+            if (names.contains("withDrive")) {
+                setIgnore(true)
+            }
+        } else {
+            if (names.contains("withoutDrive")) {
+                setIgnore(true)
+            }
+        }
+    }
 }
 
 List supportCompile = ['com.android.support:appcompat-v7:' + project.androidSupportLibraryVersion,
