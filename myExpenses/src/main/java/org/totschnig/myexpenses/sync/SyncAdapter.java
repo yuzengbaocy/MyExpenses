@@ -1,21 +1,5 @@
 package org.totschnig.myexpenses.sync;
 
-/*
- * Copyright 2013 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.annotation.TargetApi;
@@ -75,6 +59,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import hugo.weaving.DebugLog;
 import timber.log.Timber;
 
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_ACCOUNTID;
@@ -91,6 +76,7 @@ import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_ROWID;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_SYNC_ACCOUNT_NAME;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_SYNC_SEQUENCE_LOCAL;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_UUID;
+import static org.totschnig.myexpenses.util.NotificationBuilderWrapper.NOTIFICATION_SYNC;
 
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
   public static final int BATCH_SIZE = 100;
@@ -102,6 +88,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
   private Map<String, Long> payeeToId;
   private Map<String, Long> methodToId;
   private Map<String, Long> accountUuidToId;
+  private StringBuilder notificationContent;
 
   public SyncAdapter(Context context, boolean autoInitialize) {
     super(context, autoInitialize);
@@ -135,6 +122,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     accountUuidToId = new HashMap<>();
     String uuidFromExtras = extras.getString(KEY_UUID);
     Timber.i("onPerformSync %s", extras);
+    notificationContent = new StringBuilder();
 
     AccountManager accountManager = AccountManager.get(getContext());
 
@@ -159,6 +147,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     if (!backend.setUp()) {
       syncResult.stats.numIoExceptions++;
       syncResult.delayUntil = 300;
+      notifyIoException(R.string.sync_io_error_cannot_connect);
       return;
     }
 
@@ -236,17 +225,17 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
           long lastSyncedRemote = Long.parseLong(getUserDataWithDefault(accountManager, account,
               lastRemoteSyncKey, "0"));
           dbAccount.set(org.totschnig.myexpenses.model.Account.getInstanceFromDb(accountId));
-          Timber.i("now syncing %s", dbAccount.get().label);
+          appendToNotification(getContext().getString(R.string.synchronization_start, dbAccount.get().label), true);
           if (uuidFromExtras != null && extras.getBoolean(KEY_RESET_REMOTE_ACCOUNT)) {
             if (!backend.resetAccountData(uuidFromExtras)) {
               syncResult.stats.numIoExceptions++;
-              Timber.e("error resetting account data");
+              notifyIoException(R.string.sync_io_exception_reset_account_data);
             }
             continue;
           }
           if (!backend.withAccount(dbAccount.get())) {
             syncResult.stats.numIoExceptions++;
-            Timber.e("error withAccount");
+            notifyIoException(R.string.sync_io_exception_setup_remote_account);
             continue;
           }
 
@@ -256,7 +245,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
               if (changeSetSince.isFailed()) {
                 syncResult.stats.numIoExceptions++;
-                Timber.e("error getting changeset");
+                notifyIoException(R.string.sync_io_exception_reading_change_set);
                 continue;
               }
 
@@ -312,18 +301,22 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 }
               }
             } catch (IOException e) {
-              Timber.e(e, "Error while syncing ");
               syncResult.stats.numIoExceptions++;
+              notifyIoException(R.string.sync_io_exception_syncing);
             } catch (RemoteException | OperationApplicationException | SQLiteException e) {
-              Timber.e(e, "Error while syncing ");
               syncResult.databaseError = true;
+              notifyDatabaseError(e);
             } finally {
-              if (!backend.unlock()) {
-                Timber.e("Unlocking backend failed");
+              if (backend.unlock()) {
+                appendToNotification(getContext().getString(R.string.synchronization_end_success), false);
+              } else {
+                notifyIoException(R.string.sync_io_exception_unlocking);
                 syncResult.stats.numIoExceptions++;
+
               }
             }
           } else {
+            notifyIoException(R.string.sync_io_exception_locking);
             syncResult.stats.numIoExceptions++;
           }
         } while (cursor.moveToNext());
@@ -333,9 +326,17 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     backend.tearDown();
   }
 
+  private void appendToNotification(String content, boolean newLine) {
+    if (notificationContent.length() > 0) {
+      notificationContent.append(newLine ? "\n" : " ");
+    }
+    notificationContent.append(content);
+    notifyUser(getNotificationTitle(), notificationContent.toString(), null);
+  }
+
+  @DebugLog
   private void notifyUser(String title, String content, @Nullable Intent intent) {
-    NotificationBuilderWrapper builder =
-        NotificationBuilderWrapper.defaultBigTextStyleBuilder(
+    NotificationBuilderWrapper builder = NotificationBuilderWrapper.defaultBigTextStyleBuilder(
             getContext(), title, content);
     if (intent != null) {
       builder.setContentIntent(PendingIntent.getActivity(
@@ -343,13 +344,21 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
     Notification notification = builder.build();
     notification.flags = Notification.FLAG_AUTO_CANCEL;
-    ((NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE)).notify(0, notification);
+    ((NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE)).notify(
+        NOTIFICATION_SYNC, notification);
+  }
+
+  private void notifyIoException(int resId) {
+    appendToNotification(getContext().getString(resId), true);
   }
 
   private void notifyDatabaseError(Exception e) {
     AcraHelper.report(e);
-    notifyUser(Utils.concatResStrings(getContext(), " ", R.string.app_name, R.string.synchronization),
-        getContext().getString(R.string.sync_database_error) + " " + e.getMessage(), null);
+    appendToNotification(getContext().getString(R.string.sync_database_error) + " " + e.getMessage(), true);
+  }
+
+  private String getNotificationTitle() {
+    return Utils.concatResStrings(getContext(), " ", R.string.app_name, R.string.synchronization);
   }
 
   private List<TransactionChange> getLocalChanges(ContentProviderClient provider, long accountId,
