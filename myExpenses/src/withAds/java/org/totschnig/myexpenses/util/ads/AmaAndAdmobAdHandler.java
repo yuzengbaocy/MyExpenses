@@ -18,7 +18,6 @@ import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 
 import org.totschnig.myexpenses.BuildConfig;
-import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.model.ContribFeature;
 import org.totschnig.myexpenses.preference.PrefKey;
@@ -44,7 +43,7 @@ public class AmaAndAdmobAdHandler extends AdHandler {
 
   public void init() {
     if (isAdDisabled()) {
-      adContainer.setVisibility(View.GONE);
+      hide();
     } else {
       if (WITH_AMA) {
         showBannerAma();
@@ -222,7 +221,7 @@ public class AmaAndAdmobAdHandler extends AdHandler {
       //activity might have been resumed after user has bought contrib key
       if (ContribFeature.AD_FREE.hasAccess()) {
         admobView.destroy();
-        adContainer.setVisibility(View.GONE);
+        hide();
         mAdMobBannerShown = false;
       } else {
         admobView.resume();
@@ -231,7 +230,7 @@ public class AmaAndAdmobAdHandler extends AdHandler {
     if (mAmaBannerShown) {
       //activity might have been resumed after user has bought contrib key
       if (ContribFeature.AD_FREE.hasAccess()) {
-        adContainer.setVisibility(View.GONE);
+        hide();
         mAmaBannerShown = false;
       }
     }
