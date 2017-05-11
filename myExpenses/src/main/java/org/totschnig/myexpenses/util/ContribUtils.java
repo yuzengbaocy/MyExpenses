@@ -12,6 +12,8 @@ import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.activity.ContribInfoDialogActivity;
 import org.totschnig.myexpenses.model.ContribFeature;
 
+import static org.totschnig.myexpenses.util.NotificationBuilderWrapper.NOTIFICATION_CONTRIB;
+
 public class ContribUtils {
   public static void showContribNotification(Context context, ContribFeature feature) {
     String notifTitle = Utils.concatResStrings(context, " ", R.string.app_name,
@@ -23,7 +25,7 @@ public class ContribUtils {
     Intent contribIntent = ContribInfoDialogActivity.getIntentFor(context, feature);
     NotificationCompat.Builder builder =
         new NotificationCompat.Builder(context)
-            .setSmallIcon(R.drawable.ic_notification)
+            .setSmallIcon(R.drawable.ic_stat_notification_sigma)
             .setContentTitle(notifTitle)
             .setContentText(content)
             .setContentIntent(PendingIntent.getActivity(context, 0, contribIntent,
@@ -32,7 +34,7 @@ public class ContribUtils {
     Notification notification = builder.build();
     notification.flags = Notification.FLAG_AUTO_CANCEL;
     ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE))
-        .notify(0,notification);
+        .notify(NOTIFICATION_CONTRIB, notification);
 
   }
 }

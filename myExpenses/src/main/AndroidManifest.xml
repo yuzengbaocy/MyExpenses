@@ -106,6 +106,7 @@
                   android:theme="@style/Theme.AppCompat.Light.DialogWhenLarge" />
 
         <activity android:name=".activity.ManageCategories"
+                  android:exported="false"
                   android:theme="@style/Theme.AppCompat.Light.DialogWhenLarge" >
             <intent-filter>
                 <action android:name="myexpenses.intent.manage.categories" />
@@ -120,6 +121,7 @@
 
         <activity
             android:name=".activity.BackupRestoreActivity"
+            android:exported="false"
             android:theme="@style/Theme.AppCompat.Light.Dialog">
             <intent-filter>
                 <action android:name="myexpenses.intent.backup" />
@@ -135,6 +137,7 @@
 
         <activity
             android:name=".activity.GrisbiImport"
+            android:exported="false"
             android:theme="@style/Theme.AppCompat.Light.Dialog" >
             <intent-filter>
                 <action android:name="myexpenses.intent.import_from_grisbi" />
@@ -145,6 +148,7 @@
 
         <activity
             android:name=".activity.QifCSVImport"
+            android:exported="false"
             android:theme="@style/Theme.AppCompat.Light.Dialog" >
             <intent-filter>
                 <action android:name="myexpenses.intent.import" />
@@ -173,6 +177,7 @@
         </activity>
 
         <activity android:name=".activity.ManageParties"
+                  android:exported="false"
                   android:theme="@style/Theme.AppCompat.Light.DialogWhenLarge" >
             <intent-filter>
                 <action android:name="myexpenses.intent.manage.parties" />
@@ -182,6 +187,7 @@
         </activity>
 
         <activity android:name=".activity.ManageStaleImages"
+                  android:exported="false"
                   android:theme="@style/Theme.AppCompat.Light.DialogWhenLarge" >
             <intent-filter>
                 <action android:name="myexpenses.intent.manage.stale_images" />
@@ -212,6 +218,7 @@
         </activity>
 
         <activity android:name=".activity.ManageMethods"
+                  android:exported="false"
                   android:theme="@style/Theme.AppCompat.Light.DialogWhenLarge" >
             <intent-filter>
                 <action android:name="myexpenses.intent.manage.methods" />
@@ -242,6 +249,7 @@
         </activity>
 
         <activity android:name=".activity.ManageCurrencies"
+                  android:exported="false"
                   android:theme="@style/Theme.AppCompat.Light.DialogWhenLarge">
             <intent-filter>
                 <action android:name="myexpenses.intent.manage.currencies" />
@@ -251,6 +259,7 @@
         </activity>
 
         <activity android:name=".activity.ManageSyncBackends"
+                  android:exported="false"
                   android:theme="@style/Theme.AppCompat.Light.DialogWhenLarge" >
             <intent-filter>
                 <action android:name="myexpenses.intent.manage.sync_backends" />

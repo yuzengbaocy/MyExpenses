@@ -11,18 +11,13 @@
 package org.totschnig.myexpenses.service;
 
 import android.content.BroadcastReceiver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 
 import org.totschnig.myexpenses.MyApplication;
-import org.totschnig.myexpenses.provider.TransactionProvider;
-import org.totschnig.myexpenses.provider.filter.WhereFilter;
-import org.totschnig.myexpenses.sync.GenericAccountService;
-
-import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_SYNC_ACCOUNT_NAME;
+import org.totschnig.myexpenses.model.Account;
 
 public class GenericAlarmReceiver extends BroadcastReceiver {
 
@@ -48,17 +43,7 @@ public class GenericAlarmReceiver extends BroadcastReceiver {
     } else if (SCHEDULED_BACKUP.equals(action)) {
       requestAutoBackup(context);
     } else if (ACCOUNT_CHANGED.equals(action)) {
-      String[] accounts = GenericAccountService.getAccountsAsStream(context)
-          .map(account -> account.name)
-          .toArray(size -> new String[size]);
-      ContentValues values = new ContentValues(1);
-      values.putNull(KEY_SYNC_ACCOUNT_NAME);
-      //TODO active account objects are not updated when this code is run
-      String where = accounts.length > 0 ?
-          KEY_SYNC_ACCOUNT_NAME + " NOT " + WhereFilter.Operation.IN.getOp(accounts.length) :
-          null;
-      context.getContentResolver().update(TransactionProvider.ACCOUNTS_URI, values,
-          where, accounts);
+      Account.checkSyncAccounts(context);
     }
   }
 
