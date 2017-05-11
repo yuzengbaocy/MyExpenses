@@ -3,7 +3,6 @@ package org.totschnig.myexpenses.sync;
 import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.webkit.MimeTypeMap;
@@ -28,11 +27,9 @@ import com.google.android.gms.drive.query.Query;
 import com.google.android.gms.drive.query.SearchableField;
 
 import org.apache.commons.lang3.StringUtils;
-import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.model.Account;
 import org.totschnig.myexpenses.model.AccountType;
-import org.totschnig.myexpenses.model.Model;
 import org.totschnig.myexpenses.sync.json.AccountMetaData;
 import org.totschnig.myexpenses.sync.json.ChangeSet;
 import org.totschnig.myexpenses.util.AcraHelper;
@@ -50,9 +47,6 @@ import java.util.Map;
 import timber.log.Timber;
 
 public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
-  private static final String KEY_LOCK_TOKEN = "lockToken";
-  private static final String KEY_OWNED_BY_US = "ownedByUs";
-  private static final String KEY_TIMESTAMP = "timestamp";
   private static final String KEY_LAST_FAILED_SYNC = "lastFailedSync";
   private static final String KEY_SYNC_BACKOFF = "syncBackOff";
   private static final CustomPropertyKey ACCOUNT_METADATA_CURRENCY_KEY =
@@ -69,16 +63,13 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
       new CustomPropertyKey("accountMetadataType", CustomPropertyKey.PRIVATE);
   private static final CustomPropertyKey LOCK_TOKEN_KEY =
       new CustomPropertyKey(KEY_LOCK_TOKEN, CustomPropertyKey.PRIVATE);
-  private static final long LOCK_TIMEOUT = BuildConfig.DEBUG ? 60 * 1000 : 30 * 60 * 1000;
   private String folderId;
   private DriveFolder baseFolder, accountFolder;
 
   private GoogleApiClient googleApiClient;
-  private SharedPreferences sharedPreferences;
 
   GoogleDriveBackendProvider(Context context, android.accounts.Account account, AccountManager accountManager) throws SyncParseException {
     super(context);
-    sharedPreferences = context.getSharedPreferences("google_drive_backend", 0);
     folderId = accountManager.getUserData(account, GenericAccountService.KEY_SYNC_PROVIDER_URL);
     if (folderId == null) {
       throw new SyncParseException("Drive folder not set");
@@ -89,9 +80,15 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
         .build();
   }
 
+  @NonNull
+  @Override
+  protected String getSharedPreferencesName() {
+    return "google_drive_backend";
+  }
+
   @Override
   public boolean setUp() {
-   return setUp(false);
+    return setUp(false);
   }
 
   @SuppressLint("ApplySharedPref")
@@ -190,6 +187,24 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     saveBytes(fileName, fileContents.getBytes(), mimeType, accountFolder);
   }
 
+  @Override
+  protected String getExistingLockToken() throws IOException {
+    DriveResource.MetadataResult metadataResult = accountFolder.getMetadata(googleApiClient).await();
+    if (metadataResult.getStatus().isSuccess()) {
+      return metadataResult.getMetadata().getCustomProperties().get(LOCK_TOKEN_KEY);
+    } else {
+      throw new IOException("Failure while getting metadata");
+    }
+  }
+
+  @Override
+  protected boolean writeLockToken(String lockToken) throws IOException {
+    MetadataChangeSet.Builder changeSetBuilder = new MetadataChangeSet.Builder();
+    changeSetBuilder.setCustomProperty(LOCK_TOKEN_KEY, lockToken);
+    DriveResource.MetadataResult metadataResult = accountFolder.updateMetadata(googleApiClient, changeSetBuilder.build()).await();
+    return metadataResult.getStatus().isSuccess();
+  }
+
   private void saveBytes(String fileName, byte[] contents, String mimeType, DriveFolder driveFolder) throws IOException {
     DriveApi.DriveContentsResult driveContentsResult =
         Drive.DriveApi.newDriveContents(googleApiClient).await();
@@ -228,43 +243,9 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   }
 
   @Override
-  public boolean lock() {
-    DriveResource.MetadataResult metadataResult = accountFolder.getMetadata(googleApiClient).await();
-    if (metadataResult.getStatus().isSuccess()) {
-      Metadata metadata = metadataResult.getMetadata();
-      if (!metadata.getCustomProperties().containsKey(LOCK_TOKEN_KEY) ||
-          shouldOverrideLock(metadata.getCustomProperties().get(LOCK_TOKEN_KEY))) {
-        MetadataChangeSet.Builder changeSetBuilder = new MetadataChangeSet.Builder();
-        String lockToken = Model.generateUuid();
-        changeSetBuilder.setCustomProperty(LOCK_TOKEN_KEY, lockToken);
-        metadataResult = accountFolder.updateMetadata(googleApiClient, changeSetBuilder.build()).await();
-        if (metadataResult.getStatus().isSuccess()) {
-          saveLockTokenToPreferences(lockToken, System.currentTimeMillis(), true);
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  private boolean shouldOverrideLock(String locktoken) {
-    long now = System.currentTimeMillis();
-    if (locktoken.equals(sharedPreferences.getString(KEY_LOCK_TOKEN, ""))) {
-      return sharedPreferences.getBoolean(KEY_OWNED_BY_US, false) ||
-          now - sharedPreferences.getLong(KEY_TIMESTAMP, 0) > LOCK_TIMEOUT;
-    } else {
-      saveLockTokenToPreferences(locktoken, now, false);
-      return false;
-    }
-  }
-
-  private void saveLockTokenToPreferences(String locktoken, long timestamp, boolean ownedByUs) {
-    sharedPreferences.edit().putString(KEY_LOCK_TOKEN, locktoken).putLong(KEY_TIMESTAMP, timestamp)
-        .putBoolean(KEY_OWNED_BY_US, ownedByUs).apply();
-  }
-
-  @Override
-  public @NonNull ChangeSet getChangeSetSince(long sequenceNumber, Context context) throws IOException {
+  public
+  @NonNull
+  ChangeSet getChangeSetSince(long sequenceNumber, Context context) throws IOException {
     DriveApi.MetadataBufferResult metadataBufferResult = accountFolder.listChildren(googleApiClient).await();
     if (!metadataBufferResult.getStatus().isSuccess()) {
       throw new IOException("Error while trying to get change set");
@@ -355,15 +336,15 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   }
 
   private long getPropertyWithDefault(Map<CustomPropertyKey, String> customProperties,
-                                        CustomPropertyKey key,
-                                        long defaultValue) {
+                                      CustomPropertyKey key,
+                                      long defaultValue) {
     String result = customProperties.get(key);
     return result != null ? Long.parseLong(result) : defaultValue;
   }
 
   private int getPropertyWithDefault(Map<CustomPropertyKey, String> customProperties,
-                                      CustomPropertyKey key,
-                                      int defaultValue) {
+                                     CustomPropertyKey key,
+                                     int defaultValue) {
     String result = customProperties.get(key);
     return result != null ? Integer.parseInt(result) : defaultValue;
   }
@@ -396,7 +377,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
       return result;
     }
   }
-  
+
   private Optional<DriveFolder> getExistingAccountFolder(String uuid) throws IOException {
     if (!requireBaseFolder()) {
       throw new IOException("Base folder not available");
@@ -428,12 +409,12 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
       result = true;
     } else {
       MetadataChangeSet.Builder builder = new MetadataChangeSet.Builder()
-              .setTitle(account.label)
-              .setCustomProperty(ACCOUNT_METADATA_UUID_KEY, account.uuid)
-              .setCustomProperty(ACCOUNT_METADATA_COLOR_KEY, String.valueOf(account.color))
-              .setCustomProperty(ACCOUNT_METADATA_CURRENCY_KEY, account.currency.getCurrencyCode())
-              .setCustomProperty(ACCOUNT_METADATA_TYPE_KEY, account.type.name())
-              .setCustomProperty(ACCOUNT_METADATA_OPENING_BALANCE_KEY, String.valueOf(account.openingBalance.getAmountMinor()));
+          .setTitle(account.label)
+          .setCustomProperty(ACCOUNT_METADATA_UUID_KEY, account.uuid)
+          .setCustomProperty(ACCOUNT_METADATA_COLOR_KEY, String.valueOf(account.color))
+          .setCustomProperty(ACCOUNT_METADATA_CURRENCY_KEY, account.currency.getCurrencyCode())
+          .setCustomProperty(ACCOUNT_METADATA_TYPE_KEY, account.type.name())
+          .setCustomProperty(ACCOUNT_METADATA_OPENING_BALANCE_KEY, String.valueOf(account.openingBalance.getAmountMinor()));
       try {
         // The total size of key string and value string of a custom property must be no more than 124 bytes (124 - ACCOUNT_METADATA_DESCRIPTION_KEY.length = 98
         builder.setCustomProperty(ACCOUNT_METADATA_DESCRIPTION_KEY, StringUtils.abbreviate(account.description, 98));

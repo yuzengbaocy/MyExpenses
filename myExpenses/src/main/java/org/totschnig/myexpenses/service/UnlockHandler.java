@@ -67,7 +67,7 @@ public class UnlockHandler extends Handler {
     String title = Utils.concatResStrings(app, " ", R.string.app_name, R.string.contrib_key);
     NotificationCompat.Builder builder =
         new NotificationCompat.Builder(app)
-            .setSmallIcon(R.drawable.ic_notification)
+            .setSmallIcon(R.drawable.ic_stat_notification_sigma)
             .setContentTitle(title)
             .setContentText(text)
             .setStyle(new NotificationCompat.BigTextStyle()
