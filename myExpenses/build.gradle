@@ -70,10 +70,10 @@ android {
 
     signingConfigs {
         release {
-            storeFile file(getPropertyIfDefined("RELEASE_STORE_FILE", "unknown"))
-            storePassword getPropertyIfDefined("RELEASE_STORE_PASSWORD")
-            keyAlias getPropertyIfDefined("RELEASE_KEY_ALIAS")
-            keyPassword getPropertyIfDefined("RELEASE_KEY_PASSWORD")
+            storeFile file(getPropertyIfDefined("RELEASE_STORE_FILE", "gitlab.keystore"))
+            storePassword getPropertyIfDefined("RELEASE_STORE_PASSWORD", "gitlab")
+            keyAlias getPropertyIfDefined("RELEASE_KEY_ALIAS", "gitlab")
+            keyPassword getPropertyIfDefined("RELEASE_KEY_PASSWORD", "gitlab")
         }
     }
 
