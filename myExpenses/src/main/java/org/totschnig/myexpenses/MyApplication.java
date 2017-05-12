@@ -160,6 +160,7 @@ public class MyApplication extends MultiDexApplication implements
         registerWidgetObservers();
       }
       licenceHandler.init();
+      setupLogging();
     }
   }
 
@@ -181,9 +182,6 @@ public class MyApplication extends MultiDexApplication implements
   @Override
   protected void attachBaseContext(Context base) {
     super.attachBaseContext(base);
-    if (BuildConfig.DEBUG) {
-      Timber.plant(new Timber.DebugTree());
-    }
     appComponent = DaggerAppComponent.builder()
         .appModule(new AppModule(this))
         .uiModule(new UiModule())
@@ -194,6 +192,13 @@ public class MyApplication extends MultiDexApplication implements
       ACRA.getErrorReporter().putCustomData("Distribution", BuildConfig.FLAVOR);
       ACRA.getErrorReporter().putCustomData("Installer", getPackageManager()
           .getInstallerPackageName(getPackageName()));
+    }
+  }
+
+  public void setupLogging() {
+    Timber.uprootAll();
+    if (PrefKey.DEBUG_LOGGING.getBoolean(BuildConfig.DEBUG)) {
+      Timber.plant(new Timber.DebugTree());
     }
   }
 

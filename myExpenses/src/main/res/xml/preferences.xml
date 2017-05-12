@@ -153,8 +153,8 @@
             android:key="@string/pref_auto_backup_key"
             android:title="@string/pref_auto_backup_title">
             <Preference
-                android:key="@string/pref_auto_backup_info_key"
                 style="?preferenceInformationStyle"
+                android:key="@string/pref_auto_backup_info_key"
                 android:summary="@string/pref_auto_backup_summary"/>
             <org.totschnig.myexpenses.preference.TimePreference
                 android:dependency="@string/pref_auto_backup_key"
@@ -301,22 +301,25 @@
             android:title="@string/pref_send_feedback_title"/>
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/pref_category_title_crash_reports">
-        <SwitchPreferenceCompat android:key="acra.enable"
-                            android:title="@string/pref_enable_acra"
-                            android:summaryOn="@string/pref_acra_enabled"
-                            android:summaryOff="@string/pref_acra_disabled"
-                            android:defaultValue="true"/>
-        <SwitchPreferenceCompat android:key="acra.syslog.enable"
-                            android:summaryOn="@string/pref_acra_syslog_enabled"
-                            android:summaryOff="@string/pref_acra_syslog_disabled"
-                            android:title="@string/pref_acra_syslog"
-                            android:dependency="acra.enable"
-                            android:defaultValue="true"/>
-        <org.totschnig.myexpenses.preference.EditTextPreferenceShowSummary android:key="acra.user.email"
-                            android:inputType="textUri"
-                            android:title="@string/pref_acra_user_email"
-                            android:summary="@string/pref_acra_user_email_summary"
-                            android:dependency="acra.enable"/>
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            android:key="acra.enable"
+            android:summaryOff="@string/pref_acra_disabled"
+            android:summaryOn="@string/pref_acra_enabled"
+            android:title="@string/pref_enable_acra"/>
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            android:dependency="acra.enable"
+            android:key="acra.syslog.enable"
+            android:summaryOff="@string/pref_acra_syslog_disabled"
+            android:summaryOn="@string/pref_acra_syslog_enabled"
+            android:title="@string/pref_acra_syslog"/>
+        <org.totschnig.myexpenses.preference.EditTextPreferenceShowSummary
+            android:dependency="acra.enable"
+            android:inputType="textUri"
+            android:key="acra.user.email"
+            android:summary="@string/pref_acra_user_email_summary"
+            android:title="@string/pref_acra_user_email"/>
     </PreferenceCategory>
     <PreferenceCategory
         android:title="@string/pref_category_title_advanced">
@@ -346,5 +349,13 @@
             my:msbp_maxValue="60"
             my:msbp_measurementUnit=" s"
             my:msbp_minValue="5"/>
+        <PreferenceScreen
+            android:key="@string/pref_debug_key"
+            android:title="Debug">
+
+            <SwitchPreferenceCompat
+                android:key="@string/pref_debug_logging_key"
+                android:summary="Write debugging information into system log" />
+        </PreferenceScreen>
     </PreferenceCategory>
 </PreferenceScreen> 
