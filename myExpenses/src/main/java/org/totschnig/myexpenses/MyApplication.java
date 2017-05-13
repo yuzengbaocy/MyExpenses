@@ -202,13 +202,6 @@ public class MyApplication extends MultiDexApplication implements
     }
   }
 
-  public void setupLogging() {
-    Timber.uprootAll();
-    if (PrefKey.DEBUG_LOGGING.getBoolean(BuildConfig.DEBUG)) {
-      Timber.plant(new Timber.DebugTree());
-    }
-  }
-
   private void registerWidgetObservers() {
     final ContentResolver r = getContentResolver();
     WidgetObserver mTemplateObserver = new WidgetObserver(TemplateWidget.class);
