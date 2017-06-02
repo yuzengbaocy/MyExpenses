@@ -6,7 +6,7 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:2.3.2'
         classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
-        classpath 'com.google.gms:google-services:3.0.0'
+        classpath 'com.google.gms:google-services:3.1.0'
     }
 }
 
@@ -35,5 +35,5 @@ ext {
     espressoVersion = "2.2.2"
     androidSupportTestVersion = "0.5"
     daggerVersion = "2.5"
-    gmsVersion = "10.2.4"
+    gmsVersion = "10.2.6"
 }

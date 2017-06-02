@@ -228,7 +228,7 @@ dependencies {
     withAdsCompile 'com.facebook.android:audience-network-sdk:4.+'
     withAdsCompile fileTree(dir: 'libs', include: ['FacebookAdapter.jar'])
 
-    compile 'com.google.firebase:firebase-core:10.2.4'
+    compile 'com.google.firebase:firebase-core:' + project.gmsVersion
 
     compile supportCompile
 
