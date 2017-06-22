@@ -7,7 +7,6 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.webkit.MimeTypeMap;
 
-import com.annimon.stream.Collectors;
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -167,6 +166,17 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     saveUriToFolder(uri.getLastPathSegment(), uri, getBackupFolder());
   }
 
+  @NonNull
+  @Override
+  public List<String> getStoredBackups() throws IOException {
+    return null;
+  }
+
+  @Override
+  public InputStream getInputStreamForBackup(String backupFile) throws IOException {
+    return null;
+  }
+
   @Override
   protected long getLastSequence() throws IOException {
     DriveApi.MetadataBufferResult metadataBufferResult = accountFolder.listChildren(googleApiClient).await();
@@ -286,8 +296,8 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   }
 
   @Override
-  public List<AccountMetaData> getRemoteAccountList() throws IOException {
-    List<AccountMetaData> result = null;
+  public Stream<AccountMetaData> getRemoteAccountList() throws IOException {
+    Stream<AccountMetaData> result = null;
     if (setUp(false)) {
       if (requireBaseFolder()) {
         DriveApi.MetadataBufferResult metadataBufferResult = baseFolder.listChildren(googleApiClient).await();
@@ -298,8 +308,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
         result = Stream.of(metadataBuffer)
             .map(this::getAccountMetaDataFromDriveMetadata)
             .filter(Optional::isPresent)
-            .map(Optional::get)
-            .collect(Collectors.toList());
+            .map(Optional::get);
         metadataBuffer.release();
       }
       tearDown();

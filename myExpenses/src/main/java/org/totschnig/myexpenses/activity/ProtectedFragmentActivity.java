@@ -90,7 +90,6 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
   public static final int SELECT_CATEGORY_REQUEST = 9;
   public static final int PICK_COLOR_REQUEST = 11;
   public static final int PURCHASE_PREMIUM_REQUEST = 12;
-  public static final int CONTRIB_REQUEST = 13;
   public static final int PICTURE_REQUEST_CODE = 14;
   public static final int IMPORT_FILENAME_REQUESTCODE = 15;
   public static final int SYNC_BACKEND_SETUP_REQUEST = 16;
