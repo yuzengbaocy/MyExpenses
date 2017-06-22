@@ -48,7 +48,8 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
 
-    <uses-sdk tools:overrideLibrary="android.support.v14.preference,com.facebook.ads" />
+
+    <uses-sdk tools:overrideLibrary="android.support.v14.preference, com.facebook.ads, com.rd.pageindicatorview" />
 
     <application
         tools:replace="android:label"
@@ -73,6 +74,13 @@
             </intent-filter>
             <meta-data android:name="android.app.shortcuts"
                        android:resource="@xml/shortcuts" />
+        </activity>
+
+        <activity android:name=".activity.OnboardingActivity"
+                  android:label="@string/onboarding_title"
+                  android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+                  android:exported="true">
+
         </activity>
 
         <activity

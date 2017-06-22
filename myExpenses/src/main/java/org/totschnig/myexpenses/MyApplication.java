@@ -305,6 +305,10 @@ public class MyApplication extends MultiDexApplication implements
   }
 
   public void setLanguage() {
+    setLanguage(getUserPreferedLocale());
+  }
+
+  public Locale getUserPreferedLocale() {
     String language = PrefKey.UI_LANGUAGE.getString("default");
     Locale l;
     if (language.equals("default")) {
@@ -315,7 +319,7 @@ public class MyApplication extends MultiDexApplication implements
     } else {
       l = new Locale(language);
     }
-    setLanguage(l);
+    return l;
   }
 
   public void setLanguage(Locale locale) {
