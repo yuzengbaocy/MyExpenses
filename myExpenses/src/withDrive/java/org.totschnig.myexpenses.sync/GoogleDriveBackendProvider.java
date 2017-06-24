@@ -9,6 +9,7 @@ import android.webkit.MimeTypeMap;
 
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.drive.Drive;
@@ -27,16 +28,19 @@ import com.google.android.gms.drive.query.SearchableField;
 
 import org.apache.commons.lang3.StringUtils;
 import org.totschnig.myexpenses.MyApplication;
+import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.model.Account;
 import org.totschnig.myexpenses.model.AccountType;
 import org.totschnig.myexpenses.sync.json.AccountMetaData;
 import org.totschnig.myexpenses.sync.json.ChangeSet;
 import org.totschnig.myexpenses.util.AcraHelper;
 import org.totschnig.myexpenses.util.FileCopyUtils;
+import org.totschnig.myexpenses.util.Result;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Currency;
 import java.util.HashMap;
 import java.util.List;
@@ -86,34 +90,49 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   }
 
   @Override
-  public boolean setUp() {
+  public Result setUp() {
     return setUp(false);
   }
 
-  @SuppressLint("ApplySharedPref")
-  private boolean setUp(boolean requireSync) {
+  private boolean requireSetup() {
+    return setUp(false).success;
+  }
+
+  private Result setUp(boolean requireSync) {
     long lastFailedSync = sharedPreferences.getLong(KEY_LAST_FAILED_SYNC, 0);
     long currentBackOff = sharedPreferences.getLong(KEY_SYNC_BACKOFF, 0);
     long now = System.currentTimeMillis();
     if (lastFailedSync != 0 && lastFailedSync + currentBackOff > now) {
       Timber.e("Not syncing, waiting for another %d milliseconds", lastFailedSync + currentBackOff - now);
-      return !requireSync;
+      return requireSync ? Result.FAILURE : Result.SUCCESS;
     }
-    if (googleApiClient.blockingConnect().isSuccess()) {
-      Status status = Drive.DriveApi.requestSync(googleApiClient).await();
-      if (!status.isSuccess()) {
-        Timber.e("Sync failed with code %d", status.getStatusCode());
-        long newBackOff = Math.min(sharedPreferences.getLong(KEY_SYNC_BACKOFF, 5000) * 2, 3600000);
-        Timber.e("Backing off for %d milliseconds ", newBackOff);
-        sharedPreferences.edit().putLong(KEY_LAST_FAILED_SYNC, now).putLong(KEY_SYNC_BACKOFF, newBackOff).commit();
-        return !requireSync;
+    if (googleApiClient.isConnected()) {
+      return setUpInternal(requireSync, now);
+    } else {
+      ConnectionResult connectionResult = googleApiClient.blockingConnect();
+      if (connectionResult.isSuccess()) {
+        return setUpInternal(requireSync, now);
       } else {
-        Timber.i("Sync succeeded");
-        sharedPreferences.edit().remove(KEY_LAST_FAILED_SYNC).remove(KEY_SYNC_BACKOFF).apply();
-        return true;
+        Timber.e(connectionResult.getErrorMessage());
+        return new Result(false, R.string.sync_io_error_cannot_connect, connectionResult.getResolution());
       }
     }
-    return false;
+  }
+
+  @SuppressLint("ApplySharedPref")
+  private Result setUpInternal(boolean requireSync, long now) {
+    Status status = Drive.DriveApi.requestSync(googleApiClient).await();
+    if (!status.isSuccess()) {
+      Timber.e("Sync failed with code %d", status.getStatusCode());
+      long newBackOff = Math.min(sharedPreferences.getLong(KEY_SYNC_BACKOFF, 5000) * 2, 3600000);
+      Timber.e("Backing off for %d milliseconds ", newBackOff);
+      sharedPreferences.edit().putLong(KEY_LAST_FAILED_SYNC, now).putLong(KEY_SYNC_BACKOFF, newBackOff).commit();
+      return requireSync ? Result.FAILURE : Result.SUCCESS;
+    } else {
+      Timber.i("Sync succeeded");
+      sharedPreferences.edit().remove(KEY_LAST_FAILED_SYNC).remove(KEY_SYNC_BACKOFF).apply();
+      return Result.SUCCESS;
+    }
   }
 
   @Override
@@ -124,11 +143,25 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   @NonNull
   @Override
   protected InputStream getInputStreamForPicture(String relativeUri) throws IOException {
+    return getInputStream(accountFolder, relativeUri);
+  }
+
+  @Override
+  public InputStream getInputStreamForBackup(String backupFile) throws IOException {
+    if (requireSetup()) {
+      return getInputStream(getBackupFolder(), backupFile);
+    }
+    else {
+      throw new IOException(getContext().getString(R.string.sync_io_error_cannot_connect));
+    }
+  }
+
+  private InputStream getInputStream(DriveFolder folder, String title) throws IOException {
     Query query = new Query.Builder()
-        .addFilter(Filters.eq(SearchableField.TITLE, relativeUri))
+        .addFilter(Filters.eq(SearchableField.TITLE, title))
         .build();
     DriveApi.MetadataBufferResult metadataBufferResult =
-        accountFolder.queryChildren(googleApiClient, query).await();
+        folder.queryChildren(googleApiClient, query).await();
     if (!metadataBufferResult.getStatus().isSuccess()) {
       throw new IOException("Unable to find picture");
     }
@@ -169,12 +202,22 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   @NonNull
   @Override
   public List<String> getStoredBackups() throws IOException {
-    return null;
-  }
-
-  @Override
-  public InputStream getInputStreamForBackup(String backupFile) throws IOException {
-    return null;
+    List<String> result = null;
+    if (requireSetup()) {
+      DriveApi.MetadataBufferResult metadataBufferResult = getBackupFolder().listChildren(googleApiClient).await();
+      if (!metadataBufferResult.getStatus().isSuccess()) {
+        throw new IOException("Error while trying to get backup list");
+      }
+      MetadataBuffer metadataBuffer = metadataBufferResult.getMetadataBuffer();
+      result = Stream.of(metadataBuffer)
+          .map(Metadata::getTitle)
+          .toList();
+      metadataBuffer.release();
+    } else {
+      result = new ArrayList<>();
+    }
+    tearDown();
+    return result;
   }
 
   @Override
@@ -295,20 +338,22 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
         .await().getStatus().isSuccess();
   }
 
+  @NonNull
   @Override
   public Stream<AccountMetaData> getRemoteAccountList() throws IOException {
-    Stream<AccountMetaData> result = null;
-    if (setUp(false)) {
+    Stream<AccountMetaData> result = Stream.empty();
+    if (requireSetup()) {
       if (requireBaseFolder()) {
         DriveApi.MetadataBufferResult metadataBufferResult = baseFolder.listChildren(googleApiClient).await();
         if (!metadataBufferResult.getStatus().isSuccess()) {
           throw new IOException("Error while trying to get account list");
         }
         MetadataBuffer metadataBuffer = metadataBufferResult.getMetadataBuffer();
-        result = Stream.of(metadataBuffer)
+        List<AccountMetaData> accountMetaDataList = Stream.of(metadataBuffer)
             .map(this::getAccountMetaDataFromDriveMetadata)
             .filter(Optional::isPresent)
-            .map(Optional::get);
+            .map(Optional::get).toList();
+        result = Stream.of(accountMetaDataList);
         metadataBuffer.release();
       }
       tearDown();
