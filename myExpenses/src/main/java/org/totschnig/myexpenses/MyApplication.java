@@ -15,6 +15,7 @@
 
 package org.totschnig.myexpenses;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.ContentResolver;
@@ -806,13 +807,11 @@ public class MyApplication extends MultiDexApplication implements
   }
 
   public static void markDataDirty() {
-    boolean persistedDirty = PrefKey.AUTO_BACKUP_DIRTY.getBoolean(true);
-    if (!persistedDirty) {
-      PrefKey.AUTO_BACKUP_DIRTY.putBoolean(true);
-      DailyAutoBackupScheduler.updateAutoBackupAlarms(mSelf);
-    }
+    PrefKey.AUTO_BACKUP_DIRTY.putBoolean(true);
+    DailyAutoBackupScheduler.updateAutoBackupAlarms(mSelf);
   }
 
+  @TargetApi(Build.VERSION_CODES.HONEYCOMB)
   private void enableStrictMode() {
     StrictMode.ThreadPolicy.Builder threadPolicyBuilder = new StrictMode.ThreadPolicy.Builder()
         .detectAll()

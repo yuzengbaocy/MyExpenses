@@ -48,6 +48,7 @@ import static org.totschnig.myexpenses.task.TaskExecutionFragment.TASK_SETUP_FRO
 
 public class OnboardingActivity extends SyncBackendSetupActivity implements ViewPager.OnPageChangeListener {
 
+  private static final int REQUEST_CODE_RESOLUTION = 1;
   @BindView(R.id.viewpager)
   ViewPager pager;
   private MyPagerAdapter pagerAdapter;
@@ -102,8 +103,12 @@ public class OnboardingActivity extends SyncBackendSetupActivity implements View
   }
 
   public void showMoreOptions(View view) {
-    ((OnboardingDataFragment) getSupportFragmentManager().findFragmentByTag(
-        pagerAdapter.getFragmentName(1))).showMoreOptions(view);
+    getDataFragment().showMoreOptions(view);
+  }
+
+  private OnboardingDataFragment getDataFragment() {
+    return (OnboardingDataFragment) getSupportFragmentManager().findFragmentByTag(
+        pagerAdapter.getFragmentName(1));
   }
 
   public void finishOnboarding(View view) {
@@ -128,8 +133,7 @@ public class OnboardingActivity extends SyncBackendSetupActivity implements View
 
   @Override
   public Model getObject() {
-    return ((OnboardingDataFragment) getSupportFragmentManager().findFragmentByTag(
-        pagerAdapter.getFragmentName(1))).buildAccount();
+    return getDataFragment().buildAccount();
   }
 
   @Override
@@ -262,5 +266,10 @@ public class OnboardingActivity extends SyncBackendSetupActivity implements View
     public int getCount() {
       return 2;
     }
+  }
+
+  public void editAccountColor(View view) {
+    getDataFragment().editAccountColor();
+
   }
 }
