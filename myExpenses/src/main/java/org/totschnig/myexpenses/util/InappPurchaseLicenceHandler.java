@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.provider.Settings.Secure;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.google.android.vending.licensing.AESObfuscator;
 import com.google.android.vending.licensing.PreferenceObfuscator;
@@ -20,12 +22,13 @@ import timber.log.Timber;
 
 public class InappPurchaseLicenceHandler extends LicenceHandler {
 
+  @Nullable
   private String contribStatus;
-  public static boolean IS_CHROMIUM = Build.BRAND.equals("chromium");
+  public final static boolean IS_CHROMIUM = Build.BRAND.equals("chromium");
 
   private static final long REFUND_WINDOW = 172800000L;
-  public static final String STATUS_DISABLED = "0";
-  
+  private static final String STATUS_DISABLED = "0";
+
   /**
    * this status was used before and including the APP_GRATIS campaign
    */
@@ -45,13 +48,13 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
    * user has recently purchased, and is inside a two days window
    */
   public static final String STATUS_ENABLED_VERIFICATION_NEEDED = "4";
-  
+
   /**
    * recheck passed
    */
   public static final String STATUS_ENABLED_PERMANENT = "5";
 
-  public static final String STATUS_EXTENDED_TEMPORARY = "6";
+  private static final String STATUS_EXTENDED_TEMPORARY = "6";
 
   public static final String STATUS_EXTENDED_PERMANENT = "7";
   private PreferenceObfuscator licenseStatusPrefs;
@@ -84,13 +87,14 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
 
   /**
    * this is used from in-app billing
+   *
    * @param extended if true user has purchase extended licence
    */
   public void registerPurchase(boolean extended) {
     requireLicenseStatusPrefs();
     String status = extended ? STATUS_EXTENDED_TEMPORARY : STATUS_ENABLED_TEMPORARY;
     long timestamp = Long.parseLong(licenseStatusPrefs.getString(
-        PrefKey.LICENSE_INITIAL_TIMESTAMP.getKey(),"0"));
+        PrefKey.LICENSE_INITIAL_TIMESTAMP.getKey(), "0"));
     long now = System.currentTimeMillis();
     if (timestamp == 0L) {
       licenseStatusPrefs.putString(PrefKey.LICENSE_INITIAL_TIMESTAMP.getKey(),
@@ -98,8 +102,8 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
     } else {
       long timeSincePurchase = now - timestamp;
       Timber.d("time since initial check : %d", timeSincePurchase);
-        //give user 2 days to request refund
-      if (timeSincePurchase> REFUND_WINDOW) {
+      //give user 2 days to request refund
+      if (timeSincePurchase > REFUND_WINDOW) {
         status = extended ? STATUS_EXTENDED_PERMANENT : STATUS_ENABLED_PERMANENT;
       }
     }
@@ -115,7 +119,7 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
         PrefKey.LICENSE_INITIAL_TIMESTAMP.getKey(), "0"));
     long now = System.currentTimeMillis();
     long timeSincePurchase = now - timestamp;
-    if (timeSincePurchase> REFUND_WINDOW) {
+    if (timeSincePurchase > REFUND_WINDOW) {
       updateContribStatus(STATUS_DISABLED);
     }
   }
@@ -139,7 +143,7 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
       if (DistribHelper.isPlay()) {
         builder.addAvailableStoreNames("com.google.play");
       } else if (DistribHelper.isAmazon()) {
-        ArrayList<Appstore> stores = new ArrayList<Appstore>();
+        ArrayList<Appstore> stores = new ArrayList<>();
         stores.add(new AmazonAppstore(ctx) {
           public boolean isBillingAvailable(String packageName) {
             return true;
@@ -154,7 +158,7 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
   @Override
   public boolean isContribEnabled() {
     d("query");
-    return ! getContribStatus().equals(InappPurchaseLicenceHandler.STATUS_DISABLED);
+    return !InappPurchaseLicenceHandler.STATUS_DISABLED.equals(getContribStatus());
   }
 
   @Override
@@ -162,8 +166,8 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
     if (!HAS_EXTENDED) {
       return isContribEnabled();
     }
-    return getContribStatus().equals(InappPurchaseLicenceHandler.STATUS_EXTENDED_PERMANENT) ||
-        getContribStatus().equals(InappPurchaseLicenceHandler.STATUS_EXTENDED_TEMPORARY);
+    return InappPurchaseLicenceHandler.STATUS_EXTENDED_PERMANENT.equals(getContribStatus()) ||
+        InappPurchaseLicenceHandler.STATUS_EXTENDED_TEMPORARY.equals(getContribStatus());
   }
 
   @Override
@@ -171,7 +175,7 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
     setContribStatus(locked ? STATUS_DISABLED : STATUS_ENABLED_PERMANENT);
   }
 
-  private void updateContribStatus(String contribStatus) {
+  private void updateContribStatus(@NonNull String contribStatus) {
     requireLicenseStatusPrefs();
     licenseStatusPrefs.putString(PrefKey.LICENSE_STATUS.getKey(), contribStatus);
     licenseStatusPrefs.commit();
@@ -179,11 +183,12 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
     update();
   }
 
-  synchronized private void setContribStatus(String contribStatus) {
+  synchronized private void setContribStatus(@NonNull String contribStatus) {
     this.contribStatus = contribStatus;
     d("valueSet");
   }
 
+  @Nullable
   synchronized public String getContribStatus() {
     return contribStatus;
   }
