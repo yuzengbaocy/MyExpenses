@@ -60,7 +60,7 @@ import static org.totschnig.myexpenses.activity.MyExpenses.KEY_SEQUENCE_COUNT;
 import static org.totschnig.myexpenses.testutils.Espresso.openActionBarOverflowOrOptionsMenu;
 
 @RunWith(AndroidJUnit4.class)
-public final class MyExpensesTest extends MyExpensesTestBase {
+public final class MyExpensesTest {
 
   @Rule
   public final IntentsTestRule<MyExpenses> mActivityRule =
@@ -187,10 +187,11 @@ public final class MyExpensesTest extends MyExpensesTestBase {
 
   @Test
   public void deleteConfirmationDialogDeleteButtonDeletes() {
-    Account account1 = new Account("Test account", 0, "");
-    account1.save();
+    // only if there are two accounts, the delete functionality is availalbe
+    Account account2 = new Account("Test account 2", 0, "");
+    account2.save();
     onView(withId(R.id.drawer_layout)).perform(DrawerActions.open());
-    onData(CursorMatchers.withRowLong(DatabaseConstants.KEY_ROWID, account1.getId()))
+    onData(CursorMatchers.withRowLong(DatabaseConstants.KEY_ROWID, account2.getId()))
         .inAdapterView(allOf(isAssignableFrom(AdapterView.class),
             isDescendantOfA(withId(R.id.left_drawer)),
             isDisplayed()))
@@ -201,15 +202,16 @@ public final class MyExpensesTest extends MyExpensesTestBase {
         isAssignableFrom(Button.class),
         withText(is(mActivityRule.getActivity().getString(R.string.menu_delete))))).perform(click());
     onView(withId(android.R.id.content));
-    assertNull(Account.getInstanceFromDb(account1.getId()));
+    assertNull(Account.getInstanceFromDb(account2.getId()));
   }
 
   @Test
   public void deleteConfirmationDialogCancelButtonCancels() throws RemoteException, OperationApplicationException {
-    Account account1 = new Account("Test account", 0, "");
-    account1.save();
+    // only if there are two accounts, the delete functionality is availalbe
+    Account account2 = new Account("Test account 2", 0, "");
+    account2.save();
     onView(withId(R.id.drawer_layout)).perform(DrawerActions.open());
-    onData(CursorMatchers.withRowLong(DatabaseConstants.KEY_ROWID, account1.getId()))
+    onData(CursorMatchers.withRowLong(DatabaseConstants.KEY_ROWID, account2.getId()))
         .inAdapterView(allOf(isAssignableFrom(AdapterView.class),
             isDescendantOfA(withId(R.id.left_drawer)),
             isDisplayed()))
@@ -220,8 +222,8 @@ public final class MyExpensesTest extends MyExpensesTestBase {
         isAssignableFrom(Button.class),
         withText(is(mActivityRule.getActivity().getString(android.R.string.cancel))))).perform(click());
     onView(withId(android.R.id.content));
-    assertNotNull(Account.getInstanceFromDb(account1.getId()));
-    Account.delete(account1.getId());
+    assertNotNull(Account.getInstanceFromDb(account2.getId()));
+    Account.delete(account2.getId());
   }
 
   @Test

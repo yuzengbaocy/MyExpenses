@@ -9,7 +9,6 @@ import android.support.test.espresso.Espresso;
 import android.support.test.espresso.IdlingResource;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
-import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Adapter;
 import android.widget.AdapterView;
@@ -36,9 +35,7 @@ import se.emilsjolander.stickylistheaders.StickyListHeadersListView;
 import static android.support.test.espresso.Espresso.onData;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static android.support.test.espresso.action.ViewActions.longClick;
-import static android.support.test.espresso.action.ViewActions.pressKey;
 import static android.support.test.espresso.action.ViewActions.scrollTo;
 import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
@@ -59,7 +56,7 @@ import static org.totschnig.myexpenses.testutils.Matchers.withListSize;
 
 
 @RunWith(AndroidJUnit4.class)
-public final class MyExpensesCabTest extends MyExpensesTestBase {
+public final class MyExpensesCabTest {
 
   @Rule
   public ActivityTestRule<MyExpenses> mActivityRule =
@@ -77,9 +74,9 @@ public final class MyExpensesCabTest extends MyExpensesTestBase {
     for (int i = 0; i < times; i++) {
       op0.saveAsNew();
     }
+    onView(isRoot()).check(matches(anything()));
     adapterIdlingResource = new AdapterIdlingResource(getList().getAdapter(), MyExpensesCabTest.class.getSimpleName());
     Espresso.registerIdlingResources(adapterIdlingResource);
-    onView(isRoot()).check(matches(anything()));
   }
 
   @After
@@ -124,8 +121,10 @@ public final class MyExpensesCabTest extends MyExpensesTestBase {
     performContextMenuClick(R.string.menu_create_template_from_transaction, R.id.CREATE_TEMPLATE_COMMAND);
     onView(withText(containsString(mActivityRule.getActivity().getString(R.string.dialog_title_template_title))))
         .check(matches(isDisplayed()));
-    onView(withId(R.id.EditTextDialogInput))
-        .perform(typeText(templateTitle), closeSoftKeyboard(), pressKey(KeyEvent.KEYCODE_ENTER));
+    onView(withId(R.id.editText))
+        .perform(typeText(templateTitle));
+    onView(withText(R.string.dialog_button_add)).perform(click());
+    onView(withId(R.id.SAVE_COMMAND)).perform(click());
 
     //((EditText) mSolo.getView(EditText.class, 0)).onEditorAction(EditorInfo.IME_ACTION_DONE);
     onView(withId(R.id.MANAGE_PLANS_COMMAND)).perform(click());
