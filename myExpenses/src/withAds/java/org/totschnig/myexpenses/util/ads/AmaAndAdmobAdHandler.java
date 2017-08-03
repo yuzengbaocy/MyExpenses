@@ -1,7 +1,5 @@
 package org.totschnig.myexpenses.util.ads;
 
-import android.content.Context;
-import android.content.pm.PackageManager;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,12 +21,9 @@ import org.totschnig.myexpenses.model.ContribFeature;
 import org.totschnig.myexpenses.preference.PrefKey;
 
 public class AmaAndAdmobAdHandler extends AdHandler {
-  private static final int DAY_IN_MILLIS = BuildConfig.DEBUG ? 1 : 86400000;
-  private static final int INITIAL_GRACE_DAYS = BuildConfig.DEBUG ? 0 : 5;
   private static final int INTERSTITIAL_MIN_INTERVAL = BuildConfig.DEBUG ? 2 : 4;
   private static final boolean WITH_AMA = true;
   private static final boolean WITH_RHYTHM = false;
-  private Context context;
   private AdLayout amaView;
   private AdView admobView;
   private InterstitialAd amaInterstitialAd;
@@ -38,7 +33,6 @@ public class AmaAndAdmobAdHandler extends AdHandler {
 
   public AmaAndAdmobAdHandler(ViewGroup adContainer) {
     super(adContainer);
-    this.context = adContainer.getContext();
   }
 
   public void init() {
@@ -75,22 +69,6 @@ public class AmaAndAdmobAdHandler extends AdHandler {
           PrefKey.ENTRIES_CREATED_SINCE_LAST_INTERSTITIAL.getInt(0) + 1
       );
       maybeRequestNewInterstitial();
-    }
-  }
-
-  private boolean isAdDisabled() {
-    return !BuildConfig.DEBUG &&
-        (ContribFeature.AD_FREE.hasAccess() ||
-            isInInitialGracePeriod());
-  }
-
-  private boolean isInInitialGracePeriod() {
-    try {
-      return System.currentTimeMillis() -
-          context.getPackageManager().getPackageInfo(context.getPackageName(), 0)
-              .firstInstallTime < DAY_IN_MILLIS * INITIAL_GRACE_DAYS;
-    } catch (PackageManager.NameNotFoundException e) {
-      return false;
     }
   }
 
