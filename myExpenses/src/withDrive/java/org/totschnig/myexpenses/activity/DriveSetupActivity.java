@@ -23,6 +23,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.widget.Toast;
 
+import com.google.android.gms.common.AccountPicker;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -36,6 +37,8 @@ import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.sync.GoogleDriveBackendProvider;
 import org.totschnig.myexpenses.sync.GoogleDriveBackendProviderFactory;
 
+import icepick.Icepick;
+import icepick.State;
 import timber.log.Timber;
 
 import static org.totschnig.myexpenses.sync.GenericAccountService.KEY_SYNC_PROVIDER_URL;
@@ -49,14 +52,35 @@ public class DriveSetupActivity extends ProtectedFragmentActivity implements
    */
   protected static final int REQUEST_CODE_RESOLUTION = 1;
 
-
   private static final int REQUEST_CODE_OPENER = 2;
+
+  private static final int REQUEST_ACCOUNT_PICKER = 3;
 
   /**
    * Google API client.
    */
   private GoogleApiClient mGoogleApiClient;
   private DriveFolder driveFolder;
+  @State
+  String accountEmail;
+
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    Icepick.restoreInstanceState(this, savedInstanceState);
+
+    if (savedInstanceState == null) {
+      startActivityForResult(AccountPicker.newChooseAccountIntent(null,
+          null, new String[]{"com.google"}, true, null, null, null, null),
+          REQUEST_ACCOUNT_PICKER);
+    }
+  }
+
+  @Override
+  protected void onSaveInstanceState(Bundle outState) {
+    super.onSaveInstanceState(outState);
+    Icepick.saveInstanceState(this, outState);
+  }
 
   /**
    * Called when activity gets visible. A connection to Drive services need to
@@ -67,15 +91,22 @@ public class DriveSetupActivity extends ProtectedFragmentActivity implements
   @Override
   protected void onResume() {
     super.onResume();
-    if (mGoogleApiClient == null) {
-      mGoogleApiClient = new GoogleApiClient.Builder(this)
-          .addApi(Drive.API)
-          .addScope(Drive.SCOPE_FILE)
-          .addConnectionCallbacks(this)
-          .addOnConnectionFailedListener(this)
-          .build();
+    connect();
+  }
+
+  private void connect() {
+    if (accountEmail != null) {
+      if (mGoogleApiClient == null) {
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+            .addApi(Drive.API)
+            .addScope(Drive.SCOPE_FILE)
+            .addConnectionCallbacks(this)
+            .addOnConnectionFailedListener(this)
+            .setAccountName(accountEmail)
+            .build();
+      }
+      mGoogleApiClient.connect();
     }
-    mGoogleApiClient.connect();
   }
 
   @Override
@@ -90,6 +121,10 @@ public class DriveSetupActivity extends ProtectedFragmentActivity implements
             break;
           case REQUEST_CODE_RESOLUTION:
             mGoogleApiClient.connect();
+            break;
+          case REQUEST_ACCOUNT_PICKER:
+            accountEmail = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+            connect();
             break;
           default:
             super.onActivityResult(requestCode, resultCode, data);
