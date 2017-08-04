@@ -19,14 +19,13 @@ import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
 import android.content.ContentUris;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.OperationApplicationException;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.RemoteException;
+import android.support.annotation.StringRes;
 
-import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.provider.DatabaseConstants;
 import org.totschnig.myexpenses.provider.DbUtils;
@@ -220,21 +219,6 @@ public class Transaction extends Model {
       this.symbol = symbol;
     }
 
-    public String toString() {
-      Context ctx = MyApplication.getInstance();
-      switch (this) {
-        case CLEARED:
-          return ctx.getString(R.string.status_cleared);
-        case RECONCILED:
-          return ctx.getString(R.string.status_reconciled);
-        case UNRECONCILED:
-          return ctx.getString(R.string.status_uncreconciled);
-        case VOID:
-          return ctx.getString(R.string.status_void);
-      }
-      return super.toString();
-    }
-
     public static final String JOIN;
 
     static {
@@ -251,6 +235,21 @@ public class Transaction extends Model {
       } else {
         return UNRECONCILED;
       }
+    }
+
+    @StringRes
+    public int toStringRes() {
+      switch (this) {
+        case CLEARED:
+          return R.string.status_cleared;
+        case RECONCILED:
+          return R.string.status_reconciled;
+        case UNRECONCILED:
+          return R.string.status_uncreconciled;
+        case VOID:
+          return R.string.status_void;
+      }
+      return 0;
     }
   }
 
