@@ -226,7 +226,7 @@ dependencies {
     withDriveCompile 'com.google.android.gms:play-services-drive:' + project.gmsVersion
     withAdsCompile 'com.google.android.gms:play-services-ads:' + project.gmsVersion
     //noinspection GradleDynamicVersion
-    withAdsCompile  'com.amazon.android:mobile-ads:5.+'
+    withAdsCompile 'com.amazon.android:mobile-ads:5.+'
     //noinspection GradleDynamicVersion
     withAdsCompile 'com.facebook.android:audience-network-sdk:4.+'
     withAdsCompile fileTree(dir: 'libs', include: ['FacebookAdapter.jar'])
