@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-  <string name="crash_reports_user_info">MY Expenses  ישלחו באופן אוטומטי למפתחים את הדיווחים על קריסת יישומים, דבר שיאפשר להם לתקן בעיות במהירות רבה יותר. תוכל לבטל את ההתנהגות הזו מההגדרות.</string>
+  <string name="crash_reports_user_info">MY Expenses  ישלחו באופן אוטומטי למפתחים את הדיווחים על קריסת יישומים, דבר שיאפשר להם לתקן בעיות במהירות רבה יותר.</string>
   <string name="pref_category_title_crash_reports">דוחו\"ת קריסה</string>
   <string name="pref_enable_acra">אפשר שליחה אוטומטית של דוחות קריסה</string>
   <string name="pref_acra_enabled">השליחה האוטומטית מופעלת</string>
