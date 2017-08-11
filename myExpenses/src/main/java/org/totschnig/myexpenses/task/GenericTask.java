@@ -18,6 +18,7 @@ import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.support.v4.provider.DocumentFile;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.android.calendar.CalendarContractCompat;
 import com.annimon.stream.Collectors;
@@ -39,6 +40,8 @@ import org.totschnig.myexpenses.provider.DatabaseConstants;
 import org.totschnig.myexpenses.provider.TransactionProvider;
 import org.totschnig.myexpenses.provider.filter.WhereFilter;
 import org.totschnig.myexpenses.sync.GenericAccountService;
+import org.totschnig.myexpenses.sync.GoogleDriveBackendProvider;
+import org.totschnig.myexpenses.sync.GoogleDriveBackendProviderFactory;
 import org.totschnig.myexpenses.sync.SyncAdapter;
 import org.totschnig.myexpenses.sync.SyncBackendProvider;
 import org.totschnig.myexpenses.sync.SyncBackendProviderFactory;
@@ -630,6 +633,22 @@ public class GenericTask<T> extends AsyncTask<T, Void, Object> {
         }
       }
       case TaskExecutionFragment.TASK_INIT: {
+        if (PrefKey.CURRENT_VERSION.getInt(-1) < 288) {
+          List<android.accounts.Account> driveAccounts = GenericAccountService.getAccountsAsStream(application)
+              .filter(account -> account.name.startsWith(GoogleDriveBackendProviderFactory.LABEL))
+              .collect(Collectors.toList());
+          if (driveAccounts.size() > 0) {
+            final AccountManager accountManager = AccountManager.get(application);
+            android.accounts.Account googleAccounts[] = accountManager.getAccountsByType("com.google");
+            if (googleAccounts.length == 1) {
+              Stream.of(driveAccounts).forEach(account -> {
+                accountManager.setUserData(account, GoogleDriveBackendProvider.KEY_GOOGLE_ACCOUNT_EMAIL,
+                    googleAccounts[0].name);
+                Log.i("DEBUG", String.format("Linked %s with %s", account.name, googleAccounts[0].name));
+              });
+            }
+          }
+        }
         if (Utils.hasApiLevel(Build.VERSION_CODES.HONEYCOMB)) {
           //on Gingerbread we just accept that db is initialized with first request
           initDbHoneyComb(cr);

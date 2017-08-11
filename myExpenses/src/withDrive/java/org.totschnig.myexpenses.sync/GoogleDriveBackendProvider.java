@@ -52,6 +52,7 @@ import timber.log.Timber;
 public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   private static final String KEY_LAST_FAILED_SYNC = "lastFailedSync";
   private static final String KEY_SYNC_BACKOFF = "syncBackOff";
+  public static final String KEY_GOOGLE_ACCOUNT_EMAIL = "googleAccountEmail";
   private static final CustomPropertyKey ACCOUNT_METADATA_CURRENCY_KEY =
       new CustomPropertyKey("accountMetadataCurrency", CustomPropertyKey.PRIVATE);
   private static final CustomPropertyKey ACCOUNT_METADATA_COLOR_KEY =
@@ -80,6 +81,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     googleApiClient = new GoogleApiClient.Builder(context)
         .addApi(Drive.API)
         .addScope(Drive.SCOPE_FILE)
+        .setAccountName(accountManager.getUserData(account, KEY_GOOGLE_ACCOUNT_EMAIL))
         .build();
   }
 

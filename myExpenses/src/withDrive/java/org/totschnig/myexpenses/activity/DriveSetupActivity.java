@@ -182,6 +182,7 @@ public class DriveSetupActivity extends ProtectedFragmentActivity implements
                 String resourceId = metadata.getDriveId().getResourceId();
                 if (resourceId != null) {
                   bundle.putString(KEY_SYNC_PROVIDER_URL, resourceId);
+                  bundle.putString(GoogleDriveBackendProvider.KEY_GOOGLE_ACCOUNT_EMAIL, accountEmail);
                   intent.putExtra(AccountManager.KEY_USERDATA, bundle);
                   intent.putExtra(AccountManager.KEY_ACCOUNT_NAME,
                       GoogleDriveBackendProviderFactory.LABEL + " - " + metadata.getTitle());
