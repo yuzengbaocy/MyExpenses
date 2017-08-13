@@ -143,4 +143,6 @@
     <string name="vote_action_new" tools:ignore="UnusedResources">New</string>
     <string name="vote_action_old" tools:ignore="UnusedResources">Old</string>
     <string name="currency_not_supported">%s not supported by your OS. Please select a different currency.</string>
+    <string name="drive_backend_upgrade">Since 2.8.0, My Expenses supports synchronization with Drive folders from multiple Google accounts. Please select the Google account from which your existing Drive backends were created.</string>
+    <string name="button_label_try_again">Try again</string>
 </resources>
