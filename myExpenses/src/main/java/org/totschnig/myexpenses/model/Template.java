@@ -180,7 +180,6 @@ public class Template extends Transaction {
     } else {
       uuid = DbUtils.getString(c, KEY_UUID);
     }
-
   }
 
   public Template(Account account, long amount) {
