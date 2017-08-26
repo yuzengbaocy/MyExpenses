@@ -223,16 +223,17 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   }
 
   @Override
-  protected long getLastSequence() throws IOException {
+  protected long getLastSequence(long start) throws IOException {
     DriveApi.MetadataBufferResult metadataBufferResult = accountFolder.listChildren(googleApiClient).await();
     if (!metadataBufferResult.getStatus().isSuccess()) {
       throw new IOException("Error while trying to get last sequence");
     }
     MetadataBuffer metadataBuffer = metadataBufferResult.getMetadataBuffer();
-    Long result = Stream.of(metadataBuffer).filter(metadata -> isNewerJsonFile(0, metadata.getTitle()))
+    Long result = Stream.of(metadataBuffer)
+        .filter(metadata -> isNewerJsonFile(start, metadata.getTitle()))
         .map(metadata -> getSequenceFromFileName(metadata.getTitle()))
         .max(this::compareInt)
-        .orElse(0L);
+        .orElse(start);
     metadataBuffer.release();
     return result;
   }
