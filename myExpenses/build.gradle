@@ -228,8 +228,8 @@ dependencies {
     //noinspection GradleDynamicVersion
     withAdsCompile 'com.amazon.android:mobile-ads:5.+'
     //noinspection GradleDynamicVersion
-    withAdsCompile 'com.facebook.android:audience-network-sdk:4.+'
-    withAdsCompile fileTree(dir: 'libs', include: ['FacebookAdapter.jar'])
+    withAdsCompile 'com.facebook.android:audience-network-sdk:4.25.0'
+    withAdsCompile 'com.google.ads.mediation:facebook:4.25.0.0'
 
     compile 'com.google.firebase:firebase-core:' + project.gmsVersion
     compile 'com.google.firebase:firebase-config:' + project.gmsVersion
