@@ -11,7 +11,6 @@ import android.content.Intent;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
-import android.util.Log;
 
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
@@ -104,7 +103,7 @@ public class GoogleDriveBackendProviderFactory extends SyncBackendProviderFactor
         .build();
     ConnectionResult connectionResult = googleApiClient.blockingConnect();
     if (!connectionResult.isSuccess()) {
-      Log.e("DEBUG", connectionResult.getErrorMessage());
+      String errorMessage = connectionResult.getErrorMessage();
       return new Result(false, R.string.sync_io_error_cannot_connect, connectionResult.getResolution());
     }
     List<Account> legacyDriveAccounts = GenericAccountService.getAccountsAsStream(application)
@@ -119,7 +118,6 @@ public class GoogleDriveBackendProviderFactory extends SyncBackendProviderFactor
           if (driveIdResult.getStatus().isSuccess()) {
             accountManager.setUserData(account, KEY_GOOGLE_ACCOUNT_EMAIL,
                 accountName);
-            Log.i("DEBUG", String.format("Linked %s with %s", account.name, accountName));
             return 1;
           } else {
             return 0;
@@ -151,7 +149,6 @@ public class GoogleDriveBackendProviderFactory extends SyncBackendProviderFactor
           Stream.of(driveAccounts).forEach(account -> {
             accountManager.setUserData(account, KEY_GOOGLE_ACCOUNT_EMAIL,
                 googleAccounts[0].name);
-            Log.i("DEBUG", String.format("Linked %s with %s", account.name, googleAccounts[0].name));
           });
           return;
         }
