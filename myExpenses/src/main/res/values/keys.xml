@@ -75,6 +75,7 @@
     <string name="pref_debug_key">debug</string>
     <string name="pref_debug_logging_key">debug_logging</string>
     <string name="pref_crash_reports_key">crash_reports</string>
+    <string name="pref_sync_notification_key">sync_notification</string>
 
     <string name="help_licence_gpl">GNU General Public License version 3\nhttp://www.gnu.org/licenses/gpl.html .</string>
   <string name="help_licence_financisto">CalculatorInput, QifParser, FolderBrowser, HomeScreenWidgets, WhereFilter and AutoBackupService inspired by https://launchpad.net/financisto ,
