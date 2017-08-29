@@ -279,6 +279,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     if (!driveFileResult.getStatus().isSuccess()) {
       throw new IOException("Error while trying to create file");
     }
+    Timber.tag(SyncAdapter.TAG).i(driveFileResult.getStatus().toString());
   }
 
   @Override
