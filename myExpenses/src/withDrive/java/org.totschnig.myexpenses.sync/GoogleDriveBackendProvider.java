@@ -197,8 +197,8 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   }
 
   @Override
-  public void storeBackup(Uri uri) throws IOException {
-    saveUriToFolder(uri.getLastPathSegment(), uri, getBackupFolder());
+  public void storeBackup(Uri uri, String fileName) throws IOException {
+    saveUriToFolder(fileName, uri, getBackupFolder());
   }
 
   @NonNull
