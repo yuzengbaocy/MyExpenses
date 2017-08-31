@@ -201,8 +201,7 @@
         <SwitchPreferenceCompat
             android:defaultValue="true"
             android:key="@string/pref_sync_notification_key"
-            android:summary="@string/pref_sync_notification_summary"
-            android:title="@string/pref_sync_notification_title"/>
+            android:summary="@string/pref_sync_notification_summary"/>
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -338,7 +337,7 @@
 
             <SwitchPreferenceCompat
                 android:key="@string/pref_debug_logging_key"
-                android:summary="Write debugging information into system log" />
+                android:summary="@string/pref_debug_logging_summary" />
         </PreferenceScreen>
         <PreferenceScreen
             android:key="@string/pref_crash_reports_key"
