@@ -75,6 +75,7 @@ public class PubNativeAdHandler extends AdHandler {
         @Override
         public void onPubnativeNetworkRequestFailed(PubnativeNetworkRequest request, Exception exception) {
           trackBannerFailed(PROVIDER, exception.getMessage());
+          Timber.e("Request failed");
           Timber.e(exception);
           hide();
         }
