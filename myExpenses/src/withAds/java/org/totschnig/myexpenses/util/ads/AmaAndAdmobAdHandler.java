@@ -11,6 +11,7 @@ import com.amazon.device.ads.AdProperties;
 import com.amazon.device.ads.AdRegistration;
 import com.amazon.device.ads.DefaultAdListener;
 import com.amazon.device.ads.InterstitialAd;
+import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
@@ -24,6 +25,8 @@ public class AmaAndAdmobAdHandler extends AdHandler {
   private static final int INTERSTITIAL_MIN_INTERVAL = BuildConfig.DEBUG ? 2 : 4;
   private static final boolean WITH_AMA = true;
   private static final boolean WITH_RHYTHM = false;
+  private static final String PROVIDER_AMA = "AmazonMobileAds";
+  private static final String PROVIDER_ADMOB = "Admob";
   private AdLayout amaView;
   private AdView admobView;
   private InterstitialAd amaInterstitialAd;
@@ -84,6 +87,7 @@ public class AmaAndAdmobAdHandler extends AdHandler {
     amaView.setListener(new DefaultAdListener() {
       @Override
       public void onAdLoaded(Ad ad, AdProperties adProperties) {
+        trackBannerLoaded(PROVIDER_AMA);
         super.onAdLoaded(ad, adProperties);
         mAmaBannerShown = true;
       }
@@ -91,12 +95,14 @@ public class AmaAndAdmobAdHandler extends AdHandler {
       @Override
       public void onAdFailedToLoad(Ad ad, AdError error) {
         super.onAdFailedToLoad(ad, error);
+        trackBannerFailed(PROVIDER_AMA, error.getCode().name());
         amaView.setVisibility(View.GONE);
         showBannerAdmob();
       }
     });
 
     if (!amaView.isLoading()) {
+      trackBannerRequest(PROVIDER_AMA);
       amaView.loadAd();
     }
   }
@@ -120,9 +126,11 @@ public class AmaAndAdmobAdHandler extends AdHandler {
         R.string.admob_unitid_mainscreen));
     adContainer.addView(admobView);
     admobView.loadAd(buildAdmobRequest());
-    admobView.setAdListener(new com.google.android.gms.ads.AdListener() {
+    trackBannerRequest(PROVIDER_ADMOB);
+    admobView.setAdListener(new AdListener() {
       @Override
       public void onAdLoaded() {
+        trackBannerLoaded(PROVIDER_ADMOB);
         mAdMobBannerShown = true;
         admobView.setVisibility(View.VISIBLE);
         if (WITH_RHYTHM) {
@@ -130,6 +138,11 @@ public class AmaAndAdmobAdHandler extends AdHandler {
               TypedValue.COMPLEX_UNIT_DIP, AdSize.BANNER.getHeight(),
               context.getResources().getDisplayMetrics());
         }
+      }
+
+      @Override
+      public void onAdFailedToLoad(int i) {
+        trackBannerFailed(PROVIDER_ADMOB, String.valueOf(i));
       }
     });
   }
@@ -152,6 +165,7 @@ public class AmaAndAdmobAdHandler extends AdHandler {
 
       @Override
       public void onAdLoaded(Ad ad, AdProperties adProperties) {
+        trackInterstitialLoaded(PROVIDER_AMA);
         super.onAdLoaded(ad, adProperties);
         mAmaInterstitialLoaded = true;
       }
@@ -159,10 +173,12 @@ public class AmaAndAdmobAdHandler extends AdHandler {
       @Override
       public void onAdFailedToLoad(Ad ad, AdError error) {
         super.onAdFailedToLoad(ad, error);
+        trackInterstitialFailed(PROVIDER_AMA, error.getCode().name());
         requestNewInterstitialAdMob();
       }
     });
     // Load the interstitial.
+    trackInterstitialRequest(PROVIDER_AMA);
     amaInterstitialAd.loadAd();
   }
 
@@ -170,17 +186,31 @@ public class AmaAndAdmobAdHandler extends AdHandler {
     mInterstitialShown = false;
     admobInterstitialAd = new com.google.android.gms.ads.InterstitialAd(context);
     admobInterstitialAd.setAdUnitId(context.getString(R.string.admob_unitid_interstitial));
+    trackInterstitialRequest(PROVIDER_ADMOB);
     admobInterstitialAd.loadAd(buildAdmobRequest());
+    admobInterstitialAd.setAdListener(new AdListener() {
+      @Override
+      public void onAdLoaded() {
+        trackInterstitialLoaded(PROVIDER_ADMOB);
+      }
+
+      @Override
+      public void onAdFailedToLoad(int i) {
+        trackInterstitialFailed(PROVIDER_ADMOB, String.valueOf(i));
+      }
+    });
   }
 
   private boolean maybeShowInterstitialDo() {
     if (mInterstitialShown) return false;
     if (mAmaInterstitialLoaded) {
+      trackInterstitialShown(PROVIDER_AMA);
       amaInterstitialAd.showAd();
       mInterstitialShown = true;
       return true;
     }
     if (admobInterstitialAd != null && admobInterstitialAd.isLoaded()) {
+      trackInterstitialShown(PROVIDER_ADMOB);
       admobInterstitialAd.show();
       mInterstitialShown = true;
       return true;
