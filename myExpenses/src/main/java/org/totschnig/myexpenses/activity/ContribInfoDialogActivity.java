@@ -22,7 +22,6 @@ import org.totschnig.myexpenses.util.AcraHelper;
 import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
 import org.totschnig.myexpenses.util.ShortcutHelper;
-import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.util.tracking.Tracker;
 
 import java.io.Serializable;
@@ -222,7 +221,8 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
       default:
         //should not happen
         AcraHelper.report(new IllegalStateException(
-            String.format("Unhandlable request for feature %s", feature)));
+            String.format("Unhandlable request for feature %s (caller = %s)", feature,
+                getCallingActivity() != null ? getCallingActivity().getClassName() : "null")));
     }
   }
 

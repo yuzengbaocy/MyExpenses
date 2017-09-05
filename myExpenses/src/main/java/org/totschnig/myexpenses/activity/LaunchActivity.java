@@ -6,6 +6,7 @@ import android.content.SharedPreferences.Editor;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 
@@ -27,6 +28,7 @@ import org.totschnig.myexpenses.util.AcraHelper;
 import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
 import org.totschnig.myexpenses.util.ContribUtils;
 import org.totschnig.myexpenses.util.DistribHelper;
+import org.totschnig.myexpenses.util.PermissionHelper;
 
 import java.io.File;
 import java.util.Map;
@@ -192,18 +194,16 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
     if (!PrefKey.PLANNER_CALENDAR_ID.getString("-1").equals("-1")) {
       if (ContextCompat.checkSelfPermission(this,
           Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_DENIED) {
-        ActivityCompat.requestPermissions(this,
-            new String[]{Manifest.permission.WRITE_CALENDAR},
-            ProtectionDelegate.PERMISSIONS_REQUEST_WRITE_CALENDAR);
+        requestPermission(PermissionHelper.PermissionGroup.CALENDAR);
       }
     }
   }
 
   @Override
-  public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+  public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
     super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     switch (requestCode) {
-      case ProtectionDelegate.PERMISSIONS_REQUEST_WRITE_CALENDAR:
+      case PermissionHelper.PERMISSIONS_REQUEST_WRITE_CALENDAR:
         if (grantResults.length > 0
             && grantResults[0] == PackageManager.PERMISSION_DENIED) {
           if (!ActivityCompat.shouldShowRequestPermissionRationale(

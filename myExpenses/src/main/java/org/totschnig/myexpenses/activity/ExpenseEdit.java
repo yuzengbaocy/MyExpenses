@@ -37,6 +37,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.LoaderManager;
@@ -114,6 +116,7 @@ import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.FilterCursorWrapper;
 import org.totschnig.myexpenses.util.PermissionHelper;
 import org.totschnig.myexpenses.util.PictureDirHelper;
+import org.totschnig.myexpenses.util.UiUtils;
 import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.util.tracking.Tracker;
 import org.totschnig.myexpenses.widget.AbstractWidget;
@@ -639,20 +642,19 @@ public class ExpenseEdit extends AmountActivity implements
 
     if (mTransaction instanceof Template) {
       findViewById(R.id.TitleRow).setVisibility(View.VISIBLE);
-      if (!calendarPermissionPermanentlyDeclined()) {
+      if (!isCalendarPermissionPermanentlyDeclined()) {
         //if user has denied access and checked that he does not want to be asked again, we do not
         //bother him with a button that is not working
         setPlannerRowVisibility(View.VISIBLE);
-        RecurrenceAdapter recurrenceAdapter = new RecurrenceAdapter(this, false);
+        RecurrenceAdapter recurrenceAdapter =  new RecurrenceAdapter(this,
+            DistribHelper.shouldUseAndroidPlatformCalendar() ? null : Plan.Recurrence.CUSTOM);
         mReccurenceSpinner.setAdapter(recurrenceAdapter);
         mReccurenceSpinner.setOnItemSelectedListener(this);
-        mPlanButton.setOnClickListener(new View.OnClickListener() {
-          public void onClick(View view) {
-            if (mPlan == null) {
-              showDialog(DATE_DIALOG_ID);
-            } else if (DistribHelper.shouldUseAndroidPlatformCalendar()) {
-              launchPlanView();
-            }
+        mPlanButton.setOnClickListener(view -> {
+          if (mPlan == null) {
+            showDialog(DATE_DIALOG_ID);
+          } else if (DistribHelper.shouldUseAndroidPlatformCalendar()) {
+            launchPlanView(false);
           }
         });
       }
@@ -692,10 +694,11 @@ public class ExpenseEdit extends AmountActivity implements
         mTransaction.status = STATUS_UNCOMMITTED;
       } else {
         //Transfer or Template, we can suggest to create a plan
-        if (!calendarPermissionPermanentlyDeclined()) {
+        if (!isCalendarPermissionPermanentlyDeclined()) {
           //we set adapter even if spinner is not immediately visible, since it might become visible
           //after SAVE_AND_NEW action
-          RecurrenceAdapter recurrenceAdapter = new RecurrenceAdapter(this, true);
+          RecurrenceAdapter recurrenceAdapter = new RecurrenceAdapter(this,
+              Plan.Recurrence.ONETIME, Plan.Recurrence.CUSTOM);
           mReccurenceSpinner.setAdapter(recurrenceAdapter);
           Plan.Recurrence cachedRecurrence = (Plan.Recurrence) getIntent().getSerializableExtra(KEY_CACHED_RECURRENCE);
           if (cachedRecurrence != null) {
@@ -1291,19 +1294,22 @@ public class ExpenseEdit extends AmountActivity implements
         uri = mPictureUriTemp;
       }
       if (uri != null) {
+        mPictureUri = uri;
         if (PermissionHelper.canReadUri(uri, this)) {
-          mPictureUri = uri;
           setPicture();
           setDirty(true);
-          return;
         } else {
-          errorMsg = getString(R.string.import_source_select_not_readable);
+          requestStoragePermission();
         }
+        return;
       } else {
         errorMsg = "Error while retrieving image: No data found.";
       }
       AcraHelper.report(new Exception(errorMsg));
       Toast.makeText(this, errorMsg, Toast.LENGTH_LONG).show();
+    }
+    if (requestCode == PLAN_REQUEST) {
+      finish();
     }
   }
 
@@ -1644,14 +1650,21 @@ public class ExpenseEdit extends AmountActivity implements
               Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
             if (PrefKey.NEW_PLAN_ENABLED.getBoolean(true)) {
               visibility = View.VISIBLE;
+              if (mReccurenceSpinner.getSelectedItem() == Plan.Recurrence.CUSTOM) {
+                Snackbar snackbar = Snackbar.make(findViewById(R.id.OneExpense),
+                    R.string.plan_custom_recurrence_info, Snackbar.LENGTH_LONG);
+                View snackbarView = snackbar.getView();
+                TextView textView = (TextView) snackbarView.findViewById(android.support.design.R.id.snackbar_text);
+                textView.setMaxLines(3);
+                UiUtils.configureSnackbarForDarkTheme(snackbar);
+                snackbar.show();
+              }
             } else {
               mReccurenceSpinner.setSelection(0);
               CommonCommands.showContribDialog(this, ContribFeature.PLANS_UNLIMITED, null);
             }
           } else {
-            ActivityCompat.requestPermissions(ExpenseEdit.this,
-                new String[]{Manifest.permission.WRITE_CALENDAR},
-                ProtectionDelegate.PERMISSIONS_REQUEST_WRITE_CALENDAR);
+            requestPermission(PermissionHelper.PermissionGroup.CALENDAR);
           }
         }
         if (mTransaction instanceof Template) {
@@ -1870,15 +1883,19 @@ public class ExpenseEdit extends AmountActivity implements
         isProcessingLinkedAmountInputs = false;
         Toast.makeText(this, getString(R.string.save_transaction_and_new_success), Toast.LENGTH_SHORT).show();
       } else {
-        //make sure soft keyboard is closed
-        InputMethodManager im = (InputMethodManager) this.getApplicationContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-        im.hideSoftInputFromWindow(getWindow().getDecorView().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-        Intent intent = new Intent();
-        intent.putExtra(KEY_SEQUENCE_COUNT, sequenceCount);
-        setResult(RESULT_OK, intent);
-        finish();
-        //no need to call super after finish
-        return;
+        if (mReccurenceSpinner.getSelectedItem() == Plan.Recurrence.CUSTOM) {
+          launchPlanView(true);
+        } else {
+          //make sure soft keyboard is closed
+          InputMethodManager im = (InputMethodManager) this.getApplicationContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+          im.hideSoftInputFromWindow(getWindow().getDecorView().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+          Intent intent = new Intent();
+          intent.putExtra(KEY_SEQUENCE_COUNT, sequenceCount);
+          setResult(RESULT_OK, intent);
+          finish();
+          //no need to call super after finish
+          return;
+        }
       }
     }
     super.onPostExecute(result);
@@ -2047,14 +2064,18 @@ public class ExpenseEdit extends AmountActivity implements
     return selectedPosition;
   }
 
-  private void launchPlanView() {
+  private void launchPlanView(boolean forResult) {
     Intent intent = new Intent(Intent.ACTION_VIEW);
     intent.setData(ContentUris.withAppendedId(Events.CONTENT_URI, mPlan.getId()));
     //ACTION_VIEW expects to get a range http://code.google.com/p/android/issues/detail?id=23852
     intent.putExtra(CalendarContractCompat.EXTRA_EVENT_BEGIN_TIME, mPlan.dtstart);
     intent.putExtra(CalendarContractCompat.EXTRA_EVENT_END_TIME, mPlan.dtstart);
     if (Utils.isIntentAvailable(this, intent)) {
-      startActivity(intent);
+      if (forResult) {
+        startActivityForResult(intent, PLAN_REQUEST);
+      } else {
+        startActivity(intent);
+      }
     } else {
       Toast.makeText(this, R.string.no_calendar_app_installed, Toast.LENGTH_SHORT).show();
     }
@@ -2206,13 +2227,14 @@ public class ExpenseEdit extends AmountActivity implements
 
   @Override
   public void onRequestPermissionsResult(int requestCode,
-                                         String permissions[], int[] grantResults) {
+                                         @NonNull String permissions[], @NonNull int[] grantResults) {
     super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    // If request is cancelled, the result arrays are empty.
+    boolean granted = grantResults.length > 0
+        && grantResults[0] == PackageManager.PERMISSION_GRANTED;
     switch (requestCode) {
-      case ProtectionDelegate.PERMISSIONS_REQUEST_WRITE_CALENDAR: {
-        // If request is cancelled, the result arrays are empty.
-        if (grantResults.length > 0
-            && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+      case PermissionHelper.PERMISSIONS_REQUEST_WRITE_CALENDAR: {
+        if (granted) {
           if (mTransaction instanceof Template) {
             mPlanButton.setVisibility(View.VISIBLE);
             mPlanToggleButton.setVisibility(View.VISIBLE);
@@ -2223,6 +2245,13 @@ public class ExpenseEdit extends AmountActivity implements
               this, Manifest.permission.WRITE_CALENDAR)) {
             setPlannerRowVisibility(View.GONE);
           }
+        }
+      }
+      case PermissionHelper.PERMISSIONS_REQUEST_STORAGE: {
+        if (granted) {
+          setPicture();
+        } else {
+          mPictureUri = null;
         }
       }
     }

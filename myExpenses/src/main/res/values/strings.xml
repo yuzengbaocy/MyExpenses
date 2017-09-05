@@ -466,7 +466,6 @@
     <string name="import_parties_none">No parties imported</string>
     <string name="import_transactions_none">No transactions imported into account %1$s</string>
     <string name="import_source_select_error">Please provide a file of type %1$s</string>
-    <string name="import_source_select_not_readable">Unable to read file. Please select from a different source.</string>
     <string name="menu_categories_setup_default">Setup default categories</string>
     <string name="menu_create_folder">New folder</string>
     <!-- This string is used for navigating up in the folder browser -->
@@ -675,5 +674,7 @@
     <string name="contributed_by">Contributed by %s</string>
     <string name="pref_sync_notification_summary">Notify about synchronization progress</string>
     <string name="pref_debug_logging_summary">Write debugging information into system log</string>
+    <string name="plan_custom_recurrence_info">Please save the template first. The plan will then be opened in the calendar app, where you can set a custom recurrence.</string>
+    <string name="storage_permission_required">The source you selected can only be read if you grant the permission to read from external storage.</string>
 </resources>
 
