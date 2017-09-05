@@ -22,6 +22,7 @@ import org.totschnig.myexpenses.util.AcraHelper;
 import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
 import org.totschnig.myexpenses.util.ShortcutHelper;
+import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.util.tracking.Tracker;
 
 import java.io.Serializable;
