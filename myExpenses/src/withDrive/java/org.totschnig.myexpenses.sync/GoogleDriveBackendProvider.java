@@ -37,6 +37,7 @@ import org.totschnig.myexpenses.util.AcraHelper;
 import org.totschnig.myexpenses.util.FileCopyUtils;
 import org.totschnig.myexpenses.util.Result;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -192,8 +193,9 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     if (in == null) {
       throw new IOException("Could not read " + uri.toString());
     }
-    saveBytes(fileName, FileCopyUtils.toByteArray(in),
-        MimeTypeMap.getSingleton().getMimeTypeFromExtension(getFileExtension(fileName)), driveFolder);
+    saveInputStream(fileName, in,
+        getMimeType(fileName), driveFolder);
+    in.close();
   }
 
   @Override
@@ -240,7 +242,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
 
   @Override
   void saveFileContents(String fileName, String fileContents, String mimeType) throws IOException {
-    saveBytes(fileName, fileContents.getBytes(), mimeType, accountFolder);
+    saveInputStream(fileName, new ByteArrayInputStream(fileContents.getBytes()), mimeType, accountFolder);
   }
 
   @Override
@@ -261,7 +263,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     return metadataResult.getStatus().isSuccess();
   }
 
-  private void saveBytes(String fileName, byte[] contents, String mimeType, DriveFolder driveFolder) throws IOException {
+  private void saveInputStream(String fileName, InputStream contents, String mimeType, DriveFolder driveFolder) throws IOException {
     DriveApi.DriveContentsResult driveContentsResult =
         Drive.DriveApi.newDriveContents(googleApiClient).await();
     if (!driveContentsResult.getStatus().isSuccess()) {
@@ -269,7 +271,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     }
     DriveContents driveContents = driveContentsResult.getDriveContents();
     OutputStream outputStream = driveContents.getOutputStream();
-    outputStream.write(contents);
+    FileCopyUtils.copy(contents, outputStream);
     MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
         .setTitle(fileName)
         .setMimeType(mimeType)
