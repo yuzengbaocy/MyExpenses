@@ -74,12 +74,16 @@ public class GoogleDriveBackendProviderFactory extends SyncBackendProviderFactor
   public Intent getRepairIntent(Activity activity) {
     AccountManager accountManager = AccountManager.get(activity);
     if (GenericAccountService.getAccountsAsStream(activity)
-        .anyMatch(account -> account.name.startsWith(LABEL) &&
-            accountManager.getUserData(account, GoogleDriveBackendProvider.KEY_GOOGLE_ACCOUNT_EMAIL) == null)) {
+        .anyMatch(account -> isLegacyAcccount(account, accountManager))) {
       return AccountPicker.newChooseAccountIntent(null,
           null, new String[]{"com.google"}, true, activity. getString(R.string.drive_backend_upgrade), null, null, null);
     }
     return null;
+  }
+
+  private boolean isLegacyAcccount(Account account, AccountManager accountManager) {
+    return account.name.startsWith(LABEL) &&
+        accountManager.getUserData(account, GoogleDriveBackendProvider.KEY_GOOGLE_ACCOUNT_EMAIL) == null;
   }
 
   @Override
@@ -107,8 +111,7 @@ public class GoogleDriveBackendProviderFactory extends SyncBackendProviderFactor
       return new Result(false, R.string.sync_io_error_cannot_connect, connectionResult.getResolution());
     }
     List<Account> legacyDriveAccounts = GenericAccountService.getAccountsAsStream(application)
-        .filter(account -> account.name.startsWith(GoogleDriveBackendProviderFactory.LABEL) &&
-            accountManager.getUserData(account, KEY_GOOGLE_ACCOUNT_EMAIL) == null)
+        .filter(account -> isLegacyAcccount(account, accountManager))
         .collect(Collectors.toList());
     int allCount = legacyDriveAccounts.size();
     int fixCount = Stream.of(legacyDriveAccounts)
@@ -139,10 +142,10 @@ public class GoogleDriveBackendProviderFactory extends SyncBackendProviderFactor
   private void migrateDriveAccountsAttempt() {
     Context application = MyApplication.getInstance();
     List<android.accounts.Account> driveAccounts = GenericAccountService.getAccountsAsStream(application)
-        .filter(account -> account.name.startsWith(GoogleDriveBackendProviderFactory.LABEL))
+        .filter(account -> isLegacyAcccount(account, AccountManager.get(application)))
         .collect(Collectors.toList());
     if (driveAccounts.size() > 0) {
-      if (Utils.hasApiLevel(Build.VERSION_CODES.M)) { //does not work on new permission model, since we do not hold GET_ACCOUNTS permission
+      if (!Utils.hasApiLevel(Build.VERSION_CODES.M)) { //does not work on new permission model, since we do not hold GET_ACCOUNTS permission
         final AccountManager accountManager = AccountManager.get(application);
         android.accounts.Account googleAccounts[] = accountManager.getAccountsByType("com.google");
         if (googleAccounts.length == 1) {
