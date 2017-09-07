@@ -20,7 +20,6 @@
 <resources>
   <string-array name="whats_new_281">
     <item>Възможност за потребителски планове</item>
-    <item>Fix cloud storage of large backups</item>
   </string-array>
   <string-array name="whats_new_280">
     <item>Превод на еврейски език </item>
