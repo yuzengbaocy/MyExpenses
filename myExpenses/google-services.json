@@ -80,6 +80,14 @@
         {
           "client_id": "725385967731-16qdfok1qadapdgmbkvarqa8m0bgmah0.apps.googleusercontent.com",
           "client_type": 3
+        },
+        {
+          "client_id": "725385967731-128ca1t6jiekau49a2tgkhqnr1viln1t.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.totschnig.myexpenses.debug",
+            "certificate_hash": "dfc0f8e9dd097b1b01393bbf9315a1999174035c"
+          }
         }
       ],
       "api_key": [
@@ -99,6 +107,41 @@
               "client_type": 3
             }
           ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:725385967731:android:48853da9c76242fb",
+        "android_client_info": {
+          "package_name": "org.totschnig.myexpenses.fortest"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "725385967731-28hdb1rie9f51enbcb0306b6fl5v3g90.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "725385967731-16qdfok1qadapdgmbkvarqa8m0bgmah0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBdHAlneqcK8bWfPOhpEn78sgvNG1dzwG8"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
         },
         "ads_service": {
           "status": 2
