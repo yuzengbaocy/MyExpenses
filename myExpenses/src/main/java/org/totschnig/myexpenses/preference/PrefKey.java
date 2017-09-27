@@ -76,6 +76,7 @@ public enum PrefKey {
   GROUP_WEEK_STARTS(R.string.pref_group_week_starts_key),
   GROUP_MONTH_STARTS(R.string.pref_group_month_starts_key),
   NEW_PLAN_ENABLED("new_plan_enabled"),
+  //used for Inapp purchase handling
   LICENSE_STATUS("licenseStatus"),
   LICENSE_RETRY_COUNT("retryCount"),
   LICENSE_INITIAL_TIMESTAMP("licenseInitialTimeStamp"),

@@ -3,7 +3,7 @@ package org.totschnig.myexpenses.contrib;
 
 import org.onepf.oms.OpenIabHelper;
 import org.totschnig.myexpenses.util.DistribHelper;
-import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
+import org.totschnig.myexpenses.util.licence.InappPurchaseLicenceHandler;
 
 import java.util.HashMap;
 import java.util.Map;

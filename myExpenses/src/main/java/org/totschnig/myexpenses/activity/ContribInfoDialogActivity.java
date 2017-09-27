@@ -20,7 +20,7 @@ import org.totschnig.myexpenses.dialog.MessageDialogFragment.MessageDialogListen
 import org.totschnig.myexpenses.model.ContribFeature;
 import org.totschnig.myexpenses.util.AcraHelper;
 import org.totschnig.myexpenses.util.DistribHelper;
-import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
+import org.totschnig.myexpenses.util.licence.InappPurchaseLicenceHandler;
 import org.totschnig.myexpenses.util.ShortcutHelper;
 import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.util.licence.Package;
@@ -169,11 +169,22 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
             return payload.equals(mPayload);
           }
         };
-    String sku = extended ?
-        (MyApplication.getInstance().getLicenceHandler().isContribEnabled() ?
-            Config.SKU_PREMIUM2EXTENDED :
-            Config.SKU_EXTENDED) :
-        Config.SKU_PREMIUM;
+    String sku;
+    switch (aPackage) {
+      case Contrib:
+        sku = Config.SKU_PREMIUM;
+        break;
+      case Upgrade:
+        sku = Config.SKU_PREMIUM2EXTENDED;
+        break;
+      case Extended:
+      case Professional_6:
+      case Professional_36:
+      default:
+        sku = Config.SKU_EXTENDED;
+        break;
+    }
+
     mHelper.launchPurchaseFlow(
         ContribInfoDialogActivity.this,
         sku,

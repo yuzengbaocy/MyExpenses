@@ -1,9 +1,9 @@
-package org.totschnig.myexpenses.test.util;
+package org.totschnig.myexpenses.test.util.licence;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.totschnig.myexpenses.MyApplication;
-import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
+import org.totschnig.myexpenses.util.licence.InappPurchaseLicenceHandler;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

@@ -47,6 +47,10 @@ public class LicenceHandler {
     return isEnabledFor(LicenceStatus.CONTRIB);
   }
 
+  public boolean isExtendedEnabled() {
+    return isEnabledFor(LicenceStatus.EXTENDED);
+  }
+
   public boolean isEnabledFor(@NonNull LicenceStatus licenceStatus) {
     if (this.licenceStatus == null) {
       return false;

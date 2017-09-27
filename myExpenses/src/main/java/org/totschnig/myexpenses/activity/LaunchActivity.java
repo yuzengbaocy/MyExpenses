@@ -17,8 +17,8 @@ import org.onepf.oms.appstore.googleUtils.IabResult;
 import org.onepf.oms.appstore.googleUtils.Inventory;
 import org.onepf.oms.appstore.googleUtils.Purchase;
 import org.totschnig.myexpenses.MyApplication;
-import org.totschnig.myexpenses.contrib.Config;
 import org.totschnig.myexpenses.R;
+import org.totschnig.myexpenses.contrib.Config;
 import org.totschnig.myexpenses.dialog.ConfirmationDialogFragment;
 import org.totschnig.myexpenses.dialog.VersionDialogFragment;
 import org.totschnig.myexpenses.model.ContribFeature;
@@ -27,10 +27,10 @@ import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.provider.TransactionProvider;
 import org.totschnig.myexpenses.provider.filter.Criteria;
 import org.totschnig.myexpenses.util.AcraHelper;
-import org.totschnig.myexpenses.util.InappPurchaseLicenceHandler;
 import org.totschnig.myexpenses.util.ContribUtils;
 import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.PermissionHelper;
+import org.totschnig.myexpenses.util.licence.InappPurchaseLicenceHandler;
 
 import java.io.File;
 import java.util.Map;
@@ -43,6 +43,7 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
 
   public static final String TAG_VERSION_INFO = "VERSION_INFO";
   private OpenIabHelper mHelper;
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -50,23 +51,23 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
         (InappPurchaseLicenceHandler) MyApplication.getInstance().getLicenceHandler();
     final String contribStatus = licenceHandler.getContribStatus();
     //TODO improve encapsulation of different stati
-    if (!contribStatus.equals(InappPurchaseLicenceHandler.STATUS_EXTENDED_PERMANENT)) {
+    if (!InappPurchaseLicenceHandler.STATUS_EXTENDED_PERMANENT.equals(contribStatus)) {
       mHelper = InappPurchaseLicenceHandler.getIabHelper(this);
-      if (mHelper!=null) {
+      if (mHelper != null) {
         try {
           mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
             public void onIabSetupFinished(IabResult result) {
               Timber.d("Setup finished.");
-              if (mHelper==null) {
+              if (mHelper == null) {
                 return;
               }
               if (result.isSuccess()) {
-                mHelper.queryInventoryAsync(false,new QueryInventoryFinishedListener() {
+                mHelper.queryInventoryAsync(false, new QueryInventoryFinishedListener() {
                   @Override
                   public void onQueryInventoryFinished(
                       IabResult result,
                       Inventory inventory) {
-                    if (mHelper==null || inventory==null) {
+                    if (mHelper == null || inventory == null) {
                       return;
                     }
                     // Do we have the premium upgrade?
@@ -76,16 +77,14 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
                         inventory.getPurchase(Config.SKU_EXTENDED);
                     Purchase upgradePurchase =
                         inventory.getPurchase(Config.SKU_PREMIUM2EXTENDED);
-                    if ((upgradePurchase  !=null && upgradePurchase .getPurchaseState() == 0) ||
-                        (extendedPurchase !=null && extendedPurchase.getPurchaseState() == 0)) {
-                      if (!contribStatus.equals(InappPurchaseLicenceHandler.STATUS_EXTENDED_PERMANENT)) {
-                        licenceHandler.registerPurchase(true);
-                      }
-                    } else if (premiumPurchase !=null && premiumPurchase.getPurchaseState() == 0) {
-                      if (!contribStatus.equals(InappPurchaseLicenceHandler.STATUS_ENABLED_PERMANENT)) {
+                    if ((upgradePurchase != null && upgradePurchase.getPurchaseState() == 0) ||
+                        (extendedPurchase != null && extendedPurchase.getPurchaseState() == 0)) {
+                      licenceHandler.registerPurchase(true);
+                    } else if (premiumPurchase != null && premiumPurchase.getPurchaseState() == 0) {
+                      if (!InappPurchaseLicenceHandler.STATUS_ENABLED_PERMANENT.equals(contribStatus)) {
                         licenceHandler.registerPurchase(false);
                       }
-                    } else if (contribStatus.equals(InappPurchaseLicenceHandler.STATUS_ENABLED_TEMPORARY)) {
+                    } else if (InappPurchaseLicenceHandler.STATUS_ENABLED_TEMPORARY.equals(contribStatus)) {
                       licenceHandler.maybeCancel();
                     }
                   }
@@ -230,14 +229,15 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
         break;
     }
   }
+
   // We're being destroyed. It's important to dispose of the helper here!
   @Override
   public void onDestroy() {
-      super.onDestroy();
+    super.onDestroy();
 
-      // very important:
-      Timber.d("Destroying helper.");
-      if (mHelper != null) mHelper.dispose();
-      mHelper = null;
+    // very important:
+    Timber.d("Destroying helper.");
+    if (mHelper != null) mHelper.dispose();
+    mHelper = null;
   }
 }

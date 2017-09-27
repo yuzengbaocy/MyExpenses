@@ -1,21 +1,16 @@
-package org.totschnig.myexpenses.util;
+package org.totschnig.myexpenses.util.licence;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Build;
-import android.provider.Settings.Secure;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-
-import com.google.android.vending.licensing.AESObfuscator;
-import com.google.android.vending.licensing.PreferenceObfuscator;
 
 import org.onepf.oms.Appstore;
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.AmazonAppstore;
 import org.totschnig.myexpenses.contrib.Config;
 import org.totschnig.myexpenses.preference.PrefKey;
-import org.totschnig.myexpenses.util.licence.LicenceHandler;
+import org.totschnig.myexpenses.util.DistribHelper;
 
 import java.util.ArrayList;
 
@@ -58,32 +53,15 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
   private static final String STATUS_EXTENDED_TEMPORARY = "6";
 
   public static final String STATUS_EXTENDED_PERMANENT = "7";
-  private PreferenceObfuscator licenseStatusPrefs;
 
   public InappPurchaseLicenceHandler(Context context) {
-    super(context);
+    super(context, null);
   }
 
   @Override
   public void init() {
-    requireLicenseStatusPrefs();
     d("init");
     setContribStatus(licenseStatusPrefs.getString(PrefKey.LICENSE_STATUS.getKey(), STATUS_DISABLED));
-  }
-
-  private void requireLicenseStatusPrefs() {
-    if (licenseStatusPrefs == null) {
-      d("building prefs");
-      String PREFS_FILE = "license_status";
-      String deviceId = Secure.getString(context.getContentResolver(), Secure.ANDROID_ID);
-      //TODO move to content provider, eventually https://github.com/grandcentrix/tray
-      SharedPreferences sp = context.getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE);
-      byte[] SALT = new byte[]{
-          -1, -124, -4, -59, -52, 1, -97, -32, 38, 59, 64, 13, 45, -104, -3, -92, -56, -49, 65, -25
-      };
-      licenseStatusPrefs = new PreferenceObfuscator(
-          sp, new AESObfuscator(SALT, context.getPackageName(), deviceId));
-    }
   }
 
   /**
@@ -92,7 +70,6 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
    * @param extended if true user has purchase extended licence
    */
   public void registerPurchase(boolean extended) {
-    requireLicenseStatusPrefs();
     String status = extended ? STATUS_EXTENDED_TEMPORARY : STATUS_ENABLED_TEMPORARY;
     long timestamp = Long.parseLong(licenseStatusPrefs.getString(
         PrefKey.LICENSE_INITIAL_TIMESTAMP.getKey(), "0"));
@@ -115,7 +92,6 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
    * After 2 days, if purchase cannot be verified, we set back
    */
   public void maybeCancel() {
-    requireLicenseStatusPrefs();
     long timestamp = Long.parseLong(licenseStatusPrefs.getString(
         PrefKey.LICENSE_INITIAL_TIMESTAMP.getKey(), "0"));
     long now = System.currentTimeMillis();
@@ -156,28 +132,7 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
     return new OpenIabHelper(ctx, builder.build());
   }
 
-  @Override
-  public boolean isContribEnabled() {
-    d("query");
-    return !InappPurchaseLicenceHandler.STATUS_DISABLED.equals(getContribStatus());
-  }
-
-  @Override
-  public boolean isExtendedEnabled() {
-    if (!HAS_EXTENDED) {
-      return isContribEnabled();
-    }
-    return InappPurchaseLicenceHandler.STATUS_EXTENDED_PERMANENT.equals(getContribStatus()) ||
-        InappPurchaseLicenceHandler.STATUS_EXTENDED_TEMPORARY.equals(getContribStatus());
-  }
-
-  @Override
-  protected void setLockStateDo(boolean locked) {
-    setContribStatus(locked ? STATUS_DISABLED : STATUS_ENABLED_PERMANENT);
-  }
-
   private void updateContribStatus(@NonNull String contribStatus) {
-    requireLicenseStatusPrefs();
     licenseStatusPrefs.putString(PrefKey.LICENSE_STATUS.getKey(), contribStatus);
     licenseStatusPrefs.commit();
     setContribStatus(contribStatus);
@@ -186,6 +141,14 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
 
   synchronized private void setContribStatus(@NonNull String contribStatus) {
     this.contribStatus = contribStatus;
+    int contribStatusInt = Integer.parseInt(contribStatus);
+    if (contribStatusInt >= Integer.parseInt(STATUS_EXTENDED_TEMPORARY)) {
+      licenceStatus = EXTENDED;
+    } else if (contribStatusInt > 0) {
+      licenceStatus = LicenceStatus.CONTRIB;
+    } else {
+      licenceStatus = null;
+    }
     d("valueSet");
   }
 
