@@ -23,8 +23,8 @@ public enum PrefKey {
   IMPORT_CSV(R.string.pref_import_csv_key),
   RESTORE_LEGACY(R.string.pref_restore_legacy_key),
   CONTRIB_PURCHASE(R.string.pref_contrib_purchase_key),
-  REQUEST_LICENCE(R.string.pref_request_licence_key),
   ENTER_LICENCE(R.string.pref_enter_licence_key),
+  NEW_LICENCE(R.string.pref_new_licence_key),
   PERFORM_PROTECTION(R.string.pref_perform_protection_key),
   PERFORM_PROTECTION_SCREEN(R.string.pref_screen_protection_key),
   SET_PASSWORD(R.string.pref_set_password_key),
@@ -82,6 +82,7 @@ public enum PrefKey {
   INTERSTITIAL_LAST_SHOWN("interstitialLastShown"),
   ENTRIES_CREATED_SINCE_LAST_INTERSTITIAL("entriesCreatedSinceLastInterstitial"),
   NEW_ACCOUNT_ENABLED("new_account_enabled"),
+  NEW_SPLIT_TEMPLATE_ENABLED("new_split_template_enabled"),
   SYNC_FREQUCENCY(R.string.pref_sync_frequency_key),
   SYNC_UPSELL_NOTIFICATION_SHOWN("sync_upsell_notification_shown"),
   MANAGE_SYNC_BACKENDS(R.string.pref_manage_sync_backends_key),
@@ -89,7 +90,8 @@ public enum PrefKey {
   WEBDAV_TIMEOUT(R.string.pref_webdav_timeout_key),
   DEBUG_SCREEN(R.string.pref_debug_key),
   DEBUG_LOGGING(R.string.pref_debug_logging_key),
-  SYNC_NOTIFICATION(R.string.pref_sync_notification_key);
+  SYNC_NOTIFICATION(R.string.pref_sync_notification_key),
+  LICENCE_MIGRATION_INFO_SHOWN("licence_migration_info_shown");
 
   private int resId = 0;
   private String key = null;

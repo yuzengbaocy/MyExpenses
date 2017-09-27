@@ -118,6 +118,8 @@ public class TaskExecutionFragment<T> extends Fragment {
   public static final int TASK_SETUP_FROM_SYNC_ACCOUNTS = 52;
   public static final int TASK_REPAIR_SYNC_BACKEND = 53;
   public static final int TASK_STORE_SETTING = 54;
+  public static final int TASK_VALIDATE_LICENCE = 55;
+  public static final int TASK_REMOVE_LICENCE = 56;
 
   /**
    * Callback interface through which the fragment will report the task's
@@ -296,6 +298,12 @@ public class TaskExecutionFragment<T> extends Fragment {
           break;
         case TASK_FETCH_SYNC_ACCOUNT_DATA:
           new SyncAccountTask(this, args, false).execute();
+          break;
+        case TASK_VALIDATE_LICENCE:
+          new LicenceApiTask(this, taskId).execute();
+          break;
+        case TASK_REMOVE_LICENCE:
+          new LicenceApiTask(this, taskId).execute();
           break;
         default:
           new GenericTask<T>(this, taskId, args.getSerializable(KEY_EXTRA))

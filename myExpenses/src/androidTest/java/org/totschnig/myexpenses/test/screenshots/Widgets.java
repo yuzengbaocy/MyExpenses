@@ -11,6 +11,8 @@ import org.totschnig.myexpenses.model.AccountType;
 import org.totschnig.myexpenses.fortest.test.R;
 
 import org.junit.Ignore;
+import org.totschnig.myexpenses.model.Transaction;
+
 import android.content.Context;
 import android.content.res.Configuration;
 import android.test.ActivityInstrumentationTestCase2;
@@ -55,10 +57,10 @@ public class Widgets extends ActivityInstrumentationTestCase2<MyExpenses> {
         "", AccountType.BANK, Account.DEFAULT_COLOR
     );
     a.save();
-    Template t = Template.getTypedNewInstance(MyExpenses.TYPE_TRANSACTION, a.getId());
+    Template t = Template.getTypedNewInstance(Transaction.TYPE_TRANSACTION, a.getId(), false, null);
     t.setAmount(new Money(c,-90000L));
     t.setTitle(translate(l,R.string.testData_templateSubCat));
-    t.payee = translate(l,R.string.testData_templatePayee);
+    t.setPayee(translate(l,R.string.testData_templatePayee));
     t.save();
   }
   

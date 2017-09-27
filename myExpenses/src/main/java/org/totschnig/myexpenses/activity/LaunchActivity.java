@@ -18,6 +18,8 @@ import org.onepf.oms.appstore.googleUtils.Inventory;
 import org.onepf.oms.appstore.googleUtils.Purchase;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.contrib.Config;
+import org.totschnig.myexpenses.R;
+import org.totschnig.myexpenses.dialog.ConfirmationDialogFragment;
 import org.totschnig.myexpenses.dialog.VersionDialogFragment;
 import org.totschnig.myexpenses.model.ContribFeature;
 import org.totschnig.myexpenses.model.Transaction;
@@ -181,6 +183,20 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
       VersionDialogFragment.newInstance(prev_version, showImportantUpgradeInfo)
           .show(getSupportFragmentManager(), TAG_VERSION_INFO);
     } else {
+      if (MyApplication.getInstance().getLicenceHandler().hasLegacyLicence() &&
+          !PrefKey.LICENCE_MIGRATION_INFO_SHOWN.getBoolean(false)) {
+        Bundle bundle = new Bundle();
+        bundle.putString(
+            ConfirmationDialogFragment.KEY_MESSAGE,
+            getString(R.string.licence_migration_info));
+        bundle.putInt(ConfirmationDialogFragment.KEY_COMMAND_POSITIVE,
+            R.id.REQUEST_LICENCE_MIGRATION_COMMAND);
+        bundle.putString(ConfirmationDialogFragment.KEY_PREFKEY, PrefKey
+            .LICENCE_MIGRATION_INFO_SHOWN.getKey());
+        bundle.putInt(ConfirmationDialogFragment.KEY_POSITIVE_BUTTON_LABEL, R.string.pref_request_licence_title);
+        ConfirmationDialogFragment.newInstance(bundle).show(getSupportFragmentManager(),
+            "RESTORE");
+      }
       if (!ContribFeature.SYNCHRONIZATION.hasAccess() && ContribFeature.SYNCHRONIZATION.usagesLeft() < 1 &&
           !PrefKey.SYNC_UPSELL_NOTIFICATION_SHOWN.getBoolean(false)) {
         PrefKey.SYNC_UPSELL_NOTIFICATION_SHOWN.putBoolean(true);

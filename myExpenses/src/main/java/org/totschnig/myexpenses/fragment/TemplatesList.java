@@ -84,6 +84,7 @@ import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_CURRENCY;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_INSTANCEID;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_LABEL_MAIN;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_LABEL_SUB;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_PARENTID;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_PAYEE_NAME;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_PLANID;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_PLAN_INFO;
@@ -91,7 +92,6 @@ import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_ROWID;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TEMPLATEID;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TITLE;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TRANSFER_ACCOUNT;
-import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TRANSFER_PEER;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_UUID;
 
 public class TemplatesList extends SortableListFragment {
@@ -109,7 +109,7 @@ public class TemplatesList extends SortableListFragment {
   private LoaderManager mManager;
 
   private int columnIndexAmount, columnIndexLabelSub, columnIndexComment,
-      columnIndexPayee, columnIndexColor, columnIndexTransferPeer,
+      columnIndexPayee, columnIndexColor,
       columnIndexCurrency, columnIndexTransferAccount, columnIndexPlanId,
       columnIndexTitle, columnIndexRowId, columnIndexPlanInfo;
   private boolean indexesCalculated = false;
@@ -291,7 +291,7 @@ public class TemplatesList extends SortableListFragment {
             TransactionProvider.TEMPLATES_URI.buildUpon()
                 .appendQueryParameter(TransactionProvider.QUERY_PARAMETER_WITH_PLAN_INFO, "1").build(),
             null,
-            null,
+            KEY_PARENTID + " is null",
             null,
             null);
     }
@@ -310,7 +310,6 @@ public class TemplatesList extends SortableListFragment {
           columnIndexComment = c.getColumnIndex(KEY_COMMENT);
           columnIndexPayee = c.getColumnIndex(KEY_PAYEE_NAME);
           columnIndexColor = c.getColumnIndex(KEY_COLOR);
-          columnIndexTransferPeer = c.getColumnIndex(KEY_TRANSFER_PEER);
           columnIndexCurrency = c.getColumnIndex(KEY_CURRENCY);
           columnIndexTransferAccount = c.getColumnIndex(KEY_TRANSFER_ACCOUNT);
           columnIndexPlanId = c.getColumnIndex(KEY_PLANID);
@@ -436,7 +435,7 @@ public class TemplatesList extends SortableListFragment {
       convertView.findViewById(R.id.colorAccount).setBackgroundColor(color);
       TextView tv2 = (TextView) convertView.findViewById(R.id.category);
       CharSequence catText = tv2.getText();
-      if (c.getInt(columnIndexTransferPeer) > 0) {
+      if (!c.isNull(columnIndexTransferAccount)) {
         catText = Transfer.getIndicatorPrefixForLabel(amount) + catText;
       } else {
         Long catId = DbUtils.getLongOrNull(c, KEY_CATID);
@@ -533,7 +532,7 @@ public class TemplatesList extends SortableListFragment {
 
   private boolean isForeignExchangeTransfer(int position) {
     if (mTemplatesCursor != null && mTemplatesCursor.moveToPosition(position)) {
-      if (mTemplatesCursor.getInt(columnIndexTransferPeer) != 0) {
+      if (!mTemplatesCursor.isNull(columnIndexTransferAccount)) {
         Account transferAccount = Account.getInstanceFromDb(
             mTemplatesCursor.getLong(columnIndexTransferAccount));
         return !mTemplatesCursor.getString(columnIndexCurrency).equals(

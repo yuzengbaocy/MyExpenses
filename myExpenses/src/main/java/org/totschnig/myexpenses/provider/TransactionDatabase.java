@@ -38,6 +38,7 @@ import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.model.AccountType;
 import org.totschnig.myexpenses.model.CurrencyEnum;
 import org.totschnig.myexpenses.model.Grouping;
+import org.totschnig.myexpenses.model.Model;
 import org.totschnig.myexpenses.model.Money;
 import org.totschnig.myexpenses.model.PaymentMethod;
 import org.totschnig.myexpenses.model.Plan;
@@ -46,7 +47,6 @@ import org.totschnig.myexpenses.model.Transaction;
 import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.sync.json.TransactionChange;
 import org.totschnig.myexpenses.util.AcraHelper;
-import org.totschnig.myexpenses.util.CurrencyFormatter;
 import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.PictureDirHelper;
 import org.totschnig.myexpenses.util.Utils;
@@ -123,8 +123,9 @@ import static org.totschnig.myexpenses.provider.DatabaseConstants.VIEW_ALL;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.VIEW_CHANGES_EXTENDED;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.VIEW_COMMITTED;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.VIEW_EXTENDED;
-import static org.totschnig.myexpenses.provider.DatabaseConstants.VIEW_TEMPLATES;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.VIEW_TEMPLATES_ALL;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.VIEW_TEMPLATES_EXTENDED;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.VIEW_TEMPLATES_UNCOMMITTED;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.VIEW_UNCOMMITTED;
 
 public class TransactionDatabase extends SQLiteOpenHelper {
@@ -301,7 +302,6 @@ public class TransactionDatabase extends SQLiteOpenHelper {
           + KEY_CATID + " integer references " + TABLE_CATEGORIES + "(" + KEY_ROWID + "), "
           + KEY_ACCOUNTID + " integer not null references " + TABLE_ACCOUNTS + "(" + KEY_ROWID + ") ON DELETE CASCADE,"
           + KEY_PAYEEID + " integer references " + TABLE_PAYEES + "(" + KEY_ROWID + "), "
-          + KEY_TRANSFER_PEER + " boolean default 0, "
           + KEY_TRANSFER_ACCOUNT + " integer references " + TABLE_ACCOUNTS + "(" + KEY_ROWID + ") ON DELETE CASCADE,"
           + KEY_METHODID + " integer references " + TABLE_METHODS + "(" + KEY_ROWID + "), "
           + KEY_TITLE + " text not null, "
@@ -309,7 +309,9 @@ public class TransactionDatabase extends SQLiteOpenHelper {
           + KEY_PLANID + " integer, "
           + KEY_PLAN_EXECUTION + " boolean default 0, "
           + KEY_UUID + " text, "
-          + KEY_LAST_USED + " datetime);";
+          + KEY_LAST_USED + " datetime,"
+          + KEY_PARENTID + " integer references " + TABLE_TEMPLATES + "(" + KEY_ROWID + ") ON DELETE CASCADE, "
+          + KEY_STATUS + " integer default 0);";
 
   private static final String EVENT_CACHE_CREATE =
       "CREATE TABLE " + TABLE_EVENT_CACHE + " ( " +
@@ -614,17 +616,10 @@ public class TransactionDatabase extends SQLiteOpenHelper {
     db.execSQL(PAYMENT_METHODS_CREATE);
     db.execSQL(TEMPLATE_CREATE);
     db.execSQL(PLAN_INSTANCE_STATUS_CREATE);
-    String viewTransactions = buildViewDefinition(TABLE_TRANSACTIONS);
-    db.execSQL("CREATE VIEW " + VIEW_COMMITTED + viewTransactions + " WHERE " + KEY_STATUS + " != " + STATUS_UNCOMMITTED + ";");
-    db.execSQL("CREATE VIEW " + VIEW_UNCOMMITTED + viewTransactions + " WHERE " + KEY_STATUS + " = " + STATUS_UNCOMMITTED + ";");
-    db.execSQL("CREATE VIEW " + VIEW_ALL + viewTransactions);
-    db.execSQL("CREATE VIEW " + VIEW_TEMPLATES + buildViewDefinition(TABLE_TEMPLATES));
     db.execSQL(CATEGORIES_CREATE);
     db.execSQL(ACCOUNTS_CREATE);
     db.execSQL(ACCOUNTS_UUID_INDEX_CREATE);
     db.execSQL(SYNC_STATE_CREATE);
-    db.execSQL("CREATE VIEW " + VIEW_EXTENDED + buildViewDefinitionExtended(TABLE_TRANSACTIONS) + " WHERE " + KEY_STATUS + " != " + STATUS_UNCOMMITTED + ";");
-    db.execSQL("CREATE VIEW " + VIEW_TEMPLATES_EXTENDED + buildViewDefinitionExtended(TABLE_TEMPLATES));
     db.execSQL(ACCOUNTS_TRIGGER_CREATE);
     db.execSQL(ACCOUNTTYE_METHOD_CREATE);
     insertDefaultPaymentMethods(db);
@@ -639,15 +634,17 @@ public class TransactionDatabase extends SQLiteOpenHelper {
     db.execSQL(EVENT_CACHE_CREATE);
     db.execSQL(STALE_URIS_CREATE);
     db.execSQL(STALE_URI_TRIGGER_CREATE);
+    db.execSQL(CHANGES_CREATE);
+
+    //Index
     db.execSQL("CREATE INDEX transactions_cat_id_index on " + TABLE_TRANSACTIONS + "(" + KEY_CATID + ")");
     db.execSQL("CREATE INDEX templates_cat_id_index on " + TABLE_TEMPLATES + "(" + KEY_CATID + ")");
-    db.execSQL(CHANGES_CREATE);
-    db.execSQL("CREATE VIEW " + VIEW_CHANGES_EXTENDED + buildViewDefinitionExtended(TABLE_CHANGES));
-    db.execSQL(TRANSACTIONS_INSERT_TRIGGER_CREATE);
-    db.execSQL(TRANSACTIONS_INSERT_AFTER_UPDATE_TRIGGER_CREATE);
-    db.execSQL(TRANSACTIONS_DELETE_AFTER_UPDATE_TRIGGER_CREATE);
-    db.execSQL(TRANSACTIONS_DELETE_TRIGGER_CREATE);
-    db.execSQL(TRANSACTIONS_UPDATE_TRIGGER_CREATE);
+
+    //Views
+    createOrRefreshViews(db);
+
+    // Triggers
+    createOrRefreshChangelogTriggers(db);
     db.execSQL(INCREASE_CATEGORY_USAGE_INSERT_TRIGGER);
     db.execSQL(INCREASE_CATEGORY_USAGE_UPDATE_TRIGGER);
     db.execSQL(INCREASE_ACCOUNT_USAGE_INSERT_TRIGGER);
@@ -929,7 +926,7 @@ public class TransactionDatabase extends SQLiteOpenHelper {
             " cat_id integer references categories(_id)," +
             " account_id integer not null references accounts(_id)," +
             " payee_id integer references payee(_id)," +
-            " transfer_peer boolean default false," +
+            " transfer_peer boolean default 0," +
             " transfer_account integer references accounts(_id)," +
             " method_id integer references paymentmethods(_id)," +
             " title text not null," +
@@ -1160,9 +1157,6 @@ public class TransactionDatabase extends SQLiteOpenHelper {
 
       if (oldVersion < 48) {
         //added method_label to extended view
-        //do not comment out, since it is needed by the uuid update
-        refreshViews1(db);
-        //need to inline to protect against later renames
 
         if (oldVersion < 47) {
           String[] projection = new String[]{
@@ -1205,28 +1199,11 @@ public class TransactionDatabase extends SQLiteOpenHelper {
           Cursor c = qb.query(db, projection, null, null, null, null, null);
           if (c != null) {
             if (c.moveToFirst()) {
-              ContentValues templateValues = new ContentValues(),
-                  eventValues = new ContentValues();
-              String planCalendarId = MyApplication.getInstance().checkPlanner();
+              ContentValues templateValues = new ContentValues();
               while (c.getPosition() < c.getCount()) {
-                Template t = new Template(c);
-                templateValues.put("uuid", t.getUuid());
+                templateValues.put("uuid", Model.generateUuid());
                 long templateId = c.getLong(c.getColumnIndex("_id"));
-                long planId = c.getLong(c.getColumnIndex("plan_id"));
-                eventValues.put(Events.DESCRIPTION, t.compileDescription(mCtx, CurrencyFormatter.instance()));
                 db.update("templates", templateValues, "_id = " + templateId, null);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-                  try {
-                    mCtx.getContentResolver().update(Events.CONTENT_URI,
-                        eventValues, Events._ID + "= ? AND " + Events.CALENDAR_ID + " = ?",
-                        new String[]{String.valueOf(planId), planCalendarId});
-                  } catch (Exception e) {
-                    //fails with IllegalArgumentException on 2.x devices,
-                    //since the same uri works for inserting and querying
-                    //but also on HUAWEI Y530-U00 with 4.3
-                    //probably SecurityException could arise here
-                  }
-                }
                 c.moveToNext();
               }
             }
@@ -1434,7 +1411,6 @@ public class TransactionDatabase extends SQLiteOpenHelper {
           "plan_execution, uuid, last_used " +
           "FROM templates_old");
       db.execSQL("DROP TABLE templates_old");
-      //Recreate changed views
       //refreshViews1(db);
     }
 
@@ -1467,7 +1443,7 @@ public class TransactionDatabase extends SQLiteOpenHelper {
       db.execSQL("CREATE TRIGGER insert_increase_account_usage AFTER INSERT ON transactions WHEN new.parent_id IS NULL BEGIN UPDATE accounts SET usages = usages + 1, last_used = strftime('%s', 'now')  WHERE _id = new.account_id; END;");
       db.execSQL("CREATE TRIGGER update_increase_account_usage AFTER UPDATE ON transactions WHEN new.parent_id IS NULL AND new.account_id != old.account_id AND (old.transfer_account IS NULL OR new.account_id != old.transfer_account) BEGIN UPDATE accounts SET usages = usages + 1, last_used = strftime('%s', 'now')  WHERE _id = new.account_id; END;");
       db.execSQL("CREATE TRIGGER update_account_sync_null AFTER UPDATE ON accounts WHEN new.sync_account_name IS NULL AND old.sync_account_name IS NOT NULL BEGIN UPDATE accounts SET sync_sequence_local = 0 WHERE _id = old._id; DELETE FROM changes WHERE account_id = old._id; END;");
-      refreshViews2(db);
+      //refreshViews2(db);
     }
 
     if (oldVersion < 60) {
@@ -1490,7 +1466,7 @@ public class TransactionDatabase extends SQLiteOpenHelper {
     }
 
     if (oldVersion < 62) {
-      refreshViewsExtended(db);
+      //refreshViewsExtended(db);
     }
 
     if (oldVersion < 63) {
@@ -1556,8 +1532,39 @@ public class TransactionDatabase extends SQLiteOpenHelper {
     }
 
     if (oldVersion < 68) {
-      //faulty upgrade to 59
-      db.execSQL("DROP TABLE IF EXISTS sync_from_adapter");
+      db.execSQL("ALTER TABLE templates RENAME to templates_old");
+      db.execSQL("CREATE TABLE templates ( _id integer primary key autoincrement, comment text, "
+          + "amount integer not null, cat_id integer references categories(_id), "
+          + "account_id integer not null references accounts(_id) ON DELETE CASCADE,"
+          + "payee_id integer references payee(_id), "
+          + "transfer_account integer references accounts(_id) ON DELETE CASCADE,"
+          + "method_id integer references paymentmethods(_id), title text not null, "
+          + "usages integer default 0, plan_id integer, plan_execution boolean default 0, uuid text, "
+          + "last_used datetime,"
+          + "parent_id integer references templates(_id) ON DELETE CASCADE, "
+          + "status integer default 0);");
+      db.execSQL("INSERT INTO templates " +
+          "(_id,comment,amount,cat_id,account_id,payee_id,transfer_account,method_id,title,usages,plan_id,plan_execution,uuid,last_used) " +
+          "SELECT " +
+          " _id,comment,amount,cat_id,account_id,payee_id,transfer_account,method_id,title,usages,plan_id,plan_execution,uuid,last_used " +
+          "FROM templates_old");
+      db.execSQL("DROP TABLE templates_old");
+      db.execSQL("ALTER TABLE accounts RENAME to accounts_old");
+      db.execSQL("CREATE TABLE accounts (_id integer primary key autoincrement, label text not null, "
+          + "opening_balance integer, description text, currency text not null, "
+          + "type text not null check (type in ('CASH','BANK','CCARD','ASSET','LIABILITY')) default 'CASH', "
+          + "color integer default -3355444, "
+          + "grouping text not null check (grouping in ('NONE','DAY','WEEK','MONTH','YEAR')) default 'NONE', "
+          + "usages integer default 0, last_used datetime, sort_key integer, sync_account_name text, "
+          + "sync_sequence_local integer default 0, exclude_from_totals boolean default 0, "
+          + "uuid text);");
+      db.execSQL("INSERT INTO accounts " +
+          "(_id,label,opening_balance,description,currency,type,color,grouping,usages,last_used,sort_key,sync_account_name,sync_sequence_local,exclude_from_totals,uuid) " +
+          " SELECT " +
+          " _id,label,opening_balance,description,currency,type,color,grouping,usages,last_used,sort_key,sync_account_name,sync_sequence_local,exclude_from_totals,uuid " +
+          "FROM accounts_old");
+      db.execSQL("DROP TABLE accounts_old");
+      createOrRefreshViews(db);
     }
   }
 
@@ -1567,6 +1574,7 @@ public class TransactionDatabase extends SQLiteOpenHelper {
     db.execSQL("DROP TRIGGER IF EXISTS delete_after_update_change_log");
     db.execSQL("DROP TRIGGER IF EXISTS delete_change_log");
     db.execSQL("DROP TRIGGER IF EXISTS update_change_log");
+    
     db.execSQL(TRANSACTIONS_INSERT_TRIGGER_CREATE);
     db.execSQL(TRANSACTIONS_INSERT_AFTER_UPDATE_TRIGGER_CREATE);
     db.execSQL(TRANSACTIONS_DELETE_AFTER_UPDATE_TRIGGER_CREATE);
@@ -1574,32 +1582,32 @@ public class TransactionDatabase extends SQLiteOpenHelper {
     db.execSQL(TRANSACTIONS_UPDATE_TRIGGER_CREATE);
   }
 
-  private void refreshViews1(SQLiteDatabase db) {
-    db.execSQL("DROP VIEW IF EXISTS transactions_committed");
-    db.execSQL("DROP VIEW IF EXISTS transactions_uncommitted");
-    db.execSQL("DROP VIEW IF EXISTS transactions_all");
-    db.execSQL("DROP VIEW IF EXISTS templates_all");
+  private void createOrRefreshViews(SQLiteDatabase db) {
+    db.execSQL("DROP VIEW IF EXISTS " + VIEW_COMMITTED);
+    db.execSQL("DROP VIEW IF EXISTS " + VIEW_UNCOMMITTED);
+    db.execSQL("DROP VIEW IF EXISTS " + VIEW_ALL);
+    db.execSQL("DROP VIEW IF EXISTS " + VIEW_EXTENDED);
+    db.execSQL("DROP VIEW IF EXISTS " + VIEW_TEMPLATES_ALL);
+    db.execSQL("DROP VIEW IF EXISTS " + VIEW_TEMPLATES_EXTENDED);
+    db.execSQL("DROP VIEW IF EXISTS " + VIEW_TEMPLATES_UNCOMMITTED);
+    db.execSQL("DROP VIEW IF EXISTS " + VIEW_CHANGES_EXTENDED);
+
+
     String viewTransactions = buildViewDefinition(TABLE_TRANSACTIONS);
-    db.execSQL("CREATE VIEW transactions_committed " + viewTransactions + " WHERE " + KEY_STATUS + " != " + STATUS_UNCOMMITTED + ";");
-    db.execSQL("CREATE VIEW transactions_uncommitted" + viewTransactions + " WHERE " + KEY_STATUS + " = " + STATUS_UNCOMMITTED + ";");
-    db.execSQL("CREATE VIEW transactions_all" + viewTransactions);
-    db.execSQL("CREATE VIEW templates_all" + buildViewDefinition(TABLE_TEMPLATES));
-    refreshViewsExtended(db);
-  }
+    String viewExtended = buildViewDefinitionExtended(TABLE_TRANSACTIONS);
+    db.execSQL("CREATE VIEW " + VIEW_COMMITTED + viewTransactions + " WHERE " + KEY_STATUS + " != " + STATUS_UNCOMMITTED + ";");
+    db.execSQL("CREATE VIEW " + VIEW_UNCOMMITTED + viewTransactions + " WHERE " + KEY_STATUS + " = " + STATUS_UNCOMMITTED + ";");
+    db.execSQL("CREATE VIEW " + VIEW_ALL + viewExtended);
+    db.execSQL("CREATE VIEW " + VIEW_EXTENDED + viewExtended + " WHERE " + KEY_STATUS + " != " + STATUS_UNCOMMITTED + ";");
 
-  private void refreshViewsExtended(SQLiteDatabase db) {
-    db.execSQL("DROP VIEW IF EXISTS transactions_extended");
-    db.execSQL("DROP VIEW IF EXISTS templates_extended");
-    db.execSQL("CREATE VIEW transactions_extended" + buildViewDefinitionExtended(TABLE_TRANSACTIONS) + " WHERE " + KEY_STATUS + " != " + STATUS_UNCOMMITTED + ";");
-    db.execSQL("CREATE VIEW templates_extended" + buildViewDefinitionExtended(TABLE_TEMPLATES));
-  }
+    String viewTemplates= buildViewDefinition(TABLE_TEMPLATES);
+    String viewTemplatesExtended = buildViewDefinitionExtended(TABLE_TEMPLATES);
+    db.execSQL("CREATE VIEW " + VIEW_TEMPLATES_UNCOMMITTED + viewTemplates + " WHERE " + KEY_STATUS + " = " + STATUS_UNCOMMITTED + ";");
+    db.execSQL("CREATE VIEW " + VIEW_TEMPLATES_ALL + viewTemplatesExtended);
+    db.execSQL("CREATE VIEW " + VIEW_TEMPLATES_EXTENDED + viewTemplatesExtended + " WHERE " + KEY_STATUS + " != " + STATUS_UNCOMMITTED + ";");
 
-  private void refreshViews2(SQLiteDatabase db) {
-    refreshViews1(db);
-    db.execSQL("DROP VIEW IF EXISTS changes_extended");
-    db.execSQL("CREATE VIEW changes_extended" + buildViewDefinitionExtended(TABLE_CHANGES));
+    db.execSQL("CREATE VIEW " + VIEW_CHANGES_EXTENDED + buildViewDefinitionExtended(TABLE_CHANGES));
   }
-
 
   @Override
   public final void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {

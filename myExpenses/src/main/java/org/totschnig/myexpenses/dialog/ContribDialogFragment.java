@@ -23,9 +23,11 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.PopupMenu;
 import android.text.Html;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
 import android.widget.RadioButton;
 import android.widget.TextView;
@@ -35,20 +37,32 @@ import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.activity.ContribInfoDialogActivity;
 import org.totschnig.myexpenses.model.ContribFeature;
 import org.totschnig.myexpenses.util.DistribHelper;
-import org.totschnig.myexpenses.util.LicenceHandler;
+import org.totschnig.myexpenses.util.licence.LicenceHandler;
 import org.totschnig.myexpenses.util.Utils;
+import org.totschnig.myexpenses.util.licence.Package;
 import org.totschnig.myexpenses.util.tracking.Tracker;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
-import timber.log.Timber;
+import javax.inject.Inject;
 
 import static org.totschnig.myexpenses.activity.ContribInfoDialogActivity.KEY_FEATURE;
+import static org.totschnig.myexpenses.util.licence.LicenceHandler.LicenceStatus.CONTRIB;
+import static org.totschnig.myexpenses.util.licence.LicenceHandler.LicenceStatus.EXTENDED;
+import static org.totschnig.myexpenses.util.licence.LicenceHandler.LicenceStatus.PROFESSIONAL;
 
 public class ContribDialogFragment extends CommitSafeDialogFragment implements DialogInterface.OnClickListener, View.OnClickListener {
   @Nullable
   private ContribFeature feature;
-  private RadioButton contribButton, extendedButton;
+  private RadioButton contribButton, extendedButton, professionalButton;
+  private boolean contribVisible;
+  private boolean extendedVisible;
+  private Package selectedPackage = null;
+  @Inject
+  LicenceHandler licenceHandler;
+  private TextView professionalPriceTextView;
 
   public static ContribDialogFragment newInstance(String feature, Serializable tag) {
     ContribDialogFragment dialogFragment = new ContribDialogFragment();
@@ -66,17 +80,21 @@ public class ContribDialogFragment extends CommitSafeDialogFragment implements D
     if (featureStringExtra != null) {
       feature = ContribFeature.valueOf(featureStringExtra);
     }
+    MyApplication.getInstance().getAppComponent().inject(this);
   }
 
   @NonNull
   @Override
   public Dialog onCreateDialog(Bundle savedInstanceState) {
     Activity ctx = getActivity();
+    LicenceHandler.LicenceStatus licenceStatus = licenceHandler.getLicenceStatus();
     @SuppressLint("InflateParams")
     final View view = LayoutInflater.from(ctx).inflate(R.layout.contrib_dialog, null);
     AlertDialog.Builder builder = new AlertDialog.Builder(ctx,
         MyApplication.getThemeType().equals(MyApplication.ThemeType.dark) ?
             R.style.ContribDialogThemeDark : R.style.ContribDialogThemeLight);
+
+    //preapre HEADER
     CharSequence message;
     if (feature != null) {
       CharSequence featureDescription = feature.buildFullInfoString(ctx),
@@ -84,7 +102,7 @@ public class ContribDialogFragment extends CommitSafeDialogFragment implements D
           removePhrase = feature.buildRemoveLimitation(getActivity(), true);
       message = TextUtils.concat(featureDescription, linefeed, removePhrase);
       if (feature.hasTrial()) {
-        TextView usagesLeftTextView = (TextView) view.findViewById(R.id.usages_left);
+        TextView usagesLeftTextView = view.findViewById(R.id.usages_left);
         usagesLeftTextView.setText(feature.buildUsagesLefString(ctx));
         usagesLeftTextView.setVisibility(View.VISIBLE);
       }
@@ -96,37 +114,59 @@ public class ContribDialogFragment extends CommitSafeDialogFragment implements D
       }
     }
     ((TextView) view.findViewById(R.id.feature_info)).setText(message);
-    boolean isContrib = MyApplication.getInstance().getLicenceHandler().isContribEnabled();
-    boolean userCanChoose = true;
-    contribButton = (RadioButton) view.findViewById(R.id.contrib_button);
-    extendedButton = (RadioButton) view.findViewById(R.id.extended_button);
-    if (isFeatureExtended() || (feature == null && isContrib)) {
-      view.findViewById(R.id.contrib_feature_container).setVisibility(View.GONE);
-      userCanChoose = false;
-      extendedButton.setChecked(true);
+
+    List<CharSequence> contribFeatureLabelsAsList = Utils.getContribFeatureLabelsAsList(ctx, CONTRIB);
+    List<CharSequence> extendedFeatureLabelsAsList = Utils.getContribFeatureLabelsAsList(ctx, EXTENDED);
+
+    //prepare CONTRIB section
+    View contribContainer = view.findViewById(R.id.contrib_feature_container);
+    contribContainer.setBackgroundColor(getResources().getColor(R.color.premium_licence));
+    if (licenceStatus == null && CONTRIB.covers(feature)) {
+     contribVisible = true;
+      CharSequence contribList = Utils.makeBulletList(ctx, contribFeatureLabelsAsList);
+      ((TextView) contribContainer.findViewById(R.id.package_feature_list)).setText(contribList);
     } else {
-      ((TextView) view.findViewById(R.id.contrib_feature_list)).setText(
-          Utils.makeBulletList(ctx, Utils.getContribFeatureLabelsAsList(ctx, LicenceHandler.LicenceStatus.CONTRIB)));
+      contribContainer.setVisibility(View.GONE);
     }
-    if (LicenceHandler.HAS_EXTENDED) {
-      String[] lines;
-      if (isFeatureExtended() && !isContrib) {
-        lines = Utils.getContribFeatureLabelsAsList(ctx, null);
-      } else {
-        String[] extendedFeatures = Utils.getContribFeatureLabelsAsList(ctx, LicenceHandler.LicenceStatus.EXTENDED);
-        lines = feature == null || feature.isExtended()  ? extendedFeatures : //user is Contrib
-            Utils.joinArrays(new String[]{getString(R.string.all_contrib_key_features) + "\n+"},
-                extendedFeatures);
+
+    //prepare EXTENDED section
+    View extendedContainer = view.findViewById(R.id.extended_feature_container);
+    extendedContainer.setBackgroundColor(getResources().getColor(R.color.extended_licence));
+    if (LicenceHandler.HAS_EXTENDED && CONTRIB.greaterOrEqual(licenceStatus) && EXTENDED.covers(feature)) {
+      extendedVisible = true;
+      ArrayList<CharSequence> lines = new ArrayList<>();
+      if (contribVisible) {
+        lines.add(getString(R.string.all_contrib_key_features) + "\n+");
+      } else if (licenceStatus == null && feature != null && feature.isExtended()) {
+        lines.addAll(contribFeatureLabelsAsList);
       }
-      ((TextView) view.findViewById(R.id.extended_feature_list)).setText(
-          Utils.makeBulletList(ctx, lines));
+      lines.addAll(extendedFeatureLabelsAsList);
+      ((TextView) extendedContainer.findViewById(R.id.package_feature_list)).setText(Utils.makeBulletList(ctx, lines));
     } else {
-      view.findViewById(R.id.extended_feature_container).setVisibility(View.GONE);
-      contribButton.setChecked(true);
-      userCanChoose = false;
+      extendedContainer.setVisibility(View.GONE);
     }
-    builder
-        .setTitle(feature == null ? R.string.menu_contrib :
+
+    //prepare PROFESSIONAL section
+    ArrayList<CharSequence> lines = new ArrayList<>();
+    View professionalContainer = view.findViewById(R.id.professional_feature_container);
+    professionalContainer.setBackgroundColor(getResources().getColor(R.color.professional_licence));
+    if (extendedVisible) {
+      lines.add(getString(R.string.all_extended_key_features) + "\n+");
+    } else if(feature != null && feature.isProfessional()) {
+      if (licenceStatus == null) {
+        lines.addAll(contribFeatureLabelsAsList);
+      }
+      if (CONTRIB.greaterOrEqual(licenceStatus)) {
+        lines.addAll(extendedFeatureLabelsAsList);
+      }
+    }
+    lines.addAll(Utils.getContribFeatureLabelsAsList(ctx, PROFESSIONAL));
+    ((TextView) professionalContainer.findViewById(R.id.package_feature_list)).setText(Utils.makeBulletList(ctx, lines));
+
+    //FOOTER
+    view.findViewById(R.id.eu_vat_info).setVisibility(DistribHelper.isGithub() ? View.VISIBLE : View.GONE);
+
+    builder.setTitle(feature == null ? R.string.menu_contrib :
             feature.isExtended() ? R.string.dialog_title_extended_feature :
                 R.string.dialog_title_contrib_feature)
         .setView(view)
@@ -134,18 +174,33 @@ public class ContribDialogFragment extends CommitSafeDialogFragment implements D
         .setIcon(R.mipmap.ic_launcher_alt)
         .setPositiveButton(R.string.upgrade_now, this);
     AlertDialog dialog = builder.create();
-    if (userCanChoose) {
-      view.findViewById(R.id.contrib_feature_container).setOnClickListener(this);
-      contribButton.setOnClickListener(this);
-      view.findViewById(R.id.extended_feature_container).setOnClickListener(this);
-      extendedButton.setOnClickListener(this);
-      dialog.setOnShowListener(new ButtonOnShowDisabler());
-    }
-    return dialog;
-  }
 
-  protected boolean isFeatureExtended() {
-    return feature != null && feature.isExtended();
+    if (contribVisible) {
+      contribButton = contribContainer.findViewById(R.id.package_button);
+      ((TextView) contribContainer.findViewById(R.id.package_label)).setText(R.string.contrib_key);
+      ((TextView) contribContainer.findViewById(R.id.package_price)).setText(
+          licenceHandler.getFormattedPrice(Package.Contrib));
+      contribContainer.setOnClickListener(this);
+      contribButton.setOnClickListener(this);
+    }
+    if (extendedVisible) {
+      extendedButton = extendedContainer.findViewById(R.id.package_button);
+      ((TextView) extendedContainer.findViewById(R.id.package_label)).setText(R.string.extended_key);
+      ((TextView) extendedContainer.findViewById(R.id.package_price)).setText(
+          licenceHandler.getFormattedPrice(licenceStatus == null ? Package.Extended : Package.Upgrade));
+      extendedContainer.setOnClickListener(this);
+      extendedButton.setOnClickListener(this);
+    }
+    professionalButton = professionalContainer.findViewById(R.id.package_button);
+    ((TextView) professionalContainer.findViewById(R.id.package_label)).setText(R.string.professional_key);
+    professionalPriceTextView = professionalContainer.findViewById(R.id.package_price);
+    professionalPriceTextView.setText(R.string.professionalPriceShortInfo);
+    view.findViewById(R.id.professional_feature_container).setOnClickListener(this);
+    professionalButton.setOnClickListener(this);
+
+    dialog.setOnShowListener(new ButtonOnShowDisabler());
+
+    return dialog;
   }
 
   @Override
@@ -155,12 +210,11 @@ public class ContribDialogFragment extends CommitSafeDialogFragment implements D
       return;
     }
     if (which == AlertDialog.BUTTON_POSITIVE) {
-      if(extendedButton.isChecked()) {
-        ctx.contribBuyDo(true);
-      } else if (contribButton.isChecked()) {
-        ctx.contribBuyDo(false);
+      if (selectedPackage != null) {
+        ctx.contribBuyDo(selectedPackage);
       } else {
-        Timber.w("Neither premium nor extended button checked, should not happen");
+        //should not happen
+        ctx.finish(true);
       }
     } else {
       //BUTTON_NEGATIV
@@ -180,17 +234,30 @@ public class ContribDialogFragment extends CommitSafeDialogFragment implements D
 
   @Override
   public void onClick(View v) {
-    RadioButton self, other;
-    if (v.getId() == R.id.contrib_feature_container || v.getId() == R.id.contrib_button) {
-      other = extendedButton;
-      self = contribButton;
+    if (v.getId() == R.id.contrib_feature_container || v == contribButton) {
+      selectedPackage = Package.Contrib;
+      updateButtons(contribButton);
+    } else if (v.getId() == R.id.extended_feature_container || v == extendedButton) {
+      selectedPackage = licenceHandler.getLicenceStatus() == null ? Package.Extended : Package.Upgrade;
+      updateButtons(extendedButton);
+    } else {
+      PopupMenu popup = new PopupMenu(getActivity(), v);
+      popup.setOnMenuItemClickListener(item -> {
+        selectedPackage = Package.values()[item.getItemId()];
+        professionalPriceTextView.setText(licenceHandler.getFormattedPrice(selectedPackage));
+        updateButtons(professionalButton);
+        return true;
+      });
+      popup.getMenu().add(Menu.NONE, Package.Professional_6.ordinal(), Menu.NONE, licenceHandler.getFormattedPrice(Package.Professional_6));
+      popup.getMenu().add(Menu.NONE, Package.Professional_36.ordinal(), Menu.NONE, licenceHandler.getFormattedPrice(Package.Professional_36));
+      popup.show();
     }
-    else {
-      other = contribButton;
-      self = extendedButton;
-    }
-    self.setChecked(true);
-    other.setChecked(false);
+  }
+
+  private void updateButtons(RadioButton selected) {
+    if (contribVisible) contribButton.setChecked(contribButton == selected);
+    if (extendedVisible) extendedButton.setChecked(extendedButton == selected);
+    professionalButton.setChecked(professionalButton == selected);
     ((AlertDialog) getDialog()).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
   }
 }

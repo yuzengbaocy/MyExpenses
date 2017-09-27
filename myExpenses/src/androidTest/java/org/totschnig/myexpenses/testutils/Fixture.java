@@ -12,7 +12,6 @@ import android.os.Build;
 import junit.framework.Assert;
 
 import org.totschnig.myexpenses.MyApplication;
-import org.totschnig.myexpenses.activity.MyExpenses;
 import org.totschnig.myexpenses.fortest.test.R;
 import org.totschnig.myexpenses.model.Account;
 import org.totschnig.myexpenses.model.AccountType;
@@ -20,7 +19,6 @@ import org.totschnig.myexpenses.model.Category;
 import org.totschnig.myexpenses.model.Grouping;
 import org.totschnig.myexpenses.model.Money;
 import org.totschnig.myexpenses.model.Plan;
-import org.totschnig.myexpenses.model.SplitPartCategory;
 import org.totschnig.myexpenses.model.SplitTransaction;
 import org.totschnig.myexpenses.model.Template;
 import org.totschnig.myexpenses.model.Transaction;
@@ -146,7 +144,7 @@ public class Fixture {
     Transaction op2 = Transaction.getNewInstance(account3.getId());
     op2.setAmount(new Money(defaultCurrency,-2200L));
     op2.setCatId(findCat(testContext.getString(R.string.testData_transaction2SubCat), mainCat2));
-    op2.comment = testContext.getString(R.string.testData_transaction2Comment);
+    op2.setComment(testContext.getString(R.string.testData_transaction2Comment));
     op2.setDate(new Date( now - 7200000 ));
     op2.save();
     Transaction op3 = Transaction.getNewInstance(account3.getId());
@@ -163,7 +161,7 @@ public class Fixture {
     Transaction op4 = Transaction.getNewInstance(account3.getId());
     op4.setAmount(new Money(defaultCurrency,-5000L));
     op4.setCatId(findCat(testContext.getString(R.string.testData_transaction4SubCat), mainCat2));
-    op4.payee = testContext.getString(R.string.testData_transaction4Payee);
+    op4.setPayee(testContext.getString(R.string.testData_transaction4Payee));
     op4.setDate(new Date( now - 98030000 ));
     op4.crStatus = CrStatus.CLEARED;
     op4.save();
@@ -193,11 +191,11 @@ public class Fixture {
     Transaction op8 = SplitTransaction.getNewInstance(account3.getId());
     op8.setAmount(new Money(defaultCurrency,-8967L));
     op8.save();
-    Transaction split1 = SplitPartCategory.getNewInstance(account3.getId(),op8.getId());
+    Transaction split1 = Transaction.getNewInstance(account3.getId(),op8.getId());
     split1.setAmount(new Money(defaultCurrency,-4523L));
     split1.setCatId(mainCat2);
     split1.save();
-    Transaction split2 = SplitPartCategory.getNewInstance(account3.getId(),op8.getId());
+    Transaction split2 = Transaction.getNewInstance(account3.getId(),op8.getId());
     split2.setAmount(new Money(defaultCurrency,-4444L));
     split2.setCatId(mainCat6);
     split2.save();
@@ -211,13 +209,13 @@ public class Fixture {
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
-    Template template = Template.getTypedNewInstance(MyExpenses.TYPE_TRANSACTION, account3.getId());
+    Template template = Template.getTypedNewInstance(Transaction.TYPE_TRANSACTION, account3.getId(), false, null);
     template.setAmount(new Money(defaultCurrency,-90000L));
     String templateSubCat = testContext.getString(R.string.testData_templateSubCat);
     template.setCatId(findCat(templateSubCat,
         findCat(testContext.getString(R.string.testData_templateMainCat), null)));
     template.setTitle(templateSubCat);
-    template.payee = testContext.getString(R.string.testData_templatePayee);
+    template.setPayee(testContext.getString(R.string.testData_templatePayee));
     Uri planUri = new Plan(
         Calendar.getInstance(),
         "FREQ=WEEKLY;COUNT=10;WKST=SU",

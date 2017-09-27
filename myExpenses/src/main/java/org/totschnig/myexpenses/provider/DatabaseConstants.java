@@ -208,7 +208,8 @@ public class DatabaseConstants {
   public static final String VIEW_COMMITTED = "transactions_committed";
   public static final String VIEW_UNCOMMITTED = "transactions_uncommitted";
   public static final String VIEW_ALL = "transactions_all";
-  public static final String VIEW_TEMPLATES = "templates_all";
+  public static final String VIEW_TEMPLATES_ALL = "templates_all";
+  public static final String VIEW_TEMPLATES_UNCOMMITTED = "templates_uncommitted";
   public static final String VIEW_EXTENDED = "transactions_extended";
   public static final String VIEW_CHANGES_EXTENDED = "changes_extended";
   public static final String VIEW_TEMPLATES_EXTENDED = "templates_extended";
@@ -247,7 +248,7 @@ public class DatabaseConstants {
 
  public static final String LABEL_SUB =
     "CASE WHEN " +
-    "  " + KEY_TRANSFER_PEER + " is null AND cat_id AND (SELECT " + KEY_PARENTID + " FROM " + TABLE_CATEGORIES
+    "  " + KEY_TRANSFER_PEER + " is null AND " + KEY_CATID + " AND (SELECT " + KEY_PARENTID + " FROM " + TABLE_CATEGORIES
         + " WHERE " + KEY_ROWID + " = " + KEY_CATID + ") " +
     "THEN " +
     "  (SELECT " + KEY_LABEL + " FROM " + TABLE_CATEGORIES  + " WHERE " + KEY_ROWID + " = " + KEY_CATID + ") " +
@@ -258,7 +259,7 @@ public class DatabaseConstants {
    */
   public static final String LABEL_SUB_TEMPLATE =
       "CASE WHEN " +
-          "  " + KEY_TRANSFER_PEER + " = 0 AND cat_id AND (SELECT " + KEY_PARENTID + " FROM " + TABLE_CATEGORIES
+          "  " + KEY_CATID + " AND (SELECT " + KEY_PARENTID + " FROM " + TABLE_CATEGORIES
           + " WHERE " + KEY_ROWID + " = " + KEY_CATID + ") " +
           "THEN " +
           "  (SELECT " + KEY_LABEL + " FROM " + TABLE_CATEGORIES  + " WHERE " + KEY_ROWID + " = " + KEY_CATID + ") " +

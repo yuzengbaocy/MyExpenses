@@ -27,9 +27,9 @@ import android.net.Uri;
 import android.os.RemoteException;
 
 import org.totschnig.myexpenses.R;
-import org.totschnig.myexpenses.activity.MyExpenses;
 import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.provider.CalendarProviderProxy;
+import org.totschnig.myexpenses.provider.DatabaseConstants;
 import org.totschnig.myexpenses.provider.DbUtils;
 import org.totschnig.myexpenses.provider.TransactionProvider;
 import org.totschnig.myexpenses.util.CurrencyFormatter;
@@ -37,7 +37,7 @@ import org.totschnig.myexpenses.util.Utils;
 
 import java.util.ArrayList;
 import java.util.Currency;
-import java.util.Date;
+import java.util.Locale;
 
 import static org.totschnig.myexpenses.provider.DatabaseConstants.FULL_LABEL;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_ACCOUNTID;
@@ -50,26 +50,31 @@ import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_INSTANCEID
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_LABEL;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_METHODID;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_METHOD_LABEL;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_PARENTID;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_PAYEEID;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_PAYEE_NAME;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_PLANID;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_PLAN_EXECUTION;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_ROWID;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_STATUS;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TEMPLATEID;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TITLE;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TRANSACTIONID;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TRANSFER_ACCOUNT;
-import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TRANSFER_PEER;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_UUID;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.LABEL_MAIN;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.LABEL_SUB_TEMPLATE;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.STATUS_UNCOMMITTED;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.TABLE_PLAN_INSTANCE_STATUS;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.VIEW_TEMPLATES_UNCOMMITTED;
+import static org.totschnig.myexpenses.provider.DbUtils.getLongOrNull;
 
 public class Template extends Transaction {
+  private String PART_SELECT = "(" + KEY_PARENTID + "= ?)";
   private String title;
-  private boolean isTransfer;
   public Long planId;
   private boolean planExecutionAutomatic = false;
+  private final Transaction template;
 
   public Plan getPlan() {
     return plan;
@@ -96,16 +101,16 @@ public class Template extends Transaction {
         KEY_CATID,
         LABEL_MAIN,
         FULL_LABEL,
-        LABEL_SUB_TEMPLATE,//different from Transaction, since transfer_peer is treated as boolean here
+        LABEL_SUB_TEMPLATE,
         KEY_PAYEE_NAME,
-        KEY_TRANSFER_PEER,
         KEY_TRANSFER_ACCOUNT,
         KEY_ACCOUNTID,
         KEY_METHODID,
         KEY_TITLE,
         KEY_PLANID,
         KEY_PLAN_EXECUTION,
-        KEY_UUID
+        KEY_UUID,
+        KEY_PARENTID
     };
     int baseLength = PROJECTION_BASE.length;
     PROJECTION_EXTENDED = new String[baseLength + 3];
@@ -124,19 +129,118 @@ public class Template extends Transaction {
    */
   public Template(Transaction t, String title) {
     super();
-    this.setTitle(title);
-    this.accountId = t.accountId;
-    this.amount = t.amount;
-    this.setCatId(t.getCatId());
-    this.comment = t.comment;
-    this.methodId = t.methodId;
-    this.methodLabel = t.methodLabel;
-    this.payee = t.payee;
-    //we are not interested in which was the transfer_peer of the transfer
-    //from which the template was derived;
-    //we use KEY_TRANSFER_PEER as boolean
-    this.isTransfer = t.transfer_peer != null;
-    this.transfer_account = t.transfer_account;
+    setTitle(title);
+    if (t instanceof Transfer) {
+      template = new Transfer(t.getAccountId(), t.getAmount(), t.getTransferAccountId());
+    } else if (t instanceof SplitTransaction) {
+      template = new SplitTransaction(t.getAccountId(), t.getAmount());
+    } else {
+      template = new Transaction(t.getAccountId(), t.getAmount());
+    }
+    setCatId(t.getCatId());
+    setComment(t.getComment());
+    setMethodId(t.getMethodId());
+    setMethodLabel(t.getMethodLabel());
+    setPayee(t.getPayee());
+    if (isSplit()) {
+      persistForEdit();
+      Cursor c = cr().query(Transaction.CONTENT_URI, new String[]{KEY_ROWID},
+          KEY_PARENTID + " = ?", new String[]{String.valueOf(t.getId())}, null);
+      if (c != null) {
+        c.moveToFirst();
+        while (!c.isAfterLast()) {
+          Transaction splitPart = t.getSplitPart(c.getLong(0));
+          if (splitPart != null) {
+            Template part = new Template(splitPart, title);
+            part.status = STATUS_UNCOMMITTED;
+            part.setParentId(getId());
+            part.save();
+          }
+          c.moveToNext();
+        }
+        c.close();
+      }
+    }
+  }
+
+  @Override
+  public void setCatId(Long catId) {
+    template.setCatId(catId);
+  }
+
+  @Override
+  public Long getCatId() {
+    return template.getCatId();
+  }
+
+  @Override
+  public void setComment(String comment) {
+    template.setComment(comment);
+  }
+
+  @Override
+  public String getComment() {
+    return template.getComment();
+  }
+
+  @Override
+  public void setMethodId(Long methodId) {
+    template.setMethodId(methodId);
+  }
+
+  @Override
+  public Long getMethodId() {
+    return template.getMethodId();
+  }
+
+  @Override
+  public void setMethodLabel(String methodLabel) {
+    template.setMethodLabel(methodLabel);
+  }
+
+  @Override
+  public String getMethodLabel() {
+    return template.getMethodLabel();
+  }
+
+  @Override
+  public void setPayeeId(Long payeeId) {
+    template.setPayeeId(payeeId);
+  }
+
+  @Override
+  public Long getPayeeId() {
+    return template.getPayeeId();
+  }
+
+  @Override
+  public void setPayee(String payee) {
+    template.setPayee(payee);
+  }
+
+  @Override
+  public String getPayee() {
+    return template.getPayee();
+  }
+
+  @Override
+  public void setAmount(Money amount) {
+    template.setAmount(amount);
+  }
+
+  @Override
+  public Money getAmount() {
+    return template.getAmount();
+  }
+
+  @Override
+  public void setAccountId(Long accountId) {
+    template.setAccountId(accountId);
+  }
+
+  @Override
+  public Long getAccountId() {
+    return template.getAccountId();
   }
 
   /**
@@ -147,32 +251,39 @@ public class Template extends Transaction {
    */
   public Template(Cursor c) {
     super();
-    this.accountId = c.getLong(c.getColumnIndexOrThrow(KEY_ACCOUNTID));
     Currency currency;
     int currencyColumnIndex = c.getColumnIndex(KEY_CURRENCY);
+    long accountId = c.getLong(c.getColumnIndexOrThrow(KEY_ACCOUNTID));
     //we allow the object to be instantiated without instantiation of
     //the account, because the latter triggers an error (getDatabase called recursively)
     //when we need a template instance in database onUpgrade
     if (currencyColumnIndex != -1) {
       currency = Utils.getSaveInstance(c.getString(currencyColumnIndex));
     } else {
-      currency = Account.getInstanceFromDb(this.accountId).currency;
+      currency = Account.getInstanceFromDb(accountId).currency;
     }
-    this.amount = new Money(currency, c.getLong(c.getColumnIndexOrThrow(KEY_AMOUNT)));
-
-    if (isTransfer = c.getInt(c.getColumnIndexOrThrow(KEY_TRANSFER_PEER)) > 0) {
-      transfer_account = DbUtils.getLongOrNull(c, KEY_TRANSFER_ACCOUNT);
+    Money amount = new Money(currency, c.getLong(c.getColumnIndexOrThrow(KEY_AMOUNT)));
+    boolean isTransfer = !c.isNull(c.getColumnIndexOrThrow(KEY_TRANSFER_ACCOUNT));
+    Long catId = getLongOrNull(c, KEY_CATID);
+    if (isTransfer) {
+      template = new Transfer(accountId, amount, DbUtils.getLongOrNull(c, KEY_TRANSFER_ACCOUNT));
     } else {
-      methodId = DbUtils.getLongOrNull(c, KEY_METHODID);
-      setCatId(DbUtils.getLongOrNull(c, KEY_CATID));
-      payee = DbUtils.getString(c, KEY_PAYEE_NAME);
-      methodLabel = DbUtils.getString(c, KEY_METHOD_LABEL);
+      if (DatabaseConstants.SPLIT_CATID.equals(catId)) {
+        template = new SplitTransaction(accountId, amount);
+      } else {
+        template = new Transaction(accountId, amount);
+        setMethodId(DbUtils.getLongOrNull(c, KEY_METHODID));
+        setCatId(DbUtils.getLongOrNull(c, KEY_CATID));
+        setPayee(DbUtils.getString(c, KEY_PAYEE_NAME));
+        setMethodLabel(DbUtils.getString(c, KEY_METHOD_LABEL));
+      }
     }
     setId(c.getLong(c.getColumnIndexOrThrow(KEY_ROWID)));
-    comment = DbUtils.getString(c, KEY_COMMENT);
-    label = DbUtils.getString(c, KEY_LABEL);
+    setComment(DbUtils.getString(c, KEY_COMMENT));
+    setLabel(DbUtils.getString(c, KEY_LABEL));
     setTitle(DbUtils.getString(c, KEY_TITLE));
     planId = DbUtils.getLongOrNull(c, KEY_PLANID);
+    setParentId(DbUtils.getLongOrNull(c, KEY_PARENTID));
     setPlanExecutionAutomatic(c.getInt(c.getColumnIndexOrThrow(KEY_PLAN_EXECUTION)) > 0);
     int uuidColumnIndex = c.getColumnIndexOrThrow(KEY_UUID);
     if (c.isNull(uuidColumnIndex)) {//while upgrade to DB schema 47, uuid is still null
@@ -182,23 +293,47 @@ public class Template extends Transaction {
     }
   }
 
-  public Template(Account account, long amount) {
-    super(account, amount);
+  public Template(Account account, int operationType, Long parentId) {
+    super();
     setTitle("");
+    switch (operationType) {
+      case TYPE_TRANSACTION:
+        template = Transaction.getNewInstance(account.getId());
+        break;
+      case TYPE_TRANSFER:
+        template = Transfer.getNewInstance(account.getId());
+        break;
+      case TYPE_SPLIT:
+        template = SplitTransaction.getNewInstance(account, false);
+        break;
+      default:
+        throw new UnsupportedOperationException(
+            String.format(Locale.ROOT, "Unknown type %d", operationType));
+    }
+    setParentId(parentId);
   }
 
-  public static Template getTypedNewInstance(int mOperationType, long accountId) {
-    if (mOperationType == MyExpenses.TYPE_SPLIT) {
-      throw new UnsupportedOperationException(
-          "Templates for Split transactions are not yet implemented");
-    }
+  public static Template getTypedNewInstance(int operationType, Long accountId, boolean forEdit, Long parentId) {
     Account account = Account.getInstanceFromDbWithFallback(accountId);
     if (account == null) {
       return null;
     }
-    Template t = new Template(account, 0L);
-    t.isTransfer = mOperationType == MyExpenses.TYPE_TRANSFER;
+    Template t = new Template(account, operationType, parentId);
+    if (forEdit && t.isSplit()) {
+      if (!t.persistForEdit()) {
+        return null;
+      }
+    }
     return t;
+  }
+
+  private boolean persistForEdit() {
+    status = STATUS_UNCOMMITTED;
+    if (save() == null) {
+      return false;
+    }
+    inEditState = true;
+    return true;
   }
 
   /**
@@ -253,7 +388,7 @@ public class Template extends Transaction {
   }
 
   /**
-   * Saves the new template, or updated an existing one
+   * Saves the new template, or update an existing one
    *
    * @return the Uri of the template. Upon creation it is returned from the content provider, null if inserting fails on constraints
    */
@@ -265,24 +400,28 @@ public class Template extends Transaction {
       }
     }
     Uri uri;
-    Long payee_id = (payee != null && !payee.equals("")) ?
-        Payee.require(payee) : null;
+    Long payee_id = (getPayee() != null && !getPayee().equals("")) ?
+        Payee.require(getPayee()) : null;
     ContentValues initialValues = new ContentValues();
-    initialValues.put(KEY_COMMENT, comment);
-    initialValues.put(KEY_AMOUNT, amount.getAmountMinor());
-    initialValues.put(KEY_CATID, getCatId());
-    initialValues.put(KEY_TRANSFER_ACCOUNT, transfer_account);
+    initialValues.put(KEY_COMMENT, getComment());
+    initialValues.put(KEY_AMOUNT, getAmount().getAmountMinor());
+    if (isTransfer()) {
+      initialValues.put(KEY_TRANSFER_ACCOUNT, template.getTransferAccountId());
+    } else {
+      initialValues.put(KEY_CATID, getCatId());
+    }
     initialValues.put(KEY_PAYEEID, payee_id);
-    initialValues.put(KEY_METHODID, methodId);
+    initialValues.put(KEY_METHODID, getMethodId());
     initialValues.put(KEY_TITLE, getTitle());
     initialValues.put(KEY_PLANID, planId);
     initialValues.put(KEY_PLAN_EXECUTION, isPlanExecutionAutomatic());
-    initialValues.put(KEY_ACCOUNTID, accountId);
+    initialValues.put(KEY_ACCOUNTID, getAccountId());
+    ArrayList<ContentProviderOperation> ops = new ArrayList<>();
     if (getId() == 0) {
-      initialValues.put(KEY_TRANSFER_PEER, isTransfer());
       initialValues.put(KEY_UUID, requireUuid());
+      initialValues.put(KEY_STATUS, status);
+      initialValues.put(KEY_PARENTID, getParentId());
       try {
-        ArrayList<ContentProviderOperation> ops = new ArrayList<>();
         ops.add(ContentProviderOperation.newInsert(CONTENT_URI).withValues(initialValues).build());
         if (withLinkedTransaction != null) {
           ops.add(ContentProviderOperation.newInsert(TransactionProvider.PLAN_INSTANCE_STATUS_URI)
@@ -302,9 +441,11 @@ public class Template extends Transaction {
       }
     } else {
       uri = CONTENT_URI.buildUpon().appendPath(String.valueOf(getId())).build();
+      ops.add(ContentProviderOperation.newUpdate(uri).withValues(initialValues).build());
+      addCommitOperations(CONTENT_URI, ops);
       try {
-        cr().update(uri, initialValues, null, null);
-      } catch (SQLiteConstraintException e) {
+        cr().applyBatch(TransactionProvider.AUTHORITY, ops);
+      } catch (RemoteException | OperationApplicationException | SQLiteConstraintException e) {
         return null;
       }
     }
@@ -347,52 +488,45 @@ public class Template extends Transaction {
     StringBuilder sb = new StringBuilder();
     sb.append(ctx.getString(R.string.amount));
     sb.append(" : ");
-    sb.append(currencyFormatter.formatCurrency(amount));
+    sb.append(currencyFormatter.formatCurrency(getAmount()));
     sb.append("\n");
     if (getCatId() != null && getCatId() > 0) {
       sb.append(ctx.getString(R.string.category));
       sb.append(" : ");
-      sb.append(label);
+      sb.append(getLabel());
       sb.append("\n");
     }
     if (isTransfer()) {
       sb.append(ctx.getString(R.string.account));
       sb.append(" : ");
-      sb.append(label);
+      sb.append(getLabel());
       sb.append("\n");
     }
     //comment
-    if (!comment.equals("")) {
+    if (!getComment().equals("")) {
       sb.append(ctx.getString(R.string.comment));
       sb.append(" : ");
-      sb.append(comment);
+      sb.append(getComment());
       sb.append("\n");
     }
     //payee
-    if (!payee.equals("")) {
+    if (!getPayee().equals("")) {
       sb.append(ctx.getString(
-          amount.getAmountMajor().signum() == 1 ? R.string.payer : R.string.payee));
+          getAmount().getAmountMajor().signum() == 1 ? R.string.payer : R.string.payee));
       sb.append(" : ");
-      sb.append(payee);
+      sb.append(getPayee());
       sb.append("\n");
     }
     //Method
-    if (methodId != null) {
+    if (getMethodId() != null) {
       sb.append(ctx.getString(R.string.method));
       sb.append(" : ");
-      sb.append(methodLabel);
+      sb.append(getMethodLabel());
       sb.append("\n");
     }
     sb.append("UUID : ");
     sb.append(requireUuid());
     return sb.toString();
-  }
-
-  public boolean applyInstance(long instanceId, long date) {
-    Transaction t = Transaction.getInstanceFromTemplate(this);
-    t.setDate(new Date(date));
-    t.originPlanInstanceId = instanceId;
-    return t.save() != null;
   }
 
   public static String buildCustomAppUri(long id) {
@@ -408,8 +542,6 @@ public class Template extends Transaction {
     if (getClass() != obj.getClass())
       return false;
     Template other = (Template) obj;
-    if (isTransfer() != other.isTransfer())
-      return false;
     if (isPlanExecutionAutomatic() != other.isPlanExecutionAutomatic())
       return false;
     if (planId == null) {
@@ -433,7 +565,6 @@ public class Template extends Transaction {
   @Override
   public int hashCode() {
     int result = this.getTitle() != null ? this.getTitle().hashCode() : 0;
-    result = 31 * result + (this.isTransfer() ? 1 : 0);
     result = 31 * result + (this.planId != null ? this.planId.hashCode() : 0);
     result = 31 * result + (this.isPlanExecutionAutomatic() ? 1 : 0);
     result = 31 * result + (this.uuid != null ? this.uuid.hashCode() : 0);
@@ -441,13 +572,20 @@ public class Template extends Transaction {
   }
 
   public static void updateNewPlanEnabled() {
-    boolean newPlanEnabled = true;
+    boolean newPlanEnabled = true, newSplitTemplateEnabled = true;
     if (!ContribFeature.PLANS_UNLIMITED.hasAccess()) {
-      if (count(Template.CONTENT_URI, KEY_PLANID + " is not null", null) >= 3) {
+      if (count(Template.CONTENT_URI, KEY_PLANID + " is not null", null) >= ContribFeature.FREE_PLANS) {
         newPlanEnabled = false;
       }
     }
     PrefKey.NEW_PLAN_ENABLED.putBoolean(newPlanEnabled);
+
+    if (!ContribFeature.SPLIT_TEMPLATE.hasAccess()) {
+      if (count(Template.CONTENT_URI, KEY_CATID + " = " + DatabaseConstants.SPLIT_CATID, null) >= ContribFeature.FREE_SPLIT_TEMPLATES) {
+        newSplitTemplateEnabled = false;
+      }
+    }
+    PrefKey.NEW_SPLIT_TEMPLATE_ENABLED.putBoolean(newSplitTemplateEnabled);
   }
 
   public boolean isPlanExecutionAutomatic() {
@@ -466,7 +604,43 @@ public class Template extends Transaction {
     this.title = title;
   }
 
-  public boolean isTransfer() {
-    return isTransfer;
+  @Override
+  public int operationType() {
+    return template.operationType();
+  }
+
+  @Override
+  public Long getTransferAccountId() {
+    if (!isTransfer()) {
+      throw new IllegalStateException("Tried to get transfer account for a template that is no transfer");
+    }
+    return template.getTransferAccountId();
+  }
+
+  @Override
+  public void setTransferAccountId(Long transferAccountId) {
+    if (!isTransfer()) {
+      throw new IllegalStateException("Tried to set transfer account for a template that is no transfer");
+    }
+    template.setTransferAccountId(transferAccountId);
+  }
+
+  public Uri getContentUri() {
+    return CONTENT_URI;
+  }
+
+  @Override
+  public String getUncommitedView() {
+    return VIEW_TEMPLATES_UNCOMMITTED;
+  }
+
+  @Override
+  protected String getPartOrPeerSelect() {
+    return PART_SELECT;
+  }
+
+  @Override
+  protected Transaction getSplitPart(long parentId) {
+    return Template.getInstanceFromDb(parentId);
   }
 }

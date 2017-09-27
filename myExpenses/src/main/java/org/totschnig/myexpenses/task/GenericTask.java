@@ -133,10 +133,10 @@ public class GenericTask<T> extends AsyncTask<T, Void, Object> {
         for (T id : ids) {
           t = Transaction.getInstanceFromDb((Long) id);
           if (t != null && !(t instanceof SplitTransaction)) {
-            SplitTransaction parent = SplitTransaction.getNewInstance(t.accountId, false);
+            SplitTransaction parent = SplitTransaction.getNewInstance(t.getAccountId(), false);
             parent.setAmount(t.getAmount());
             parent.setDate(t.getDate());
-            parent.payeeId = t.payeeId;
+            parent.setPayeeId(t.getPayeeId());
             parent.crStatus = t.crStatus;
             parent.save();
             values = new ContentValues();
@@ -154,13 +154,17 @@ public class GenericTask<T> extends AsyncTask<T, Void, Object> {
         return successCount;
       case TaskExecutionFragment.TASK_INSTANTIATE_TRANSACTION:
         t = Transaction.getInstanceFromDb((Long) ids[0]);
-        if (t != null && t instanceof SplitTransaction)
-          ((SplitTransaction) t).prepareForEdit((Boolean) mExtra);
+        if (t != null)
+          t.prepareForEdit((Boolean) mExtra);
         return t;
       case TaskExecutionFragment.TASK_INSTANTIATE_TRANSACTION_2:
         return Transaction.getInstanceFromDb((Long) ids[0]);
       case TaskExecutionFragment.TASK_INSTANTIATE_TEMPLATE:
-        return Template.getInstanceFromDb((Long) ids[0]);
+        Template template = Template.getInstanceFromDb((Long) ids[0]);
+        if (template != null) {
+          template.prepareForEdit(false);
+        }
+        return template;
       case TaskExecutionFragment.TASK_INSTANTIATE_TRANSACTION_FROM_TEMPLATE:
         // when we are called from a notification,
         // the template could have been deleted in the meantime
@@ -413,7 +417,7 @@ public class GenericTask<T> extends AsyncTask<T, Void, Object> {
             if (success) {
               cr.delete(staleImageUri, null, null);
             } else {
-              Timber.e( "Unable to move file %s", imageFileUri.toString());
+              Timber.e("Unable to move file %s", imageFileUri.toString());
             }
           }
           c.close();
@@ -545,7 +549,7 @@ public class GenericTask<T> extends AsyncTask<T, Void, Object> {
         bundle.putString(KEY_UUID, account.uuid);
         bundle.putBoolean(SyncAdapter.KEY_RESET_REMOTE_ACCOUNT, true);
         ContentResolver.requestSync(GenericAccountService.GetAccount(syncAccountName),
-                TransactionProvider.AUTHORITY, bundle);
+            TransactionProvider.AUTHORITY, bundle);
         account.save();
         return Result.SUCCESS;
       }
@@ -570,7 +574,7 @@ public class GenericTask<T> extends AsyncTask<T, Void, Object> {
       case TaskExecutionFragment.TASK_SYNC_LINK_SAVE: {
         //first get remote data for account
         String syncAccountName = ((String) mExtra);
-        SyncBackendProvider syncBackendProvider =  getSyncBackendProviderFromExtra();
+        SyncBackendProvider syncBackendProvider = getSyncBackendProviderFromExtra();
         if (syncBackendProvider == null) {
           return Result.FAILURE;
         }
@@ -578,8 +582,8 @@ public class GenericTask<T> extends AsyncTask<T, Void, Object> {
         try {
           Stream<AccountMetaData> remoteAccounStream = syncBackendProvider.getRemoteAccountList();
           remoteUuidList = remoteAccounStream
-                  .map(AccountMetaData::uuid)
-                  .collect(Collectors.toList());
+              .map(AccountMetaData::uuid)
+              .collect(Collectors.toList());
         } catch (IOException e) {
           return new Result(false, e.getMessage());
         }
@@ -620,25 +624,25 @@ public class GenericTask<T> extends AsyncTask<T, Void, Object> {
       }
       case TaskExecutionFragment.TASK_SYNC_CHECK: {
         String accountUuid = (String) ids[0];
-        SyncBackendProvider syncBackendProvider =  getSyncBackendProviderFromExtra();
+        SyncBackendProvider syncBackendProvider = getSyncBackendProviderFromExtra();
         if (syncBackendProvider == null) {
           return Result.FAILURE;
         }
         try {
-              if (syncBackendProvider.getRemoteAccountList()
-                  .anyMatch(metadata -> metadata.uuid().equals(accountUuid))) {
-                return new Result(false, Utils.concatResStrings(application, " ",
-                    R.string.link_account_failure_2, R.string.link_account_failure_3)
-                    + "(" + Utils.concatResStrings(application, ", ", R.string.menu_settings,
-                    R.string.pref_manage_sync_backends_title) + ")");
-              }
+          if (syncBackendProvider.getRemoteAccountList()
+              .anyMatch(metadata -> metadata.uuid().equals(accountUuid))) {
+            return new Result(false, Utils.concatResStrings(application, " ",
+                R.string.link_account_failure_2, R.string.link_account_failure_3)
+                + "(" + Utils.concatResStrings(application, ", ", R.string.menu_settings,
+                R.string.pref_manage_sync_backends_title) + ")");
+          }
           return Result.SUCCESS;
         } catch (IOException e) {
           return new Result(false, e.getMessage());
         }
       }
       case TaskExecutionFragment.TASK_INIT: {
-        for (SyncBackendProviderFactory factory: ServiceLoader.load(application)) {
+        for (SyncBackendProviderFactory factory : ServiceLoader.load(application)) {
           factory.init();
         }
         if (Utils.hasApiLevel(Build.VERSION_CODES.HONEYCOMB)) {
@@ -651,7 +655,7 @@ public class GenericTask<T> extends AsyncTask<T, Void, Object> {
       }
       case TaskExecutionFragment.TASK_SETUP_FROM_SYNC_ACCOUNTS: {
         String syncAccountName = (String) mExtra;
-        SyncBackendProvider syncBackendProvider =  getSyncBackendProviderFromExtra();
+        SyncBackendProvider syncBackendProvider = getSyncBackendProviderFromExtra();
         if (syncBackendProvider == null) {
           return Result.FAILURE;
         }

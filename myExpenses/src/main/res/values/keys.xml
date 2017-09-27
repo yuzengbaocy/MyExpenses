@@ -35,8 +35,8 @@
     <string name="pref_restore_key">restore</string>
     <string name="pref_restore_legacy_key">restore_legacy</string>
     <string name="pref_contrib_purchase_key">contrib_purchase</string>
-    <string name="pref_request_licence_key">request_licence</string>
     <string name="pref_enter_licence_key">pref_enter_licence_key</string>
+    <string name="pref_new_licence_key">pref_new_licence_key</string>
     <string name="pref_perform_protection_key">perform_protection</string>
     <string name="pref_set_password_key">password</string>
     <string name="pref_security_question_key">security_question</string>
@@ -109,7 +109,7 @@
     <!-- only shown to users experimenting with restore, so no need for localization -->
     <string name="restore_db_not_valid">BACKUP file is no valid SQLITE3 database.</string>
     <string name="restore_cannot_downgrade">You cannot restore a backup from a newer database schema version (%1$d). The current one is %2$d.</string>
-    <string name="website">http://www.myexpenses.mobi</string>
+    <string name="website">https://www.myexpenses.mobi</string>
 
     <string name="help_ManageMethods_title" tools:ignore="UnusedResources">@string/pref_manage_methods_title</string>
     <string name="help_ManageParties_title" tools:ignore="UnusedResources">@string/pref_manage_parties_title</string>

@@ -32,8 +32,6 @@ import org.totschnig.myexpenses.model.AccountType;
 import org.totschnig.myexpenses.model.Money;
 import org.totschnig.myexpenses.model.Payee;
 import org.totschnig.myexpenses.model.PaymentMethod;
-import org.totschnig.myexpenses.model.SplitPartCategory;
-import org.totschnig.myexpenses.model.SplitPartTransfer;
 import org.totschnig.myexpenses.model.SplitTransaction;
 import org.totschnig.myexpenses.model.Transaction;
 import org.totschnig.myexpenses.model.Transfer;
@@ -169,18 +167,18 @@ public class CsvImportTask extends AsyncTask<Void, Integer, Result> {
 
         if (isSplitPart) {
           if (transferAccountId != -1) {
-            t = SplitPartTransfer.getNewInstance(accountId, m.getAmountMinor(), splitParent);
-            t.transfer_account = transferAccountId;
+            t = Transfer.getNewInstance(accountId, transferAccountId, splitParent);
+            t.setAmount(m);
           } else {
-            t = new SplitPartCategory(accountId, m.getAmountMinor(), splitParent);
+            t = Transaction.getNewInstance(accountId, splitParent);
+            t.setAmount(m);
           }
         } else {
           if (isSplitParent) {
             t = new SplitTransaction(accountId, m);
           } else {
             if (transferAccountId != -1) {
-              t = new Transfer(accountId, m);
-              t.transfer_account = transferAccountId;
+              t = new Transfer(accountId, m, transferAccountId);
             } else {
               t = new Transaction(accountId, m);
             }
@@ -200,13 +198,13 @@ public class CsvImportTask extends AsyncTask<Void, Integer, Result> {
             long id = Payee.extractPayeeId(payee, payeeToId);
             if (id != -1) {
               payeeToId.put(payee, id);
-              t.payeeId = id;
+              t.setPayeeId(id);
             }
           }
         }
 
         if (columnIndexNotes != -1) {
-          t.comment = saveGetFromRecord(record, columnIndexNotes);
+          t.setComment(saveGetFromRecord(record, columnIndexNotes));
         }
 
         if (columnIndexMethod != -1) {
@@ -220,7 +218,7 @@ public class CsvImportTask extends AsyncTask<Void, Integer, Result> {
             }
             long methodId = PaymentMethod.find(method);
             if (methodId != -1) {
-              t.methodId = methodId;
+              t.setMethodId(methodId);
             }
           }
         }
@@ -230,7 +228,7 @@ public class CsvImportTask extends AsyncTask<Void, Integer, Result> {
         }
 
         if (columnIndexNumber != -1) {
-          t.referenceNumber = saveGetFromRecord(record, columnIndexNumber);
+          t.setReferenceNumber(saveGetFromRecord(record, columnIndexNumber));
         }
         if (t.save() != null) {
           if (isSplitParent) {

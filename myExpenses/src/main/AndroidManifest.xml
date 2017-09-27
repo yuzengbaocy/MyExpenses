@@ -47,8 +47,6 @@
     <uses-permission android:name="com.android.vending.BILLING"/>
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
 
-    <uses-sdk tools:overrideLibrary="android.support.v14.preference, com.facebook.ads, net.pubnative.url_driller"/>
-
     <application
         android:name="org.totschnig.myexpenses.MyApplication"
         android:allowBackup="true"

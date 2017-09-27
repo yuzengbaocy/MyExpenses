@@ -15,6 +15,7 @@ import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.AmazonAppstore;
 import org.totschnig.myexpenses.contrib.Config;
 import org.totschnig.myexpenses.preference.PrefKey;
+import org.totschnig.myexpenses.util.licence.LicenceHandler;
 
 import java.util.ArrayList;
 

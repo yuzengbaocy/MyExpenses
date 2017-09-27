@@ -3,13 +3,11 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'me.tatarka:gradle-retrolambda:3.7.0'
         classpath 'com.jakewharton.hugo:hugo-plugin:1.2.1'
     }
 }
 
 apply plugin: 'com.android.application'
-apply plugin: 'me.tatarka.retrolambda'
 apply plugin: 'com.jakewharton.hugo'
 
 def buildVersionNumberBlackBerry() {
@@ -41,14 +39,14 @@ android {
 
     defaultConfig {
         applicationId "org.totschnig.myexpenses"
-        if (gradle.startParameter.taskNames.contains(":app:assembleDebug")) {
+        if (gradle.startParameter.taskNames.contains(":myExpenses:assembleDebug")) {
             minSdkVersion 21
         } else {
             minSdkVersion project.minSdkVersion
         }
         targetSdkVersion project.targetSdkVersion
-        versionCode 294
-        versionName '2.8.1'
+        versionCode 295
+        versionName '2.8.2'
         multiDexEnabled true
 
         buildConfigField "String", "BUILD_DATE", "\"" + getDate() + "\""
@@ -91,6 +89,7 @@ android {
         forTest {
             initWith release
             applicationIdSuffix ".fortest"
+            matchingFallbacks = ['debug']
         }
     }
 
@@ -177,20 +176,21 @@ List supportCompile = ['com.android.support:appcompat-v7:' + project.androidSupp
                        'com.android.support:preference-v14:' + project.androidSupportLibraryVersion]
 
 dependencies {
-    compile 'com.jakewharton:butterknife:8.6.0'
+    implementation 'com.jakewharton:butterknife:8.6.0'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.6.0'
     annotationProcessor 'com.google.dagger:dagger-compiler:' + project.daggerVersion
-    compile 'com.google.dagger:dagger:' + project.daggerVersion
-    provided 'javax.annotation:jsr250-api:1.0'
-    compile 'frankiesardo:icepick:3.2.0'
-    provided 'frankiesardo:icepick-processor:3.2.0'
-    compile 'com.google.code.gson:gson:2.8.0'
-    provided 'com.google.auto.value:auto-value:1.4'
+    implementation 'com.google.dagger:dagger:' + project.daggerVersion
+    compileOnly 'javax.annotation:jsr250-api:1.0'
+    implementation 'frankiesardo:icepick:3.2.0'
+    compileOnly 'frankiesardo:icepick-processor:3.2.0'
+    annotationProcessor 'frankiesardo:icepick-processor:3.2.0'
+    implementation 'com.google.code.gson:gson:2.8.0'
+    compileOnly 'com.google.auto.value:auto-value:1.4'
     annotationProcessor 'com.google.auto.value:auto-value:1.4'
     annotationProcessor 'com.ryanharter.auto.value:auto-value-gson:0.4.6'
-    provided 'com.ryanharter.auto.value:auto-value-gson:0.4.6'
+    compileOnly 'com.ryanharter.auto.value:auto-value-gson:0.4.6'
     annotationProcessor 'com.gabrielittner.auto.value:auto-value-cursor:1.0.1'
-    compile 'com.gabrielittner.auto.value:auto-value-cursor-annotations:1.0.0'
+    implementation 'com.gabrielittner.auto.value:auto-value-cursor-annotations:1.0.1'
     annotationProcessor 'com.ryanharter.auto.value:auto-value-parcel:0.2.5'
     compile 'com.github.mtotschnig:StickyListHeaders:2.7.1'
     compile 'com.github.mtotschnig:MaterialSeekBarPreference:improvement~align-with-layout-specific-to-each-level-SNAPSHOT'
@@ -208,20 +208,20 @@ dependencies {
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.github.PhilJay:MPAndroidChart:bd75e6c'
     compile 'com.github.mtotschnig:Caldroid:master-SNAPSHOT'
-    compile 'com.github.mtotschnig:SimpleDialogFragments:master-SNAPSHOT'
+    implementation 'com.github.eltos:simpledialogfragment:2.2'
     //noinspection GradleDynamicVersion
-    compile 'com.commonsware.cwac:wakeful:1.0.+'
-    compile 'com.annimon:stream:1.1.6'
+    implementation 'com.commonsware.cwac:wakeful:1.0.+'
+    implementation 'com.annimon:stream:1.1.8'
 
     // WebDAV
-    compile 'com.squareup.okhttp3:okhttp:3.4.2'
+    implementation 'com.squareup.okhttp3:okhttp:3.8.0'
 
     //noinspection GradleCompatible
-    compile 'com.android.support:multidex:1.0.1'
+    implementation 'com.android.support:multidex:1.0.2'
 
-    compile 'org.apache.commons:commons-collections4:4.1'
+    implementation 'org.apache.commons:commons-collections4:4.1'
 
-    compile 'com.jakewharton.timber:timber:4.5.1'
+    implementation 'com.jakewharton.timber:timber:4.5.1'
 
     withDriveCompile 'com.google.android.gms:play-services-drive:' + project.gmsVersion
     withAdsCompile 'com.google.android.gms:play-services-ads:' + project.gmsVersion
@@ -241,30 +241,31 @@ dependencies {
         exclude group: 'com.google.android', module: 'android'
     }
 
-    compile supportCompile
+    implementation supportCompile
 
-    compile 'net.pubnative:mediation:1.2.12'
+    implementation 'net.pubnative:mediation:1.2.15'
 
-    androidTestCompile 'com.android.support.test.espresso:espresso-core:' + project.espressoVersion
-    androidTestCompile 'junit:junit:4.12'
-    androidTestCompile 'com.android.support:support-annotations:' + project.androidSupportLibraryVersion
-    androidTestCompile 'com.android.support.test:runner:' + project.androidSupportTestVersion
-    androidTestCompile 'com.android.support.test:rules:' + project.androidSupportTestVersion
-    androidTestCompile 'com.android.support.test.espresso:espresso-intents:' + project.espressoVersion
-    androidTestCompile('com.android.support.test.espresso:espresso-contrib:' + project.espressoVersion) {
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:' + project.espressoVersion
+    androidTestImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support:support-annotations:' + project.androidSupportLibraryVersion
+    androidTestImplementation 'com.android.support.test:runner:' + project.androidSupportTestVersion
+    androidTestImplementation 'com.android.support.test:rules:' + project.androidSupportTestVersion
+    androidTestImplementation 'com.android.support.test.espresso:espresso-intents:' + project.espressoVersion
+    androidTestImplementation('com.android.support.test.espresso:espresso-contrib:' + project.espressoVersion) {
         exclude module: 'accessibility-test-framework'
     }
-    androidTestCompile 'org.mockito:mockito-core:1.10.19'
-    androidTestCompile 'com.crittercism.dexmaker:dexmaker:1.4'
-    androidTestCompile 'com.crittercism.dexmaker:dexmaker-dx:1.4'
-    androidTestCompile 'com.crittercism.dexmaker:dexmaker-mockito:1.4'
+    androidTestImplementation 'com.linkedin.dexmaker:dexmaker-mockito:2.2.0'
 
-    testCompile 'junit:junit:4.12'
-    testCompile 'pl.pragmatists:JUnitParams:1.0.5'
-    testCompile 'org.mockito:mockito-core:1.10.19'
-    debugCompile project(path: ':setupwizard', configuration: 'fullSupportDebug')
-    forTestCompile project(path: ':setupwizard', configuration: 'fullSupportDebug')
-    releaseCompile project(path: ':setupwizard', configuration: 'fullSupportRelease')
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'pl.pragmatists:JUnitParams:1.1.0'
+    testImplementation 'org.mockito:mockito-core:2.7.22'
+    implementation project(path: ':setupwizard')
+
+    //licence validation
+    implementation 'com.google.code.gson:gson:2.8.0'
+    implementation 'com.squareup.retrofit2:retrofit:2.3.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.3.0'
+    implementation project(path: ':PlayLicensingOrig')
 }
 
 def getDate() {
@@ -273,48 +274,6 @@ def getDate() {
     return formattedDate
 }
 
-//https://code.google.com/p/android/issues/detail?id=187730
-//can be removed after migration to Android Gradle Plugin 2
-configurations.compile.dependencies.each { compileDependency ->
-    println "Excluding compile dependency: ${compileDependency.getName()}"
-    configurations.androidTestCompile.dependencies.each { androidTestCompileDependency ->
-        configurations.androidTestCompile.exclude module: "${compileDependency.getName()}"
-    }
-}
 
-//workaround for https://code.google.com/p/android/issues/detail?id=225754
-// add support for placeholders in resource files
-def replacePlaceholdersInFile(basePath, fileName, placeholders) {
-    def file = new File(basePath, fileName);
-
-    if (!file.exists()) {
-        logger.quiet("Unable to replace placeholders in " + file.toString() + ". File cannot be found.")
-        return;
-    }
-
-    logger.debug("Replacing placeholders in " + file.toString())
-    logger.debug("Placeholders: " + placeholders.toString())
-
-    def content = file.getText('UTF-8')
-
-    placeholders.each { entry ->
-        content = content.replaceAll("\\\$\\{${entry.key}\\}", entry.value)
-    }
-
-    file.write(content, 'UTF-8')
-}
-
-afterEvaluate {
-    android.applicationVariants.all { variant ->
-        variant.outputs.each { output ->
-            output.processResources.doFirst {
-                // prepare placeholder map from manifestPlaceholders including applicationId placeholder
-                def placeholders = variant.mergedFlavor.manifestPlaceholders + [applicationId: variant.applicationId]
-
-                replacePlaceholdersInFile(resDir, 'xml/shortcuts.xml', placeholders)
-            }
-        }
-    }
-}
 
 apply plugin: 'com.google.gms.google-services'

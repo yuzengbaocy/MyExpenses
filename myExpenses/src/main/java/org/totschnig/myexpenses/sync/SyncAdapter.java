@@ -38,6 +38,7 @@ import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.activity.ManageSyncBackends;
 import org.totschnig.myexpenses.export.CategoryInfo;
 import org.totschnig.myexpenses.model.AccountType;
+import org.totschnig.myexpenses.model.Money;
 import org.totschnig.myexpenses.model.Payee;
 import org.totschnig.myexpenses.model.PaymentMethod;
 import org.totschnig.myexpenses.model.SplitTransaction;
@@ -574,16 +575,16 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     } else {
       amount = 0L;
     }
+    Money money = new Money(getAccount().currency, amount);
     Transaction t;
     long transferAccount;
     if (change.splitParts() != null) {
-      t = new SplitTransaction(getAccount().getId(), amount);
+      t = new SplitTransaction(getAccount().getId(), money);
     } else if (change.transferAccount() != null &&
         (transferAccount = extractTransferAccount(change.transferAccount(), change.label())) != -1) {
-      t = new Transfer(getAccount().getId(), amount);
-      t.transfer_account = transferAccount;
+      t = new Transfer(getAccount().getId(), money, transferAccount);
     } else {
-      t = new Transaction(getAccount().getId(), amount);
+      t = new Transaction(getAccount().getId(), money);
       if (change.label() != null) {
         long catId = extractCatId(change.label());
         if (catId != -1) {
@@ -593,7 +594,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
     t.uuid = change.uuid();
     if (change.comment() != null) {
-      t.comment = change.comment();
+      t.setComment(change.comment());
     }
     if (change.date() != null) {
       Long date = change.date();
@@ -604,25 +605,25 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     if (change.payeeName() != null) {
       long id = Payee.extractPayeeId(change.payeeName(), payeeToId);
       if (id != -1) {
-        t.payeeId = id;
+        t.setPayeeId(id);
       }
     }
     if (change.methodLabel() != null) {
       long id = extractMethodId(change.methodLabel());
       if (id != -1) {
-        t.methodId = id;
+        t.setMethodId(id);
       }
     }
     if (change.crStatus() != null) {
       t.crStatus = Transaction.CrStatus.valueOf(change.crStatus());
     }
-    t.referenceNumber = change.referenceNumber();
+    t.setReferenceNumber(change.referenceNumber());
     if (parentOffset == -1 && change.parentUuid() != null) {
       long parentId = Transaction.findByUuid(change.parentUuid());
       if (parentId == -1) {
         return new ArrayList<>(); //if we fail to link a split part to a parent, we need to ignore it
       }
-      t.parentId = parentId;
+      t.setParentId(parentId);
     }
     if (change.pictureUri() != null) {
       t.setPictureUri(Uri.parse(change.pictureUri()));

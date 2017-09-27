@@ -26,6 +26,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -49,8 +50,11 @@ import org.totschnig.myexpenses.provider.DatabaseConstants;
 import org.totschnig.myexpenses.provider.TransactionProvider;
 import org.totschnig.myexpenses.service.DailyAutoBackupScheduler;
 import org.totschnig.myexpenses.sync.GenericAccountService;
+import org.totschnig.myexpenses.task.TaskExecutionFragment;
 import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.PermissionHelper;
+import org.totschnig.myexpenses.util.Result;
+import org.totschnig.myexpenses.util.UiUtils;
 import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.widget.AbstractWidget;
 import org.totschnig.myexpenses.widget.AccountWidget;
@@ -61,7 +65,6 @@ import java.util.Locale;
 
 import static org.totschnig.myexpenses.preference.PrefKey.AUTO_BACKUP;
 import static org.totschnig.myexpenses.preference.PrefKey.AUTO_BACKUP_TIME;
-import static org.totschnig.myexpenses.preference.PrefKey.ENTER_LICENCE;
 import static org.totschnig.myexpenses.preference.PrefKey.GROUP_MONTH_STARTS;
 import static org.totschnig.myexpenses.preference.PrefKey.GROUP_WEEK_STARTS;
 import static org.totschnig.myexpenses.preference.PrefKey.PERFORM_PROTECTION;
@@ -88,6 +91,7 @@ public class MyPreferenceActivity extends ProtectedFragmentActivity implements
   public static final String KEY_OPEN_PREF_KEY = "openPrefKey";
   private String initialPrefToShow;
   private SettingsFragment activeFragment;
+  private Snackbar snackbar;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -201,16 +205,24 @@ public class MyPreferenceActivity extends ProtectedFragmentActivity implements
       AbstractWidget.updateWidgets(this, TemplateWidget.class);
     } else if (key.equals(AUTO_BACKUP.getKey()) || key.equals(AUTO_BACKUP_TIME.getKey())) {
       DailyAutoBackupScheduler.updateAutoBackupAlarms(this);
-    } else if (key.equals(ENTER_LICENCE.getKey())) {
-      CommonCommands.dispatchCommand(this, R.id.VERIFY_LICENCE_COMMAND, null);
-      getFragment().setProtectionDependentsState();
-      getFragment().configureContribPrefs();
     } else if (key.equals(SYNC_FREQUCENCY.getKey())) {
       for (Account account : GenericAccountService.getAccountsAsArray(this)) {
         ContentResolver.addPeriodicSync(account, TransactionProvider.AUTHORITY, Bundle.EMPTY,
             SYNC_FREQUCENCY.getInt(GenericAccountService.DEFAULT_SYNC_FREQUENCY_HOURS) * HOUR_IN_SECONDS);
       }
     }
+  }
+
+  public void validateLicence() {
+    startValidationTask(TaskExecutionFragment.TASK_VALIDATE_LICENCE, R.string.progress_validating_licence);
+  }
+
+  private void startValidationTask(int taskId, int progressResId) {
+    startTaskExecution(taskId, new String[]{}, null, 0);
+    snackbar = Snackbar.make(
+        findViewById(R.id.fragment_container), progressResId, Snackbar.LENGTH_INDEFINITE);
+    UiUtils.configureSnackbarForDarkTheme(snackbar);
+    snackbar.show();
   }
 
   private Intent findDirPicker() {
@@ -285,6 +297,34 @@ public class MyPreferenceActivity extends ProtectedFragmentActivity implements
     }
     startPreferenceScreen(key);
     return true;
+  }
+
+  @Override
+  public void onPostExecute(int taskId, Object o) {
+    super.onPostExecute(taskId, o);
+    if (taskId == TaskExecutionFragment.TASK_VALIDATE_LICENCE ||
+        taskId == TaskExecutionFragment.TASK_REMOVE_LICENCE) {
+      snackbar.dismiss();
+      if (o instanceof Result) {
+        Result r = ((Result) o);
+        snackbar = Snackbar.make(
+            findViewById(R.id.fragment_container), r.print(this), Snackbar.LENGTH_LONG);
+        UiUtils.configureSnackbarForDarkTheme(snackbar);
+        snackbar.show();
+        getFragment().setProtectionDependentsState();
+        getFragment().configureContribPrefs();
+
+      }
+    }
+  }
+
+  @Override
+  public boolean dispatchCommand(int command, Object tag) {
+    if (command == R.id.REMOVE_LICENCE_COMMAND) {
+      startValidationTask(TaskExecutionFragment.TASK_REMOVE_LICENCE, R.string.progress_removing_licence);
+      return true;
+    }
+    return super.dispatchCommand(command, tag);
   }
 
   private void startPreferenceScreen(String key) {

@@ -2,13 +2,14 @@ package org.totschnig.myexpenses.adapter;
 
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import org.totschnig.myexpenses.R;
-import org.totschnig.myexpenses.activity.MyExpenses;
+import org.totschnig.myexpenses.model.Transaction;
 
 import java.util.List;
 
@@ -24,29 +25,33 @@ public class OperationTypeAdapter extends ArrayAdapter<Integer> {
     setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
   }
 
+  @NonNull
   @Override
-  public View getView(int position, View convertView, ViewGroup parent) {
+  public View getView(int position, View convertView, @NonNull ViewGroup parent) {
     View result = super.getView(position, convertView, parent);
     ((TextView) result).setText(getLabelResid(getItem(position)));
     return result;
   }
 
   @Override
-  public View getDropDownView(int position, View convertView, ViewGroup parent) {
+  public View getDropDownView(int position, View convertView, @NonNull ViewGroup parent) {
     View result = super.getDropDownView(position, convertView, parent);
     ((TextView) result).setText(getLabelResid(getItem(position)));
     return result;
   }
-  protected int getLabelResid(int operationType) {
+
+  private int getLabelResid(Integer operationType) {
     switch (operationType) {
-      case MyExpenses.TYPE_SPLIT:
-        return R.string.menu_create_split;
-      case MyExpenses.TYPE_TRANSFER:
-        return isTemplate ? R.string.menu_create_template_for_transfer :
-            (isSplitPart ? R.string.menu_create_split_part_transfer : R.string.menu_create_transfer);
+      case Transaction.TYPE_SPLIT:
+        return isTemplate ? R.string.menu_create_template_for_split : R.string.menu_create_split;
+      case Transaction.TYPE_TRANSFER:
+        return isSplitPart ? R.string.menu_create_split_part_transfer :
+            (isTemplate ? R.string.menu_create_template_for_transfer : R.string.menu_create_transfer);
+      case Transaction.TYPE_TRANSACTION:
+        return isSplitPart ? R.string.menu_create_split_part_category :
+            (isTemplate ? R.string.menu_create_template_for_transaction : R.string.menu_create_transaction);
       default:
-        return isTemplate ? R.string.menu_create_template_for_transaction :
-            (isSplitPart ? R.string.menu_create_split_part_category : R.string.menu_create_transaction);
+        throw new IllegalStateException("Unknown operationtype " + operationType);
     }
   }
 }

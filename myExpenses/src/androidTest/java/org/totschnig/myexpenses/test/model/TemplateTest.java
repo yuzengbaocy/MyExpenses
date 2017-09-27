@@ -15,7 +15,6 @@
 
 package org.totschnig.myexpenses.test.model;
 
-import org.totschnig.myexpenses.activity.MyExpenses;
 import org.totschnig.myexpenses.model.Account;
 import org.totschnig.myexpenses.model.Money;
 import org.totschnig.myexpenses.model.Template;
@@ -46,7 +45,7 @@ public class TemplateTest extends ModelTest  {
     Transaction op1 = Transaction.getNewInstance(mAccount1.getId());
     assert op1 != null;
     op1.setAmount(new Money(mAccount1.currency,amount));
-    op1.comment = "test transaction";
+    op1.setComment("test transaction");
     op1.save();
     assertEquals(mAccount1.getTotalBalance().getAmountMinor().longValue(), start+amount);
     Template t = new Template(op1,"Template");
@@ -63,17 +62,17 @@ public class TemplateTest extends ModelTest  {
   }
 
   public void testGetTypedNewInstanceTransaction() {
-    newInstanceTestHelper(MyExpenses.TYPE_TRANSACTION);
+    newInstanceTestHelper(Transaction.TYPE_TRANSACTION);
   }
   public void testGetTypedNewInstanceTransfer() {
-    newInstanceTestHelper(MyExpenses.TYPE_TRANSFER);
+    newInstanceTestHelper(Transaction.TYPE_TRANSFER);
   }
   /**
    * 
    */
   private void newInstanceTestHelper(int type) {
     Template t,restored;
-    t = Template.getTypedNewInstance(type, mAccount1.getId());
+    t = Template.getTypedNewInstance(type, mAccount1.getId(), false, null);
     assert t != null;
     t.setTitle("Template");
     t.save();

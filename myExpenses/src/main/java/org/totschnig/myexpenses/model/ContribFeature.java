@@ -24,17 +24,18 @@ import android.text.Html;
 import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
-import org.totschnig.myexpenses.util.LicenceHandler;
+import org.totschnig.myexpenses.util.licence.LicenceHandler;
 import org.totschnig.myexpenses.util.Utils;
 
 import java.util.Date;
 import java.util.Locale;
 
+import static org.totschnig.myexpenses.util.licence.LicenceHandler.LicenceStatus.*;
+
 //TODO separate enum definition from handler
 //TODO use separate preferences object injected via DI
 public enum ContribFeature {
   ACCOUNTS_UNLIMITED(false) {
-    private int FREE_ACCOUNTS = 5;
     @Override
     public String buildUsageLimitString(Context context) {
       String currentLicence = getCurrentLicence(context);
@@ -42,7 +43,6 @@ public enum ContribFeature {
     }
   },
   PLANS_UNLIMITED(false){
-    private int FREE_PLANS = 5;
     @Override
     public String buildUsageLimitString(Context context) {
       String currentLicence = getCurrentLicence(context);
@@ -56,8 +56,8 @@ public enum ContribFeature {
   PRINT,
   ATTACH_PICTURE,
   AD_FREE(false),
-  CSV_IMPORT(true, true),
-  AUTO_BACKUP(true, true) {
+  CSV_IMPORT(true, LicenceHandler.EXTENDED),
+  AUTO_BACKUP(true, LicenceHandler.EXTENDED) {
     @Override
     public String buildUsagesLefString(Context ctx) {
       int usagesLeft = usagesLeft();
@@ -65,7 +65,7 @@ public enum ContribFeature {
           ctx.getString(R.string.warning_auto_backup_limit_reached);
     }
   },
-  SYNCHRONIZATION(true, true) {
+  SYNCHRONIZATION(true, LicenceHandler.EXTENDED) {
     private String PREF_KEY = "FEATURE_SYNCHRONIZATION_FIRST_USAGE";
     private int TRIAL_DURATION_DAYS = 10;
     private long TRIAL_DURATION_MILLIS = (TRIAL_DURATION_DAYS * 24 * 60) * 60 * 1000;
@@ -115,6 +115,13 @@ public enum ContribFeature {
       String currentLicence = getCurrentLicence(context);
       return context.getString(R.string.dialog_contrib_usage_limit_synchronization, TRIAL_DURATION_DAYS, currentLicence);
     }
+  },
+  SPLIT_TEMPLATE(false, PROFESSIONAL) {
+    @Override
+    public String buildUsageLimitString(Context context) {
+      String currentLicence = getCurrentLicence(context);
+      return context.getString(R.string.dialog_contrib_usage_limit_split_templates, currentLicence);
+    }
   };
 
   ContribFeature() {
@@ -122,16 +129,21 @@ public enum ContribFeature {
   }
 
   ContribFeature(boolean hasTrial) {
-    this(hasTrial, false);
+    this(hasTrial, CONTRIB);
   }
 
-  ContribFeature(boolean hasTrial, boolean isExtended) {
+  ContribFeature(boolean hasTrial, LicenceHandler.LicenceStatus licenceStatus) {
     this.hasTrial = hasTrial;
-    this.isExtended = LicenceHandler.HAS_EXTENDED && isExtended;
+    this.licenceStatus = licenceStatus;
   }
+
+
+  public static final int FREE_PLANS = 3;
+  public static final int FREE_ACCOUNTS = 5;
+  public static final int FREE_SPLIT_TEMPLATES = 1;
 
   private boolean hasTrial;
-  private boolean isExtended;
+  private LicenceHandler.LicenceStatus licenceStatus;
   /**
    * how many times contrib features can be used for free
    */
@@ -176,8 +188,7 @@ public enum ContribFeature {
       return true;
     }
     LicenceHandler licenceHandler = MyApplication.getInstance().getLicenceHandler();
-    return isExtended ? licenceHandler.isExtendedEnabled() :
-        licenceHandler.isContribEnabled();
+    return licenceHandler.isEnabledFor(getLicenceStatus());
   }
 
   /**
@@ -188,7 +199,7 @@ public enum ContribFeature {
   }
 
   public String buildRequiresString(Context ctx) {
-    return ctx.getString(R.string.contrib_key_requires, buildKeyName(ctx, isExtended));
+    return ctx.getString(R.string.contrib_key_requires, ctx.getString(getLicenceStatus().getResId()));
   }
 
   public int getLabelResIdOrThrow(Context ctx) {
@@ -212,12 +223,8 @@ public enum ContribFeature {
   public CharSequence buildFullInfoString(Context ctx) {
     return Html.fromHtml(ctx.getString(R.string.dialog_contrib_premium_feature,
         "<i>" + ctx.getString(getLabelResIdOrThrow(ctx)) + "</i>",
-        buildKeyName(ctx, isExtended)) + " " +
+        ctx.getString(getLicenceStatus().getResId())) + " " +
         buildUsageLimitString(ctx));
-  }
-
-  public static String buildKeyName(Context ctx, boolean extended) {
-    return ctx.getString(extended ? R.string.extended_key : R.string.contrib_key);
   }
 
   @SuppressLint("DefaultLocale")
@@ -234,10 +241,8 @@ public enum ContribFeature {
 
   @NonNull
   protected String getCurrentLicence(Context context) {
-    LicenceHandler licenceHandler = MyApplication.getInstance().getLicenceHandler();
-    return licenceHandler.isExtendedEnabled() ?
-        context.getString(R.string.extended_key) : (licenceHandler.isContribEnabled() ?
-        context.getString(R.string.contrib_key) : context.getString(R.string.licence_status_free));
+    LicenceHandler.LicenceStatus licenceStatus = MyApplication.getInstance().getLicenceHandler().getLicenceStatus();
+    return context.getString(licenceStatus == null ? R.string.licence_status_free : licenceStatus.getResId());
   }
 
   public CharSequence buildRemoveLimitation(Context ctx, boolean asHTML) {
@@ -246,10 +251,19 @@ public enum ContribFeature {
   }
 
   public boolean isExtended() {
-    return isExtended;
+    return getLicenceStatus() == EXTENDED;
+  }
+
+  public boolean isProfessional() {
+    return getLicenceStatus() == PROFESSIONAL;
   }
 
   public boolean hasTrial() {
     return hasTrial;
   }
+
+  public LicenceHandler.LicenceStatus getLicenceStatus() {
+    return licenceStatus;
+  }
+
 }

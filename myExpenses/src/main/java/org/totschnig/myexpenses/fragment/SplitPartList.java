@@ -44,6 +44,8 @@ import org.totschnig.myexpenses.activity.ProtectedFragmentActivity;
 import org.totschnig.myexpenses.adapter.SplitPartAdapter;
 import org.totschnig.myexpenses.model.Account;
 import org.totschnig.myexpenses.model.Money;
+import org.totschnig.myexpenses.model.Template;
+import org.totschnig.myexpenses.model.Transaction;
 import org.totschnig.myexpenses.provider.TransactionProvider;
 import org.totschnig.myexpenses.task.TaskExecutionFragment;
 import org.totschnig.myexpenses.util.CurrencyFormatter;
@@ -60,9 +62,11 @@ import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_AMOUNT;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_LABEL_MAIN;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_PARENTID;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_ROWID;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TEMPLATEID;
 
 //TODO: consider moving to ListFragment
 public class SplitPartList extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+  private static final String KEY_PARENT_IS_TEMPLATE = "parentIsTemplate";
   //
   SplitPartAdapter mAdapter;
   private TextView balanceTv;
@@ -79,11 +83,12 @@ public class SplitPartList extends Fragment implements LoaderManager.LoaderCallb
   @Inject
   CurrencyFormatter currencyFormatter;
 
-  public static SplitPartList newInstance(Long parentId, Long accountId) {
+  public static SplitPartList newInstance(Transaction transaction) {
     SplitPartList f = new SplitPartList(); 
     Bundle bundle = new Bundle();
-    bundle.putLong(KEY_PARENTID, parentId);
-    bundle.putLong(KEY_ACCOUNTID, accountId);
+    bundle.putLong(KEY_PARENTID, transaction.getId());
+    bundle.putLong(KEY_ACCOUNTID, transaction.getAccountId());
+    bundle.putBoolean(KEY_PARENT_IS_TEMPLATE, transaction instanceof Template);
     f.setArguments(bundle);
     return f;
   }
@@ -132,8 +137,7 @@ public class SplitPartList extends Fragment implements LoaderManager.LoaderCallb
       @Override
       public void onItemClick(AdapterView<?> a, View v, int position, long id) {
         Intent i = new Intent(ctx, ExpenseEdit.class);
-        i.putExtra(KEY_ROWID, id);
-        //i.putExtra("operationType", operationType);
+        i.putExtra(parentIsTemplate() ? KEY_TEMPLATEID : KEY_ROWID, id);
         startActivityForResult(i, MyExpenses.EDIT_TRANSACTION_REQUEST);
       }
     });
@@ -173,7 +177,8 @@ public class SplitPartList extends Fragment implements LoaderManager.LoaderCallb
   public Loader<Cursor> onCreateLoader(int id, Bundle args) {
     String[] selectionArgs = new String[] {String.valueOf(parentId)};
     CursorLoader cursorLoader = null;
-    Uri uri = TransactionProvider.UNCOMMITTED_URI;
+    Uri uri = parentIsTemplate() ?
+        TransactionProvider.TEMPLATES_UNCOMMITTED_URI : TransactionProvider.UNCOMMITTED_URI;
     switch(id) {
     case ExpenseEdit.TRANSACTION_CURSOR:
       cursorLoader = new CursorLoader(getActivity(), uri, null, "parent_id = ?",
@@ -185,6 +190,10 @@ public class SplitPartList extends Fragment implements LoaderManager.LoaderCallb
           selectionArgs, null);
     }
     return cursorLoader;
+  }
+
+  private boolean parentIsTemplate() {
+    return getArguments().getBoolean(KEY_PARENT_IS_TEMPLATE);
   }
 
   @Override
