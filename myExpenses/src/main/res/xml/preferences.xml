@@ -209,12 +209,10 @@
         android:title="@string/menu_contrib">
         <org.totschnig.myexpenses.preference.PopupMenuPreference
             android:key="@string/pref_contrib_purchase_key"/>
-        <!--
         <Preference
             android:key="@string/pref_new_licence_key"
             android:summary="@string/pref_enter_licence_summary"
             android:title="@string/pref_enter_licence_title"/>
-        -->
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/pref_category_title_security">

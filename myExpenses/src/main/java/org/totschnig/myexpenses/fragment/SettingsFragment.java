@@ -94,6 +94,7 @@ import static org.totschnig.myexpenses.preference.PrefKey.APP_DIR;
 import static org.totschnig.myexpenses.preference.PrefKey.AUTO_BACKUP;
 import static org.totschnig.myexpenses.preference.PrefKey.AUTO_BACKUP_INFO;
 import static org.totschnig.myexpenses.preference.PrefKey.AUTO_BACUP_CLOUD;
+import static org.totschnig.myexpenses.preference.PrefKey.CATEGORY_CONTRIB;
 import static org.totschnig.myexpenses.preference.PrefKey.CATEGORY_MANAGE;
 import static org.totschnig.myexpenses.preference.PrefKey.CONTRIB_PURCHASE;
 import static org.totschnig.myexpenses.preference.PrefKey.CUSTOM_DECIMAL_FORMAT;
@@ -471,8 +472,13 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
   }
 
   public void configureContribPrefs() {
-    findPreference(NEW_LICENCE).setOnPreferenceClickListener(this);
-    Preference contribPurchasePref = findPreference(CONTRIB_PURCHASE);
+    Preference contribPurchasePref = findPreference(CONTRIB_PURCHASE),
+        licenceKeyPref = findPreference(NEW_LICENCE);
+    if (DistribHelper.isGithub()) {
+      licenceKeyPref.setOnPreferenceClickListener(this);
+    } else if (licenceKeyPref != null) {
+      ((PreferenceCategory) findPreference(CATEGORY_CONTRIB)).removePreference(licenceKeyPref);
+    }
     String contribPurchaseTitle, contribPurchaseSummary;
     LicenceHandler.LicenceStatus licenceStatus = licenceHandler.getLicenceStatus();
     if (licenceStatus == null) {

@@ -5,6 +5,8 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.google.android.vending.licensing.PreferenceObfuscator;
+
 import org.onepf.oms.Appstore;
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.AmazonAppstore;
@@ -54,8 +56,8 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
 
   public static final String STATUS_EXTENDED_PERMANENT = "7";
 
-  public InappPurchaseLicenceHandler(Context context) {
-    super(context, null);
+  public InappPurchaseLicenceHandler(Context context, PreferenceObfuscator preferenceObfuscator) {
+    super(context, preferenceObfuscator);
   }
 
   @Override

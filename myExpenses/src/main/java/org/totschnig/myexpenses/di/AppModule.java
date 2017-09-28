@@ -45,8 +45,8 @@ public class AppModule {
 
   @Provides
   @Singleton
-  LicenceHandler providesLicenceHandler() {
-    return new InappPurchaseLicenceHandler(application);
+  LicenceHandler providesLicenceHandler(PreferenceObfuscator preferenceObfuscator) {
+    return new InappPurchaseLicenceHandler(application, preferenceObfuscator);
   }
 
   @Provides
