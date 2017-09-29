@@ -48,6 +48,7 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
   private boolean mSetupDone;
   private String mPayload = (InappPurchaseLicenceHandler.IS_CHROMIUM || DistribHelper.isAmazon())
       ? null : UUID.randomUUID().toString();
+  InappPurchaseLicenceHandler licenceHandler;
 
   public static Intent getIntentFor(Context context, @Nullable ContribFeature feature) {
     Intent intent = new Intent(context, ContribInfoDialogActivity.class);
@@ -62,6 +63,7 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
   protected void onCreate(Bundle savedInstanceState) {
     setTheme(MyApplication.getThemeIdTranslucent());
     super.onCreate(savedInstanceState);
+    licenceHandler = ((InappPurchaseLicenceHandler) MyApplication.getInstance().getLicenceHandler());
 
     mHelper = InappPurchaseLicenceHandler.getIabHelper(this);
     if (mHelper != null) {
@@ -158,7 +160,6 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
                     String.format("%s (%s) %s", getString(R.string.licence_validation_premium),
                         getString(R.string.contrib_key), getString(R.string.thank_you)),
                     Toast.LENGTH_SHORT).show();
-                InappPurchaseLicenceHandler licenceHandler = (InappPurchaseLicenceHandler) MyApplication.getInstance().getLicenceHandler();
                 if (keyResId == R.string.professional_key) {
                   licenceHandler.registerSubscription();
                 } else {
@@ -177,26 +178,7 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
             return payload != null && payload.equals(mPayload);
           }
         };
-    String sku;
-    switch (aPackage) {
-      case Contrib:
-        sku = Config.SKU_PREMIUM;
-        break;
-      case Upgrade:
-        sku = Config.SKU_PREMIUM2EXTENDED;
-        break;
-      case Extended:
-        sku = Config.SKU_EXTENDED;
-        break;
-      case Professional_1:
-        sku = Config.SKU_PROFESSIONAL_1;
-        break;
-      case Professional_12:
-        sku = Config.SKU_PROFESSIONAL_12;
-        break;
-      default:
-        throw new IllegalStateException();
-    }
+    String sku = licenceHandler.getSkuForPackage(aPackage);
 
     if (aPackage.isProfessional()) {
       mHelper.launchSubscriptionPurchaseFlow(

@@ -119,7 +119,7 @@ public class LicenceHandler {
   }
 
   public String getFormattedPrice(Package aPackage) {
-    return aPackage.getFormattedPrice(context);
+    return aPackage.getFormattedPrice(context, aPackage.getFormattedPriceRaw(context));
   }
 
   public String getExtendMessage(Package aPackage) {

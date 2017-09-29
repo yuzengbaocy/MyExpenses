@@ -249,7 +249,9 @@ public class ContribDialogFragment extends CommitSafeDialogFragment implements D
         return true;
       });
       for (Package aPackage: DistribHelper.PRO_PACKAGES) {
-        popup.getMenu().add(Menu.NONE, aPackage.ordinal(), Menu.NONE, licenceHandler.getFormattedPrice(aPackage));
+        String title = licenceHandler.getFormattedPrice(aPackage);
+        if (title == null) title = aPackage.name(); //fallback if prices have not been loaded
+        popup.getMenu().add(Menu.NONE, aPackage.ordinal(), Menu.NONE, title);
 
       }
       popup.show();

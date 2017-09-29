@@ -5,7 +5,9 @@ import org.onepf.oms.OpenIabHelper;
 import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.licence.InappPurchaseLicenceHandler;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -21,6 +23,20 @@ public final class Config {
     public static final String SKU_PREMIUM2EXTENDED = "sku_premium2extended";
     public static final String SKU_PROFESSIONAL_1 = "sku_professional_monthly";
     public static final String SKU_PROFESSIONAL_12 = "sku_professional_yearly";
+
+    public static final List<String> itemSkus = new ArrayList<>();
+    public static final List<String> subsSkus = new ArrayList<>();
+    public static final List<String> allSkus = new ArrayList<>();
+
+    static {
+      itemSkus.add(SKU_PREMIUM);
+      itemSkus.add(SKU_EXTENDED);
+      itemSkus.add(SKU_PREMIUM2EXTENDED);
+      subsSkus.add(SKU_PROFESSIONAL_1);
+      subsSkus.add(SKU_PROFESSIONAL_12);
+      allSkus.addAll(itemSkus);
+      allSkus.addAll(subsSkus);
+    }
 
     /**
      * Google play public key.

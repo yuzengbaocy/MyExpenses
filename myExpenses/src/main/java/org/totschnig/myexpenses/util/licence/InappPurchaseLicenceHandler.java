@@ -1,13 +1,17 @@
 package org.totschnig.myexpenses.util.licence;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Build;
 
 import com.google.android.vending.licensing.PreferenceObfuscator;
 
+import org.jetbrains.annotations.Nullable;
 import org.onepf.oms.Appstore;
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.AmazonAppstore;
+import org.onepf.oms.appstore.googleUtils.Inventory;
+import org.onepf.oms.appstore.googleUtils.SkuDetails;
 import org.totschnig.myexpenses.contrib.Config;
 import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.util.DistribHelper;
@@ -55,8 +59,13 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
 
   public static final int STATUS_PROFESSIONAL = 10;
 
+
+  String PRICES_PREFS_FILE = "license_prices";
+  SharedPreferences pricesPrefs;
+
   public InappPurchaseLicenceHandler(Context context, PreferenceObfuscator preferenceObfuscator) {
     super(context, preferenceObfuscator);
+    pricesPrefs = context.getSharedPreferences(PRICES_PREFS_FILE, Context.MODE_PRIVATE);
   }
 
   @Override
@@ -164,4 +173,45 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
     //Timber.d("ADBUG-%s: %s-%s, contrib status %s", event, this, Thread.currentThread(), contribStatus);
   }
 
+  public void storeSkuDetails(Inventory inventory) {
+    for (String sku: Config.allSkus) {
+      SkuDetails skuDetails = inventory.getSkuDetails(sku);
+      if (skuDetails != null) {
+        pricesPrefs.edit().putString(sku, skuDetails.getPrice()).apply();
+      } else {
+        Timber.d("SkuDetails", "Did not find details for " + sku);
+      }
+    }
+  }
+
+  public String getSkuForPackage(Package aPackage) {
+    String sku;
+    switch (aPackage) {
+      case Contrib:
+        sku = Config.SKU_PREMIUM;
+        break;
+      case Upgrade:
+        sku = Config.SKU_PREMIUM2EXTENDED;
+        break;
+      case Extended:
+        sku = Config.SKU_EXTENDED;
+        break;
+      case Professional_1:
+        sku = Config.SKU_PROFESSIONAL_1;
+        break;
+      case Professional_12:
+        sku = Config.SKU_PROFESSIONAL_12;
+        break;
+      default:
+        throw new IllegalStateException();
+    }
+    return sku;
+  }
+
+  @Override
+  @Nullable
+  public String getFormattedPrice(Package aPackage) {
+    String pricesPrefsString = pricesPrefs.getString(getSkuForPackage(aPackage), null);
+    return pricesPrefsString != null ? aPackage.getFormattedPrice(context, pricesPrefsString) : null;
+  }
 }

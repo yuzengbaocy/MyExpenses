@@ -46,47 +46,46 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
     InappPurchaseLicenceHandler licenceHandler =
         (InappPurchaseLicenceHandler) MyApplication.getInstance().getLicenceHandler();
     final int contribStatus = licenceHandler.getContribStatus();
-    if (InappPurchaseLicenceHandler.STATUS_EXTENDED_PERMANENT != contribStatus) {
-      mHelper = InappPurchaseLicenceHandler.getIabHelper(this);
-      if (mHelper != null) {
-        try {
-          mHelper.startSetup(result -> {
-            Timber.d("Setup finished.");
-            if (mHelper == null) {
-              return;
-            }
-            if (result.isSuccess()) {
-              mHelper.queryInventoryAsync(false, (result1, inventory) -> {
-                if (mHelper == null || inventory == null) {
-                  return;
-                }
-                // Do we have the premium upgrade?
-                Purchase premiumPurchase = inventory.getPurchase(Config.SKU_PREMIUM);
-                Purchase extendedPurchase = inventory.getPurchase(Config.SKU_EXTENDED);
-                if (extendedPurchase == null) {
-                  extendedPurchase = inventory.getPurchase(Config.SKU_PREMIUM2EXTENDED);
-                }
-                Purchase professionalPurchase = inventory.getPurchase(Config.SKU_PROFESSIONAL_12);
-                if (professionalPurchase == null) {
-                  professionalPurchase = inventory.getPurchase(Config.SKU_PROFESSIONAL_1);
-                }
-                if (professionalPurchase != null && professionalPurchase.getPurchaseState() == 0) {
-                  licenceHandler.registerSubscription();
-                } else if (extendedPurchase != null && extendedPurchase.getPurchaseState() == 0) {
-                  licenceHandler.registerPurchase(true);
-                } else if (premiumPurchase != null && premiumPurchase.getPurchaseState() == 0) {
-                  licenceHandler.registerPurchase(false);
-                } else {
-                  licenceHandler.maybeCancel();
-                }
-              });
-            }
-          });
-        } catch (SecurityException e) {
-          AcraHelper.report(e);
-          mHelper.dispose();
-          mHelper = null;
-        }
+    mHelper = InappPurchaseLicenceHandler.getIabHelper(this);
+    if (mHelper != null) {
+      try {
+        mHelper.startSetup(result -> {
+          Timber.d("Setup finished.");
+          if (mHelper == null) {
+            return;
+          }
+          if (result.isSuccess()) {
+            mHelper.queryInventoryAsync(true, Config.itemSkus, Config.subsSkus,
+                (result1, inventory) -> {
+                  if (mHelper == null || inventory == null) {
+                    return;
+                  }
+                  Purchase premiumPurchase = inventory.getPurchase(Config.SKU_PREMIUM);
+                  Purchase extendedPurchase = inventory.getPurchase(Config.SKU_EXTENDED);
+                  if (extendedPurchase == null) {
+                    extendedPurchase = inventory.getPurchase(Config.SKU_PREMIUM2EXTENDED);
+                  }
+                  Purchase professionalPurchase = inventory.getPurchase(Config.SKU_PROFESSIONAL_12);
+                  if (professionalPurchase == null) {
+                    professionalPurchase = inventory.getPurchase(Config.SKU_PROFESSIONAL_1);
+                  }
+                  if (professionalPurchase != null && professionalPurchase.getPurchaseState() == 0) {
+                    licenceHandler.registerSubscription();
+                  } else if (extendedPurchase != null && extendedPurchase.getPurchaseState() == 0) {
+                    licenceHandler.registerPurchase(true);
+                  } else if (premiumPurchase != null && premiumPurchase.getPurchaseState() == 0) {
+                    licenceHandler.registerPurchase(false);
+                  } else {
+                    licenceHandler.maybeCancel();
+                  }
+                  licenceHandler.storeSkuDetails(inventory);
+                });
+          }
+        });
+      } catch (SecurityException e) {
+        AcraHelper.report(e);
+        mHelper.dispose();
+        mHelper = null;
       }
     }
   }
