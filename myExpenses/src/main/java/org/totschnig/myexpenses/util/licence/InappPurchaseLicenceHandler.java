@@ -2,8 +2,6 @@ package org.totschnig.myexpenses.util.licence;
 
 import android.content.Context;
 import android.os.Build;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 import com.google.android.vending.licensing.PreferenceObfuscator;
 
@@ -20,41 +18,42 @@ import timber.log.Timber;
 
 public class InappPurchaseLicenceHandler extends LicenceHandler {
 
-  @Nullable
-  private String contribStatus;
+  private int contribStatus;
   public final static boolean IS_CHROMIUM = Build.BRAND.equals("chromium");
 
   private static final long REFUND_WINDOW = 172800000L;
-  private static final String STATUS_DISABLED = "0";
+  private static final int STATUS_DISABLED = 0;
 
   /**
    * this status was used before and including the APP_GRATIS campaign
    */
-  public static final String STATUS_ENABLED_LEGACY_FIRST = "1";
+  //public static final String STATUS_ENABLED_LEGACY_FIRST = "1";
   /**
    * this status was used after the APP_GRATIS campaign in order to distinguish
    * between free riders and buyers
    */
-  public static final String STATUS_ENABLED_LEGACY_SECOND = "2";
+  public static final int STATUS_ENABLED_LEGACY_SECOND = 2;
 
   /**
    * user has recently purchased, and is inside a two days window
    */
-  public static final String STATUS_ENABLED_TEMPORARY = "3";
+  public static final int STATUS_ENABLED_TEMPORARY = 3;
 
   /**
    * user has recently purchased, and is inside a two days window
    */
-  public static final String STATUS_ENABLED_VERIFICATION_NEEDED = "4";
+  //public static final String STATUS_ENABLED_VERIFICATION_NEEDED = "4";
 
   /**
    * recheck passed
    */
-  public static final String STATUS_ENABLED_PERMANENT = "5";
+  public static final int STATUS_ENABLED_PERMANENT = 5;
 
-  private static final String STATUS_EXTENDED_TEMPORARY = "6";
+  private static final int STATUS_EXTENDED_TEMPORARY = 6;
 
-  public static final String STATUS_EXTENDED_PERMANENT = "7";
+  public static final int STATUS_EXTENDED_PERMANENT = 7;
+
+  public static final int STATUS_PROFESSIONAL = 10;
 
   public InappPurchaseLicenceHandler(Context context, PreferenceObfuscator preferenceObfuscator) {
     super(context, preferenceObfuscator);
@@ -63,16 +62,14 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
   @Override
   public void init() {
     d("init");
-    setContribStatus(licenseStatusPrefs.getString(PrefKey.LICENSE_STATUS.getKey(), STATUS_DISABLED));
+    setContribStatus(Integer.parseInt(licenseStatusPrefs.getString(PrefKey.LICENSE_STATUS.getKey(), "0")));
   }
 
   /**
-   * this is used from in-app billing
-   *
    * @param extended if true user has purchase extended licence
    */
   public void registerPurchase(boolean extended) {
-    String status = extended ? STATUS_EXTENDED_TEMPORARY : STATUS_ENABLED_TEMPORARY;
+    int status = extended ? STATUS_EXTENDED_TEMPORARY : STATUS_ENABLED_TEMPORARY;
     long timestamp = Long.parseLong(licenseStatusPrefs.getString(
         PrefKey.LICENSE_INITIAL_TIMESTAMP.getKey(), "0"));
     long now = System.currentTimeMillis();
@@ -88,6 +85,10 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
       }
     }
     updateContribStatus(status);
+  }
+
+  public void registerSubscription() {
+    updateContribStatus(STATUS_PROFESSIONAL);
   }
 
   /**
@@ -134,19 +135,20 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
     return new OpenIabHelper(ctx, builder.build());
   }
 
-  private void updateContribStatus(@NonNull String contribStatus) {
-    licenseStatusPrefs.putString(PrefKey.LICENSE_STATUS.getKey(), contribStatus);
+  private void updateContribStatus(int contribStatus) {
+    licenseStatusPrefs.putString(PrefKey.LICENSE_STATUS.getKey(), String.valueOf(contribStatus));
     licenseStatusPrefs.commit();
     setContribStatus(contribStatus);
     update();
   }
 
-  synchronized private void setContribStatus(@NonNull String contribStatus) {
+  synchronized private void setContribStatus(int contribStatus) {
     this.contribStatus = contribStatus;
-    int contribStatusInt = Integer.parseInt(contribStatus);
-    if (contribStatusInt >= Integer.parseInt(STATUS_EXTENDED_TEMPORARY)) {
+    if (contribStatus >= STATUS_PROFESSIONAL) {
+      licenceStatus = LicenceStatus.PROFESSIONAL;
+    } else if (contribStatus >= STATUS_EXTENDED_TEMPORARY) {
       licenceStatus = EXTENDED;
-    } else if (contribStatusInt > 0) {
+    } else if (contribStatus > 0) {
       licenceStatus = LicenceStatus.CONTRIB;
     } else {
       licenceStatus = null;
@@ -154,12 +156,12 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
     d("valueSet");
   }
 
-  @Nullable
-  synchronized public String getContribStatus() {
+  synchronized public int getContribStatus() {
     return contribStatus;
   }
 
   private void d(String event) {
     //Timber.d("ADBUG-%s: %s-%s, contrib status %s", event, this, Thread.currentThread(), contribStatus);
   }
+
 }

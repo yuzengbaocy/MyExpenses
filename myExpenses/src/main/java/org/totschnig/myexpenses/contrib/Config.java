@@ -19,6 +19,8 @@ public final class Config {
     public static final String SKU_PREMIUM = "sku_premium";
     public static final String SKU_EXTENDED = "sku_extended";
     public static final String SKU_PREMIUM2EXTENDED = "sku_premium2extended";
+    public static final String SKU_PROFESSIONAL_1 = "sku_professional_monthly";
+    public static final String SKU_PROFESSIONAL_12 = "sku_professional_yearly";
 
     /**
      * Google play public key.

@@ -32,7 +32,7 @@ public class UnlockHandler extends Handler {
   @Override
   public void handleMessage(Message msg) {
     MyApplication app = MyApplication.getInstance();
-    if (InappPurchaseLicenceHandler.STATUS_ENABLED_LEGACY_SECOND.equals(((InappPurchaseLicenceHandler) app.getLicenceHandler()).getContribStatus())) {
+    if (InappPurchaseLicenceHandler.STATUS_ENABLED_LEGACY_SECOND ==(((InappPurchaseLicenceHandler) app.getLicenceHandler()).getContribStatus())) {
       return;
     }
     Timber.i("Now handling answer from license verification service; got status %d.", msg.what);

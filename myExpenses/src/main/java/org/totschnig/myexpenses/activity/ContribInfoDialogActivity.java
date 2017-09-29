@@ -20,9 +20,9 @@ import org.totschnig.myexpenses.dialog.MessageDialogFragment.MessageDialogListen
 import org.totschnig.myexpenses.model.ContribFeature;
 import org.totschnig.myexpenses.util.AcraHelper;
 import org.totschnig.myexpenses.util.DistribHelper;
-import org.totschnig.myexpenses.util.licence.InappPurchaseLicenceHandler;
 import org.totschnig.myexpenses.util.ShortcutHelper;
 import org.totschnig.myexpenses.util.Utils;
+import org.totschnig.myexpenses.util.licence.InappPurchaseLicenceHandler;
 import org.totschnig.myexpenses.util.licence.Package;
 import org.totschnig.myexpenses.util.tracking.Tracker;
 
@@ -139,20 +139,31 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
             } else {
               Timber.d("Purchase successful.");
 
-              boolean isPremium = purchase.getSku().equals(Config.SKU_PREMIUM);
-              boolean isExtended = purchase.getSku().equals(Config.SKU_EXTENDED) ||
-                  purchase.getSku().equals(Config.SKU_PREMIUM2EXTENDED);
-              if (isPremium || isExtended) {
+              int keyResId = 0;
+
+              if (purchase.getSku().equals(Config.SKU_PREMIUM)) {
+                keyResId = R.string.contrib_key;
+              } else if (purchase.getSku().equals(Config.SKU_EXTENDED) ||
+                  purchase.getSku().equals(Config.SKU_PREMIUM2EXTENDED)) {
+                keyResId = R.string.extended_key;
+              } else if (purchase.getSku().equals(Config.SKU_PROFESSIONAL_1) ||
+                  purchase.getSku().equals(Config.SKU_PROFESSIONAL_12)) {
+                keyResId = R.string.professional_key;
+              }
+              if (keyResId != 0) {
                 // bought the premium upgrade!
                 Timber.d("Purchase is premium upgrade. Congratulating user.");
                 Toast.makeText(
                     ContribInfoDialogActivity.this,
-                    Utils.concatResStrings(
-                        ContribInfoDialogActivity.this," ",
-                        isPremium ? R.string.licence_validation_premium : R.string.licence_validation_extended,
-                        R.string.thank_you),
+                    String.format("%s (%s) %s", getString(R.string.licence_validation_premium),
+                        getString(R.string.contrib_key), getString(R.string.thank_you)),
                     Toast.LENGTH_SHORT).show();
-                ((InappPurchaseLicenceHandler) MyApplication.getInstance().getLicenceHandler()).registerPurchase(isExtended);
+                InappPurchaseLicenceHandler licenceHandler = (InappPurchaseLicenceHandler) MyApplication.getInstance().getLicenceHandler();
+                if (keyResId == R.string.professional_key) {
+                  licenceHandler.registerSubscription();
+                } else {
+                  licenceHandler.registerPurchase(keyResId == R.string.extended_key);
+                }
               }
             }
             finish();
@@ -163,10 +174,7 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
               return true;
             }
             String payload = purchase.getDeveloperPayload();
-            if (payload == null) {
-              return false;
-            }
-            return payload.equals(mPayload);
+            return payload != null && payload.equals(mPayload);
           }
         };
     String sku;
@@ -178,20 +186,35 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
         sku = Config.SKU_PREMIUM2EXTENDED;
         break;
       case Extended:
-      case Professional_6:
-      case Professional_36:
-      default:
         sku = Config.SKU_EXTENDED;
         break;
+      case Professional_1:
+        sku = Config.SKU_PROFESSIONAL_1;
+        break;
+      case Professional_12:
+        sku = Config.SKU_PROFESSIONAL_12;
+        break;
+      default:
+        throw new IllegalStateException();
     }
 
-    mHelper.launchPurchaseFlow(
-        ContribInfoDialogActivity.this,
-        sku,
-        ProtectedFragmentActivity.PURCHASE_PREMIUM_REQUEST,
-        mPurchaseFinishedListener,
-        mPayload
-    );
+    if (aPackage.isProfessional()) {
+      mHelper.launchSubscriptionPurchaseFlow(
+          ContribInfoDialogActivity.this,
+          sku,
+          ProtectedFragmentActivity.PURCHASE_PREMIUM_REQUEST,
+          mPurchaseFinishedListener,
+          mPayload
+      );
+    } else {
+      mHelper.launchPurchaseFlow(
+          ContribInfoDialogActivity.this,
+          sku,
+          ProtectedFragmentActivity.PURCHASE_PREMIUM_REQUEST,
+          mPurchaseFinishedListener,
+          mPayload
+      );
+    }
   }
 
   void complain(String message) {

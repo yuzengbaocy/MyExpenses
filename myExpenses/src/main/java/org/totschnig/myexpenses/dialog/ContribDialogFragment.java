@@ -248,8 +248,10 @@ public class ContribDialogFragment extends CommitSafeDialogFragment implements D
         updateButtons(professionalButton);
         return true;
       });
-      popup.getMenu().add(Menu.NONE, Package.Professional_6.ordinal(), Menu.NONE, licenceHandler.getFormattedPrice(Package.Professional_6));
-      popup.getMenu().add(Menu.NONE, Package.Professional_36.ordinal(), Menu.NONE, licenceHandler.getFormattedPrice(Package.Professional_36));
+      for (Package aPackage: DistribHelper.PRO_PACKAGES) {
+        popup.getMenu().add(Menu.NONE, aPackage.ordinal(), Menu.NONE, licenceHandler.getFormattedPrice(aPackage));
+
+      }
       popup.show();
     }
   }

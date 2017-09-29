@@ -11,10 +11,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 
 import org.onepf.oms.OpenIabHelper;
-import org.onepf.oms.appstore.googleUtils.IabHelper;
-import org.onepf.oms.appstore.googleUtils.IabHelper.QueryInventoryFinishedListener;
-import org.onepf.oms.appstore.googleUtils.IabResult;
-import org.onepf.oms.appstore.googleUtils.Inventory;
 import org.onepf.oms.appstore.googleUtils.Purchase;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
@@ -49,47 +45,41 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
     super.onCreate(savedInstanceState);
     InappPurchaseLicenceHandler licenceHandler =
         (InappPurchaseLicenceHandler) MyApplication.getInstance().getLicenceHandler();
-    final String contribStatus = licenceHandler.getContribStatus();
-    //TODO improve encapsulation of different stati
-    if (!InappPurchaseLicenceHandler.STATUS_EXTENDED_PERMANENT.equals(contribStatus)) {
+    final int contribStatus = licenceHandler.getContribStatus();
+    if (InappPurchaseLicenceHandler.STATUS_EXTENDED_PERMANENT != contribStatus) {
       mHelper = InappPurchaseLicenceHandler.getIabHelper(this);
       if (mHelper != null) {
         try {
-          mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
-            public void onIabSetupFinished(IabResult result) {
-              Timber.d("Setup finished.");
-              if (mHelper == null) {
-                return;
-              }
-              if (result.isSuccess()) {
-                mHelper.queryInventoryAsync(false, new QueryInventoryFinishedListener() {
-                  @Override
-                  public void onQueryInventoryFinished(
-                      IabResult result,
-                      Inventory inventory) {
-                    if (mHelper == null || inventory == null) {
-                      return;
-                    }
-                    // Do we have the premium upgrade?
-                    Purchase premiumPurchase =
-                        inventory.getPurchase(Config.SKU_PREMIUM);
-                    Purchase extendedPurchase =
-                        inventory.getPurchase(Config.SKU_EXTENDED);
-                    Purchase upgradePurchase =
-                        inventory.getPurchase(Config.SKU_PREMIUM2EXTENDED);
-                    if ((upgradePurchase != null && upgradePurchase.getPurchaseState() == 0) ||
-                        (extendedPurchase != null && extendedPurchase.getPurchaseState() == 0)) {
-                      licenceHandler.registerPurchase(true);
-                    } else if (premiumPurchase != null && premiumPurchase.getPurchaseState() == 0) {
-                      if (!InappPurchaseLicenceHandler.STATUS_ENABLED_PERMANENT.equals(contribStatus)) {
-                        licenceHandler.registerPurchase(false);
-                      }
-                    } else if (InappPurchaseLicenceHandler.STATUS_ENABLED_TEMPORARY.equals(contribStatus)) {
-                      licenceHandler.maybeCancel();
-                    }
-                  }
-                });
-              }
+          mHelper.startSetup(result -> {
+            Timber.d("Setup finished.");
+            if (mHelper == null) {
+              return;
+            }
+            if (result.isSuccess()) {
+              mHelper.queryInventoryAsync(false, (result1, inventory) -> {
+                if (mHelper == null || inventory == null) {
+                  return;
+                }
+                // Do we have the premium upgrade?
+                Purchase premiumPurchase = inventory.getPurchase(Config.SKU_PREMIUM);
+                Purchase extendedPurchase = inventory.getPurchase(Config.SKU_EXTENDED);
+                if (extendedPurchase == null) {
+                  extendedPurchase = inventory.getPurchase(Config.SKU_PREMIUM2EXTENDED);
+                }
+                Purchase professionalPurchase = inventory.getPurchase(Config.SKU_PROFESSIONAL_12);
+                if (professionalPurchase == null) {
+                  professionalPurchase = inventory.getPurchase(Config.SKU_PROFESSIONAL_1);
+                }
+                if (professionalPurchase != null && professionalPurchase.getPurchaseState() == 0) {
+                  licenceHandler.registerSubscription();
+                } else if (extendedPurchase != null && extendedPurchase.getPurchaseState() == 0) {
+                  licenceHandler.registerPurchase(true);
+                } else if (premiumPurchase != null && premiumPurchase.getPurchaseState() == 0) {
+                  licenceHandler.registerPurchase(false);
+                } else {
+                  licenceHandler.maybeCancel();
+                }
+              });
             }
           });
         } catch (SecurityException e) {

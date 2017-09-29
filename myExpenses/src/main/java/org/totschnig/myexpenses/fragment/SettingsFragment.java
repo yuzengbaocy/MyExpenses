@@ -495,11 +495,12 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
       } else if (licenceStatus.isUpgradeable()) {
         contribPurchaseSummary = getString(R.string.pref_contrib_purchase_title_upgrade);
       } else {
-        contribPurchaseSummary = getString(R.string.valid_until, licenceHandler.getValidUntil()) + "\n" +
-            //getString(R.string.pref_contrib_purchase_title_renew);
-            getString(R.string.thank_you);
+        contribPurchaseSummary = licenceHandler.getValidUntilMessage(getContext());
+        if (!TextUtils.isEmpty(contribPurchaseSummary)) {
+          contribPurchaseSummary += "\n";
+        }
+        contribPurchaseSummary += getString(R.string.thank_you);
       }
-
     }
     contribPurchasePref.setOnPreferenceClickListener(this);
     contribPurchasePref.setSummary(contribPurchaseSummary);
@@ -581,15 +582,14 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
           startActivity(i);
         }
       } else {
-        Package[] proPackages = {Package.Professional_6, Package.Professional_36};
         ((PopupMenuPreference) preference).showPopupMenu(item -> {
-          Package selectedPackage = proPackages[item.getItemId()];
+          Package selectedPackage = DistribHelper.PRO_PACKAGES[item.getItemId()];
           Bundle bundle = new Bundle(1);
           bundle.putString(Tracker.EVENT_PARAM_PACKAGE, selectedPackage.name());
           ((ProtectedFragmentActivity) getActivity()).logEvent(Tracker.EVENT_CONTRIB_DIALOG_BUY, bundle);
           DonateDialogFragment.newInstance(selectedPackage).show(getFragmentManager(), "CONTRIB");
           return true;
-        }, Stream.of(proPackages).map(licenceHandler::getExtendMessage).toArray(size -> new String[size]));
+        }, Stream.of(DistribHelper.PRO_PACKAGES).map(licenceHandler::getExtendMessage).toArray(size -> new String[size]));
       }
       return true;
     }

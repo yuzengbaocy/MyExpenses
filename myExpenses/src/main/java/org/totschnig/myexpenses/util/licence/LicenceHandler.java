@@ -130,8 +130,8 @@ public class LicenceHandler {
         aPackage.getFormattedPriceRaw(context));
   }
 
-  public String getValidUntil() {
-    return Utils.getDateFormatSafe(context).format(getValidUntilDate());
+  public String getValidUntilMessage(Context context) {
+    return context.getString(R.string.valid_until, Utils.getDateFormatSafe(this.context).format(getValidUntilDate()));
   }
 
   @NonNull

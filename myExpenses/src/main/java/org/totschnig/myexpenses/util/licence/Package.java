@@ -10,7 +10,7 @@ import org.totschnig.myexpenses.util.CurrencyFormatter;
 import java.util.Currency;
 
 public enum Package {
-  Contrib(300), Upgrade(250), Extended(500), Professional_6(500), Professional_36(2000);
+  Contrib(300), Upgrade(250), Extended(500), Professional_1(100), Professional_6(500), Professional_12(900), Professional_36(2000);
 
   public long getDefaultPrice() {
     return defaultPrice;
