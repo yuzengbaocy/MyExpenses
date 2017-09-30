@@ -37,8 +37,8 @@ import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.activity.ContribInfoDialogActivity;
 import org.totschnig.myexpenses.model.ContribFeature;
 import org.totschnig.myexpenses.util.DistribHelper;
-import org.totschnig.myexpenses.util.licence.LicenceHandler;
 import org.totschnig.myexpenses.util.Utils;
+import org.totschnig.myexpenses.util.licence.LicenceHandler;
 import org.totschnig.myexpenses.util.licence.Package;
 import org.totschnig.myexpenses.util.tracking.Tracker;
 
@@ -234,17 +234,22 @@ public class ContribDialogFragment extends CommitSafeDialogFragment implements D
 
   @Override
   public void onClick(View v) {
+    final LicenceHandler.LicenceStatus licenceStatus = licenceHandler.getLicenceStatus();
     if (v.getId() == R.id.contrib_feature_container || v == contribButton) {
       selectedPackage = Package.Contrib;
       updateButtons(contribButton);
     } else if (v.getId() == R.id.extended_feature_container || v == extendedButton) {
-      selectedPackage = licenceHandler.getLicenceStatus() == null ? Package.Extended : Package.Upgrade;
+      selectedPackage = licenceStatus == null ? Package.Extended : Package.Upgrade;
       updateButtons(extendedButton);
     } else {
       PopupMenu popup = new PopupMenu(getActivity(), v);
       popup.setOnMenuItemClickListener(item -> {
         selectedPackage = Package.values()[item.getItemId()];
-        professionalPriceTextView.setText(licenceHandler.getFormattedPrice(selectedPackage));
+        String formattedPrice = licenceHandler.getFormattedPrice(selectedPackage);
+        if (licenceStatus == EXTENDED) {
+          formattedPrice += String.format(" (%s)", getString(R.string.extended_upgrade_goodie, 3));
+        }
+        professionalPriceTextView.setText(formattedPrice);
         updateButtons(professionalButton);
         return true;
       });
@@ -252,7 +257,6 @@ public class ContribDialogFragment extends CommitSafeDialogFragment implements D
         String title = licenceHandler.getFormattedPrice(aPackage);
         if (title == null) title = aPackage.name(); //fallback if prices have not been loaded
         popup.getMenu().add(Menu.NONE, aPackage.ordinal(), Menu.NONE, title);
-
       }
       popup.show();
     }

@@ -15,7 +15,6 @@ public class DistribHelper {
     PRO_PACKAGES = isGithub() ? new Package[] {Package.Professional_6, Package.Professional_36} :
         new Package[] {Package.Professional_1, Package.Professional_12};
   }
-
   public enum Distribution {
     PLAY,
     AMAZON {
