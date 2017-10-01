@@ -3,15 +3,18 @@ package org.totschnig.myexpenses.util.licence;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
+import android.support.annotation.Nullable;
 
 import com.google.android.vending.licensing.PreferenceObfuscator;
 
-import org.jetbrains.annotations.Nullable;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.onepf.oms.Appstore;
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.AmazonAppstore;
 import org.onepf.oms.appstore.googleUtils.Inventory;
 import org.onepf.oms.appstore.googleUtils.SkuDetails;
+import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.contrib.Config;
 import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.util.DistribHelper;
@@ -22,6 +25,7 @@ import timber.log.Timber;
 
 public class InappPurchaseLicenceHandler extends LicenceHandler {
 
+  private static final String KEY_EXTENDED2PROFESSIONAL_12_INTRODUCTORY_PRICE = "e2p_12_introductory_price";
   private int contribStatus;
   public final static boolean IS_CHROMIUM = Build.BRAND.equals("chromium");
 
@@ -174,14 +178,24 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
   }
 
   public void storeSkuDetails(Inventory inventory) {
+    SharedPreferences.Editor editor = pricesPrefs.edit();
     for (String sku: Config.allSkus) {
       SkuDetails skuDetails = inventory.getSkuDetails(sku);
       if (skuDetails != null) {
-        pricesPrefs.edit().putString(sku, skuDetails.getPrice()).apply();
+        Timber.d("Sku: %s, json: %s", skuDetails.toString(), skuDetails.getJson());
+        if (sku.equals(Config.SKU_EXTENDED2PROFESSIONAL_12)) {
+          try {
+            editor.putString(KEY_EXTENDED2PROFESSIONAL_12_INTRODUCTORY_PRICE, new JSONObject(skuDetails.getJson()).optString("introductoryPrice"));
+          } catch (JSONException e) {
+            e.printStackTrace();
+          }
+        }
+        editor.putString(sku, skuDetails.getPrice());
       } else {
-        Timber.d("SkuDetails", "Did not find details for " + sku);
+        Timber.d("Did not find details for " + sku);
       }
     }
+    editor.apply();
   }
 
   public String getSkuForPackage(Package aPackage) {
@@ -200,7 +214,7 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
         sku = Config.SKU_PROFESSIONAL_1;
         break;
       case Professional_12:
-        sku = Config.SKU_PROFESSIONAL_12;
+        sku = isExtendedEnabled() ? Config.SKU_EXTENDED2PROFESSIONAL_12 : Config.SKU_PROFESSIONAL_12;
         break;
       default:
         throw new IllegalStateException();
@@ -208,10 +222,34 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
     return sku;
   }
 
+  private String getDisplayPriceForPackage(Package aPackage) {
+    String sku = getSkuForPackage(aPackage);
+    String key = sku.equals(Config.SKU_EXTENDED2PROFESSIONAL_12) ? KEY_EXTENDED2PROFESSIONAL_12_INTRODUCTORY_PRICE : sku;
+    return pricesPrefs.getString(key,null );
+  }
+
   @Override
   @Nullable
   public String getFormattedPrice(Package aPackage) {
-    String pricesPrefsString = pricesPrefs.getString(getSkuForPackage(aPackage), null);
+    String pricesPrefsString = getDisplayPriceForPackage(aPackage);
     return pricesPrefsString != null ? aPackage.getFormattedPrice(context, pricesPrefsString) : null;
+  }
+
+  @Override
+  @Nullable
+  public String getExtendedUpgradeGoodieMessage(Package selectedPackage) {
+    if (selectedPackage == Package.Professional_12) {
+      String pricesPrefsString = pricesPrefs.getString(Config.SKU_EXTENDED2PROFESSIONAL_12, null);
+      if (pricesPrefsString != null) {
+        return context.getString(R.string.extended_upgrade_goodie_subscription, pricesPrefsString);
+      }
+    }
+    return null;
+  }
+
+  @Override
+  protected String getMinimumProfessionalMonthlyPrice() {
+    //TODO store from SkuDetails and calculate
+    return super.getMinimumProfessionalMonthlyPrice();
   }
 }

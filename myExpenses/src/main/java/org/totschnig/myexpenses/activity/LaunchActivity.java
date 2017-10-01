@@ -69,6 +69,9 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
                   if (professionalPurchase == null) {
                     professionalPurchase = inventory.getPurchase(Config.SKU_PROFESSIONAL_1);
                   }
+                  if (professionalPurchase == null) {
+                    professionalPurchase = inventory.getPurchase(Config.SKU_EXTENDED2PROFESSIONAL_12);
+                  }
                   if (professionalPurchase != null && professionalPurchase.getPurchaseState() == 0) {
                     licenceHandler.registerSubscription();
                   } else if (extendedPurchase != null && extendedPurchase.getPurchaseState() == 0) {

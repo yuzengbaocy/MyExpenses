@@ -149,7 +149,8 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
                   purchase.getSku().equals(Config.SKU_PREMIUM2EXTENDED)) {
                 keyResId = R.string.extended_key;
               } else if (purchase.getSku().equals(Config.SKU_PROFESSIONAL_1) ||
-                  purchase.getSku().equals(Config.SKU_PROFESSIONAL_12)) {
+                  purchase.getSku().equals(Config.SKU_PROFESSIONAL_12) ||
+                  purchase.getSku().equals(Config.SKU_EXTENDED2PROFESSIONAL_12)) {
                 keyResId = R.string.professional_key;
               }
               if (keyResId != 0) {
