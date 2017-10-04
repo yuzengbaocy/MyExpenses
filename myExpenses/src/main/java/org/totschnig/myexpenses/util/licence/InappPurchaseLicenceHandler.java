@@ -3,12 +3,11 @@ package org.totschnig.myexpenses.util.licence;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.google.android.vending.licensing.PreferenceObfuscator;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.onepf.oms.Appstore;
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.AmazonAppstore;
@@ -16,16 +15,25 @@ import org.onepf.oms.appstore.googleUtils.Inventory;
 import org.onepf.oms.appstore.googleUtils.SkuDetails;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.contrib.Config;
+import org.totschnig.myexpenses.model.Money;
 import org.totschnig.myexpenses.preference.PrefKey;
+import org.totschnig.myexpenses.util.CurrencyFormatter;
 import org.totschnig.myexpenses.util.DistribHelper;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Currency;
 
 import timber.log.Timber;
 
 public class InappPurchaseLicenceHandler extends LicenceHandler {
 
   private static final String KEY_EXTENDED2PROFESSIONAL_12_INTRODUCTORY_PRICE = "e2p_12_introductory_price";
+  private static final String KEY_EXTENDED2PROFESSIONAL_12_CURRENCY_CODE = "e2p_12_currency_code";
+  private static final String KEY_EXTENDED2PROFESSIONAL_12_INTRODUCTORY_MONTHLY = "e2p_12_introductory_monthly";
+  private static final String KEY_PROFESSIONAL_12__MONTHLY = "p_12_monthly";
+  private static final String KEY_PROFESSIONAL_12_CURRENCY_CODE = "p_12_currency_code";
+  private static final String KEY_CURRENT_SUBSCRIPTION = "current_subscription";
   private int contribStatus;
   public final static boolean IS_CHROMIUM = Build.BRAND.equals("chromium");
 
@@ -100,8 +108,9 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
     updateContribStatus(status);
   }
 
-  public void registerSubscription() {
+  public void registerSubscription(String sku) {
     updateContribStatus(STATUS_PROFESSIONAL);
+    licenseStatusPrefs.putString(KEY_CURRENT_SUBSCRIPTION, sku);
   }
 
   /**
@@ -179,16 +188,17 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
 
   public void storeSkuDetails(Inventory inventory) {
     SharedPreferences.Editor editor = pricesPrefs.edit();
-    for (String sku: Config.allSkus) {
+    for (String sku : Config.allSkus) {
       SkuDetails skuDetails = inventory.getSkuDetails(sku);
       if (skuDetails != null) {
         Timber.d("Sku: %s, json: %s", skuDetails.toString(), skuDetails.getJson());
         if (sku.equals(Config.SKU_EXTENDED2PROFESSIONAL_12)) {
-          try {
-            editor.putString(KEY_EXTENDED2PROFESSIONAL_12_INTRODUCTORY_PRICE, new JSONObject(skuDetails.getJson()).optString("introductoryPrice"));
-          } catch (JSONException e) {
-            e.printStackTrace();
-          }
+          editor.putString(KEY_EXTENDED2PROFESSIONAL_12_INTRODUCTORY_PRICE, skuDetails.getIntroductoryPrice());
+          editor.putLong(KEY_EXTENDED2PROFESSIONAL_12_INTRODUCTORY_MONTHLY, skuDetails.getIntroductoryPriceAmountMicros() / 12);
+          editor.putString(KEY_EXTENDED2PROFESSIONAL_12_CURRENCY_CODE, skuDetails.getPriceCurrencyCode());
+        } else if (sku.equals(Config.SKU_PROFESSIONAL_12)) {
+          editor.putLong(KEY_PROFESSIONAL_12__MONTHLY, skuDetails.getPriceAmountMicros() / 12);
+          editor.putString(KEY_PROFESSIONAL_12_CURRENCY_CODE, skuDetails.getPriceCurrencyCode());
         }
         editor.putString(sku, skuDetails.getPrice());
       } else {
@@ -225,7 +235,7 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
   private String getDisplayPriceForPackage(Package aPackage) {
     String sku = getSkuForPackage(aPackage);
     String key = sku.equals(Config.SKU_EXTENDED2PROFESSIONAL_12) ? KEY_EXTENDED2PROFESSIONAL_12_INTRODUCTORY_PRICE : sku;
-    return pricesPrefs.getString(key,null );
+    return pricesPrefs.getString(key, null);
   }
 
   @Override
@@ -249,7 +259,83 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
 
   @Override
   protected String getMinimumProfessionalMonthlyPrice() {
-    //TODO store from SkuDetails and calculate
-    return super.getMinimumProfessionalMonthlyPrice();
+    long pricesPrefsLong;
+    String currencyCode;
+    if (licenceStatus == EXTENDED) {
+      pricesPrefsLong = pricesPrefs.getLong(KEY_EXTENDED2PROFESSIONAL_12_INTRODUCTORY_MONTHLY, 0);
+      currencyCode = pricesPrefs.getString(KEY_EXTENDED2PROFESSIONAL_12_CURRENCY_CODE, null);
+    } else {
+      pricesPrefsLong = pricesPrefs.getLong(KEY_PROFESSIONAL_12__MONTHLY, 0);
+      currencyCode = pricesPrefs.getString(KEY_PROFESSIONAL_12_CURRENCY_CODE, null);
+    }
+    if (currencyCode == null || pricesPrefsLong == 0) return null;
+    return CurrencyFormatter.instance().formatCurrency(
+        new Money(Currency.getInstance(currencyCode),
+            new BigDecimal(pricesPrefsLong).divide(new BigDecimal(1000000))));
+  }
+
+  @NonNull
+  @Override
+  public String getProLicenceStatus(Context context) {
+    String currentSubscription = licenseStatusPrefs.getString(KEY_CURRENT_SUBSCRIPTION, null);
+    int recurrenceResId;
+    switch (currentSubscription) {
+      case Config.SKU_PROFESSIONAL_1:
+        recurrenceResId = R.string.monthly;
+        break;
+      case Config.SKU_PROFESSIONAL_12:
+        recurrenceResId = R.string.yearly;
+        break;
+      default:
+        return "";
+    }
+    return context.getString(recurrenceResId);
+  }
+
+  @Override
+  @Nullable
+  public Package[] getProPackagesForExtendOrSwitch() {
+    Package switchPackage = getPackageForSwitch();
+    return switchPackage == null ? null : new Package[]{switchPackage};
+  }
+
+  private Package getPackageForSwitch() {
+    String currentSubscription = licenseStatusPrefs.getString(KEY_CURRENT_SUBSCRIPTION, null);
+    if (currentSubscription == null) return null;
+    switch (currentSubscription) {
+      case Config.SKU_PROFESSIONAL_1:
+        return Package.Professional_12;
+      case Config.SKU_PROFESSIONAL_12:
+        return Package.Professional_1;
+      default:
+        return null;
+    }
+  }
+
+
+  @Override
+  public String getExtendOrSwitchMessage(Package aPackage) {
+    int recurrenceResId;
+    switch (aPackage) {
+      case Professional_12:
+        recurrenceResId = R.string.switch_to_yearly;
+        break;
+      case Professional_1:
+        recurrenceResId = R.string.switch_to_monthly;
+        break;
+      default:
+        return "";
+    }
+    return context.getString(recurrenceResId);
+  }
+
+  @Override
+  public String getProLicenceAction(Context context) {
+    Package switchPackage = getPackageForSwitch();
+    return switchPackage == null ? "" : getExtendOrSwitchMessage(switchPackage);
+  }
+
+  public String getCurrentSubscription() {
+    return licenseStatusPrefs.getString(KEY_CURRENT_SUBSCRIPTION, null);
   }
 }

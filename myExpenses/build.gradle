@@ -200,7 +200,7 @@ dependencies {
     compile 'com.itextpdf:itextg:5.5.10'
     compile 'ch.acra:acra:4.9.2'
     compile 'org.apache.commons:commons-lang3:3.4'
-    compile 'org.onepf:openiab:0.9.8.7'
+    implementation 'com.github.mtotschnig:OpenIAB:extended-SNAPSHOT'
     compile fileTree(dir: 'libs', include: ['fortumo-in-app-9.1.2.jar', 'in-app-purchasing-2.0.61.jar'])
     //noinspection GradleDynamicVersion
     compile 'org.apache.commons:commons-csv:1.1'

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.widget.Toast;
 
@@ -27,9 +28,14 @@ import org.totschnig.myexpenses.util.licence.Package;
 import org.totschnig.myexpenses.util.tracking.Tracker;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import timber.log.Timber;
+
+import static org.onepf.oms.OpenIabHelper.ITEM_TYPE_INAPP;
+import static org.onepf.oms.OpenIabHelper.ITEM_TYPE_SUBS;
 
 
 /**
@@ -43,12 +49,14 @@ import timber.log.Timber;
 public class ContribInfoDialogActivity extends ProtectedFragmentActivity
     implements MessageDialogListener {
   public final static String KEY_FEATURE = "feature";
+  private final static String KEY_PACKAGE = "package";
   public static final String KEY_TAG = "tag";
+  private static final String KEY_SHOULD_REPLACE_EXISTING = "shouldReplaceExisting";
   private OpenIabHelper mHelper;
   private boolean mSetupDone;
   private String mPayload = (InappPurchaseLicenceHandler.IS_CHROMIUM || DistribHelper.isAmazon())
       ? null : UUID.randomUUID().toString();
-  InappPurchaseLicenceHandler licenceHandler;
+  private InappPurchaseLicenceHandler licenceHandler;
 
   public static Intent getIntentFor(Context context, @Nullable ContribFeature feature) {
     Intent intent = new Intent(context, ContribInfoDialogActivity.class);
@@ -59,27 +67,37 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
     return intent;
   }
 
+  public static Intent getIntentFor(Context context, @NonNull Package aPackage, boolean shouldReplaceExisting) {
+    Intent intent = new Intent(context, ContribInfoDialogActivity.class);
+    intent.setAction(Intent.ACTION_MAIN);
+    intent.putExtra(KEY_PACKAGE, aPackage.name());
+    intent.putExtra(KEY_SHOULD_REPLACE_EXISTING, shouldReplaceExisting);
+    return intent;
+  }
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     setTheme(MyApplication.getThemeIdTranslucent());
     super.onCreate(savedInstanceState);
+    String packageFromExtra = getIntent().getStringExtra(KEY_PACKAGE);
     licenceHandler = ((InappPurchaseLicenceHandler) MyApplication.getInstance().getLicenceHandler());
 
     mHelper = InappPurchaseLicenceHandler.getIabHelper(this);
     if (mHelper != null) {
       try {
-        mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
-          public void onIabSetupFinished(IabResult result) {
-            Timber.d("Setup finished.");
+        mHelper.startSetup(result -> {
+          Timber.d("Setup finished.");
 
-            if (!result.isSuccess()) {
-              mSetupDone = false;
-              // Oh noes, there was a problem.
-              complain("Problem setting up in-app billing: " + result);
-              return;
-            }
-            mSetupDone = true;
-            Timber.d("Setup successful.");
+          if (!result.isSuccess()) {
+            mSetupDone = false;
+            // Oh noes, there was a problem.
+            complain("Problem setting up in-app billing: " + result);
+            return;
+          }
+          mSetupDone = true;
+          Timber.d("Setup successful.");
+          if (packageFromExtra != null) {
+            contribBuyDo(Package.valueOf(packageFromExtra));
           }
         });
       } catch (SecurityException e) {
@@ -91,9 +109,15 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
     }
 
     if (savedInstanceState == null) {
-      ContribDialogFragment.newInstance(getIntent().getStringExtra(KEY_FEATURE),
-          getIntent().getSerializableExtra(KEY_TAG))
-          .show(getSupportFragmentManager(), "CONTRIB");
+      if (packageFromExtra == null) {
+        ContribDialogFragment.newInstance(getIntent().getStringExtra(KEY_FEATURE),
+            getIntent().getSerializableExtra(KEY_TAG))
+            .show(getSupportFragmentManager(), "CONTRIB");
+      } else {
+        //contribBuyDo(Package.valueOf(packageFromExtra));
+      }
+
+
     }
   }
 
@@ -162,7 +186,7 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
                         getString(R.string.contrib_key), getString(R.string.thank_you)),
                     Toast.LENGTH_SHORT).show();
                 if (keyResId == R.string.professional_key) {
-                  licenceHandler.registerSubscription();
+                  licenceHandler.registerSubscription(purchase.getSku());
                 } else {
                   licenceHandler.registerPurchase(keyResId == R.string.extended_key);
                 }
@@ -181,22 +205,26 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
         };
     String sku = licenceHandler.getSkuForPackage(aPackage);
 
-    if (aPackage.isProfessional()) {
-      mHelper.launchSubscriptionPurchaseFlow(
-          ContribInfoDialogActivity.this,
-          sku,
-          ProtectedFragmentActivity.PURCHASE_PREMIUM_REQUEST,
-          mPurchaseFinishedListener,
-          mPayload
-      );
-    } else {
+    String currentSubscription = licenceHandler.getCurrentSubscription();
+    if (currentSubscription == null) {
+      complain("Could not determine current subscription");
+      finish();
+      return;
+    }
+    List<String> oldSkus = getIntent().getBooleanExtra(KEY_SHOULD_REPLACE_EXISTING, false) ?
+        Collections.singletonList(currentSubscription) : null;
+
+    try {
       mHelper.launchPurchaseFlow(
           ContribInfoDialogActivity.this,
-          sku,
+          sku, aPackage.isProfessional() ? ITEM_TYPE_SUBS : ITEM_TYPE_INAPP,
+          oldSkus,
           ProtectedFragmentActivity.PURCHASE_PREMIUM_REQUEST,
           mPurchaseFinishedListener,
           mPayload
       );
+    } catch (IabHelper.IabAsyncInProgressException e) {
+      complain("Another async operation in progress.");
     }
   }
 
