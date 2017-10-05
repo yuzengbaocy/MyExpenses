@@ -183,14 +183,19 @@ public class MyApplication extends MultiDexApplication implements
   @Override
   protected void attachBaseContext(Context base) {
     super.attachBaseContext(base);
-    appComponent = DaggerAppComponent.builder()
-        .appModule(new AppModule(this))
-        .uiModule(new UiModule())
-        .build();
+    appComponent = buildAppComponent();
     appComponent.inject(this);
     if (acraConfiguration != null) {
       ACRA.init(this, acraConfiguration);
     }
+  }
+
+  @NonNull
+  protected AppComponent buildAppComponent() {
+    return DaggerAppComponent.builder()
+        .appModule(new AppModule(this))
+        .uiModule(new UiModule())
+        .build();
   }
 
   public void setupLogging() {
