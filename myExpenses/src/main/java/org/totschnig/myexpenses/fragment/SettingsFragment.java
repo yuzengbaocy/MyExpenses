@@ -66,11 +66,11 @@ import org.totschnig.myexpenses.util.AppDirHelper;
 import org.totschnig.myexpenses.util.CurrencyFormatter;
 import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.FileUtils;
-import org.totschnig.myexpenses.util.licence.LicenceHandler;
 import org.totschnig.myexpenses.util.ShareUtils;
 import org.totschnig.myexpenses.util.ShortcutHelper;
 import org.totschnig.myexpenses.util.UiUtils;
 import org.totschnig.myexpenses.util.Utils;
+import org.totschnig.myexpenses.util.licence.LicenceHandler;
 import org.totschnig.myexpenses.util.licence.LicenceStatus;
 import org.totschnig.myexpenses.util.licence.Package;
 import org.totschnig.myexpenses.widget.AbstractWidget;
@@ -85,6 +85,8 @@ import java.util.Locale;
 import javax.inject.Inject;
 
 import eltos.simpledialogfragment.SimpleDialog;
+import eltos.simpledialogfragment.form.Input;
+import eltos.simpledialogfragment.form.SimpleFormDialog;
 import eltos.simpledialogfragment.input.SimpleInputDialog;
 
 import static org.totschnig.myexpenses.activity.ProtectedFragmentActivity.RESTORE_REQUEST;
@@ -104,6 +106,7 @@ import static org.totschnig.myexpenses.preference.PrefKey.GROUP_MONTH_STARTS;
 import static org.totschnig.myexpenses.preference.PrefKey.GROUP_WEEK_STARTS;
 import static org.totschnig.myexpenses.preference.PrefKey.IMPORT_CSV;
 import static org.totschnig.myexpenses.preference.PrefKey.IMPORT_QIF;
+import static org.totschnig.myexpenses.preference.PrefKey.LICENCE_EMAIL;
 import static org.totschnig.myexpenses.preference.PrefKey.MANAGE_STALE_IMAGES;
 import static org.totschnig.myexpenses.preference.PrefKey.MANAGE_SYNC_BACKENDS;
 import static org.totschnig.myexpenses.preference.PrefKey.MORE_INFO_DIALOG;
@@ -139,6 +142,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
 
   private static final String DIALOG_VALIDATE_LICENCE = "validateLicence";
   private static final String DIALOG_MANAGE_LICENCE = "manageLicence";
+  private static final String KEY_EMAIL = "email";
+  private static final String KEY_KEY = "key";
   private long pickFolderRequestStart;
   private static final int PICK_FOLDER_REQUEST = 2;
   private static final int CONTRIB_PURCHASE_REQUEST = 3;
@@ -287,6 +292,9 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
       languagePref.setEntries(getLocaleArray(getContext()));
 
       findPreference(SYNC_NOTIFICATION).setOnPreferenceChangeListener(storeInDatabaseChangeListener);
+
+      findPreference(getString(R.string.pref_follow_gplus_key)).setTitle(
+          Utils.getTextWithAppName(getContext(), R.string.pref_follow_gplus_title));
     }
     //SHORTCUTS screen
     else if (rootKey.equals(UI_HOME_SCREEN_SHORTCUTS.getKey())) {
@@ -395,9 +403,12 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
       setOnOffSummary(PERFORM_PROTECTION_SCREEN, PERFORM_PROTECTION.getBoolean(false));
       Preference preference = findPreference(PLANNER_CALENDAR_ID);
       if (preference != null) {
-        preference.setSummary(
-            ((ProtectedFragmentActivity) getActivity()).isCalendarPermissionPermanentlyDeclined() ?
-                R.string.calendar_permission_required : R.string.pref_planning_calendar_summary);
+        if (((ProtectedFragmentActivity) getActivity()).isCalendarPermissionPermanentlyDeclined()) {
+          preference.setSummary(Utils.getTextWithAppName(getContext(),
+              R.string.calendar_permission_required));
+        } else {
+          preference.setSummary(R.string.pref_planning_calendar_summary);
+        }
       }
       configureContribPrefs();
     }
@@ -490,7 +501,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
     } else {
       contribPurchaseTitle = getString(R.string.licence_status) + ": " + getString(licenceStatus.getResId());
       if (licenceHandler.hasLegacyLicence()) {
-        contribPurchaseSummary = getString(R.string.licence_migration_info);
+        contribPurchaseSummary = Utils.getTextWithAppName(getContext(), R.string.licence_migration_info).toString();
       } else if (licenceStatus.isUpgradeable()) {
         contribPurchaseSummary = getString(R.string.pref_contrib_purchase_title_upgrade);
       } else {
@@ -643,19 +654,22 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
     }
     if (matches(preference, NEW_LICENCE)) {
       String licenceKey = NEW_LICENCE.getString("");
+      String licenceEmail = LICENCE_EMAIL.getString("");
       if (licenceHandler.isContribEnabled() && !licenceHandler.hasLegacyLicence()) {
         SimpleDialog.build()
             .title(R.string.licence_key)
-            .msg(licenceKey)
+            .msg(String.format("%s: %s", licenceEmail, licenceKey))
             .pos(R.string.button_validate)
             .neg(R.string.menu_remove)
             .show(this, DIALOG_MANAGE_LICENCE);
 
       } else {
-        SimpleInputDialog.build()
+        SimpleFormDialog.build()
             .title(R.string.pref_enter_licence_title)
-            .hint(R.string.licence_key)
-            .text(licenceKey)
+            .fields(
+                Input.email(KEY_EMAIL).required().text(licenceEmail),
+                Input.plain(KEY_KEY).required().hint(R.string.licence_key).text(licenceKey)
+            )
             .pos(R.string.button_validate)
             .neut()
             .show(this, DIALOG_VALIDATE_LICENCE);
@@ -800,7 +814,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
   public boolean onResult(@NonNull String dialogTag, int which, @NonNull Bundle extras) {
     if (DIALOG_VALIDATE_LICENCE.equals(dialogTag)) {
       if (which == BUTTON_POSITIVE) {
-        NEW_LICENCE.putString(extras.getString(SimpleInputDialog.TEXT));
+        NEW_LICENCE.putString(extras.getString(KEY_KEY));
+        LICENCE_EMAIL.putString(extras.getString(KEY_EMAIL));
         ((MyPreferenceActivity) getActivity()).validateLicence();
       }
     } else if (DIALOG_MANAGE_LICENCE.equals(dialogTag)) {

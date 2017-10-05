@@ -27,7 +27,6 @@
   <string name="comment">សម្គាល់</string>
   <string name="confirmation_dialog_dont_show_again">សូម​កុំ​បង្ហាញ​ម្តង​ទៀត</string>
   <string name="contrib_feature_accounts_unlimited_label" tools:ignore="UnusedResources">ចំនួន​គណនី​គ្មាន​ដែន​កំណត់</string>
-  <string name="contrib_feature_distribution_label" tools:ignore="UnusedResources">ការចែកចាយប្រតិបត្តិការផ្សេងៗ​តាមចំណាត់ថ្នាក់</string>
   <string name="contrib_feature_plans_unlimited_label" tools:ignore="UnusedResources">ចំនួន​ផែនការគ្មានដែន​កំណត់​</string>
   <string name="contrib_feature_template_widget_label" tools:ignore="UnusedResources">ប្រអប់​ធាតុពុម្ព</string>
   <!--Placeholder: 1 will be replace with either My Expenses Contrib Key or My Expenses Extended Key-->
@@ -56,7 +55,7 @@
   <string name="dialog_password_new_password_confirmation">ពាក្យសម្ងាត់ថ្មី (ការអះអាង)</string>
   <string name="dialog_remind_later">លើកក្រោយ</string>
   <string name="dialog_remind_no">ទេ, សូមអរគុណ</string>
-  <string name="dialog_remind_rate_1">សូម​យក​ឱកាស​នេះ​ ដើម្បី​​ផ្តល់​ការ​វាយ​តម្លៃ ​និង​មតិដល់ My Expenses​។</string>
+  <string name="dialog_remind_rate_1">សូម​យក​ឱកាស​នេះ​ ដើម្បី​​ផ្តល់​ការ​វាយ​តម្លៃ ​និង​មតិដល់ {app_name}។</string>
   <string name="dialog_remind_rate_2">យោបល់​របស់​អ្នក​អនុញ្ញាត​ឲ្យ​ខ្ញុំ​ នៅ​បន្ត​ការ​កែ​លម្អ​បន្ថែម ​និងធ្វើអោយ​ភាព​ប្រសើរ​ឡើង​ទៀត។</string>
   <string name="dialog_remind_rate_yes">វាយតម្លៃឥលូវ</string>
   <string name="dialog_security_answer">ចម្លើយ</string>
@@ -205,7 +204,7 @@
   <string name="plan">ផែនការ</string>
   <string name="plan_automatic">ដោយ​ស្វ័យ​ប្រវត្តិ</string>
   <!--this is the label for the calendar where plans for future and recurrent transactions are stored-->
-  <string name="plan_calendar_name">កម្មវិធី​ផែនការរបស់ My Expenses</string>
+  <string name="plan_calendar_name">កម្មវិធី​ផែនការរបស់ {app_name}</string>
   <string name="plan_event_deleted">គម្រោងនេះ​ភ្ជាប់នឹង​ពុម្ពនេះ​ ត្រូវបាន​លុបចេញ​ពី​ប្រតិទិន</string>
   <!--This message is shown, after a user decides to not apply a manual plan-->
   <string name="plan_execution_canceled">គម្រោង​ដំណើរការ​បាន​​បោះបង់ហើយ</string>
@@ -231,8 +230,10 @@
   <string name="pref_category_title_ui">User Interface</string>
   <string name="pref_checkbox_enabled">បើក</string>
   <string name="pref_checkbox_disabled">បិទ</string>
+  <!--premium features refers to features of all three levels (Contrib, Extended, Professional-->
+  <!--premium features refers to features of all three levels (Contrib, Extended, Professional-->
   <string name="pref_export_format_title">ទ្រង់ទ្រាយទិន្នន័យ</string>
-  <string name="pref_follow_gplus_title">ជួប My Expenses នៅ Google+</string>
+  <string name="pref_follow_gplus_title">ជួប {app_name} នៅ Google+</string>
   <string name="pref_import_from_grisbi_title">នាំចូលពី Grisbi</string>
   <!--%s is replaced with QIF or CSV-->
   <!--%s is replaced with QIF or CSV-->
@@ -308,8 +309,8 @@
   <string name="sum_expenses">ចំណាយ</string>
   <string name="sum_income">ចំណូល</string>
   <string name="sum_transfer">ការបញ្ជូនចេញ</string>
-  <!--%s is replaced with Android or Blackberry-->
-  <string name="tell_a_friend_message">ការចំណាយរបស់ខ្ញុំ, កម្មវិធី​គ្រប់គ្រង​ហិរញ្ញវត្ថុផ្ទាល់ខ្លួន​ សម្រាប់​ប្រព័ន្ធ​​ប្រតិបត្តិការ %s, http://www.myexpenses.mobi</string>
+  <!--platform is replaced with Android or Blackberry-->
+  <string name="tell_a_friend_message">{app_name}, កម្មវិធី​គ្រប់គ្រង​ហិរញ្ញវត្ថុផ្ទាល់ខ្លួន​ សម្រាប់​ប្រព័ន្ធ​​ប្រតិបត្តិការ {platform}, {website}</string>
   <string name="template_create_success">ទិន្នន័យ​គំរូ \"%1$s\" បង្កើត​បានជោគជ័យ</string>
   <string name="thank_you">សូមអរគុណសម្រាប់ការគាំទ្ររបស់អ្នក!</string>
   <string name="time">ពេលវេលា</string>
@@ -379,4 +380,5 @@
   <!--describes the state of a plan instance that has been applied, i.e. a transaction has been entered into the database for it. Used as content description for icon in list.-->
   <!--Sort plans (recurring transactions) by the next instance-->
   <string name="template">ទិន្ន​ន័យ​គំរូ</string>
+  <!--%1$s date, %2$s price-->
 </resources>

@@ -35,11 +35,12 @@
   <string name="contrib_feature_ad_free_label" tools:ignore="UnusedResources">Reklamsız</string>
   <string name="contrib_feature_accounts_unlimited_label" tools:ignore="UnusedResources">Sınırsız sayıda hesap</string>
   <string name="contrib_feature_attach_picture_label" tools:ignore="UnusedResources">Muameleye resim ekle</string>
-  <string name="contrib_feature_distribution_label" tools:ignore="UnusedResources">Muamelelerin kategori başına dağılımı</string>
+  <string name="contrib_feature_distribution_label" tools:ignore="UnusedResources">Dilim grafik (kategori başına dağılım)</string>
   <string name="contrib_feature_plans_unlimited_label" tools:ignore="UnusedResources">Sınırsız plan sayısı</string>
   <string name="contrib_feature_print_label" tools:ignore="UnusedResources">Muamele listesini PDF dosyasına aktar</string>
   <string name="contrib_feature_template_widget_label" tools:ignore="UnusedResources">Şablon widget\'i</string>
   <string name="contrib_feature_csv_import_label" tools:ignore="UnusedResources">CSV içe aktar</string>
+  <string name="contrib_feature_split_template_label" tools:ignore="UnusedResources">Sınırsız sayıda bölünmüş şablonlar</string>
   <string name="licence_status_free">Ücretsiz</string>
   <string name="contrib_key">Katkı Anahtarı</string>
   <string name="extended_key">Genişletilmiş Anahtarı</string>
@@ -70,14 +71,15 @@
   <string name="dialog_contrib_no_usages_left">Hiçbir ücretsiz kullanım kalmamıştır.</string>
   <!--Placeholder: 1 is name of the feature. 2 is required key (Contrib or Extended)-->
   <string name="dialog_contrib_premium_feature">%1$s katkı işlevidir (%2$s).</string>
-  <string name="dialog_contrib_reminder_remove_limitation">Bu sınırlamayı kaldırıp daha fazla işleve erişmek için <i>Harcalamalarım</i>\'ı yükseltin.</string>
-  <string name="dialog_contrib_text_1"><i>Harcamalarım</i> ücretsiz ve özgür yazılım olarak sunulmuştur.</string>
-  <string name="dialog_contrib_text_2">Lütfen <i>Harcamalarım</i>\'ı yükselterek katkıda bulunun ve aşağıdaki işlevlere sınırsız erişim elde edin:</string>
+  <string name="dialog_contrib_reminder_remove_limitation">Bu sınırlamayı kaldırıp daha fazla işleve erişmek için <i>{app_name}</i>\'ı yükseltin.</string>
+  <string name="dialog_contrib_text_1"><i>{app_name}</i> ücretsiz ve özgür yazılım olarak sunulmuştur.</string>
+  <string name="dialog_contrib_text_2">Lütfen <i>{app_name}</i>\'ı yükselterek katkıda bulunun ve aşağıdaki işlevlere sınırsız erişim elde edin:</string>
   <string name="dialog_contrib_usage_count">Kalan ücretsiz kullanım</string>
   <string name="dialog_contrib_usage_limit" tools:ignore="PluralsCandidate">Güncel lisans durumunuz (%2$s) ile bunu %1$d defa kullanabilirsiniz.</string>
   <string name="dialog_contrib_usage_limit_synchronization" tools:ignore="PluralsCandidate">Güncel lisans durumunuz (%2$s) ile bunu %1$d gün kullanabilirsiniz.</string>
   <string name="dialog_contrib_usage_limit_accounts" tools:ignore="PluralsCandidate">Güncel lisans durumunuz (%2$s) %1$d hesap oluşturmanıza izin vermektedir.</string>
   <string name="dialog_contrib_usage_limit_plans" tools:ignore="PluralsCandidate">Güncel lisans durumunuz (%2$s) %1$d planlama oluşturmanıza izin vermektedir.</string>
+  <string name="dialog_contrib_usage_limit_split_templates">Güncel lisans durumunuz (%1$s) 1 bölünmüş şablon oluşturmanıza izin vermektedir.</string>
   <string name="dialog_export_delete">Dışa aktarılan muameleleri sil</string>
   <string name="dialog_export_not_yet_exported">Sadece henüz dışa aktarılmamış muameleleri aktar</string>
   <string name="dialog_password_activate_protection">Parola ile korumayı etkinleştir</string>
@@ -86,8 +88,8 @@
   <string name="dialog_password_new_password_confirmation">Yeni parola (teyit)</string>
   <string name="dialog_remind_later">Daha sonra</string>
   <string name="dialog_remind_no">Hayır teşekkürler</string>
-  <string name="dialog_remind_rate_how_many_stars">Harcamalarım\'a kaç yıldız verirsiniz?</string>
-  <string name="dialog_remind_rate_1">Harcamalarım\'ı yorumlamak ve puan vermek için lütfen bir dakikanızı ayrınız.</string>
+  <string name="dialog_remind_rate_how_many_stars">{app_name}\'a kaç yıldız verirsiniz?</string>
+  <string name="dialog_remind_rate_1">{app_name}\'ı yorumlamak ve puan vermek için lütfen bir dakikanızı ayrınız.</string>
   <string name="dialog_remind_rate_2">Yorumlarınız devamlı olarak geliştirme ve iyileştirmeler eklememize imkân vermektedir.</string>
   <string name="dialog_remind_rate_1_suggest_improvement">Bize geliştirme için tavsiyelerinizi yollamak için lütfen bir dakikanızı ayırınız.</string>
   <string name="dialog_remind_rate_yes">Şimdi not ver</string>
@@ -142,7 +144,6 @@
   <string name="licence_validation_failure">Lisans anahtarı doğrulanamadı.</string>
   <string name="licence_validation_success">Lisans anahtarı başarıyla doğrulandı:</string>
   <string name="licence_validation_premium">Ödemeli işlevlerin kilidi açılmıştır.</string>
-  <string name="licence_validation_extended">Genişletilmiş işlevlerin kilidi açıldı.</string>
   <string name="menu_aggregates">Toplam</string>
   <!--Shown in a notification; allows to apply a template (instantiate a new transaction from it)-->
   <string name="menu_apply_template">Uygula</string>
@@ -248,7 +249,7 @@
   <string name="plan">Planla</string>
   <string name="plan_automatic">otomatik</string>
   <!--this is the label for the calendar where plans for future and recurrent transactions are stored-->
-  <string name="plan_calendar_name">Harcamalarım planlayıcısı</string>
+  <string name="plan_calendar_name">{app_name} planlayıcısı</string>
   <string name="plan_event_deleted">Bu şablonla ilişkili planlama takvimden silindi.</string>
   <!--This message is shown, after a user decides to not apply a manual plan-->
   <string name="plan_execution_canceled">Planı yürütme iptal edildi</string>
@@ -277,15 +278,17 @@
   <string name="pref_category_title_ui">Kullanıcı arayüzü</string>
   <string name="pref_checkbox_enabled">Etkinleştirilmiş</string>
   <string name="pref_checkbox_disabled">Devre dışı</string>
-  <string name="pref_contrib_purchase_summary">Premium (ödemeli) ve genişletilmiş işlevlere erişim satın al.</string>
+  <!--premium features refers to features of all three levels (Contrib, Extended, Professional-->
+  <string name="pref_contrib_purchase_summary">Premium (ödemeli) işlevlere erişim satın al.</string>
   <string name="pref_contrib_purchase_title">Anahtarını Satın Al</string>
   <string name="pref_contrib_purchase_title_upgrade">Yükseltme anahtarı</string>
   <string name="pref_contrib_purchase_title_in_app">Uygulama içi ödeme</string>
   <string name="pref_custom_currency_title">Para birimlerini kişiselleştir</string>
+  <!--premium features refers to features of all three levels (Contrib, Extended, Professional-->
   <string name="pref_enter_licence_summary" tools:ignore="UnusedResources">Eğer anahtarı aldıysanız tüm işlevlere erişim kazanın.</string>
   <string name="pref_enter_licence_title" tools:ignore="UnusedResources">Anahtarını gir</string>
   <string name="pref_export_format_title">Veri biçimi</string>
-  <string name="pref_follow_gplus_title">Harcamalarım\'ı Google+\'da takip edin</string>
+  <string name="pref_follow_gplus_title">{app_name}\'ı Google+\'da takip edin</string>
   <string name="pref_import_from_grisbi_summary">Kategori (ve bölüm) içeri aktar Grisbi XML.</string>
   <string name="pref_import_from_grisbi_title">Grisbi\'den içeri aktar</string>
   <!--%s is replaced with QIF or CSV-->
@@ -384,8 +387,8 @@
   <string name="sum_expenses">Harcamalar</string>
   <string name="sum_income">Gelirler</string>
   <string name="sum_transfer">Transferler</string>
-  <!--%s is replaced with Android or Blackberry-->
-  <string name="tell_a_friend_message">%s için kişisel finans yöneticisi olan Harcamalarım\'a http://www.myexpenses.mobi adresinde göz atın</string>
+  <!--platform is replaced with Android or Blackberry-->
+  <string name="tell_a_friend_message">{platform} için kişisel finans yöneticisi olan {app_name}\'a {website} adresinde göz atın</string>
   <string name="template_create_success">\"%1$s\" şablonu başarıyla oluşturuldu</string>
   <string name="thank_you">Desteğiniz için teşekkür ederiz!</string>
   <string name="time">Zaman</string>
@@ -433,7 +436,7 @@
   <string name="warning_reset_account_all">Devam ederseniz, tüm hesaplar%1$s için muameleler veritabanından silinecek ve bu geri alınamayacaktır.</string>
   <string name="warning_reset_account_matched">Eğer devam ederseniz, güncel filtre ile eşleşen muameleler veritabanından silinecek ve bu geri alınamayacaktır.</string>
   <string name="warning_restore">Veritabanı ve tercihler \"%1$s\" yedekleme dosyasından yüklenecektir. Güncel veriler silinecektir. Devam etmek istiyor musunuz?</string>
-  <string name="warning_app_folder_will_be_deleted_upon_uninstall">Eğer Harcamalarım\'ı kaldırırsanız şu anda seçili olan dışa aktarmalar ve yedeklemeler klasörü Android tarafından otomatik olarak silinecektir. Buna mani olmak için Ayarlar ekranından başka bir klasör seçebilirsiniz.</string>
+  <string name="warning_app_folder_will_be_deleted_upon_uninstall">Eğer {app_name}\'ı kaldırırsanız şu anda seçili olan dışa aktarmalar ve yedeklemeler klasörü Android tarafından otomatik olarak silinecektir. Buna mani olmak için Ayarlar ekranından başka bir klasör seçebilirsiniz.</string>
   <string name="warning_splitpartcategory_context">Bölünmüş muamelelerin bir parçası olan transferler sadece bu bölünmüş muamele bağlamında düzenlenebilirler.</string>
   <string name="validation_error_number_out_of_range" tools:ignore="PluralsCandidate">%1$d ilâ %2$d arası bir sayı ayarlayınız</string>
   <string name="warning_change_fraction_digits_1">Yeni kesir basamak sayısıyla eşleşmesi için veritabanındaki meblağların güncellenmesi gerekmektedir.</string>
@@ -532,13 +535,12 @@
   <string name="menu_show_transactions">Muameleleri göster</string>
   <string name="pref_custom_decimal_format_title">Sayı biçimi</string>
   <string name="pref_custom_decimal_format_summary">Eğer tercümenin varsayılan biçiminden memnun değilseniz, ihtiyacınıza göre uyarlayın. Varsayılan biçimi geri getirmek için boş bırakın.</string>
-  <string name="licence_validation_upgrade_needed" tools:ignore="UnusedResources">Lütfen Harcamalarım Katkı sürümünü 1.5\'e güncelleyiniz.</string>
   <string name="pref_auto_backup_title">Otomatik yedekleme</string>
   <string name="pref_auto_backup_summary">Veritabanını belirtilen zamanda (sadece verilerde değişiklik varsa) her gün yedekle.</string>
   <string name="pref_auto_backup_time_title">Otomatik yedekleme zamanı</string>
   <string name="warning_auto_backup_limited_trial" tools:ignore="PluralsCandidate">%d başarılı otomatik yedekleme ardından otomatik yedekleme devre dışı bırakılacaktır.</string>
   <string name="warning_auto_backup_limit_reached">Başarılı otomatik yedeklemeler için sınıra erişildi.</string>
-  <string name="calendar_permission_required">Gelecek ve tekrar eden muameleler oluşturabilmek amacıyla <i>Harcamalarım</i>\'ın takviminize erişmek için müsaadeye ihtiyacı vardır. </string>
+  <string name="calendar_permission_required">Gelecek ve tekrar eden muameleler oluşturabilmek amacıyla <i>{app_name}</i>\'ın takviminize erişmek için müsaadeye ihtiyacı vardır. </string>
   <string name="button_request_calendar_access" tools:ignore="UnusedResources">İzin ver</string>
   <string name="switch_on_text">Açık</string>
   <string name="switch_off_text">Kapalı</string>
@@ -580,7 +582,7 @@
   <string name="synchronization">Eşleşmeli</string>
   <string name="synchronization_none">Eşleşmesiz</string>
   <string name="hint_url">Bağlantı</string>
-  <string name="description_webdav_url">Lütfen WebDAV sunucunuzdaki özel bir klasör için bağlantı girin. Harcamalarım verilerini bu klasör içinde saklayacak ve dışında hiçbir şeye dokunmayacaktır.</string>
+  <string name="description_webdav_url">Lütfen WebDAV sunucunuzdaki özel bir klasör için bağlantı girin. {app_name} verilerini bu klasör içinde saklayacak ve dışında hiçbir şeye dokunmayacaktır.</string>
   <string name="description_webdav_trust_certificate">Ağ sitesi Android tarafından güvenilmeyen bir sertifika kullanmaktadır.</string>
   <string name="hint_user_name">Kullanıcı ismi</string>
   <string name="hint_password">Parola</string>
@@ -609,7 +611,7 @@
   <string name="dialog_confirm_sync_link_remote">Bu hesabın yerel verileri silinecektir.</string>
   <string name="warning_synchronization_limited_trial">Eşleşme işlevi %s tarihine kadar denenebilir.</string>
   <string name="warning_synchronization_limit_reached">Eşleşme işlevini deneme zaman aralığı sona ermiştir.</string>
-  <string name="warning_synchronization_folder_usage">Bu klasör, Harcamalarım\'ın değişik cihazlardaki kurulumları arasında eşleştirme yapmak için kullanılır. Lütfen içeriğini elle değiştirmeyin.</string>
+  <string name="warning_synchronization_folder_usage">Bu klasör, {app_name}\'ın değişik cihazlardaki kurulumları arasında eşleştirme yapmak için kullanılır. Lütfen içeriğini elle değiştirmeyin.</string>
   <string name="warning_synchronization_select_parent" tools:ignore="UnusedResources">Seçtiğiniz klasör mevcut arka ucun bir hesabına denk gelmektedir. Bu arka ucu kullanmak için bir üst klasörü seçmeniz gerekir.</string>
   <string name="select_unsynced_accounts">Bu arka uçla eşleştirilecek hesapları seç</string>
   <string name="link_account_success" tools:ignore="PluralsCandidate">%d hesap arka uçla eşleştirmek için yapılandırıldı.</string>
@@ -621,6 +623,7 @@
   <string name="contrib_feature_synchronization_label" tools:ignore="UnusedResources">Bulut eşleşmesi</string>
   <string name="licence_status">Lisans durumunuz</string>
   <string name="all_contrib_key_features">Katkı Anahtarının tüm işlevleri</string>
+  <string name="all_extended_key_features">Genişletilmiş Anahtar\'ın tüm işlevleri</string>
   <string name="upgrade_now">Şimdi yükselt</string>
   <string name="pref_backup_cloud_title">Eşleşme arka ucunda sakla</string>
   <string name="pref_backup_cloud_summary">Cihazdaki yerel stoklamaya ek olarak, yedekleme dosyası uzaktaki bir arka uca kopyalanabilir.</string>
@@ -647,7 +650,7 @@
   <string name="pref_webdav_timeout_title">WebDAV Zaman Aşımı</string>
   <string name="sync_state_restored">%d hesap için eşleştirme durumu geri getirildi.</string>
   <string name="sync_state_could_not_be_restored">%d hesap için eşleştirme durumu geri getirilemedi.</string>
-  <string name="onboarding_ui_title">Harcamalarım tercihinize uyum sağlar</string>
+  <string name="onboarding_ui_title">{app_name} tercihinize uyum sağlar</string>
   <string name="onboarding_data_title">İlk hesabınızı kuralım</string>
   <string name="onboarding_get_started">Başlarken</string>
   <string name="onboarding_more_options">Daha fazla seçenek</string>
@@ -658,4 +661,30 @@
   <string name="contributed_by">Katkıda bulunan: %s</string>
   <string name="pref_sync_notification_summary">Eşleşme ilerlemesi hakkında bildirim göster</string>
   <string name="pref_debug_logging_summary">Hata ayıklama verilerini sistem kütüğüne yaz</string>
+  <string name="plan_custom_recurrence_info">Lütfen önce şablonu kaydedin. O zaman planlama takvim uygulamasında açılacaktır ve burada özel bir tekrarlama seçebilirsiniz.</string>
+  <string name="storage_permission_required">Seçtiğiniz kaynak sadece harici bir depolama alanından okuma iznini verirseniz okunabilir.</string>
+  <string name="picture">Resim</string>
+  <string name="menu_create_template_for_split">Yeni bölünmüş şablon</string>
+  <string name="progress_validating_licence">Lisans doğrulanıyor</string>
+  <string name="licence_validation_error_expired">Lisans sona ermiş</string>
+  <string name="licence_validation_error_device_limit_exceeded">Cİhaz sınırı aşılmıştır. Lütfen başka bir cihazdan lisansı kaldırın.</string>
+  <string name="error">Hata (%s)</string>
+  <string name="button_validate">Doğrula</string>
+  <string name="licence_key">Lisans Anahtarı</string>
+  <string name="licence_removal_information">Eğer bu cihazda genişletilmiş işlevlere ihtiyaç duymuyorsanız, lisans anahtarını kaldırabilirsiniz. Bu, anahtarı başka bir cihazda etkinleştirebilmenize izin verir. Anahtar en çok %d cihazda etkinleştirilebilir. </string>
+  <string name="progress_removing_licence">Lisans kaldırılıyor</string>
+  <string name="licence_removal_success">Lisans anahtarı bu cihazdan başarılı bir şekilde kaldırılmıştır.</string>
+  <string name="professional_key">Profesyonel Anahtar</string>
+  <string name="n_months">%s ay</string>
+  <string name="eu_vat_info">Görüntülenen fiyatlar Avrupa Birliği\'ndeki kullanıcılar için KDV\'yi içermemektedir.</string>
+  <string name="pref_contrib_purchase_title_renew">Lisansı yenile</string>
+  <string name="licence_migration_info">{app_name} yeni bir lisans doğrulama mekanizması kullanmaktadır. Lütfen yeni bir anahtar talep edin.</string>
+  <string name="valid_until">%s tarihine kadar geçerli</string>
+  <!--%1$s date, %2$s price-->
+  <string name="extend_until">%1$s tarihine kadar %2$s fiyatına yenile</string>
+  <string name="extended_upgrade_goodie_github">%d ek ay bir defalık olmak üzere zaten Genişletilmiş Lisansa sahip olan kullanıcılara verilmiştir</string>
+  <string name="extended_upgrade_goodie_subscription">Genişletilmiş Lisansa zaten sahip olan kullanıcılar ilk sene normal fiyatın (%s) %%50\'sini öderler.</string>
+  <string name="switch_to_yearly">Senelik aboneliğe geç</string>
+  <string name="switch_to_monthly">Aylık aboneliğe geç</string>
+  <string name="extend_validity">Geçerliliği uzat</string>
 </resources>

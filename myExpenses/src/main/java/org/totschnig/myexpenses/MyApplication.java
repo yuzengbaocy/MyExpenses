@@ -30,6 +30,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.StrictMode;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StyleRes;
 import android.support.multidex.MultiDexApplication;
@@ -59,9 +60,9 @@ import org.totschnig.myexpenses.service.DailyAutoBackupScheduler;
 import org.totschnig.myexpenses.service.PlanExecutor;
 import org.totschnig.myexpenses.sync.SyncAdapter;
 import org.totschnig.myexpenses.util.AcraHelper;
-import org.totschnig.myexpenses.util.licence.LicenceHandler;
 import org.totschnig.myexpenses.util.Result;
 import org.totschnig.myexpenses.util.Utils;
+import org.totschnig.myexpenses.util.licence.LicenceHandler;
 import org.totschnig.myexpenses.util.log.TagFilterFileLoggingTree;
 import org.totschnig.myexpenses.widget.AbstractWidget;
 import org.totschnig.myexpenses.widget.AccountWidget;
@@ -149,12 +150,6 @@ public class MyApplication extends MultiDexApplication implements
     }
     super.onCreate();
     AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
-    //Maybe prevents occasional crashes on Gingerbread
-    //https://code.google.com/p/android/issues/detail?id=81083
-    try {
-      Class.forName("android.os.AsyncTask");
-    } catch (Throwable ignore) {
-    }
     mSelf = this;
     setupLogging();
     if (!ACRA.isACRASenderServiceProcess()) {
@@ -186,10 +181,7 @@ public class MyApplication extends MultiDexApplication implements
   @Override
   protected void attachBaseContext(Context base) {
     super.attachBaseContext(base);
-    appComponent = DaggerAppComponent.builder()
-        .appModule(new AppModule(this))
-        .uiModule(new UiModule())
-        .build();
+    appComponent = buildAppComponent();
     appComponent.inject(this);
     if (acraConfiguration != null) {
       ACRA.init(this, acraConfiguration);
@@ -197,6 +189,14 @@ public class MyApplication extends MultiDexApplication implements
       ACRA.getErrorReporter().putCustomData("Installer", getPackageManager()
           .getInstallerPackageName(getPackageName()));
     }
+  }
+
+  @NonNull
+  protected AppComponent buildAppComponent() {
+    return DaggerAppComponent.builder()
+        .appModule(new AppModule(this))
+        .uiModule(new UiModule())
+        .build();
   }
 
   public void setupLogging() {
@@ -486,7 +486,7 @@ public class MyApplication extends MultiDexApplication implements
           CalendarContractCompat.ACCOUNT_TYPE_LOCAL);
       values.put(Calendars.NAME, PLANNER_CALENDAR_NAME);
       values.put(Calendars.CALENDAR_DISPLAY_NAME,
-          getString(R.string.plan_calendar_name));
+          Utils.getTextWithAppName(this,R.string.plan_calendar_name).toString());
       values.put(Calendars.CALENDAR_COLOR,
           getResources().getColor(R.color.appDefault));
       values.put(Calendars.CALENDAR_ACCESS_LEVEL, Calendars.CAL_ACCESS_OWNER);

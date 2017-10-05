@@ -35,7 +35,6 @@
   <string name="contrib_feature_ad_free_label" tools:ignore="UnusedResources">Nessun annuncio</string>
   <string name="contrib_feature_accounts_unlimited_label" tools:ignore="UnusedResources">Numero illimitato di conti</string>
   <string name="contrib_feature_attach_picture_label" tools:ignore="UnusedResources">Allegare un\'immagine alla transazione</string>
-  <string name="contrib_feature_distribution_label" tools:ignore="UnusedResources">Distribuzione di transazioni per categoria</string>
   <string name="contrib_feature_plans_unlimited_label" tools:ignore="UnusedResources">Numero illimitato di scadenze</string>
   <string name="contrib_feature_print_label" tools:ignore="UnusedResources">Esportazione dell\'elenco delle transazioni in PDF</string>
   <string name="contrib_feature_template_widget_label" tools:ignore="UnusedResources">Widget modelli</string>
@@ -70,9 +69,9 @@
   <string name="dialog_contrib_no_usages_left">Hai terminato i tuoi usi gratuiti.</string>
   <!--Placeholder: 1 is name of the feature. 2 is required key (Contrib or Extended)-->
   <string name="dialog_contrib_premium_feature">%1$s è una funzionalità speciale (%2$s).</string>
-  <string name="dialog_contrib_reminder_remove_limitation">Rimuovere questa limitazione e accedere ad altre funzionalità aggiornando <i>Le mie spese</i>.</string>
-  <string name="dialog_contrib_text_1"><i>Le mie spese</i> è offerta senza pubblicità e open source.</string>
-  <string name="dialog_contrib_text_2">Si prega di contribuire aggiornando <i>Le mie spese</i> e ottenere l\'accesso illimitato alle seguenti caratteristiche:</string>
+  <string name="dialog_contrib_reminder_remove_limitation">Rimuovere questa limitazione e accedere ad altre funzionalità aggiornando <i>{app_name}</i>.</string>
+  <string name="dialog_contrib_text_1"><i>{app_name}</i> è offerta senza pubblicità e open source.</string>
+  <string name="dialog_contrib_text_2">Si prega di contribuire aggiornando <i>{app_name}</i> e ottenere l\'accesso illimitato alle seguenti caratteristiche:</string>
   <string name="dialog_contrib_usage_count">Usi gratuiti</string>
   <string name="dialog_contrib_usage_limit" tools:ignore="PluralsCandidate">Si può usare fino a %1$d volte con il tuo stato corrente della licenza (%2$s).</string>
   <string name="dialog_contrib_usage_limit_synchronization" tools:ignore="PluralsCandidate">È possibile utilizzarlo per il %1$d giorni con il tuo stato corrente della licenza (%2$s).</string>
@@ -86,8 +85,8 @@
   <string name="dialog_password_new_password_confirmation">Nuova password (conferma)</string>
   <string name="dialog_remind_later">Più tardi</string>
   <string name="dialog_remind_no">No grazie</string>
-  <string name="dialog_remind_rate_how_many_stars">Quante stelle daresti a <i>Le mie spese</i>?</string>
-  <string name="dialog_remind_rate_1">Prenditi un momento per votare e rivedere <i>Le mie spese</i>.</string>
+  <string name="dialog_remind_rate_how_many_stars">Quante stelle daresti a {app_name}?</string>
+  <string name="dialog_remind_rate_1">Prenditi un momento per votare e rivedere {app_name}.</string>
   <string name="dialog_remind_rate_2">I tuoi commenti ci permettono di aggiungere continuamente miglioramenti e perfezionamenti.</string>
   <string name="dialog_remind_rate_1_suggest_improvement">Prenditi un momento per inviarci i tuoi suggerimenti per migliorarci.</string>
   <string name="dialog_remind_rate_yes">Vota ora</string>
@@ -142,7 +141,6 @@
   <string name="licence_validation_failure">Impossible convalidare la chiave di licenza.</string>
   <string name="licence_validation_success">Chiave di licenza convalidata con successo</string>
   <string name="licence_validation_premium">Le funzioni premium sono state sbloccate.</string>
-  <string name="licence_validation_extended">Le funzionalità ampliate sono state sbloccate.</string>
   <string name="menu_aggregates">Sommato</string>
   <!--Shown in a notification; allows to apply a template (instantiate a new transaction from it)-->
   <string name="menu_apply_template">Applicare</string>
@@ -248,7 +246,7 @@
   <string name="plan">Scadenza</string>
   <string name="plan_automatic">automatica</string>
   <!--this is the label for the calendar where plans for future and recurrent transactions are stored-->
-  <string name="plan_calendar_name">Le mie spese pianificazione</string>
+  <string name="plan_calendar_name">{app_name} pianificazione</string>
   <string name="plan_event_deleted">Il piano associato a questo modello è stato eliminato dal calendario.</string>
   <!--This message is shown, after a user decides to not apply a manual plan-->
   <string name="plan_execution_canceled">Esecuzione della scadenza annullata</string>
@@ -277,15 +275,17 @@
   <string name="pref_category_title_ui">Interfaccia utente</string>
   <string name="pref_checkbox_enabled">Abilitato</string>
   <string name="pref_checkbox_disabled">Non abilitato</string>
-  <string name="pref_contrib_purchase_summary">Acquistare l\'accesso a funzionalità premium e ampliate.</string>
+  <!--premium features refers to features of all three levels (Contrib, Extended, Professional-->
+  <string name="pref_contrib_purchase_summary">Acquistare l\'accesso a funzionalità premium.</string>
   <string name="pref_contrib_purchase_title">Acquisto la chiave</string>
   <string name="pref_contrib_purchase_title_upgrade">Aggiornare la chiave</string>
   <string name="pref_contrib_purchase_title_in_app">pagamento nel applicazione</string>
   <string name="pref_custom_currency_title">Personalizzare le valute</string>
+  <!--premium features refers to features of all three levels (Contrib, Extended, Professional-->
   <string name="pref_enter_licence_summary" tools:ignore="UnusedResources">Se avete ricevuto una chiave, otterrete l\'accesso a funzionalità speciali.</string>
   <string name="pref_enter_licence_title" tools:ignore="UnusedResources">Inserisci la chiave</string>
   <string name="pref_export_format_title">Formato dati</string>
-  <string name="pref_follow_gplus_title">Segui Le Mie Spese su Google+</string>
+  <string name="pref_follow_gplus_title">Segui {app_name} su Google+</string>
   <string name="pref_import_from_grisbi_summary">Importazione di categorie e beneficiari Grisbi XML.</string>
   <string name="pref_import_from_grisbi_title">Importazione dei dati Grisbi</string>
   <!--%s is replaced with QIF or CSV-->
@@ -384,8 +384,8 @@
   <string name="sum_expenses">Spese</string>
   <string name="sum_income">Reddito</string>
   <string name="sum_transfer">Trasferimenti</string>
-  <!--%s is replaced with Android or Blackberry-->
-  <string name="tell_a_friend_message">Le mie spese, Gestione delle finanze personali per %s, http://www.myexpenses.mobi</string>
+  <!--platform is replaced with Android or Blackberry-->
+  <string name="tell_a_friend_message">{app_name}, Gestione delle finanze personali per {platform}, {website}</string>
   <string name="template_create_success">Il modello \"%1$s\" è stato creato con successo</string>
   <string name="thank_you">Grazie per il tuo sostegno!</string>
   <string name="time">Ora</string>
@@ -433,7 +433,7 @@
   <string name="warning_reset_account_all">Se si continua, tutte le operazioni di tutti i conti%1$s verranno eliminate dal database e non potranno essere ripristinate.</string>
   <string name="warning_reset_account_matched">Se si continua, le transazioni che corrispondono al filtro corrente verranno eliminate dal database e non potranno essere ripristinate.</string>
   <string name="warning_restore">Database e impostazioni verranno ripristinati dal backup (%1$s). I dati attuali verranno cancellati. Vuoi continuare?</string>
-  <string name="warning_app_folder_will_be_deleted_upon_uninstall">La cartella correntemente selezionata per i backup e le esportazioni verrà automaticamente eliminata da Android se si disinstalla <i>Le mie spese</i>. È possibile impedire che ciò accada selezionando una cartella diversa dalla schermata impostazioni.</string>
+  <string name="warning_app_folder_will_be_deleted_upon_uninstall">La cartella correntemente selezionata per i backup e le esportazioni verrà automaticamente eliminata da Android se si disinstalla {app_name}. È possibile impedire che ciò accada selezionando una cartella diversa dalla schermata impostazioni.</string>
   <string name="warning_splitpartcategory_context">I trasferimenti che sono parte di un\'operazione frazionata possono essere modificati solamente nell\'ambito del frazionamento.</string>
   <string name="validation_error_number_out_of_range" tools:ignore="PluralsCandidate">Si prega di impostare un numero compreso tra %1$d e %2$d</string>
   <string name="warning_change_fraction_digits_1">Gli importi nel database devono essere aggiornati al fine di corrispondere al nuovo numero di cifre frazionarie.</string>
@@ -532,13 +532,12 @@
   <string name="menu_show_transactions">Visualizzare operazioni</string>
   <string name="pref_custom_decimal_format_title">Formato numero</string>
   <string name="pref_custom_decimal_format_summary">Se non siete soddisfatti con il formato predefinito per le impostazioni internazionali, è possibile adattarlo alle proprie esigenze. Lasciare vuoto per ripristinare il formato predefinito.</string>
-  <string name="licence_validation_upgrade_needed" tools:ignore="UnusedResources">Si prega di aggiornare Le mie spese Contrib alla versione 1.5.</string>
   <string name="pref_auto_backup_title">Attivare il backup automatico</string>
   <string name="pref_auto_backup_summary">Backup del database ogni giorno all\'ora specificata (solo se i dati sono cambiati)</string>
   <string name="pref_auto_backup_time_title">Ora di backup automatico</string>
   <string name="warning_auto_backup_limited_trial" tools:ignore="PluralsCandidate">Dopo %d successo automatico backup, backup automatico verrà disattivato.</string>
   <string name="warning_auto_backup_limit_reached">Il limite dei backup automatici gratis è stato raggiunto il limite.</string>
-  <string name="calendar_permission_required"><i>Le mie spese</i> richiede l\'autorizzazione per accedere al calendario, al fine di creare piani per operazione future e ricorrenti.</string>
+  <string name="calendar_permission_required"><i>{app_name}</i> richiede l\'autorizzazione per accedere al calendario, al fine di creare piani per operazione future e ricorrenti.</string>
   <string name="button_request_calendar_access" tools:ignore="UnusedResources">Concedere l\'accesso</string>
   <string name="switch_on_text">Attivo</string>
   <string name="switch_off_text">Non attivo</string>
@@ -580,7 +579,7 @@
   <string name="synchronization">Sincronizzazione</string>
   <string name="synchronization_none">Nessuna sincronizzazione</string>
   <string name="hint_url">URL</string>
-  <string name="description_webdav_url">Inserisci l\'URL a una cartella speciale sul server WebDAV. <i>Le mie spese</i> memorizzerà i dati all\'interno di questa cartella, non toccherà nulla di fuori di essa.</string>
+  <string name="description_webdav_url">Inserisci l\'URL a una cartella speciale sul server WebDAV. {app_name} memorizzerà i dati all\'interno di questa cartella, non toccherà nulla di fuori di essa.</string>
   <string name="description_webdav_trust_certificate">Il sito utilizza un certificato che non è attendibile per Android.</string>
   <string name="hint_user_name">Nome utente</string>
   <string name="hint_password">Password</string>
@@ -609,7 +608,7 @@
   <string name="dialog_confirm_sync_link_remote">I dati locali per questo account saranno cancellati.</string>
   <string name="warning_synchronization_limited_trial">La funzionalità di sincronizzazione può essere provata fino al %s.</string>
   <string name="warning_synchronization_limit_reached">Il periodo di prova per provare la sincronizzazione è terminato.</string>
-  <string name="warning_synchronization_folder_usage">Questa cartella è usata per la sincronizzazione dei dati tra le installazioni di <i>Le mie spese</i> sui diversi dispositivi. Per favore non modificarne il contenuto manualmente.</string>
+  <string name="warning_synchronization_folder_usage">Questa cartella è usata per la sincronizzazione dei dati tra le installazioni di {app_name} sui diversi dispositivi. Per favore non modificarne il contenuto manualmente.</string>
   <string name="warning_synchronization_select_parent" tools:ignore="UnusedResources">La cartella che hai selezionato corrisponde ad un account di un backend esistente. E\' necessario selezionare la propria cartella principale per poter riusare questo backend.</string>
   <string name="select_unsynced_accounts">Seleziona gli account da sincronizzare con questo backend</string>
   <string name="link_account_success" tools:ignore="PluralsCandidate">%d account sono stati configurati per essere sincronizzati con il backend.</string>
@@ -638,4 +637,5 @@
   <string name="sync_io_exception_reset_account_data">Errore durante il ripristino dell\'account remoto.</string>
   <string name="sync_io_exception_setup_remote_account">Errore durante l\'impostazione dell\'account remoto.</string>
   <string name="sync_io_exception_reading_change_set">Errore durante la lettura delle modifiche dal backend.</string>
+  <!--%1$s date, %2$s price-->
 </resources>

@@ -116,8 +116,6 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
       } else {
         //contribBuyDo(Package.valueOf(packageFromExtra));
       }
-
-
     }
   }
 
