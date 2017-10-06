@@ -150,7 +150,17 @@ android {
     testBuildType "forTest"
 
     variantFilter { variant ->
+
         def names = variant.flavors*.name
+
+        if(project.hasProperty("distribution") && !names.contains(distribution)) {
+            setIgnore(true)
+        }
+
+        if(project.hasProperty("buildType") && !variant.buildType.name.equals(project.ext.buildType)) {
+            setIgnore(true)
+        }
+
         if (names.contains("withoutAds")) {
             setIgnore(true)
         }
