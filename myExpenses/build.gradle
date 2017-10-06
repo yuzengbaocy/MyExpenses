@@ -150,7 +150,6 @@ android {
     testBuildType "forTest"
 
     variantFilter { variant ->
-
         def names = variant.flavors*.name
 
         if(project.hasProperty("distribution") && !names.contains(distribution)) {
@@ -174,6 +173,7 @@ android {
             }
         }
     }
+
     testOptions {
         unitTests {
             includeAndroidResources = true
