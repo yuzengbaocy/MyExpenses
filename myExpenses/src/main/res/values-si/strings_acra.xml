@@ -1,6 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-  <string name="crash_reports_user_info">මයි එක්ස්පෙන්සෙස් භාවිතයේ බිඳවැටීම් පිළිබදව එහි වැඩි දියුණු කරන්නන්ට ස්වයංක්‍රීයව වාර්තා යවාවි, ඒවා  ප්‍රශ්න ඉතා ඉක්මනින් යථා තත්වයට පත් කිරීමට ඔවුන්ට උදව් කරනවා.</string>
   <string name="pref_category_title_crash_reports">බිඳවැටීම් වාර්තා</string>
   <string name="pref_enable_acra">ස්වයංක්‍රීය  බිඳවැටීම් වාර්තා යැවීමට අවසර  දෙන්න</string>
   <string name="pref_acra_enabled">ස්වයංක්‍රීය යැවීම ක්‍රියාත්මක කර තිබේ</string>

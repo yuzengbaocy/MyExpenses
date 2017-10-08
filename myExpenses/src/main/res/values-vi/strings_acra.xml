@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-  <string name="crash_reports_user_info">Quản lý chi tiêu sẽ tự động gửi báo cáo về những lần ứng dụng bị lỗi tới nhà phát triển của nó, việc này sẽ giúp họ sửa chữa lỗi nhanh hơn.</string>
+  <string name="crash_reports_user_info">{app_name} sẽ tự động gửi báo cáo về những lần ứng dụng bị lỗi tới nhà phát triển của nó, việc này sẽ giúp họ sửa chữa lỗi nhanh hơn.</string>
   <string name="pref_category_title_crash_reports">Báo cáo lỗi</string>
   <string name="pref_enable_acra">Cho phép tự động gửi báo cáo lỗi</string>
   <string name="pref_acra_enabled">Cho phép tự động gửi</string>

@@ -364,6 +364,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
       startPref.setEntryValues(daysValues);
     } else if (rootKey.equals(DEBUG_SCREEN.getKey())) {
       findPreference(DEBUG_LOGGING).setOnPreferenceChangeListener(this);
+    } else if(rootKey.equals(getString(R.string.pref_crash_reports_key))) {
+      findPreference(getString(R.string.pre_acra_info_key)).setSummary(Utils.getTextWithAppName(getContext(),R.string.crash_reports_user_info));
     }
   }
 

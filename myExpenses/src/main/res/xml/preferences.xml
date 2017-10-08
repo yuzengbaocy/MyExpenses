@@ -336,8 +336,8 @@
             android:key="@string/pref_crash_reports_key"
             android:title="@string/pref_category_title_crash_reports">
             <Preference
-                style="?preferenceInformationStyle"
-                android:summary="@string/crash_reports_user_info"/>
+                android:key="@string/pre_acra_info_key"
+                style="?preferenceInformationStyle"/>
             <SwitchPreferenceCompat
                 android:defaultValue="true"
                 android:key="acra.enable"
