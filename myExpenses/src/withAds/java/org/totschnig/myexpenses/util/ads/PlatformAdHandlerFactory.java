@@ -10,8 +10,6 @@ import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.R;
 
-import timber.log.Timber;
-
 public class PlatformAdHandlerFactory implements AdHandlerFactory {
   @Override
   public AdHandler create(ViewGroup adContainer) {
@@ -31,15 +29,9 @@ public class PlatformAdHandlerFactory implements AdHandlerFactory {
     });
     String adHandler = remoteConfig.getString("ad_handler");
     FirebaseAnalytics.getInstance(context).setUserProperty("AdHandler", adHandler);
-    switch (adHandler) {
-      case "PubNative": {
-        Timber.i("using PubNativeAdHandler");
-        return new PubNativeAdHandler(adContainer);
-      }
-      default: {
-        Timber.i("using AmaAndAdmobAdHandler");
-        return new AmaAndAdmobAdHandler(adContainer);
-      }
-    }
+    return new WaterfallAdHandler(adContainer,
+        new AmaAdHandler(adContainer),
+        new AdmobAdHandler(adContainer),
+        new PubNativeAdHandler(adContainer));
   }
 }
