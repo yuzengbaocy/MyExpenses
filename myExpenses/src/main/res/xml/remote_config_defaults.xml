@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <defaultsMap>
     <entry>
-        <key>ad_handler</key>
-        <value>default</value>
+        <key>ad_handling_waterfall</key>
+        <value>Ama:PubNative:AdMob</value>
     </entry>
 </defaultsMap>
