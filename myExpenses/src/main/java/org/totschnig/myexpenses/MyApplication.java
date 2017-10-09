@@ -44,6 +44,8 @@ import com.android.calendar.CalendarContractCompat.Events;
 //import com.google.android.gms.analytics.GoogleAnalytics;
 //import com.google.android.gms.analytics.Tracker;
 
+import net.pubnative.sdk.core.Pubnative;
+
 import org.acra.ACRA;
 import org.acra.config.ACRAConfiguration;
 import org.acra.util.IOUtils;
@@ -161,6 +163,7 @@ public class MyApplication extends MultiDexApplication implements
         registerWidgetObservers();
       }
       licenceHandler.init();
+      Pubnative.setTestMode(BuildConfig.DEBUG);
     }
   }
 
