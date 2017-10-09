@@ -1,8 +1,10 @@
 package org.totschnig.myexpenses.util.ads;
 
 import android.content.Context;
+import android.support.annotation.VisibleForTesting;
 import android.view.ViewGroup;
 
+import com.annimon.stream.Stream;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
@@ -27,11 +29,27 @@ public class PlatformAdHandlerFactory implements AdHandlerFactory {
     remoteConfig.fetch().addOnCompleteListener(task -> {
       remoteConfig.activateFetched();
     });
-    String adHandler = remoteConfig.getString("ad_handler");
+    String adHandler = remoteConfig.getString("ad_handling_waterfall");
     FirebaseAnalytics.getInstance(context).setUserProperty("AdHandler", adHandler);
-    return new WaterfallAdHandler(adContainer,
-        new AmaAdHandler(adContainer),
-        new AdmobAdHandler(adContainer),
-        new PubNativeAdHandler(adContainer));
+    AdHandler[] adHandlers = getAdHandlers(adContainer, adHandler);
+    return adHandlers.length > 0 ? new WaterfallAdHandler(adContainer, adHandlers) :
+        new NoOpAdHandler(adContainer);
+  }
+
+  @VisibleForTesting
+  public static AdHandler[] getAdHandlers(ViewGroup adContainer, String adHandler) {
+    return Stream.of(adHandler.split(":"))
+        .map(handler -> instantiate(handler, adContainer))
+        .filter(element -> element != null)
+        .toArray(size -> new AdHandler[size]);
+  }
+
+  private  static AdHandler instantiate(String handler, ViewGroup adContainer) {
+    switch (handler) {
+      case "Ama": return new AmaAdHandler(adContainer);
+      case "PubNative": return new PubNativeAdHandler(adContainer);
+      case "AdMob": return new AdmobAdHandler(adContainer);
+      default: return null;
+    }
   }
 }
