@@ -109,8 +109,8 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
   }
 
   public void registerSubscription(String sku) {
-    updateContribStatus(STATUS_PROFESSIONAL);
     licenseStatusPrefs.putString(KEY_CURRENT_SUBSCRIPTION, sku);
+    updateContribStatus(STATUS_PROFESSIONAL);
   }
 
   /**
@@ -157,6 +157,9 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
     return new OpenIabHelper(ctx, builder.build());
   }
 
+  /**
+   * Sets the licencestatus from contribStatus and commits licenseStatusPrefs
+   */
   private void updateContribStatus(int contribStatus) {
     licenseStatusPrefs.putString(PrefKey.LICENSE_STATUS.getKey(), String.valueOf(contribStatus));
     licenseStatusPrefs.commit();
@@ -224,7 +227,8 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
         sku = Config.SKU_PROFESSIONAL_1;
         break;
       case Professional_12:
-        sku = isExtendedEnabled() ? Config.SKU_EXTENDED2PROFESSIONAL_12 : Config.SKU_PROFESSIONAL_12;
+        sku = licenceStatus != null && licenceStatus.equals(EXTENDED) ?
+            Config.SKU_EXTENDED2PROFESSIONAL_12 : Config.SKU_PROFESSIONAL_12;
         break;
       default:
         throw new IllegalStateException();
@@ -284,7 +288,8 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
         recurrenceResId = R.string.monthly;
         break;
       case Config.SKU_PROFESSIONAL_12:
-        recurrenceResId = R.string.yearly;
+      case Config.SKU_EXTENDED2PROFESSIONAL_12:
+        recurrenceResId = R.string.yearly_plain;
         break;
       default:
         return "";
@@ -306,6 +311,7 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
       case Config.SKU_PROFESSIONAL_1:
         return Package.Professional_12;
       case Config.SKU_PROFESSIONAL_12:
+      case Config.SKU_EXTENDED2PROFESSIONAL_12:
         return Package.Professional_1;
       default:
         return null;

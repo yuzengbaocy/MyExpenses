@@ -203,14 +203,18 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
         };
     String sku = licenceHandler.getSkuForPackage(aPackage);
 
-    String currentSubscription = licenceHandler.getCurrentSubscription();
-    if (currentSubscription == null) {
-      complain("Could not determine current subscription");
-      finish();
-      return;
+    List<String> oldSkus;
+    if (getIntent().getBooleanExtra(KEY_SHOULD_REPLACE_EXISTING, false)) {
+      String currentSubscription = licenceHandler.getCurrentSubscription();
+      if (currentSubscription == null) {
+        complain("Could not determine current subscription");
+        finish();
+        return;
+      }
+      oldSkus = Collections.singletonList(currentSubscription);
+    } else {
+      oldSkus = null;
     }
-    List<String> oldSkus = getIntent().getBooleanExtra(KEY_SHOULD_REPLACE_EXISTING, false) ?
-        Collections.singletonList(currentSubscription) : null;
 
     try {
       mHelper.launchPurchaseFlow(
