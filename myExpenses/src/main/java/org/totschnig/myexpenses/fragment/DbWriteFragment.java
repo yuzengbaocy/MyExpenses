@@ -16,12 +16,6 @@
 
 package org.totschnig.myexpenses.fragment;
 
-import org.totschnig.myexpenses.MyApplication;
-import org.totschnig.myexpenses.model.Model;
-import org.totschnig.myexpenses.model.Plan;
-import org.totschnig.myexpenses.model.Transaction;
-import org.totschnig.myexpenses.util.AcraHelper;
-
 import android.app.Activity;
 import android.database.sqlite.SQLiteConstraintException;
 import android.net.Uri;
