@@ -207,22 +207,22 @@ dependencies {
     annotationProcessor 'com.gabrielittner.auto.value:auto-value-cursor:1.0.1'
     implementation 'com.gabrielittner.auto.value:auto-value-cursor-annotations:1.0.1'
     annotationProcessor 'com.ryanharter.auto.value:auto-value-parcel:0.2.5'
-    compile 'com.github.mtotschnig:StickyListHeaders:2.7.1'
-    compile 'com.github.mtotschnig:MaterialSeekBarPreference:improvement~align-with-layout-specific-to-each-level-SNAPSHOT'
-    compile project(':PlayLicensingOrig')
-    compile('com.gitlab.mtotschn:dav4android:fbaa5b51') {
+    implementation 'com.github.mtotschnig:StickyListHeaders:2.7.1'
+    implementation 'com.github.mtotschnig:MaterialSeekBarPreference:improvement~align-with-layout-specific-to-each-level-SNAPSHOT'
+    implementation project(':PlayLicensingOrig')
+    implementation('com.gitlab.mtotschn:dav4android:fbaa5b51') {
         exclude group: "com.android.support", module: "support-annotations"
     }
-    compile 'com.itextpdf:itextg:5.5.10'
-    compile 'ch.acra:acra:4.9.2'
-    compile 'org.apache.commons:commons-lang3:3.4'
+    implementation 'com.itextpdf:itextg:5.5.10'
+    implementation 'ch.acra:acra:4.9.2'
+    implementation 'org.apache.commons:commons-lang3:3.4'
     implementation 'com.github.mtotschnig:OpenIAB:extended-SNAPSHOT'
-    compile fileTree(dir: 'libs', include: ['in-app-purchasing-2.0.61.jar'])
+    implementation fileTree(dir: 'libs', include: ['in-app-purchasing-2.0.61.jar'])
     //noinspection GradleDynamicVersion
-    compile 'org.apache.commons:commons-csv:1.1'
-    compile 'com.squareup.picasso:picasso:2.5.2'
-    compile 'com.github.PhilJay:MPAndroidChart:bd75e6c'
-    compile 'com.github.mtotschnig:Caldroid:master-SNAPSHOT'
+    implementation 'org.apache.commons:commons-csv:1.1'
+    implementation 'com.squareup.picasso:picasso:2.5.2'
+    implementation 'com.github.PhilJay:MPAndroidChart:bd75e6c'
+    implementation 'com.github.mtotschnig:Caldroid:master-SNAPSHOT'
     implementation 'com.github.eltos:simpledialogfragment:2.2'
     //noinspection GradleDynamicVersion
     implementation 'com.commonsware.cwac:wakeful:1.0.+'
@@ -238,20 +238,20 @@ dependencies {
 
     implementation 'com.jakewharton.timber:timber:4.5.1'
 
-    withDriveCompile 'com.google.android.gms:play-services-drive:' + project.gmsVersion
-    withAdsCompile 'com.google.android.gms:play-services-ads:' + project.gmsVersion
+    withDriveImplementation 'com.google.android.gms:play-services-drive:' + project.gmsVersion
+    withAdsImplementation 'com.google.android.gms:play-services-ads:' + project.gmsVersion
     //noinspection GradleDynamicVersion
-    withAdsCompile 'com.amazon.android:mobile-ads:5.+'
+    withAdsImplementation 'com.amazon.android:mobile-ads:5.+'
     //noinspection GradleDynamicVersion
-    withAdsCompile 'com.facebook.android:audience-network-sdk:4.25.0'
-    withAdsCompile 'com.google.ads.mediation:facebook:4.25.0.0'
+    withAdsImplementation 'com.facebook.android:audience-network-sdk:4.25.0'
+    withAdsImplementation 'com.google.ads.mediation:facebook:4.25.0.0'
 
-    compile 'com.google.firebase:firebase-core:' + project.gmsVersion
-    compile 'com.google.firebase:firebase-config:' + project.gmsVersion
+    implementation 'com.google.firebase:firebase-core:' + project.gmsVersion
+    implementation 'com.google.firebase:firebase-config:' + project.gmsVersion
 
-    compile 'org.slf4j:slf4j-api:1.7.21'
-    compile 'com.github.tony19:logback-android-core:1.1.1-6'
-    compile('com.github.tony19:logback-android-classic:1.1.1-6') {
+    implementation 'org.slf4j:slf4j-api:1.7.21'
+    implementation 'com.github.tony19:logback-android-core:1.1.1-6'
+    implementation('com.github.tony19:logback-android-classic:1.1.1-6') {
         // workaround issue #73
         exclude group: 'com.google.android', module: 'android'
     }
