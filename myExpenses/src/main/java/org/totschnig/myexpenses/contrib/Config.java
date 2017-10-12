@@ -1,6 +1,5 @@
 package org.totschnig.myexpenses.contrib;
 
-
 import org.onepf.oms.OpenIabHelper;
 import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.licence.InappPurchaseLicenceHandler;

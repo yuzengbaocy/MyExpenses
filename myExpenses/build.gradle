@@ -218,7 +218,6 @@ dependencies {
     implementation 'org.apache.commons:commons-lang3:3.4'
     implementation 'com.github.mtotschnig:OpenIAB:extended-SNAPSHOT'
     implementation fileTree(dir: 'libs', include: ['in-app-purchasing-2.0.61.jar'])
-    //noinspection GradleDynamicVersion
     implementation 'org.apache.commons:commons-csv:1.1'
     implementation 'com.squareup.picasso:picasso:2.5.2'
     implementation 'com.github.PhilJay:MPAndroidChart:bd75e6c'
@@ -242,7 +241,6 @@ dependencies {
     withAdsImplementation 'com.google.android.gms:play-services-ads:' + project.gmsVersion
     //noinspection GradleDynamicVersion
     withAdsImplementation 'com.amazon.android:mobile-ads:5.+'
-    //noinspection GradleDynamicVersion
     withAdsImplementation 'com.facebook.android:audience-network-sdk:4.25.0'
     withAdsImplementation 'com.google.ads.mediation:facebook:4.25.0.0'
 
