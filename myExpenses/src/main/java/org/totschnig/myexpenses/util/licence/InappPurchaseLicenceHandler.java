@@ -23,6 +23,7 @@ import org.totschnig.myexpenses.util.DistribHelper;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Currency;
+import java.util.UUID;
 
 import timber.log.Timber;
 
@@ -130,7 +131,7 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
     updateContribStatus(STATUS_ENABLED_LEGACY_SECOND);
   }
 
-  public static OpenIabHelper getIabHelper(Context ctx) {
+  public OpenIabHelper getIabHelper(Context ctx) {
     if (DistribHelper.isBlackberry()) {
       return null;
     }
@@ -343,5 +344,10 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
 
   public String getCurrentSubscription() {
     return licenseStatusPrefs.getString(KEY_CURRENT_SUBSCRIPTION, null);
+  }
+
+  @Override
+  public String getPayLoad() {
+    return (IS_CHROMIUM || DistribHelper.isAmazon()) ? null : UUID.randomUUID().toString();
   }
 }

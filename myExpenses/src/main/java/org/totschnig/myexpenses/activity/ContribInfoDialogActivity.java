@@ -13,24 +13,27 @@ import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabResult;
 import org.onepf.oms.appstore.googleUtils.Purchase;
+import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.contrib.Config;
 import org.totschnig.myexpenses.dialog.ContribDialogFragment;
+import org.totschnig.myexpenses.dialog.DonateDialogFragment;
 import org.totschnig.myexpenses.dialog.MessageDialogFragment.MessageDialogListener;
 import org.totschnig.myexpenses.model.ContribFeature;
+import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.util.AcraHelper;
 import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.ShortcutHelper;
 import org.totschnig.myexpenses.util.Utils;
-import org.totschnig.myexpenses.util.licence.InappPurchaseLicenceHandler;
+import org.totschnig.myexpenses.util.licence.LicenceHandler;
 import org.totschnig.myexpenses.util.licence.Package;
 import org.totschnig.myexpenses.util.tracking.Tracker;
 
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
+import java.util.Locale;
 
 import timber.log.Timber;
 
@@ -54,9 +57,8 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
   private static final String KEY_SHOULD_REPLACE_EXISTING = "shouldReplaceExisting";
   private OpenIabHelper mHelper;
   private boolean mSetupDone;
-  private String mPayload = (InappPurchaseLicenceHandler.IS_CHROMIUM || DistribHelper.isAmazon())
-      ? null : UUID.randomUUID().toString();
-  private InappPurchaseLicenceHandler licenceHandler;
+  private String mPayload;
+  private LicenceHandler licenceHandler;
 
   public static Intent getIntentFor(Context context, @Nullable ContribFeature feature) {
     Intent intent = new Intent(context, ContribInfoDialogActivity.class);
@@ -80,9 +82,10 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
     setTheme(MyApplication.getThemeIdTranslucent());
     super.onCreate(savedInstanceState);
     String packageFromExtra = getIntent().getStringExtra(KEY_PACKAGE);
-    licenceHandler = ((InappPurchaseLicenceHandler) MyApplication.getInstance().getLicenceHandler());
+    licenceHandler = MyApplication.getInstance().getLicenceHandler();
+    mPayload = licenceHandler.getPayLoad();
+    mHelper = licenceHandler.getIabHelper(this);
 
-    mHelper = InappPurchaseLicenceHandler.getIabHelper(this);
     if (mHelper != null) {
       try {
         mHelper.startSetup(result -> {
@@ -114,7 +117,9 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
             getIntent().getSerializableExtra(KEY_TAG))
             .show(getSupportFragmentManager(), "CONTRIB");
       } else {
-        //contribBuyDo(Package.valueOf(packageFromExtra));
+        if (DistribHelper.isGithub()) {
+          contribBuyDo(Package.valueOf(packageFromExtra));
+        }
       }
     }
   }
@@ -134,105 +139,168 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
     finish();
   }
 
+
+  private void contribBuyGithub(Package aPackage) {
+    Integer[] paymentOptions = aPackage.getPaymentOptions();
+    if (paymentOptions.length > 1) {
+      DonateDialogFragment.newInstance(aPackage).show(getSupportFragmentManager(), "CONTRIB");
+    } else {
+      startPayment(paymentOptions[0], aPackage);
+    }
+  }
+
   public void contribBuyDo(Package aPackage) {
     Bundle bundle = new Bundle(1);
     bundle.putString(Tracker.EVENT_PARAM_PACKAGE, aPackage.name());
     logEvent(Tracker.EVENT_CONTRIB_DIALOG_BUY, bundle);
-    if (DistribHelper.isBlackberry()) {
-      contribBuyBlackBerry();
-      return;
-    }
-    if (mHelper == null) {
-      finish();
-      return;
-    }
-    if (!mSetupDone) {
-      complain("Billing setup is not completed yet");
-      finish();
-      return;
-    }
-    final IabHelper.OnIabPurchaseFinishedListener mPurchaseFinishedListener =
-        new IabHelper.OnIabPurchaseFinishedListener() {
-          public void onIabPurchaseFinished(IabResult result, Purchase purchase) {
-            Timber.d("Purchase finished: %s, purchase: %s", result, purchase);
-            if (result.isFailure()) {
-              Timber.w("Purchase failed: %s, purchase: %s", result, purchase);
-              complain(getString(R.string.premium_failed_or_canceled));
-            } else if (!verifyDeveloperPayload(purchase)) {
-              complain("Error purchasing. Authenticity verification failed.");
-            } else {
-              Timber.d("Purchase successful.");
-
-              int keyResId = 0;
-
-              if (purchase.getSku().equals(Config.SKU_PREMIUM)) {
-                keyResId = R.string.contrib_key;
-              } else if (purchase.getSku().equals(Config.SKU_EXTENDED) ||
-                  purchase.getSku().equals(Config.SKU_PREMIUM2EXTENDED)) {
-                keyResId = R.string.extended_key;
-              } else if (purchase.getSku().equals(Config.SKU_PROFESSIONAL_1) ||
-                  purchase.getSku().equals(Config.SKU_PROFESSIONAL_12) ||
-                  purchase.getSku().equals(Config.SKU_EXTENDED2PROFESSIONAL_12)) {
-                keyResId = R.string.professional_key;
-              }
-              if (keyResId != 0) {
-                // bought the premium upgrade!
-                Timber.d("Purchase is premium upgrade. Congratulating user.");
-                Toast.makeText(
-                    ContribInfoDialogActivity.this,
-                    String.format("%s (%s) %s", getString(R.string.licence_validation_premium),
-                        getString(R.string.contrib_key), getString(R.string.thank_you)),
-                    Toast.LENGTH_SHORT).show();
-                if (keyResId == R.string.professional_key) {
-                  licenceHandler.registerSubscription(purchase.getSku());
+    switch (DistribHelper.getDistribution()) {
+      case PLAY:
+      case AMAZON:
+        if (mHelper == null) {
+          finish();
+          return;
+        }
+        if (!mSetupDone) {
+          complain("Billing setup is not completed yet");
+          finish();
+          return;
+        }
+        final IabHelper.OnIabPurchaseFinishedListener mPurchaseFinishedListener =
+            new IabHelper.OnIabPurchaseFinishedListener() {
+              public void onIabPurchaseFinished(IabResult result, Purchase purchase) {
+                Timber.d("Purchase finished: %s, purchase: %s", result, purchase);
+                if (result.isFailure()) {
+                  Timber.w("Purchase failed: %s, purchase: %s", result, purchase);
+                  complain(getString(R.string.premium_failed_or_canceled));
+                } else if (!verifyDeveloperPayload(purchase)) {
+                  complain("Error purchasing. Authenticity verification failed.");
                 } else {
-                  licenceHandler.registerPurchase(keyResId == R.string.extended_key);
+                  Timber.d("Purchase successful.");
+
+                  int keyResId = 0;
+
+                  if (purchase.getSku().equals(Config.SKU_PREMIUM)) {
+                    keyResId = R.string.contrib_key;
+                  } else if (purchase.getSku().equals(Config.SKU_EXTENDED) ||
+                      purchase.getSku().equals(Config.SKU_PREMIUM2EXTENDED)) {
+                    keyResId = R.string.extended_key;
+                  } else if (purchase.getSku().equals(Config.SKU_PROFESSIONAL_1) ||
+                      purchase.getSku().equals(Config.SKU_PROFESSIONAL_12) ||
+                      purchase.getSku().equals(Config.SKU_EXTENDED2PROFESSIONAL_12)) {
+                    keyResId = R.string.professional_key;
+                  }
+                  if (keyResId != 0) {
+                    // bought the premium upgrade!
+                    Timber.d("Purchase is premium upgrade. Congratulating user.");
+                    Toast.makeText(
+                        ContribInfoDialogActivity.this,
+                        String.format("%s (%s) %s", getString(R.string.licence_validation_premium),
+                            getString(R.string.contrib_key), getString(R.string.thank_you)),
+                        Toast.LENGTH_SHORT).show();
+                    if (keyResId == R.string.professional_key) {
+                      licenceHandler.registerSubscription(purchase.getSku());
+                    } else {
+                      licenceHandler.registerPurchase(keyResId == R.string.extended_key);
+                    }
+                  }
                 }
+                finish();
               }
-            }
+
+              private boolean verifyDeveloperPayload(Purchase purchase) {
+                if (mPayload == null) {
+                  return true;
+                }
+                String payload = purchase.getDeveloperPayload();
+                return payload != null && payload.equals(mPayload);
+              }
+            };
+        String sku = licenceHandler.getSkuForPackage(aPackage);
+
+        List<String> oldSkus;
+        if (getIntent().getBooleanExtra(KEY_SHOULD_REPLACE_EXISTING, false)) {
+          String currentSubscription = licenceHandler.getCurrentSubscription();
+          if (currentSubscription == null) {
+            complain("Could not determine current subscription");
             finish();
+            return;
           }
+          oldSkus = Collections.singletonList(currentSubscription);
+        } else {
+          oldSkus = null;
+        }
 
-          private boolean verifyDeveloperPayload(Purchase purchase) {
-            if (mPayload == null) {
-              return true;
-            }
-            String payload = purchase.getDeveloperPayload();
-            return payload != null && payload.equals(mPayload);
-          }
-        };
-    String sku = licenceHandler.getSkuForPackage(aPackage);
-
-    List<String> oldSkus;
-    if (getIntent().getBooleanExtra(KEY_SHOULD_REPLACE_EXISTING, false)) {
-      String currentSubscription = licenceHandler.getCurrentSubscription();
-      if (currentSubscription == null) {
-        complain("Could not determine current subscription");
-        finish();
-        return;
-      }
-      oldSkus = Collections.singletonList(currentSubscription);
-    } else {
-      oldSkus = null;
-    }
-
-    try {
-      mHelper.launchPurchaseFlow(
-          ContribInfoDialogActivity.this,
-          sku, aPackage.isProfessional() ? ITEM_TYPE_SUBS : ITEM_TYPE_INAPP,
-          oldSkus,
-          ProtectedFragmentActivity.PURCHASE_PREMIUM_REQUEST,
-          mPurchaseFinishedListener,
-          mPayload
-      );
-    } catch (IabHelper.IabAsyncInProgressException e) {
-      complain("Another async operation in progress.");
+        try {
+          mHelper.launchPurchaseFlow(
+              ContribInfoDialogActivity.this,
+              sku, aPackage.isProfessional() ? ITEM_TYPE_SUBS : ITEM_TYPE_INAPP,
+              oldSkus,
+              ProtectedFragmentActivity.PURCHASE_PREMIUM_REQUEST,
+              mPurchaseFinishedListener,
+              mPayload
+          );
+        } catch (IabHelper.IabAsyncInProgressException e) {
+          complain("Another async operation in progress.");
+        }
+        break;
+      case BLACKBERRY:
+        contribBuyBlackBerry();
+        break;
+      case GITHUB:
+        contribBuyGithub(aPackage);
+        break;
     }
   }
 
   void complain(String message) {
     Timber.e("**** InAppPurchase Error: %s", message);
     Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+  }
+
+  public void startPayment(int paymentOption, Package aPackage) {
+    Intent intent;
+    switch (paymentOption) {
+      case R.string.donate_button_paypal: {
+        String host = BuildConfig.DEBUG ? "www.sandbox.paypal.com" : "www.paypal.com" ;
+        String paypalButtonId = BuildConfig.DEBUG? "TURRUESSCUG8N" : "LBUDF8DSWJAZ8";
+        String uri = String.format(Locale.US,
+            "https://%s/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=%s&on0=%s&os0=%s&lc=%s",
+            host, paypalButtonId, "Licence", aPackage.name(), getPaypalLocale());
+        String licenceEmail = PrefKey.LICENCE_EMAIL.getString(null);
+        if (licenceEmail != null) {
+          uri += "&custom=" + Uri.encode(licenceEmail);
+        }
+
+        intent = new Intent(Intent.ACTION_VIEW);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setData(Uri.parse(uri));
+        startActivityForResult(intent, 0);
+        break;
+      }
+      case R.string.donate_button_invoice: {
+        intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("plain/text");
+        intent.putExtra(Intent.EXTRA_EMAIL, new String[]{MyApplication.INVOICES_EMAIL});
+        String packageLabel = aPackage.getButtonLabel(this);
+        intent.putExtra(Intent.EXTRA_SUBJECT,
+            "[" + getString(R.string.app_name) + "] " + getString(R.string.donate_button_invoice));
+        String userCountry = Utils.getCountryFromTelephonyManager();
+        String messageBody = String.format(
+            "Please send an invoice for %s to:\nName: (optional)\nCountry: %s (required)",
+            packageLabel, userCountry != null ? userCountry : "");
+        intent.putExtra(Intent.EXTRA_TEXT, messageBody);
+        if (!Utils.isIntentAvailable(this, intent)) {
+          Toast.makeText(this, R.string.no_app_handling_email_available, Toast.LENGTH_LONG).show();
+        } else {
+          startActivityForResult(intent, 0);
+        }
+      }
+    }
+  }
+
+  private String getPaypalLocale() {
+    return Locale.getDefault().toString();
   }
 
   @Override

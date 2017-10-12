@@ -34,6 +34,18 @@
         style="@style/about_text"
         android:visibility="gone"/>
 
+    <TextView
+        android:id="@+id/ImportantUpgradeInfoLearnMore"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:gravity="end"
+        android:textColorLink="@drawable/linkcolor"
+        android:textStyle="bold|italic"
+        android:focusable="true"
+        android:visibility="gone"/>
+
+
     <ListView
         android:id="@+id/list"
         android:layout_width="fill_parent"

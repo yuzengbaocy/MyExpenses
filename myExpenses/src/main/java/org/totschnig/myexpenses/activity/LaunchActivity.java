@@ -28,6 +28,7 @@ import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.PermissionHelper;
 import org.totschnig.myexpenses.util.licence.InappPurchaseLicenceHandler;
 import org.totschnig.myexpenses.util.Utils;
+import org.totschnig.myexpenses.util.licence.LicenceHandler;
 
 import java.io.File;
 import java.util.Map;
@@ -44,10 +45,9 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    InappPurchaseLicenceHandler licenceHandler =
+    LicenceHandler licenceHandler =
         (InappPurchaseLicenceHandler) MyApplication.getInstance().getLicenceHandler();
-    final int contribStatus = licenceHandler.getContribStatus();
-    mHelper = InappPurchaseLicenceHandler.getIabHelper(this);
+    mHelper = licenceHandler.getIabHelper(this);
     if (mHelper != null) {
       try {
         mHelper.startSetup(result -> {
@@ -103,7 +103,8 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
   public void newVersionCheck() {
     int prev_version = PrefKey.CURRENT_VERSION.getInt(-1);
     int current_version = DistribHelper.getVersionNumber();
-    boolean showImportantUpgradeInfo = false;
+    boolean showImportantUpgradeInfo = MyApplication.getInstance().getLicenceHandler().hasLegacyLicence() &&
+        !PrefKey.LICENCE_MIGRATION_INFO_SHOWN.getBoolean(false);
     if (prev_version < current_version) {
       if (prev_version == -1) {
         return;

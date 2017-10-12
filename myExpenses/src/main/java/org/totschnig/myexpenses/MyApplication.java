@@ -136,6 +136,7 @@ public class MyApplication extends MultiDexApplication implements
   }
 
   public static final String FEEDBACK_EMAIL = "support@myexpenses.mobi";
+  public static final String INVOICES_EMAIL = "billing@myexpenses.mobi";
   // public static int BACKDOOR_KEY = KeyEvent.KEYCODE_CAMERA;
 
   /**
