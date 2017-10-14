@@ -118,12 +118,14 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
    * After 2 days, if purchase cannot be verified, we set back
    */
   public void maybeCancel() {
-    long timestamp = Long.parseLong(licenseStatusPrefs.getString(
-        PrefKey.LICENSE_INITIAL_TIMESTAMP.getKey(), "0"));
-    long now = System.currentTimeMillis();
-    long timeSincePurchase = now - timestamp;
-    if (timeSincePurchase > REFUND_WINDOW) {
-      updateContribStatus(STATUS_DISABLED);
+    if (contribStatus != STATUS_ENABLED_LEGACY_SECOND) {
+      long timestamp = Long.parseLong(licenseStatusPrefs.getString(
+          PrefKey.LICENSE_INITIAL_TIMESTAMP.getKey(), "0"));
+      long now = System.currentTimeMillis();
+      long timeSincePurchase = now - timestamp;
+      if (timeSincePurchase > REFUND_WINDOW) {
+        updateContribStatus(STATUS_DISABLED);
+      }
     }
   }
 
