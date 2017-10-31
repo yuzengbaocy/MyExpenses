@@ -216,7 +216,7 @@ dependencies {
     implementation 'com.itextpdf:itextg:5.5.10'
     implementation 'ch.acra:acra:4.9.2'
     implementation 'org.apache.commons:commons-lang3:3.4'
-    implementation 'com.github.mtotschnig:OpenIAB:extended-SNAPSHOT'
+    implementation 'com.github.mtotschnig:OpenIAB:d8e99e84e5'
     implementation fileTree(dir: 'libs', include: ['in-app-purchasing-2.0.61.jar'])
     implementation 'org.apache.commons:commons-csv:1.1'
     implementation 'com.squareup.picasso:picasso:2.5.2'
