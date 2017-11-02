@@ -73,6 +73,7 @@ import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_OPENING_BA
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_PARENTID;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_RECONCILED_TOTAL;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_ROWID;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_SORT_DIRECTION;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_SORT_KEY;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_STATUS;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_SUM_EXPENSES;
@@ -122,6 +123,8 @@ public class Account extends Model {
 
   private String syncAccountName;
 
+  private SortDirection sortDirection = SortDirection.DESC;
+
   public String getSyncAccountName() {
     return syncAccountName;
   }
@@ -149,7 +152,8 @@ public class Account extends Model {
         KEY_EXCLUDE_FROM_TOTALS,
         HAS_EXPORTED,
         KEY_SYNC_ACCOUNT_NAME,
-        KEY_UUID
+        KEY_UUID,
+        KEY_SORT_DIRECTION
     };
     int baseLength = PROJECTION_BASE.length;
     PROJECTION_EXTENDED = new String[baseLength + 1];
@@ -185,9 +189,9 @@ public class Account extends Model {
 
   public static final Uri CONTENT_URI = TransactionProvider.ACCOUNTS_URI;
 
-  public AccountType type;
+  private AccountType type;
 
-  public Grouping grouping;
+  private Grouping grouping = Grouping.NONE;
 
   public static final int DEFAULT_COLOR = 0xff009688;
 
@@ -336,8 +340,7 @@ public class Account extends Model {
     this.currency = currency;
     this.openingBalance = openingBalance;
     this.description = description;
-    this.type = type;
-    this.grouping = Grouping.NONE;
+    this.setType(type);
     this.color = color;
   }
 
@@ -363,15 +366,13 @@ public class Account extends Model {
     this.openingBalance = new Money(this.currency,
         c.getLong(c.getColumnIndexOrThrow(KEY_OPENING_BALANCE)));
     try {
-      this.type = AccountType.valueOf(c.getString(c.getColumnIndexOrThrow(KEY_TYPE)));
+      this.setType(AccountType.valueOf(c.getString(c.getColumnIndexOrThrow(KEY_TYPE))));
     } catch (IllegalArgumentException ex) {
-      this.type = AccountType.CASH;
+      this.setType(AccountType.CASH);
     }
     try {
-      this.grouping = Grouping.valueOf(c.getString(c.getColumnIndexOrThrow(KEY_GROUPING)));
-    } catch (IllegalArgumentException ex) {
-      this.grouping = Grouping.NONE;
-    }
+      this.setGrouping(Grouping.valueOf(c.getString(c.getColumnIndexOrThrow(KEY_GROUPING))));
+    } catch (IllegalArgumentException ignored) {}
     try {
       //TODO ???
       this.color = c.getInt(c.getColumnIndexOrThrow(KEY_COLOR));
@@ -383,6 +384,12 @@ public class Account extends Model {
     this.syncAccountName = c.getString(c.getColumnIndex(KEY_SYNC_ACCOUNT_NAME));
 
     this.uuid = c.getString(c.getColumnIndex(KEY_UUID));
+
+    try {
+      this.sortDirection = SortDirection.valueOf(c.getString(c.getColumnIndex(KEY_SORT_DIRECTION)));
+    } catch (IllegalArgumentException e) {
+      this.sortDirection = SortDirection.DESC;
+    }
   }
 
   public void setCurrency(String currency) throws IllegalArgumentException {
@@ -591,8 +598,8 @@ public class Account extends Model {
     initialValues.put(KEY_OPENING_BALANCE, openingBalance.getAmountMinor());
     initialValues.put(KEY_DESCRIPTION, description);
     initialValues.put(KEY_CURRENCY, currency.getCurrencyCode());
-    initialValues.put(KEY_TYPE, type.name());
-    initialValues.put(KEY_GROUPING, grouping.name());
+    initialValues.put(KEY_TYPE, getType().name());
+    initialValues.put(KEY_GROUPING, getGrouping().name());
     initialValues.put(KEY_COLOR, color);
     initialValues.put(KEY_SYNC_ACCOUNT_NAME, syncAccountName);
     initialValues.put(KEY_UUID, requireUuid());
@@ -606,7 +613,7 @@ public class Account extends Model {
       }
       setId(ContentUris.parseId(uri));
     } else {
-      uri = CONTENT_URI.buildUpon().appendPath(String.valueOf(getId())).build();
+      uri = ContentUris.withAppendedId(CONTENT_URI, getId());
       cr().update(uri, initialValues, null, null);
     }
     if (!accounts.containsKey(getId())) {
@@ -665,7 +672,7 @@ public class Account extends Model {
         return false;
     } else if (!openingBalance.equals(other.openingBalance))
       return false;
-    if (type != other.type)
+    if (getType() != other.getType())
       return false;
     return true;
   }
@@ -678,8 +685,8 @@ public class Account extends Model {
     result = 31 * result + (this.description != null ? this.description.hashCode() : 0);
     result = 31 * result + this.color;
     result = 31 * result + (this.excludeFromTotals ? 1 : 0);
-    result = 31 * result + (this.type != null ? this.type.hashCode() : 0);
-    result = 31 * result + (this.grouping != null ? this.grouping.hashCode() : 0);
+    result = 31 * result + (this.getType() != null ? this.getType().hashCode() : 0);
+    result = 31 * result + (this.getGrouping() != null ? this.getGrouping().hashCode() : 0);
     return result;
   }
 
@@ -709,9 +716,17 @@ public class Account extends Model {
   }
 
   public void persistGrouping(Grouping value) {
-    grouping = value;
-    //TODO should not need to do complete save, just update grouping value
-    save();
+    setGrouping(value);
+    cr().update(ContentUris.withAppendedId(CONTENT_URI, getId()).buildUpon().appendPath("grouping")
+            .appendPath(value.name()).build(),
+        null, null, null);
+  }
+
+  public void persistSortDirection(SortDirection value) {
+    sortDirection = value;
+    cr().update(ContentUris.withAppendedId(CONTENT_URI, getId()).buildUpon().appendPath("sortDirection")
+            .appendPath(value.name()).build(),
+        null, null, null);
   }
 
   /**
@@ -810,5 +825,29 @@ public class Account extends Model {
 
   public String[] getExtendedProjectionForTransactionList() {
     return Transaction.PROJECTION_EXTENDED;
+  }
+
+  public AccountType getType() {
+    return type;
+  }
+
+  public void setType(AccountType type) {
+    this.type = type;
+  }
+
+  public Grouping getGrouping() {
+    return grouping;
+  }
+
+  public void setGrouping(Grouping grouping) {
+    this.grouping = grouping;
+  }
+
+  public SortDirection getSortDirection() {
+    return sortDirection;
+  }
+
+  protected void setSortDirection(SortDirection sortDirection) {
+    this.sortDirection = sortDirection;
   }
 }

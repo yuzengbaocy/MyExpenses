@@ -11,6 +11,7 @@ import timber.log.Timber;
 
 public class AggregateAccount extends Account {
   final static String GROUPING_PREF_PREFIX = "AGGREGATE_GROUPING_";
+  final static String SORT_DIRECTION_PREF_PREFIX = "AGGREGATE_SORT_DIRECTION_";
 
   /**
    * @param c Cursor positioned at the row we want to extract into the object
@@ -18,11 +19,13 @@ public class AggregateAccount extends Account {
   public AggregateAccount(Cursor c) {
     extract(c);
     try {
-      this.grouping = Grouping.valueOf(MyApplication.getInstance().getSettings().getString(
-          GROUPING_PREF_PREFIX + currency, "NONE"));
-    } catch (IllegalArgumentException ex) {
-      this.grouping = Grouping.NONE;
-    }
+      this.setGrouping(Grouping.valueOf(MyApplication.getInstance().getSettings().getString(
+          GROUPING_PREF_PREFIX + currency, "NONE")));
+    } catch (IllegalArgumentException ignored) {}
+    try {
+      this.setSortDirection(SortDirection.valueOf(MyApplication.getInstance().getSettings().getString(
+          SORT_DIRECTION_PREF_PREFIX + currency, "DESC")));
+    } catch (IllegalArgumentException ignored) {}
     accounts.put(getId(), this);
   }
 
@@ -55,9 +58,18 @@ public class AggregateAccount extends Account {
 
   @Override
   public void persistGrouping(Grouping value) {
-    this.grouping = value;
+    this.setGrouping(value);
     MyApplication.getInstance().getSettings().edit()
         .putString(GROUPING_PREF_PREFIX + currency.getCurrencyCode(), value.name())
+        .apply();
+    cr().notifyChange(TransactionProvider.ACCOUNTS_URI, null, false);
+  }
+
+  @Override
+  public void persistSortDirection(SortDirection value) {
+    this.setSortDirection(value);
+    MyApplication.getInstance().getSettings().edit()
+        .putString(SORT_DIRECTION_PREF_PREFIX + currency.getCurrencyCode(), value.name())
         .apply();
     cr().notifyChange(TransactionProvider.ACCOUNTS_URI, null, false);
   }

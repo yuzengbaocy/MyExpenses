@@ -22,7 +22,6 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteException;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Build;
@@ -31,7 +30,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.LoaderManager;
-import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
@@ -73,24 +71,23 @@ import org.totschnig.myexpenses.fragment.TransactionList;
 import org.totschnig.myexpenses.model.Account;
 import org.totschnig.myexpenses.model.AccountGrouping;
 import org.totschnig.myexpenses.model.AccountType;
-import org.totschnig.myexpenses.model.AggregateAccount;
 import org.totschnig.myexpenses.model.ContribFeature;
 import org.totschnig.myexpenses.model.CurrencyEnum;
 import org.totschnig.myexpenses.model.Grouping;
 import org.totschnig.myexpenses.model.Money;
+import org.totschnig.myexpenses.model.SortDirection;
 import org.totschnig.myexpenses.model.Template;
 import org.totschnig.myexpenses.model.Transaction;
 import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.provider.DatabaseConstants;
-import org.totschnig.myexpenses.provider.TransactionDatabase;
 import org.totschnig.myexpenses.provider.TransactionProvider;
 import org.totschnig.myexpenses.provider.filter.CommentCriteria;
 import org.totschnig.myexpenses.provider.filter.Criteria;
 import org.totschnig.myexpenses.task.TaskExecutionFragment;
 import org.totschnig.myexpenses.ui.CursorFragmentPagerAdapter;
 import org.totschnig.myexpenses.ui.FragmentPagerAdapter;
+import org.totschnig.myexpenses.ui.ProtectedCursorLoader;
 import org.totschnig.myexpenses.ui.SimpleCursorAdapter;
-import org.totschnig.myexpenses.util.AcraHelper;
 import org.totschnig.myexpenses.util.AppDirHelper;
 import org.totschnig.myexpenses.util.CurrencyFormatter;
 import org.totschnig.myexpenses.util.DistribHelper;
@@ -176,7 +173,7 @@ public class MyExpenses extends LaunchActivity implements
 
   private void setHelpVariant() {
     Account account = Account.getInstanceFromDb(mAccountId);
-    helpVariant = account == null || account.type.equals(AccountType.CASH) ?
+    helpVariant = account == null || account.getType().equals(AccountType.CASH) ?
         null : HelpVariant.crStatus;
   }
 
@@ -403,13 +400,21 @@ public class MyExpenses extends LaunchActivity implements
       Utils.menuItemSetEnabledAndVisible(balanceItem, showBalanceCommand);
     }
 
+    Account account = Account.getInstanceFromDb(mAccountId);
+
     MenuItem groupingItem = menu.findItem(R.id.GROUPING_COMMAND);
     if (groupingItem != null) {
       SubMenu groupingMenu = groupingItem.getSubMenu();
-
-      Account account = Account.getInstanceFromDb(mAccountId);
       if (account != null) {
-        Utils.configureGroupingMenu(groupingMenu, account.grouping);
+        Utils.configureGroupingMenu(groupingMenu, account.getGrouping());
+      }
+    }
+
+    MenuItem sortDirectionItem = menu.findItem(R.id.SORT_DIRECTION_COMMAND);
+    if (sortDirectionItem != null) {
+      SubMenu sortDirectionMenu = sortDirectionItem.getSubMenu();
+      if (account != null) {
+        Utils.configureSortDirectionMenu(sortDirectionMenu, account.getSortDirection());
       }
     }
     return true;
@@ -488,7 +493,7 @@ public class MyExpenses extends LaunchActivity implements
     switch (command) {
       case R.id.DISTRIBUTION_COMMAND:
         tl = getCurrentFragment();
-        if (tl != null && tl.mappedCategories) {
+        if (tl != null && tl.hasMappedCategories()) {
           contribFeatureRequested(ContribFeature.DISTRIBUTION, null);
         } else {
           MessageDialogFragment.newInstance(
@@ -532,7 +537,7 @@ public class MyExpenses extends LaunchActivity implements
         return true;
       case R.id.RESET_COMMAND:
         tl = getCurrentFragment();
-        if (tl != null && tl.hasItems) {
+        if (tl != null && tl.hasItems()) {
           Result appDirStatus = AppDirHelper.checkAppDir(this);
           if (appDirStatus.success) {
             ExportDialogFragment.newInstance(mAccountId, tl.isFiltered())
@@ -708,7 +713,7 @@ public class MyExpenses extends LaunchActivity implements
         if (tag != null) {
           int year = (int) ((Long) tag / 1000);
           int groupingSecond = (int) ((Long) tag % 1000);
-          i.putExtra("grouping", a != null ? a.grouping : Grouping.NONE);
+          i.putExtra("grouping", a != null ? a.getGrouping() : Grouping.NONE);
           i.putExtra("groupingYear", year);
           i.putExtra("groupingSecond", groupingSecond);
         }
@@ -749,46 +754,7 @@ public class MyExpenses extends LaunchActivity implements
       case ACCOUNTS_CURSOR:
         Uri.Builder builder = TransactionProvider.ACCOUNTS_URI.buildUpon();
         builder.appendQueryParameter(TransactionProvider.QUERY_PARAMETER_MERGE_CURRENCY_AGGREGATES, "1");
-        return new CursorLoader(this,
-            builder.build(), null, null, null, null) {
-          @Override
-          public Cursor loadInBackground() {
-            try {
-              return super.loadInBackground();
-            } catch (TransactionDatabase.SQLiteDowngradeFailedException |
-                TransactionDatabase.SQLiteUpgradeFailedException e) {
-              //TODO this currently is dead code (with the exception of Gingerbread) since database is initialized in TASK_INIT
-              //TODO evaluate if this is still relevant and needs to be migrated to handling of TASK_INIT
-              AcraHelper.report(e);
-              String msg = e instanceof TransactionDatabase.SQLiteDowngradeFailedException ?
-                  ("Database cannot be downgraded from a newer version. Please either uninstall MyExpenses, " +
-                      "before reinstalling, or upgrade to a new version.") :
-                  "Database upgrade failed. Please contact support@myexpenses.mobi !";
-              MessageDialogFragment f = MessageDialogFragment.newInstance(
-                  0,
-                  msg,
-                  new MessageDialogFragment.Button(android.R.string.ok, R.id.QUIT_COMMAND, null),
-                  null,
-                  null);
-              f.setCancelable(false);
-              f.show(getSupportFragmentManager(), "DOWN_OR_UP_GRADE");
-              return null;
-            } catch (SQLiteException e) {
-              String msg = String.format(
-                  "Loading of transactions failed (%s). Probably the sum of the entered amounts exceeds the storage limit !"
-                  ,e.getMessage());
-              MessageDialogFragment f = MessageDialogFragment.newInstance(
-                  0,
-                  msg,
-                  new MessageDialogFragment.Button(android.R.string.ok, R.id.QUIT_COMMAND, null),
-                  null,
-                  null);
-              f.setCancelable(false);
-              f.show(getSupportFragmentManager(), "SQLITE_EXCEPTION");
-              return null;
-            }
-          }
-        };
+        return new ProtectedCursorLoader(this, builder.build());
     }
     return null;
   }
@@ -1011,11 +977,9 @@ public class MyExpenses extends LaunchActivity implements
     if (mDrawerToggle != null && mDrawerToggle.onOptionsItemSelected(item)) {
       return true;
     }
-    // Handle your other action bar items...
 
-    if (handleGrouping(item)) return true;
+    return handleGrouping(item) || handleSortDirection(item) || super.onOptionsItemSelected(item);
 
-    return super.onOptionsItemSelected(item);
   }
 
   private void setBalance() {
@@ -1377,11 +1341,19 @@ public class MyExpenses extends LaunchActivity implements
     if (newGrouping != null) {
       if (!item.isChecked()) {
         item.setChecked(true);
-        if (mAccountId < 0) {
-          AggregateAccount.getInstanceFromDb(mAccountId).persistGrouping(newGrouping);
-        } else {
-          Account.getInstanceFromDb(mAccountId).persistGrouping(newGrouping);
-        }
+        Account.getInstanceFromDb(mAccountId).persistGrouping(newGrouping);
+      }
+      return true;
+    }
+    return false;
+  }
+
+  protected boolean handleSortDirection(MenuItem item) {
+    SortDirection newSortDirection = Utils.getSortDirectionFromMenuItemId(item.getItemId());
+    if (newSortDirection != null) {
+      if (!item.isChecked()) {
+        item.setChecked(true);
+        Account.getInstanceFromDb(mAccountId).persistSortDirection(newSortDirection);
       }
       return true;
     }
@@ -1392,4 +1364,5 @@ public class MyExpenses extends LaunchActivity implements
   protected boolean shouldKeepProgress(int taskId) {
     return taskId == TASK_EXPORT;
   }
+
 }

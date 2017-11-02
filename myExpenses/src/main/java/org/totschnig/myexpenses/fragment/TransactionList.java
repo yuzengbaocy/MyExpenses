@@ -78,6 +78,7 @@ import org.totschnig.myexpenses.model.Account;
 import org.totschnig.myexpenses.model.AccountType;
 import org.totschnig.myexpenses.model.ContribFeature;
 import org.totschnig.myexpenses.model.Grouping;
+import org.totschnig.myexpenses.model.SortDirection;
 import org.totschnig.myexpenses.model.Transaction.CrStatus;
 import org.totschnig.myexpenses.model.Transfer;
 import org.totschnig.myexpenses.preference.PrefKey;
@@ -95,7 +96,6 @@ import org.totschnig.myexpenses.provider.filter.PayeeCriteria;
 import org.totschnig.myexpenses.provider.filter.TransferCriteria;
 import org.totschnig.myexpenses.provider.filter.WhereFilter;
 import org.totschnig.myexpenses.task.TaskExecutionFragment;
-import org.totschnig.myexpenses.ui.SimpleCursorAdapter;
 import org.totschnig.myexpenses.util.AcraHelper;
 import org.totschnig.myexpenses.util.AppDirHelper;
 import org.totschnig.myexpenses.util.CurrencyFormatter;
@@ -160,7 +160,7 @@ public class TransactionList extends ContextualActionBarFragment implements
     return R.menu.transactionlist_context;
   }
 
-  protected WhereFilter mFilter = WhereFilter.empty();
+  private WhereFilter mFilter = WhereFilter.empty();
 
   private static final int TRANSACTION_CURSOR = 0;
   private static final int SUM_CURSOR = 1;
@@ -171,8 +171,12 @@ public class TransactionList extends ContextualActionBarFragment implements
       COMMENT_SEPARATOR = " / ";
   private MyGroupedAdapter mAdapter;
   private AccountObserver aObserver;
-  Account mAccount;
-  public boolean hasItems, mappedCategories, mappedPayees, mappedMethods, hasTransfers;
+  private Account mAccount;
+  private boolean hasItems;
+  private boolean mappedCategories;
+  private boolean mappedPayees;
+  private boolean mappedMethods;
+  private boolean hasTransfers;
   private Cursor mTransactionsCursor, mGroupingCursor;
 
   private ExpandableStickyListHeadersListView mListView;
@@ -194,9 +198,10 @@ public class TransactionList extends ContextualActionBarFragment implements
       columnIndexGroupMappedCategories, columnIndexGroupSumInterim, columnIndexGroupSumIncome,
       columnIndexGroupSumExpense, columnIndexGroupSumTransfer, columnIndexYearOfMonthStart,
       columnIndexLabelMain, columnIndexGroupSecond;
-  boolean indexesCalculated = false, indexesGroupingCalculated = false;
+  private boolean indexesCalculated = false, indexesGroupingCalculated = false;
   //the following values are cached from the account object, so that we can react to changes in the observer
   private Grouping mGrouping;
+  private SortDirection mSortDirection;
   private AccountType mType;
   private String mCurrency;
   private Long mOpeningBalance;
@@ -221,8 +226,9 @@ public class TransactionList extends ContextualActionBarFragment implements
     if (mAccount == null) {
       return;
     }
-    mGrouping = mAccount.grouping;
-    mType = mAccount.type;
+    mGrouping = mAccount.getGrouping();
+    mSortDirection = mAccount.getSortDirection();
+    mType = mAccount.getType();
     mCurrency = mAccount.currency.getCurrencyCode();
     mOpeningBalance = mAccount.openingBalance.getAmountMinor();
     MyApplication.getInstance().getSettings().registerOnSharedPreferenceChangeListener(this);
@@ -251,10 +257,7 @@ public class TransactionList extends ContextualActionBarFragment implements
       //can happen after an orientation change in ExportDialogFragment, when resetting multiple accounts
       mManager = getLoaderManager();
     }
-    if (mManager.getLoader(GROUPING_CURSOR) != null && !mManager.getLoader(GROUPING_CURSOR).isReset())
-      mManager.restartLoader(GROUPING_CURSOR, null, this);
-    else
-      mManager.initLoader(GROUPING_CURSOR, null, this);
+    Utils.requireLoader(mManager, GROUPING_CURSOR, null, this);
   }
 
   @Override
@@ -288,14 +291,7 @@ public class TransactionList extends ContextualActionBarFragment implements
       restoreFilterFromPreferences();
     }
     View v = inflater.inflate(R.layout.expenses_list, container, false);
-    //TODO check if still needed with Appcompat
-    //work around the problem that the view pager does not display its background correctly with Sherlock
-    if (!Utils.hasApiLevel(Build.VERSION_CODES.HONEYCOMB)) {
-      v.setBackgroundColor(ctx.getResources().getColor(
-          PrefKey.UI_THEME_KEY.getString("dark").equals("light")
-              ? android.R.color.white : android.R.color.black));
-    }
-    mListView = (ExpandableStickyListHeadersListView) v.findViewById(R.id.list);
+    mListView = v.findViewById(R.id.list);
     setAdapter();
     mListView.setOnHeaderClickListener(this);
     mListView.setDrawingListUnderStickyHeader(false);
@@ -480,7 +476,7 @@ public class TransactionList extends ContextualActionBarFragment implements
             mAccount.getExtendedUriForTransactionList(),
             mAccount.getExtendedProjectionForTransactionList(),
             selection + " AND " + KEY_PARENTID + " is null",
-            selectionArgs, null);
+            selectionArgs, KEY_DATE + " " + mAccount.getSortDirection().name());
         break;
       //TODO: probably we can get rid of SUM_CURSOR, if we also aggregate unmapped transactions
       case SUM_CURSOR:
@@ -502,7 +498,7 @@ public class TransactionList extends ContextualActionBarFragment implements
           }
         }
         builder.appendPath(TransactionProvider.URI_SEGMENT_GROUPS)
-            .appendPath(mAccount.grouping.name());
+            .appendPath(mAccount.getGrouping().name());
         if (mAccount.getId() < 0) {
           builder.appendQueryParameter(KEY_CURRENCY, mAccount.currency.getCurrencyCode());
         } else {
@@ -570,7 +566,7 @@ public class TransactionList extends ContextualActionBarFragment implements
     switch (arg0.getId()) {
       case TRANSACTION_CURSOR:
         mTransactionsCursor = null;
-        ((SimpleCursorAdapter) mAdapter).swapCursor(null);
+        mAdapter.swapCursor(null);
         hasItems = false;
         break;
       case SUM_CURSOR:
@@ -596,6 +592,14 @@ public class TransactionList extends ContextualActionBarFragment implements
     }
   }
 
+  public boolean hasItems() {
+    return hasItems;
+  }
+
+  public boolean hasMappedCategories() {
+    return mappedCategories;
+  }
+
   class AccountObserver extends ContentObserver {
     public AccountObserver(Handler handler) {
       super(handler);
@@ -606,20 +610,24 @@ public class TransactionList extends ContextualActionBarFragment implements
         return;
       }
       //if grouping has changed
-      if (mAccount.grouping != mGrouping) {
-        mGrouping = mAccount.grouping;
+      if (mAccount.getGrouping() != mGrouping) {
+        mGrouping = mAccount.getGrouping();
         if (mAdapter != null) {
           setGrouping();
-          //we should not need to notify here, since setGrouping restarts
-          //the loader and in onLoadFinished we notify
-          //mAdapter.notifyDataSetChanged();
         }
         return;
       }
-      if (mAccount.type != mType ||
+      if (mAccount.getSortDirection() != mSortDirection) {
+        mSortDirection = mAccount.getSortDirection();
+        if (mAdapter != null) {
+          Utils.requireLoader(mManager, TRANSACTION_CURSOR, null, TransactionList.this);
+        }
+        return;
+      }
+      if (mAccount.getType() != mType ||
           mAccount.currency.getCurrencyCode() != mCurrency) {
         mListView.setAdapter(mAdapter);
-        mType = mAccount.type;
+        mType = mAccount.getType();
         mCurrency = mAccount.currency.getCurrencyCode();
       }
       if (!mAccount.openingBalance.getAmountMinor().equals(mOpeningBalance)) {
@@ -663,13 +671,13 @@ public class TransactionList extends ContextualActionBarFragment implements
 
       if (mGroupingCursor != null && mGroupingCursor.moveToFirst()) {
         //no grouping, we need the first and only row
-        if (mAccount.grouping.equals(Grouping.NONE)) {
+        if (mAccount.getGrouping().equals(Grouping.NONE)) {
           fillSums(holder, mGroupingCursor);
         } else {
           traverseCursor:
           while (!mGroupingCursor.isAfterLast()) {
             if (mGroupingCursor.getInt(columnIndexGroupYear) == year) {
-              switch (mAccount.grouping) {
+              switch (mAccount.getGrouping()) {
                 case YEAR:
                   fillSums(holder, mGroupingCursor);
                   break traverseCursor;
@@ -705,7 +713,7 @@ public class TransactionList extends ContextualActionBarFragment implements
         if (!mGroupingCursor.isAfterLast())
           mappedCategoriesPerGroup.put(position, mGroupingCursor.getInt(columnIndexGroupMappedCategories) > 0);
       }
-      holder.text.setText(mAccount.grouping.getDisplayTitle(getActivity(), year, second, c));
+      holder.text.setText(mAccount.getGrouping().getDisplayTitle(getActivity(), year, second, c));
       //holder.text.setText(mAccount.grouping.getDisplayTitle(getActivity(), year, second, mAccount.grouping.equals(Grouping.WEEK)?this_year_of_week_start:this_year, this_week,this_day));
       return convertView;
     }
@@ -739,7 +747,7 @@ public class TransactionList extends ContextualActionBarFragment implements
 
     @Override
     public long getHeaderId(int position) {
-      if (mAccount.grouping.equals(Grouping.NONE))
+      if (mAccount.getGrouping().equals(Grouping.NONE))
         return 1;
       Cursor c = getCursor();
       c.moveToPosition(position);
@@ -747,7 +755,7 @@ public class TransactionList extends ContextualActionBarFragment implements
       int month = c.getInt(columnIndexMonth);
       int week = c.getInt(columnIndexWeek);
       int day = c.getInt(columnIndexDay);
-      switch (mAccount.grouping) {
+      switch (mAccount.getGrouping()) {
         case DAY:
           return year * 1000 + day;
         case WEEK:
@@ -762,7 +770,7 @@ public class TransactionList extends ContextualActionBarFragment implements
     }
 
     private int getColumnIndexForYear() {
-      switch (mAccount.grouping) {
+      switch (mAccount.getGrouping()) {
         case WEEK:
           return columnIndexYearOfWeekStart;
         case MONTH:
@@ -954,7 +962,7 @@ public class TransactionList extends ContextualActionBarFragment implements
             enabled = mappedCategories;
             break;
           case R.id.FILTER_STATUS_COMMAND:
-            enabled = !mAccount.type.equals(AccountType.CASH);
+            enabled = !mAccount.getType().equals(AccountType.CASH);
             break;
           case R.id.FILTER_PAYEE_COMMAND:
             enabled = mappedPayees;
