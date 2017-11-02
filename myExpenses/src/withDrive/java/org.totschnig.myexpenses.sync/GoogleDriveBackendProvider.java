@@ -469,7 +469,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
           .setCustomProperty(ACCOUNT_METADATA_UUID_KEY, account.uuid)
           .setCustomProperty(ACCOUNT_METADATA_COLOR_KEY, String.valueOf(account.color))
           .setCustomProperty(ACCOUNT_METADATA_CURRENCY_KEY, account.currency.getCurrencyCode())
-          .setCustomProperty(ACCOUNT_METADATA_TYPE_KEY, account.type.name())
+          .setCustomProperty(ACCOUNT_METADATA_TYPE_KEY, account.getType().name())
           .setCustomProperty(ACCOUNT_METADATA_OPENING_BALANCE_KEY, String.valueOf(account.openingBalance.getAmountMinor()));
       try {
         // The total size of key string and value string of a custom property must be no more than 124 bytes (124 - ACCOUNT_METADATA_DESCRIPTION_KEY.length = 98
