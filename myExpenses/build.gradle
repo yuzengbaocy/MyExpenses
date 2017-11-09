@@ -129,7 +129,7 @@ android {
 
     lintOptions {
         disable 'InvalidPackage', 'MissingQuantity', 'MissingTranslation', 'ImpliedQuantity'
-        abortOnError true
+        abortOnError false
     }
 
     dexOptions {
