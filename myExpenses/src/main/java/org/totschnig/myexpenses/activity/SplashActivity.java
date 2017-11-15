@@ -60,12 +60,12 @@ public class SplashActivity extends SyncBackendSetupActivity {
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
+    setTheme(MyApplication.getThemeIdOnboarding());
     if (PrefKey.CURRENT_VERSION.getInt(-1) != -1) {
-      super.onCreate(savedInstanceState);
+      super.onCreate(null);
       startTaskExecution(TaskExecutionFragment.TASK_INIT, null, null, 0);
       return;
     }
-    setTheme(MyApplication.getThemeIdOnboarding());
     super.onCreate(savedInstanceState);
     Icepick.restoreInstanceState(this, savedInstanceState);
     setContentView(R.layout.onboarding);
@@ -213,9 +213,11 @@ public class SplashActivity extends SyncBackendSetupActivity {
         break;
       }
       case TASK_INIT : {
-        Intent intent = new Intent(this, MyExpenses.class);
-        startActivity(intent);
-        finish();
+        if (!isFinishing()) {
+          Intent intent = new Intent(this, MyExpenses.class);
+          startActivity(intent);
+          finish();
+        }
         break;
       }
     }
