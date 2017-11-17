@@ -100,7 +100,6 @@ public class MyApplication extends MultiDexApplication implements
   //private Tracker mTracker;
 
   public static final String KEY_NOTIFICATION_ID = "notification_id";
-  public static final String KEY_OPERATION_TYPE = "operationType";
 
   public static final String CONTRIB_SECRET = "RANDOM_SECRET";
 

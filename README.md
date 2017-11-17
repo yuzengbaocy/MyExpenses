@@ -53,6 +53,7 @@ Code has also been contributed by:
 
 - [khris78](https://github.com/khris78) (Configuring and applying custom colors to accounts)
 - [Ayman Abdelghany](https://github.com/AymanDF) (Applying Sonar code quality checks)
+- [eltos](https://github.com/eltos) (Improved Input Dialogs and Color Pickers)
 
 Build
 =====
@@ -63,3 +64,7 @@ cd MyExpenses
 export ANDROID_HOME={sdk-dir}
 ./gradlew build
 ```
+
+Integrate
+=========
+My Expenses now has experimental support for inserting data from third party apps. See [TransactionsContract.java](https://github.com/mtotschnig/MyExpenses/blob/master/transactionscontract/src/main/java/org/totschnig/myexpenses/contract/TransactionsContract.java).
