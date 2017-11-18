@@ -6,6 +6,8 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.annimon.stream.Collectors;
+import com.annimon.stream.Stream;
 import com.google.android.vending.licensing.PreferenceObfuscator;
 
 import org.onepf.oms.Appstore;
@@ -227,12 +229,17 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
         sku = Config.SKU_EXTENDED;
         break;
       case Professional_1:
-        sku = Config.SKU_PROFESSIONAL_1;
+        sku = licenceStatus != null && licenceStatus.equals(EXTENDED) && DistribHelper.isAmazon() ?
+            Config.SKU_EXTENDED2PROFESSIONAL_1 : Config.SKU_PROFESSIONAL_1;
         break;
       case Professional_12:
         sku = licenceStatus != null && licenceStatus.equals(EXTENDED) ?
             Config.SKU_EXTENDED2PROFESSIONAL_12 : Config.SKU_PROFESSIONAL_12;
         break;
+      case Professional_Amazon:
+       sku = licenceStatus != null && licenceStatus.equals(EXTENDED) ?
+           Config.SKU_EXTENDED2PROFESSIONAL_PARENT : Config.SKU_PROFESSIONAL_PARENT;
+       break;
       default:
         throw new IllegalStateException();
     }
@@ -241,8 +248,14 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
 
   private String getDisplayPriceForPackage(Package aPackage) {
     String sku = getSkuForPackage(aPackage);
-    String key = sku.equals(Config.SKU_EXTENDED2PROFESSIONAL_12) ? KEY_EXTENDED2PROFESSIONAL_12_INTRODUCTORY_PRICE : sku;
-    return pricesPrefs.getString(key, null);
+    String result = null;
+    if (sku.equals(Config.SKU_EXTENDED2PROFESSIONAL_12)) {
+      result = pricesPrefs.getString(KEY_EXTENDED2PROFESSIONAL_12_INTRODUCTORY_PRICE, null);
+    }
+    if (result == null) {
+      result = pricesPrefs.getString(sku, null);
+    }
+    return result;
   }
 
   @Override
@@ -288,6 +301,7 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
     int recurrenceResId;
     switch (currentSubscription) {
       case Config.SKU_PROFESSIONAL_1:
+      case Config.SKU_EXTENDED2PROFESSIONAL_1:
         recurrenceResId = R.string.monthly;
         break;
       case Config.SKU_PROFESSIONAL_12:
@@ -351,5 +365,27 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
   @Override
   public String getPayLoad() {
     return (IS_CHROMIUM || DistribHelper.isAmazon()) ? null : UUID.randomUUID().toString();
+  }
+
+  @Override
+  public Package[] getProPackages() {
+    return DistribHelper.isAmazon() ? new Package[] {Package.Professional_Amazon} :
+        new Package[] {Package.Professional_1, Package.Professional_12};
+  }
+
+  @Override
+  protected String getProfessionalPriceFallBack() {
+    if (DistribHelper.isAmazon()) {
+      String priceInfo = Stream.of(Package.Professional_1, Package.Professional_12).map(this::getFormattedPrice).collect(Collectors.joining(", "));
+      if (licenceStatus == EXTENDED) {
+        String regularPrice = pricesPrefs.getString(Config.SKU_PROFESSIONAL_12, null);
+        if (regularPrice != null) {
+          priceInfo += ". " + context.getString(R.string.extended_upgrade_goodie_subscription_amazon, 15, regularPrice);
+        }
+      }
+      return priceInfo;
+    } else {
+      return null;
+    }
   }
 }
