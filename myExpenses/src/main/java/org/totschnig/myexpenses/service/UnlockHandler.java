@@ -19,15 +19,16 @@ import org.totschnig.myexpenses.util.Utils;
 import timber.log.Timber;
 
 /**
- * This handler is used in two different scenarios:
+ * This handler is used in <s>two different</s> one scenario<s>s</s>:
  * 1) MyExpensesContrib calls MyExpenses.MyService when having retrieved the license status and posts a message to this handler
- * 2) MyExpenses.MyApplication onStartup calls MyExpensesContrib.MyService and sets this handler as replyTo to retrieve the license status
- * this handler is subclassed in MyApplication, so that we can handle unbinding from the service there
+ * 2) <s>MyExpenses.MyApplication onStartup calls MyExpensesContrib.MyService and sets this handler as replyTo to retrieve the license status</s>
+ * <s>this handler is subclassed in MyApplication, so that we can handle unbinding from the service there</s>
  */
 public class UnlockHandler extends Handler {
   private static final int STATUS_TEMPORARY = 3;
   private static final int STATUS_PERMANENT = 4;
   private static final int STATUS_FINAL = 7;
+  private static final int STATUS_BLACKBERRY_PRO = 8;
 
   @Override
   public void handleMessage(Message msg) {
@@ -38,12 +39,15 @@ public class UnlockHandler extends Handler {
     Timber.i("Now handling answer from license verification service; got status %d.", msg.what);
     switch (msg.what) {
       case STATUS_FINAL:
-        doUnlock();
+        doUnlock(msg.what);
+        break;
+      case STATUS_BLACKBERRY_PRO:
+        doUnlock(msg.what);
         break;
       case STATUS_TEMPORARY:
       case STATUS_PERMANENT:
         if (!DistribHelper.isPlay()) {
-          doUnlock();
+          doUnlock(msg.what);
         } else {
           showNotif(Utils.concatResStrings(app, " ", R.string.licence_validation_failure,
               R.string.licence_validation_upgrade_needed));
@@ -52,12 +56,14 @@ public class UnlockHandler extends Handler {
     }
   }
 
-  private void doUnlock() {
+  private void doUnlock(int status) {
     MyApplication app = MyApplication.getInstance();
     InappPurchaseLicenceHandler licenceHandler = (InappPurchaseLicenceHandler) app.getLicenceHandler();
-    licenceHandler.registerUnlockLegacy();
-    showNotif(Utils.concatResStrings(app, " ",
-        R.string.licence_validation_premium, R.string.thank_you));
+    boolean unlocked = (status == STATUS_BLACKBERRY_PRO) ?
+      licenceHandler.registerBlackberryProfessional() :
+      licenceHandler.registerUnlockLegacy();
+    showNotif(String.format("%s (%s) %s", app.getString(R.string.licence_validation_premium),
+        app.getString(licenceHandler.getLicenceStatus().getResId()), app.getString(R.string.thank_you)));
   }
 
   private void showNotif(String text) {

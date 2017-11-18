@@ -131,8 +131,27 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
     }
   }
 
-  public void registerUnlockLegacy() {
-    updateContribStatus(STATUS_ENABLED_LEGACY_SECOND);
+  /**
+   * @return true if licenceStatus has been upEd
+   */
+  public boolean registerUnlockLegacy() {
+    if (licenceStatus == null) {
+      updateContribStatus(STATUS_ENABLED_LEGACY_SECOND);
+      return true;
+    } else{
+      return false;
+    }
+  }
+  /**
+   * @return true if licenceStatus has been upEd
+   */
+  public boolean registerBlackberryProfessional() {
+    if (licenceStatus.greaterOrEqual(LicenceStatus.PROFESSIONAL)) {
+      return false;
+    } else {
+      updateContribStatus(STATUS_PROFESSIONAL);
+      return true;
+    }
   }
 
   public OpenIabHelper getIabHelper(Context ctx) {
@@ -297,7 +316,7 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
   @NonNull
   @Override
   public String getProLicenceStatus(Context context) {
-    String currentSubscription = licenseStatusPrefs.getString(KEY_CURRENT_SUBSCRIPTION, null);
+    String currentSubscription = licenseStatusPrefs.getString(KEY_CURRENT_SUBSCRIPTION, "");
     int recurrenceResId;
     switch (currentSubscription) {
       case Config.SKU_PROFESSIONAL_1:
@@ -369,8 +388,14 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
 
   @Override
   public Package[] getProPackages() {
-    return DistribHelper.isAmazon() ? new Package[] {Package.Professional_Amazon} :
-        new Package[] {Package.Professional_1, Package.Professional_12};
+    switch (DistribHelper.getDistribution()) {
+      case AMAZON:
+        return new Package[] {Package.Professional_Amazon};
+      case BLACKBERRY:
+        return new Package[] {Package.Professional_Blackberry};
+      default:
+        return new Package[] {Package.Professional_1, Package.Professional_12};
+    }
   }
 
   @Override
