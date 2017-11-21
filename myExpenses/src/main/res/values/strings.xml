@@ -56,6 +56,8 @@
     <string name="contrib_feature_template_widget_label" tools:ignore="UnusedResources">Template widget</string>
     <string name="contrib_feature_csv_import_label" tools:ignore="UnusedResources">CSV import</string>
     <string name="contrib_feature_split_template_label" tools:ignore="UnusedResources">Unlimited number of split templates</string>
+    <string name="contrib_feature_pro_support_label" tools:ignore="UnusedResources"><b>Email support</b> with guartanteed response after 2 business days</string>
+    <string name="contrib_feature_roadmap_voting_label" tools:ignore="UnusedResources">Voting right on <b>development roadmap</b></string>
     <string name="licence_status_free">Free</string>
     <string name="contrib_key">Contrib Key</string>
     <string name="extended_key">Extended Key</string>
@@ -218,7 +220,7 @@
     <string name="menu_settings">Settings</string>
     <string name="menu_share">Tell a friend</string>
     <string name="menu_split_transaction">Transform to split</string>
-    <string name="method">Method</string>
+    <string name="method">Payment method</string>
     <string name="no_amount_given">You did not enter any amount.</string>
     <string name="no_app_handling_email_available">No app handling email available.</string>
     <string name="no_app_handling_ftp_available">No app handling ftp available. Install <i>Send With FTP</i>?</string>
@@ -278,7 +280,7 @@
     <string name="pm_type_neutral">Neutral</string>
     <string name="pref_app_dir_title">Folder for backups and exports</string>
     <string name="pref_auto_fill_title">Autofill transactions</string>
-    <string name="pref_auto_fill_summary">Fill in amount, category and comment from last transaction for same payee/payer</string>
+    <string name="pref_auto_fill_summary">Fill in data from last transaction for same payee/payer</string>
     <string name="pref_backup_summary">Create a backup of database and preferences.</string>
     <string name="pref_sort_order_usages">Count of usages</string>
     <string name="pref_category_title_advanced">Advanced</string>
@@ -496,7 +498,7 @@
     <string name="comparison_operator_date_after">after</string>
     <string name="promotion_appgratis_welcome" tools:ignore="UnusedResources">Today\'s special offer with AppGratis: Premium features unlocked for free.</string>
     <string name="premium_failed_or_canceled" tools:ignore="UnusedResources">Purchasing failed or cancelled.</string>
-    <string name="hint_auto_fill">Should amount, category and comment be filled in automatically from last transaction for same payee/payer? You can always change this behaviour from the settings.</string>
+    <string name="hint_auto_fill">Should data be filled in automatically from last transaction for same payee/payer? You can always change this behaviour from the settings.</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="hint_template_click">A short tap on an entry in this list will instantiate the template and either save it immediately or enter its editing form where you can modify it before saving. You can always access both actions through a long tap, and change the default in the settings.</string>
@@ -702,4 +704,7 @@
     <string name="menu_sort_direction">Sort direction</string>
     <string name="sort_direction_ascending">ascending</string>
     <string name="sort_direction_descending">descending</string>
+    <string name="never">never</string>
+    <string name="always">always</string>
+    <string name="auto_fill_account_from_aggregate_only">Only when started from aggregate account.</string>
 </resources>

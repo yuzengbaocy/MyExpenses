@@ -377,7 +377,7 @@
     </string-array>
 
     <integer-array name="version_codes">
-        <item>302</item>
+        <item>303</item>
         <item>300</item>
         <item>297</item>
         <item>294</item>
@@ -389,19 +389,9 @@
         <item>261</item>
         <item>257</item>
         <item>254</item>
-        <item>252</item>
-        <item>250</item>
-        <item>246</item>
-        <item>242</item>
-        <item>239</item>
-        <item>236</item>
-        <item>234</item>
-        <item>231</item>
-        <item>227</item>
-        <item>222</item>
     </integer-array>
     <string-array name="version_names">
-        <item>2.8.3.1</item>
+        <item>2.8.4</item>
         <item>2.8.3</item>
         <item>2.8.2</item>
         <item>2.8.1</item>
@@ -413,16 +403,6 @@
         <item>2.7.5</item>
         <item>2.7.1</item>
         <item>2.7.0</item>
-        <item>2.6.9</item>
-        <item>2.6.8</item>
-        <item>2.6.7</item>
-        <item>2.6.6</item>
-        <item>2.6.5</item>
-        <item>2.6.4</item>
-        <item>2.6.3</item>
-        <item>2.6.2</item>
-        <item>2.6.1</item>
-        <item>2.6.0</item>
     </string-array>
 
     <string-array name="contributors_280" tools:ignore="UnusedResources">
@@ -560,5 +540,17 @@
         <item>@string/grouping_day</item>
         <item>@string/date_format_hour</item>
         <item>@string/date_format_minute</item>
+    </string-array>
+
+    <string-array name="pref_auto_fill_account_entries">
+        <item>@string/never</item>
+        <item>@string/auto_fill_account_from_aggregate_only</item>
+        <item>@string/always</item>
+    </string-array>
+
+    <string-array name="pref_auto_fill_account_values">
+        <item>never</item>
+        <item>aggregate</item>
+        <item>always</item>
     </string-array>
 </resources>

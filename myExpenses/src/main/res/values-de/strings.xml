@@ -41,6 +41,8 @@
   <string name="contrib_feature_template_widget_label" tools:ignore="UnusedResources">Vorlagen Widget</string>
   <string name="contrib_feature_csv_import_label" tools:ignore="UnusedResources">CSV import</string>
   <string name="contrib_feature_split_template_label" tools:ignore="UnusedResources">Unbegrenzte Anzahl an Vorlagen für mehrteilige Buchungen</string>
+  <string name="contrib_feature_pro_support_label" tools:ignore="UnusedResources"><b>E-Mail-Support</b> mit garantierter Antwort nach 2 Werktagen</string>
+  <string name="contrib_feature_roadmap_voting_label" tools:ignore="UnusedResources">Stimmrecht zum <b>Entwicklungsfahrplan</b></string>
   <string name="licence_status_free">Gratis</string>
   <string name="contrib_key">Contrib-Schlüssel</string>
   <string name="extended_key">Erweiterungsschlüssel</string>
@@ -263,7 +265,6 @@
   <string name="pm_type_neutral">Neutral</string>
   <string name="pref_app_dir_title">Ordner für Backups und Exports</string>
   <string name="pref_auto_fill_title">Automatisches Ausfüllen</string>
-  <string name="pref_auto_fill_summary">Betrag, Kategorie und Kommentar von der letzten Buchung für denselben Empfänger/Zahler ausfüllen</string>
   <string name="pref_backup_summary">Erzeugt ein Backup der Datenbank und der Einstellungen</string>
   <string name="pref_sort_order_usages">Häufigkeit der Benutzung</string>
   <string name="pref_category_title_advanced">Erweitert</string>
@@ -481,7 +482,6 @@
   <string name="comparison_operator_date_after">nach</string>
   <string name="promotion_appgratis_welcome" tools:ignore="UnusedResources">Heute Sonderangebot mit AppGratis: Premium-Funktionen wurden gratis entsperrt.</string>
   <string name="premium_failed_or_canceled" tools:ignore="UnusedResources">Einkauf ist gescheitert oder abgebrochen.</string>
-  <string name="hint_auto_fill">Sollen Betrag, Kategorie und Kommentar automatisch auf Basis der letzten Buchung für denselben Empfänger/Zahler ausgefüllt werden? Sie können dieses Verhalten jederzeit in den Einstellungen ändern.</string>
   <string name="yes">Ja</string>
   <string name="no">Nein</string>
   <string name="hint_template_click">Ein kurzes Tippen auf einen Eintrag in dieser Liste wendet die Vorlage an. Entweder diese wird unmittelbar gespeichert, oder das Eingabeformular wird geöffnet, wo diese vor dem Speichern verändert werden kann. Sie können immer auf beide Aktionen über ein langes Tippen zugreifen und die Standardeinstellung in den Einstellungen ändern. </string>

@@ -41,6 +41,8 @@
   <string name="contrib_feature_template_widget_label" tools:ignore="UnusedResources">Шаблон на уиджет</string>
   <string name="contrib_feature_csv_import_label" tools:ignore="UnusedResources">Импорт от CSV</string>
   <string name="contrib_feature_split_template_label" tools:ignore="UnusedResources">Неограничен брой шаблони за  разпределяне</string>
+  <string name="contrib_feature_pro_support_label" tools:ignore="UnusedResources"><b> Поддръжка по имейл </b> с гарантиран отговор до 2 работни дни</string>
+  <string name="contrib_feature_roadmap_voting_label" tools:ignore="UnusedResources">Право да гласувате на <b> карта за развитие </b></string>
   <string name="licence_status_free">Безплатен</string>
   <string name="contrib_key">ключ за Премиум вариант</string>
   <string name="extended_key">ключ за Разширен вариант</string>
@@ -203,7 +205,7 @@
   <string name="menu_settings">Настройки</string>
   <string name="menu_share">Кажи на приятел</string>
   <string name="menu_split_transaction">Преобразувай в разпределена</string>
-  <string name="method">Плащане с</string>
+  <string name="method">Начин на плащане</string>
   <string name="no_amount_given">Не сте въвели сума.</string>
   <string name="no_app_handling_email_available">Няма приложение за електронна поща.</string>
   <string name="no_app_handling_ftp_available">Няма приложение за работа с ftp. Ще инсталирате ли <i>Send With FTP</i>?</string>
@@ -263,7 +265,6 @@
   <string name="pm_type_neutral">Неутрално</string>
   <string name="pref_app_dir_title">Папка за бекъп и експорт</string>
   <string name="pref_auto_fill_title">Автоматично попълване</string>
-  <string name="pref_auto_fill_summary">Ще се попълни количество, категория и бележка от последната транзакция за същия получател/платец</string>
   <string name="pref_backup_summary">Запиши сега резервно копие на базата данни и предпочитания.</string>
   <string name="pref_sort_order_usages">по брой използвания</string>
   <string name="pref_category_title_advanced">Допълнителни</string>
@@ -481,7 +482,6 @@
   <string name="comparison_operator_date_after">след</string>
   <string name="promotion_appgratis_welcome" tools:ignore="UnusedResources">Само днес специална оферта в безплатното приложение: премийните функции са отключени безплатно.</string>
   <string name="premium_failed_or_canceled" tools:ignore="UnusedResources">Закупуването е неуспешно или отменено.</string>
-  <string name="hint_auto_fill">Трябва ли сума, категория и коментар да се попълват автоматично от последното плащане за същия получател/платец? Винаги може да промените това от Настройки.</string>
   <string name="yes">Да</string>
   <string name="no">Не</string>
   <string name="hint_template_click">Кратко натискане на запис в този списък ще активира шаблона и ще го запамети веднага или ще изведе страница за редактиране, където може да направите промени преди запаметяване. Имате достъп до алтернативното действие чрез продължително натискане, а може да смените по подразбиране в Настройки.</string>
