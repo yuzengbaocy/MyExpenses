@@ -13,8 +13,8 @@ import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.activity.MyExpenses;
 import org.totschnig.myexpenses.util.DistribHelper;
-import org.totschnig.myexpenses.util.licence.InappPurchaseLicenceHandler;
 import org.totschnig.myexpenses.util.Utils;
+import org.totschnig.myexpenses.util.licence.InappPurchaseLicenceHandler;
 
 import timber.log.Timber;
 
@@ -33,7 +33,7 @@ public class UnlockHandler extends Handler {
   @Override
   public void handleMessage(Message msg) {
     MyApplication app = MyApplication.getInstance();
-    if (InappPurchaseLicenceHandler.STATUS_ENABLED_LEGACY_SECOND ==(((InappPurchaseLicenceHandler) app.getLicenceHandler()).getContribStatus())) {
+    if (InappPurchaseLicenceHandler.STATUS_ENABLED_LEGACY_SECOND == (((InappPurchaseLicenceHandler) app.getLicenceHandler()).getContribStatus())) {
       return;
     }
     Timber.i("Now handling answer from license verification service; got status %d.", msg.what);
@@ -60,10 +60,12 @@ public class UnlockHandler extends Handler {
     MyApplication app = MyApplication.getInstance();
     InappPurchaseLicenceHandler licenceHandler = (InappPurchaseLicenceHandler) app.getLicenceHandler();
     boolean unlocked = (status == STATUS_BLACKBERRY_PRO) ?
-      licenceHandler.registerBlackberryProfessional() :
-      licenceHandler.registerUnlockLegacy();
-    showNotif(String.format("%s (%s) %s", app.getString(R.string.licence_validation_premium),
-        app.getString(licenceHandler.getLicenceStatus().getResId()), app.getString(R.string.thank_you)));
+        licenceHandler.registerBlackberryProfessional() :
+        licenceHandler.registerUnlockLegacy();
+    if (unlocked) {
+      showNotif(String.format("%s (%s) %s", app.getString(R.string.licence_validation_premium),
+          app.getString(licenceHandler.getLicenceStatus().getResId()), app.getString(R.string.thank_you)));
+    }
   }
 
   private void showNotif(String text) {
