@@ -146,7 +146,7 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
    * @return true if licenceStatus has been upEd
    */
   public boolean registerBlackberryProfessional() {
-    if (licenceStatus.greaterOrEqual(LicenceStatus.PROFESSIONAL)) {
+    if (LicenceStatus.PROFESSIONAL.equals(licenceStatus)) {
       return false;
     } else {
       updateContribStatus(STATUS_PROFESSIONAL);
