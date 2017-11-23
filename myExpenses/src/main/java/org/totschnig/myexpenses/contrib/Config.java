@@ -11,8 +11,6 @@ import java.util.Map;
 
 /**
  * Configuration for purchase.
- * <p/>
- * Created by krozov on 01.09.14.
  */
 public final class Config {
 
