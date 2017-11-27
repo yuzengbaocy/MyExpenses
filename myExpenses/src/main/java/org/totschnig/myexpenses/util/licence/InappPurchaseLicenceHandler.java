@@ -37,6 +37,8 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
   private static final String KEY_PROFESSIONAL_12__MONTHLY = "p_12_monthly";
   private static final String KEY_PROFESSIONAL_12_CURRENCY_CODE = "p_12_currency_code";
   private static final String KEY_CURRENT_SUBSCRIPTION = "current_subscription";
+  private static final String KEY_ORDER_ID = "order_id";
+
   private int contribStatus;
   public final static boolean IS_CHROMIUM = Build.BRAND.equals("chromium");
 
@@ -412,5 +414,18 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
     } else {
       return null;
     }
+  }
+
+
+  @Override
+  public String getPurchaseExtraInfo() {
+    return licenseStatusPrefs.getString(KEY_ORDER_ID, null);
+  }
+
+  @Nullable
+  @Override
+  public LicenceStatus handlePurchase(@Nullable String sku, String orderId) {
+    licenseStatusPrefs.putString(KEY_ORDER_ID, orderId);
+    return super.handlePurchase(sku, orderId);
   }
 }
