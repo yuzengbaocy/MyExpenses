@@ -39,8 +39,6 @@ public class UnlockHandler extends Handler {
     Timber.i("Now handling answer from license verification service; got status %d.", msg.what);
     switch (msg.what) {
       case STATUS_FINAL:
-        doUnlock(msg.what);
-        break;
       case STATUS_BLACKBERRY_PRO:
         doUnlock(msg.what);
         break;
