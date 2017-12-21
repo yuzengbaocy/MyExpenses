@@ -140,10 +140,11 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
     if (licenceStatus == null) {
       updateContribStatus(STATUS_ENABLED_LEGACY_SECOND);
       return true;
-    } else{
+    } else {
       return false;
     }
   }
+
   /**
    * @return true if licenceStatus has been upEd
    */
@@ -258,9 +259,9 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
             Config.SKU_EXTENDED2PROFESSIONAL_12 : Config.SKU_PROFESSIONAL_12;
         break;
       case Professional_Amazon:
-       sku = licenceStatus != null && licenceStatus.equals(EXTENDED) ?
-           Config.SKU_EXTENDED2PROFESSIONAL_PARENT : Config.SKU_PROFESSIONAL_PARENT;
-       break;
+        sku = licenceStatus != null && licenceStatus.equals(EXTENDED) ?
+            Config.SKU_EXTENDED2PROFESSIONAL_PARENT : Config.SKU_PROFESSIONAL_PARENT;
+        break;
       default:
         throw new IllegalStateException();
     }
@@ -392,11 +393,11 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
   public Package[] getProPackages() {
     switch (DistribHelper.getDistribution()) {
       case AMAZON:
-        return new Package[] {Package.Professional_Amazon};
+        return new Package[]{Package.Professional_Amazon};
       case BLACKBERRY:
-        return new Package[] {Package.Professional_Blackberry};
+        return new Package[]{Package.Professional_Blackberry};
       default:
-        return new Package[] {Package.Professional_1, Package.Professional_12};
+        return new Package[]{Package.Professional_1, Package.Professional_12};
     }
   }
 
