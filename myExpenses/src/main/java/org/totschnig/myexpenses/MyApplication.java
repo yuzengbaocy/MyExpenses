@@ -63,6 +63,7 @@ import org.totschnig.myexpenses.service.PlanExecutor;
 import org.totschnig.myexpenses.sync.SyncAdapter;
 import org.totschnig.myexpenses.util.AcraHelper;
 import org.totschnig.myexpenses.util.DistribHelper;
+import org.totschnig.myexpenses.util.NotificationBuilderWrapper;
 import org.totschnig.myexpenses.util.Result;
 import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.util.licence.LicenceHandler;
@@ -167,6 +168,7 @@ public class MyApplication extends MultiDexApplication implements
       }
       licenceHandler.init();
       Pubnative.setTestMode(BuildConfig.DEBUG);
+      NotificationBuilderWrapper.createChannels(this);
     }
   }
 
@@ -435,7 +437,7 @@ public class MyApplication extends MultiDexApplication implements
   }
 
   /**
-   * WARNING this method relies on calendar permissions being granted. It is the callers permission
+   * WARNING this method relies on calendar permissions being granted. It is the callers duty
    * to check if they have been granted
    * @return id of planning calendar if it has been configured and passed checked
    */
