@@ -157,7 +157,7 @@ public class GoogleDriveBackendProviderFactory extends SyncBackendProviderFactor
         }
       }
       NotificationBuilderWrapper builder = NotificationBuilderWrapper.defaultBigTextStyleBuilder(
-          application, application.getString(R.string.important_upgrade_information_heading),
+          application, NotificationBuilderWrapper.CHANNEL_ID_SYNC, application.getString(R.string.important_upgrade_information_heading),
           application.getString(R.string.drive_backend_upgrade))
           .setContentIntent(PendingIntent.getActivity(
               application, 0, new Intent(application, ManageSyncBackends.class),

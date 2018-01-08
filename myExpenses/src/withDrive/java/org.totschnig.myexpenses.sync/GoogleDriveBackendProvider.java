@@ -92,11 +92,11 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   }
 
   private boolean requireSetup() {
-    return setUp().success;
+    return setUp(null).success;
   }
 
   @Override
-  public  Result setUp() {
+  public  Result setUp(String authToken) {
     long lastFailedSync = sharedPreferences.getLong(KEY_LAST_FAILED_SYNC, 0);
     long currentBackOff = sharedPreferences.getLong(KEY_SYNC_BACKOFF, 0);
     long now = System.currentTimeMillis();
@@ -145,7 +145,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   }
 
   @Override
-  public InputStream getInputStreamForBackup(String backupFile) throws IOException {
+  public InputStream getInputStreamForBackup(android.accounts.Account account, String backupFile) throws IOException {
     if (requireSetup()) {
       return getInputStream(getBackupFolder(), backupFile);
     }
@@ -200,7 +200,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
 
   @NonNull
   @Override
-  public List<String> getStoredBackups() throws IOException {
+  public List<String> getStoredBackups(android.accounts.Account account) throws IOException {
     List<String> result = null;
     if (requireSetup()) {
       DriveApi.MetadataBufferResult metadataBufferResult = getBackupFolder().listChildren(googleApiClient).await();
@@ -251,11 +251,13 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   }
 
   @Override
-  protected boolean writeLockToken(String lockToken) throws IOException {
+  protected void writeLockToken(String lockToken) throws IOException {
     MetadataChangeSet.Builder changeSetBuilder = new MetadataChangeSet.Builder();
     changeSetBuilder.setCustomProperty(LOCK_TOKEN_KEY, lockToken);
     DriveResource.MetadataResult metadataResult = accountFolder.updateMetadata(googleApiClient, changeSetBuilder.build()).await();
-    return metadataResult.getStatus().isSuccess();
+    if (!metadataResult.getStatus().isSuccess()) {
+      throw new IOException("Error while writing lock token");
+    }
   }
 
   private void saveInputStream(String fileName, InputStream contents, String mimeType, DriveFolder driveFolder) throws IOException {
@@ -280,20 +282,19 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   }
 
   @Override
-  public boolean withAccount(Account account) {
+  public void withAccount(Account account) throws IOException {
     setAccountUuid(account);
-    return requireAccountFolder(account);
+    requireAccountFolder(account);
   }
 
   @Override
-  public boolean resetAccountData(String uuid) {
-    try {
-      return getExistingAccountFolder(uuid)
-          .map(driveFolder -> driveFolder.trash(googleApiClient).await().isSuccess() &&
-              Drive.DriveApi.requestSync(googleApiClient).await().getStatus().isSuccess())
-          .orElse(true);
-    } catch (IOException e) {
-      return false;
+  public void resetAccountData(String uuid) throws IOException {
+    Optional<DriveFolder> existingAccountFolder = getExistingAccountFolder(uuid);
+    if (existingAccountFolder.isPresent()) {
+      if (!(existingAccountFolder.get().trash(googleApiClient).await().isSuccess() &&
+          Drive.DriveApi.requestSync(googleApiClient).await().getStatus().isSuccess())) {
+        throw new IOException("Error while reseting account data");
+      }
     }
   }
 
@@ -332,17 +333,19 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   }
 
   @Override
-  public boolean unlock() {
+  public void unlock() throws IOException {
     MetadataChangeSet.Builder changeSetBuilder = new MetadataChangeSet.Builder();
 
     changeSetBuilder.deleteCustomProperty(LOCK_TOKEN_KEY);
-    return accountFolder.updateMetadata(googleApiClient, changeSetBuilder.build())
-        .await().getStatus().isSuccess();
+    if (!accountFolder.updateMetadata(googleApiClient, changeSetBuilder.build())
+        .await().getStatus().isSuccess()) {
+      throw new IOException("Error while unlocking backend");
+    }
   }
 
   @NonNull
   @Override
-  public Stream<AccountMetaData> getRemoteAccountList() throws IOException {
+  public Stream<AccountMetaData> getRemoteAccountList(android.accounts.Account account) throws IOException {
     Stream<AccountMetaData> result = Stream.empty();
     if (requireSetup()) {
       if (requireBaseFolder()) {
@@ -452,17 +455,11 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     return result;
   }
 
-  private boolean requireAccountFolder(Account account) {
-    boolean result = false;
+  private void requireAccountFolder(Account account) throws IOException {
     Optional<DriveFolder> driveFolderOptional;
-    try {
-      driveFolderOptional = getExistingAccountFolder(account.uuid);
-    } catch (IOException e) {
-      return false;
-    }
+    driveFolderOptional = getExistingAccountFolder(account.uuid);
     if (driveFolderOptional.isPresent()) {
       accountFolder = driveFolderOptional.get();
-      result = true;
     } else {
       MetadataChangeSet.Builder builder = new MetadataChangeSet.Builder()
           .setTitle(account.label)
@@ -485,10 +482,10 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
       if (driveFolderResult.getStatus().isSuccess()) {
         accountFolder = driveFolderResult.getDriveFolder();
         createWarningFile();
-        result = true;
+      } else {
+        throw new IOException("Error while creating account folder");
       }
     }
-    return result;
   }
 
   private boolean requireBaseFolder() {
