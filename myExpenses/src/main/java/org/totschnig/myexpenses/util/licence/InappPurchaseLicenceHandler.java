@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
+import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 import com.google.android.vending.licensing.PreferenceObfuscator;
 
 import org.onepf.oms.Appstore;
@@ -428,5 +429,22 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
   public LicenceStatus handlePurchase(@Nullable String sku, String orderId) {
     licenseStatusPrefs.putString(KEY_ORDER_ID, orderId);
     return super.handlePurchase(sku, orderId);
+  }
+
+  /**
+   * do not call on main thread
+   */
+  @Override
+  public String buildRoadmapVoteKey() {
+    if (isProfessionalEnabled()) {
+      return getPurchaseExtraInfo();
+    } else {
+      try {
+        String id = AdvertisingIdClient.getAdvertisingIdInfo(context).getId();
+        return id;
+      } catch (Exception e) {
+        return super.buildRoadmapVoteKey();
+      }
+    }
   }
 }

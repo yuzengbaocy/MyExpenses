@@ -61,6 +61,10 @@ public class LicenceHandler {
     return isEnabledFor(LicenceStatus.EXTENDED);
   }
 
+  public boolean isProfessionalEnabled() {
+    return isEnabledFor(LicenceStatus.PROFESSIONAL);
+  }
+
   public boolean isEnabledFor(@NonNull LicenceStatus licenceStatus) {
     if (this.licenceStatus == null) {
       return false;
