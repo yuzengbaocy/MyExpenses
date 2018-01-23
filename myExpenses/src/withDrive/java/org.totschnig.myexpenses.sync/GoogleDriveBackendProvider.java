@@ -35,6 +35,7 @@ import org.totschnig.myexpenses.sync.json.ChangeSet;
 import org.totschnig.myexpenses.util.AcraHelper;
 import org.totschnig.myexpenses.util.FileCopyUtils;
 import org.totschnig.myexpenses.util.Result;
+import org.totschnig.myexpenses.util.Utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -229,7 +230,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     Long result = Stream.of(metadataBuffer)
         .filter(metadata -> isNewerJsonFile(start, metadata.getTitle()))
         .map(metadata -> getSequenceFromFileName(metadata.getTitle()))
-        .max(this::compareInt)
+        .max(Utils::compare)
         .orElse(start);
     metadataBuffer.release();
     return result;
