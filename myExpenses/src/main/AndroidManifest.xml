@@ -304,6 +304,18 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".activity.RoadmapVoteActivity">
+            <intent-filter>
+                <action android:name="myexpenses.intent.roadmap"/>
+
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable">
+            </meta-data>
+        </activity>
+
         <service
             android:name=".service.MyService"
             android:permission="org.totschnig.myexpenses.UNLOCK_PREMIUM" >

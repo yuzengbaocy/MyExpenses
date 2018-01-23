@@ -30,6 +30,7 @@ import org.totschnig.myexpenses.widget.TemplateWidget;
 import java.util.Currency;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 public class LicenceHandler {
   private static final String LICENSE_STATUS_KEY = "licence_status";
@@ -273,5 +274,9 @@ public class LicenceHandler {
 
   public String getPurchaseExtraInfo() {
     return null;
+  }
+
+  public String buildRoadmapVoteKey() {
+    return UUID.randomUUID().toString();
   }
 }
