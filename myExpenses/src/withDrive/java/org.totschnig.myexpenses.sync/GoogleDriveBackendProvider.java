@@ -42,10 +42,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Currency;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import timber.log.Timber;
@@ -383,7 +381,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
         .setDescription(getPropertyWithDefault(customProperties, ACCOUNT_METADATA_DESCRIPTION_KEY, ""))
         .setColor(getPropertyWithDefault(customProperties, ACCOUNT_METADATA_COLOR_KEY, Account.DEFAULT_COLOR))
         .setCurrency(getPropertyWithDefault(customProperties, ACCOUNT_METADATA_CURRENCY_KEY,
-            Currency.getInstance(Locale.getDefault()).getCurrencyCode()))
+            Utils.getSaveDefault().getCurrencyCode()))
         .setUuid(uuid)
         .setLabel(metadata.getTitle()).build());
   }

@@ -144,6 +144,7 @@ public class MyApplication extends MultiDexApplication implements
    * value
    */
   private String mPlannerCalendarId = "-1";
+
   /**
    * we store the systemLocale if the user wants to come back to it after having
    * tried a different locale;
@@ -231,6 +232,10 @@ public class MyApplication extends MultiDexApplication implements
 
   public static MyApplication getInstance() {
     return mSelf;
+  }
+
+  public static Locale getSystemLocale() {
+    return systemLocale;
   }
 
   public SharedPreferences getSettings() {
