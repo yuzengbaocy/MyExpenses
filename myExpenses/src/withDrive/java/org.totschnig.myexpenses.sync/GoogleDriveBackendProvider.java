@@ -16,6 +16,7 @@ import com.google.android.gms.drive.DriveApi;
 import com.google.android.gms.drive.DriveContents;
 import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveFolder;
+import com.google.android.gms.drive.DriveId;
 import com.google.android.gms.drive.DriveResource;
 import com.google.android.gms.drive.Metadata;
 import com.google.android.gms.drive.MetadataBuffer;
@@ -315,9 +316,11 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   }
 
   private ChangeSet getChangeSetFromMetadata(Metadata metadata) {
+    DriveId driveId = metadata.getDriveId();
     DriveApi.DriveContentsResult driveContentsResult =
-        metadata.getDriveId().asDriveFile().open(googleApiClient, DriveFile.MODE_READ_ONLY, null).await();
+        driveId.asDriveFile().open(googleApiClient, DriveFile.MODE_READ_ONLY, null).await();
     if (!driveContentsResult.getStatus().isSuccess()) {
+      SyncAdapter.log().e("Unable to open %s", driveId.getResourceId());
       return ChangeSet.failed;
     }
     DriveContents driveContents = driveContentsResult.getDriveContents();
@@ -325,6 +328,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
       return getChangeSetFromInputStream(getSequenceFromFileName(metadata.getTitle()),
           driveContents.getInputStream());
     } catch (IOException e) {
+      SyncAdapter.log().e(e);
       return ChangeSet.failed;
     } finally {
       driveContents.discard(googleApiClient);
