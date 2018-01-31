@@ -1,10 +1,9 @@
 package org.totschnig.myexpenses.fragment;
 
-import android.annotation.TargetApi;
 import android.app.ProgressDialog;
 import android.graphics.Typeface;
-import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -24,13 +23,13 @@ import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.apache.commons.csv.CSVRecord;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.activity.CsvImportActivity;
+import org.totschnig.myexpenses.activity.ProtectedFragmentActivity;
 import org.totschnig.myexpenses.dialog.ConfirmationDialogFragment;
 import org.totschnig.myexpenses.dialog.ProgressDialogFragment;
 import org.totschnig.myexpenses.export.qif.QifDateFormat;
@@ -315,9 +314,7 @@ public class CsvImportDataFragment extends Fragment {
                                                    int viewType) {
       // create a new view
       LinearLayout v = new LinearLayout(parent.getContext());
-      if (Utils.hasApiLevel(Build.VERSION_CODES.HONEYCOMB)) {
-        v.setBackgroundResource(R.drawable.csv_import_row_background);
-      }
+      v.setBackgroundResource(R.drawable.csv_import_row_background);
       View cell = new CheckBox(parent.getContext());
 
       v.addView(cell, cbParams);
@@ -326,12 +323,7 @@ public class CsvImportDataFragment extends Fragment {
         ((TextView) cell).setSingleLine();
         ((TextView) cell).setEllipsize(TextUtils.TruncateAt.END);
         cell.setSelected(true);
-        cell.setOnClickListener(new View.OnClickListener() {
-          @Override
-          public void onClick(View v) {
-            Toast.makeText(getActivity(), ((TextView) v).getText(), Toast.LENGTH_LONG).show();
-          }
-        });
+        cell.setOnClickListener(v1 -> ((ProtectedFragmentActivity) getActivity()).showSnackbar(((TextView) v1).getText(), Snackbar.LENGTH_LONG));
         if (viewType == 0) {
           ((TextView) cell).setTypeface(null, Typeface.BOLD);
         }
@@ -343,16 +335,13 @@ public class CsvImportDataFragment extends Fragment {
     }
 
     // Replace the contents of a view (invoked by the layout manager)
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     @Override
     public void onBindViewHolder(ViewHolder holder, final int position) {
       // - get element from your dataset at this position
       // - replace the contents of the view with that element
       boolean isDiscarded = discardedRows.get(position, false);
       boolean isHeader = position == 0 && firstLineIsHeader;
-      if (Utils.hasApiLevel(Build.VERSION_CODES.HONEYCOMB)) {
-        holder.row.setActivated(isDiscarded && !isHeader);
-      }
+      holder.row.setActivated(isDiscarded && !isHeader);
       final CSVRecord record = mDataset.get(position);
       for (int i = 0; i < record.size() && i < nrOfColumns; i++) {
         TextView cell = (TextView) holder.row.getChildAt(i + 1);
@@ -446,24 +435,25 @@ public class CsvImportDataFragment extends Fragment {
    */
   private boolean validateMapping(int[] columnToFieldMap) {
     SparseBooleanArray foundFields = new SparseBooleanArray();
+    ProtectedFragmentActivity activity = (ProtectedFragmentActivity) getActivity();
     for (int i = 0; i < columnToFieldMap.length; i++) {
       int field = columnToFieldMap[i];
       if (field != R.string.cvs_import_discard) {
         if (foundFields.get(field, false)) {
-          Toast.makeText(getActivity(), getString(R.string.csv_import_field_mapped_more_than_once, getString(field)), Toast.LENGTH_LONG).show();
+          activity.showSnackbar(getString(R.string.csv_import_field_mapped_more_than_once, getString(field)), Snackbar.LENGTH_LONG);
           return false;
         }
         foundFields.put(field, true);
       }
     }
     if (foundFields.get(R.string.subcategory, false) && !foundFields.get(R.string.category, false)) {
-      Toast.makeText(getActivity(), R.string.csv_import_subcategory_requires_category, Toast.LENGTH_LONG).show();
+      activity.showSnackbar(R.string.csv_import_subcategory_requires_category, Snackbar.LENGTH_LONG);
       return false;
     }
     if (!(foundFields.get(R.string.amount, false) ||
         foundFields.get(R.string.expense, false) ||
         foundFields.get(R.string.income, false))) {
-      Toast.makeText(getActivity(), R.string.csv_import_no_mapping_found_for_amount, Toast.LENGTH_LONG).show();
+      activity.showSnackbar(R.string.csv_import_no_mapping_found_for_amount, Snackbar.LENGTH_LONG);
       return false;
     }
     return true;

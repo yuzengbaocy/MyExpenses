@@ -15,8 +15,8 @@
 
 package org.totschnig.myexpenses.activity;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -28,9 +28,11 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.VisibleForTesting;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -46,12 +48,16 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.annimon.stream.Optional;
 
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.dialog.ConfirmationDialogFragment;
 import org.totschnig.myexpenses.dialog.DialogUtils;
+import org.totschnig.myexpenses.dialog.MessageDialogFragment;
 import org.totschnig.myexpenses.dialog.MessageDialogFragment.MessageDialogListener;
 import org.totschnig.myexpenses.dialog.ProgressDialogFragment;
 import org.totschnig.myexpenses.dialog.TransactionDetailFragment;
@@ -76,12 +82,15 @@ import java.io.Serializable;
 import javax.inject.Inject;
 
 import static org.totschnig.myexpenses.activity.ContribInfoDialogActivity.KEY_FEATURE;
+import static org.totschnig.myexpenses.preference.PrefKey.PROTECTION_DEVICE_LOCK_SCREEN;
+import static org.totschnig.myexpenses.preference.PrefKey.PROTECTION_LEGACY;
 import static org.totschnig.myexpenses.task.TaskExecutionFragment.TASK_RESTORE;
 
 public abstract class ProtectedFragmentActivity extends AppCompatActivity
     implements MessageDialogListener, OnSharedPreferenceChangeListener,
     ConfirmationDialogFragment.ConfirmationDialogListener,
-    TaskExecutionFragment.TaskCallbacks, DbWriteFragment.TaskCallbacks {
+    TaskExecutionFragment.TaskCallbacks, DbWriteFragment.TaskCallbacks,
+    ProgressDialogFragment.ProgressDialogListener {
   public static final int CALCULATOR_REQUEST = 0;
   public static final int EDIT_TRANSACTION_REQUEST = 1;
   public static final int EDIT_ACCOUNT_REQUEST = 2;
@@ -100,6 +109,8 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
   public static final int RESTORE_REQUEST = 17;
   public static final int CONTRIB_REQUEST = 18;
   public static final int PLAN_REQUEST = 19;
+  private static final int CONFIRM_DEVICE_CREDENTIALS_UNLOCK_REQUEST = 20;
+  protected static final int CONFIRM_DEVICE_CREDENTIALS_MANAGE_PROTECTION_SETTINGS_REQUEST = 21;
   public static final String SAVE_TAG = "SAVE_TASK";
   public static final String SORT_ORDER_USAGES = "USAGES";
   public static final String SORT_ORDER_LAST_USED = "LAST_USED";
@@ -115,11 +126,14 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
 
   private AlertDialog pwDialog;
   private boolean scheduledRestart = false;
+  private Optional<Boolean> confirmCredentialResult = Optional.empty();
   public Enum<?> helpVariant = null;
   protected int colorExpense;
   protected int colorIncome;
   protected ColorStateList textColorSecondary;
   protected FloatingActionButton floatingActionButton;
+
+  private Snackbar snackbar;
 
   @Inject
   protected Tracker tracker;
@@ -140,7 +154,7 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     injectDependencies();
-    if (PrefKey.PERFORM_PROTECTION.getBoolean(false)) {
+    if (MyApplication.getInstance().isProtected()) {
       getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE,
           WindowManager.LayoutParams.FLAG_SECURE);
     }
@@ -199,9 +213,9 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
   protected void onPause() {
     super.onPause();
     MyApplication app = MyApplication.getInstance();
-    if (app.isLocked() && pwDialog != null)
+    if (app.isLocked() && pwDialog != null) {
       pwDialog.dismiss();
-    else {
+    } else {
       app.setLastPause(this);
     }
   }
@@ -217,31 +231,48 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
     super.onResume();
     if (scheduledRestart) {
       scheduledRestart = false;
-      recreateBackport();
+      recreate();
     } else {
-      MyApplication app = MyApplication.getInstance();
-      if (app.shouldLock(this)) {
-        if (pwDialog == null) {
-          pwDialog = DialogUtils.passwordDialog(this, false);
+      if (confirmCredentialResult.isPresent()) {
+        if (!confirmCredentialResult.get()) {
+          moveTaskToBack(true);
         }
-        DialogUtils.showPasswordDialog(this, pwDialog, true, null);
+        confirmCredentialResult = Optional.empty();
+      } else {
+        MyApplication app = MyApplication.getInstance();
+        if (app.shouldLock(this)) {
+          confirmCredentials(CONFIRM_DEVICE_CREDENTIALS_UNLOCK_REQUEST, null, true);
+        }
       }
     }
   }
 
-  public void recreateBackport() {
-    if (Utils.hasApiLevel(Build.VERSION_CODES.HONEYCOMB)) {
-      recreateHoneyComb();
-    } else {
-      Intent intent = getIntent();
-      intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-      startActivity(intent);
+  protected void confirmCredentials(int requestCode, DialogUtils.PasswordDialogUnlockedCallback legacyUnlockCallback, boolean shouldHideWindow) {
+    if (Utils.hasApiLevel(Build.VERSION_CODES.LOLLIPOP) && PROTECTION_DEVICE_LOCK_SCREEN.getBoolean(true)) {
+      Intent intent = ((KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE))
+          .createConfirmDeviceCredentialIntent(null, null);
+      if (intent != null) {
+        if (shouldHideWindow) hideWindow();
+        startActivityForResult(intent, requestCode);
+      } else {
+        showDeviceLockScreenWarning();
+        if (legacyUnlockCallback != null) {
+          legacyUnlockCallback.onPasswordDialogUnlocked();
+        }
+      }
+    } else if (PROTECTION_LEGACY.getBoolean(true)) {
+      if (shouldHideWindow) hideWindow();
+      if (pwDialog == null) {
+        pwDialog = DialogUtils.passwordDialog(this, false);
+      }
+      DialogUtils.showPasswordDialog(this, pwDialog, legacyUnlockCallback);
     }
   }
 
-  @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-  private void recreateHoneyComb() {
-    super.recreate();
+  public void showDeviceLockScreenWarning() {
+    showSnackbar(
+        Utils.concatResStrings(this, "\n", R.string.warning_device_lock_screen_not_set_up_1, R.string.warning_device_lock_screen_not_set_up_2),
+        Snackbar.LENGTH_LONG);
   }
 
   @Override
@@ -250,14 +281,20 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
     if (key.equals(PrefKey.UI_THEME_KEY.getKey()) ||
         key.equals(PrefKey.UI_LANGUAGE.getKey()) ||
         key.equals(PrefKey.UI_FONTSIZE.getKey()) ||
-        key.equals((PrefKey.PERFORM_PROTECTION.getKey())) ||
+        key.equals((PrefKey.PROTECTION_LEGACY.getKey())) ||
+        key.equals((PrefKey.PROTECTION_DEVICE_LOCK_SCREEN.getKey())) ||
         key.equals(PrefKey.GROUP_MONTH_STARTS.getKey()) ||
         key.equals(PrefKey.GROUP_WEEK_STARTS.getKey())) {
       scheduledRestart = true;
     }
   }
 
+  @Override
   public void onMessageDialogDismissOrCancel() {
+  }
+
+  @Override
+  public void onProgressDialogDismiss() {
   }
 
   @Override
@@ -307,6 +344,8 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
         f.setProgress((Integer) progress);
       } else if (progress instanceof String) {
         f.appendToMessage((String) progress);
+      } else if (progress instanceof Result) {
+        f.appendToMessage(((Result) progress).print(this));
       }
     }
   }
@@ -333,9 +372,8 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
       case TaskExecutionFragment.TASK_UNDELETE_TRANSACTION: {
         Result result = (Result) o;
         if (!result.success) {
-          Toast.makeText(this,
-              "There was an error deleting the object. Please contact support@myexenses.mobi !",
-              Toast.LENGTH_LONG).show();
+          showSnackbar("There was an error deleting the object. Please contact support@myexenses.mobi !",
+              Snackbar.LENGTH_LONG);
         }
         break;
       }
@@ -355,10 +393,6 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
   }
 
   protected void onPostRestoreTask(Result result) {
-    String msg = result.print(this);
-    if (msg != null) {
-      Toast.makeText(getBaseContext(), msg, Toast.LENGTH_LONG).show();
-    }
     if (result.success) {
       MyApplication.getInstance().getLicenceHandler().reset();
       // if the backup is password protected, we want to force the password
@@ -387,7 +421,7 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
 
   /**
    * starts the given task, only if no task is currently executed,
-   * informs user through toast in that case
+   * informs user through snackbar in that case
    *
    * @param taskId
    * @param objectIds
@@ -396,6 +430,10 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
    */
   public <T> void startTaskExecution(int taskId, T[] objectIds, Serializable extra,
                                      int progressMessage) {
+    startTaskExecution(taskId, objectIds, extra, progressMessage, false);
+  }
+  public <T> void startTaskExecution(int taskId, T[] objectIds, Serializable extra,
+                                     int progressMessage, boolean withButton) {
     FragmentManager m = getSupportFragmentManager();
     if (m.findFragmentByTag(ASYNC_TAG) != null) {
       showTaskNotFinishedWarning();
@@ -407,17 +445,15 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
               objectIds, extra),
               ASYNC_TAG);
       if (progressMessage != 0) {
-        ft.add(ProgressDialogFragment.newInstance(progressMessage), PROGRESS_TAG);
+        ft.add(ProgressDialogFragment.newInstance(progressMessage, withButton), PROGRESS_TAG);
       }
       ft.commit();
     }
   }
 
   private void showTaskNotFinishedWarning() {
-    Toast.makeText(getBaseContext(),
-        "Previous task still executing, please try again later",
-        Toast.LENGTH_LONG)
-        .show();
+    showSnackbar("Previous task still executing, please try again later",
+        Snackbar.LENGTH_LONG);
   }
 
   public void startTaskExecution(int taskId, @NonNull Bundle extras, int progressMessage) {
@@ -517,6 +553,15 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
     if ((requestCode == PREFERENCES_REQUEST || requestCode == RESTORE_REQUEST) && resultCode == RESULT_RESTORE_OK) {
       restartAfterRestore();
     }
+    if (requestCode == CONFIRM_DEVICE_CREDENTIALS_UNLOCK_REQUEST) {
+      if (resultCode == RESULT_OK) {
+        confirmCredentialResult = Optional.of(true);
+        showWindow();
+        MyApplication.getInstance().setLocked(false);
+      } else {
+        confirmCredentialResult = Optional.of(false);
+      }
+    }
   }
 
   protected void restartAfterRestore() {
@@ -537,14 +582,6 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
   }
 
   @Override
-  public void setTitle(CharSequence title) {
-    super.setTitle(title);
-    if (!Utils.hasApiLevel(Build.VERSION_CODES.HONEYCOMB)) {
-      getSupportActionBar().setTitle(title);
-    }
-  }
-
-  @Override
   public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
     super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     boolean granted = PermissionHelper.allGranted(grantResults);
@@ -557,8 +594,8 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
       }
     } else {
       if (permissions.length > 0 && ActivityCompat.shouldShowRequestPermissionRationale(this, permissions[0])) {
-        Toast.makeText(this, PermissionHelper.permissionRequestRationale(this, requestCode),
-            Toast.LENGTH_LONG).show();
+        showSnackbar(PermissionHelper.permissionRequestRationale(this, requestCode),
+            Snackbar.LENGTH_LONG);
       }
     }
   }
@@ -616,8 +653,7 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
     getSupportFragmentManager()
         .beginTransaction()
         .add(TaskExecutionFragment.newInstanceWithBundle(args, TASK_RESTORE), ASYNC_TAG)
-        .add(ProgressDialogFragment.newInstance(R.string.pref_restore_title),
-            PROGRESS_TAG).commit();
+        .add(ProgressDialogFragment.newInstance(R.string.pref_restore_title, true), PROGRESS_TAG).commit();
   }
 
   @Override
@@ -640,5 +676,75 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
   @VisibleForTesting
   public Fragment getCurrentFragment() {
     return null;
+  }
+
+  public void hideWindow() {
+    findViewById(android.R.id.content).setVisibility(View.GONE);
+    final ActionBar actionBar = getSupportActionBar();
+    if (actionBar != null) actionBar.hide();
+  }
+
+  public void showWindow() {
+    findViewById(android.R.id.content).setVisibility(View.VISIBLE);
+    final ActionBar actionBar = getSupportActionBar();
+    if (actionBar != null) actionBar.show();
+  }
+
+  public void showDismissableSnackbar(int message) {
+    showSnackbar(getText(message), Snackbar.LENGTH_INDEFINITE, true);
+  }
+
+  public void showSnackbar(int message, int duration) {
+    showSnackbar(getText(message), duration);
+  }
+
+  public void showSnackbar(CharSequence message, int duration) {
+    showSnackbar(message, duration, false);
+  }
+
+  public void showSnackbar(CharSequence message, int duration, boolean dismissable) {
+    View container = findViewById(getSnackbarContainerId());
+    if (container == null) {
+      AcraHelper.report(String.format("Class %s is unable to display snackbar", getClass()));
+      Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+    } else {
+      snackbar = Snackbar.make(container, message, duration);
+      View snackbarView = snackbar.getView();
+      TextView textView = snackbarView.findViewById(android.support.design.R.id.snackbar_text);
+      textView.setMaxLines(3);
+      UiUtils.configureSnackbarForDarkTheme(snackbar);
+      if (dismissable) {
+        snackbar.setAction(R.string.snackbar_dismiss, v -> snackbar.dismiss());
+      }
+      snackbar.show();
+    }
+  }
+
+  public void dismissSnackbar() {
+    if (snackbar != null) {
+      snackbar.dismiss();
+    }
+  }
+
+  @IdRes
+  protected int getSnackbarContainerId() {
+    return R.id.fragment_container;
+  }
+
+  public void showMessage(int resId) {
+    showMessage(getString(resId));
+  }
+
+  public void showMessage(CharSequence message) {
+   showMessage(0, message);
+  }
+
+  public void showMessage(int title, CharSequence message) {
+    MessageDialogFragment.newInstance(
+        title,
+        message,
+        MessageDialogFragment.Button.okButton(),
+        null, null)
+        .show(getSupportFragmentManager(), "MESSAGE");
   }
 }

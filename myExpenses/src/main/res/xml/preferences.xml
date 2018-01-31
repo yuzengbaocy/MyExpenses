@@ -239,10 +239,16 @@
         <PreferenceScreen
             android:key="@string/pref_screen_protection_key"
             android:title="@string/pref_perform_protection_title">
+            <SwitchPreferenceCompat
+                android:key="@string/pref_protection_device_lock_screen_key"
+                android:title="@string/pref_protection_device_lock_screen_title" />
             <org.totschnig.myexpenses.preference.PasswordPreference
-                android:key="@string/pref_perform_protection_key"
-                android:summary="@string/pref_perform_protection_summary"
-                android:title="@string/pref_perform_protection_title"/>
+                android:key="@string/pref_protection_password_key"
+                android:title="@string/pref_protection_password_title"/>
+            <EditTextPreference
+                android:dialogLayout="@layout/security_question"
+                android:key="@string/pref_security_question_key"
+                android:title="@string/pref_security_question_title"/>
             <com.pavelsikun.seekbarpreference.SeekBarPreferenceCompat
                 android:defaultValue="15"
                 android:key="@string/pref_protection_delay_seconds_key"
@@ -252,10 +258,6 @@
                 my:msbp_maxValue="90"
                 my:msbp_measurementUnit=" &#8243;"
                 my:msbp_minValue="1"/>
-            <EditTextPreference
-                android:dialogLayout="@layout/security_question"
-                android:key="@string/pref_security_question_key"
-                android:title="@string/pref_security_question_title"/>
             <PreferenceCategory android:title="Widgets">
                 <CheckBoxPreference
                     android:defaultValue="false"
@@ -357,6 +359,9 @@
             <SwitchPreferenceCompat
                 android:key="@string/pref_debug_logging_key"
                 android:summary="@string/pref_debug_logging_summary" />
+            <SwitchPreferenceCompat
+                android:key="@string/pref_debug_show_ads_key"
+                android:summary="Ads" />
         </PreferenceScreen>
         <PreferenceScreen
             android:key="@string/pref_crash_reports_key"

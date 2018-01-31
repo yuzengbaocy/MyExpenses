@@ -21,9 +21,9 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
-import android.widget.Toast;
 
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
@@ -45,7 +45,7 @@ public class CommonCommands {
   private CommonCommands() {
   }
 
-  public static boolean dispatchCommand(Activity ctx, int command, Object tag) {
+  public static boolean dispatchCommand(ProtectedFragmentActivity ctx, int command, Object tag) {
     Intent i;
     switch (command) {
       case R.id.RATE_COMMAND:
@@ -54,11 +54,7 @@ public class CommonCommands {
         if (Utils.isIntentAvailable(ctx, i)) {
           ctx.startActivity(i);
         } else {
-          Toast.makeText(
-              ctx,
-              R.string.error_accessing_market,
-              Toast.LENGTH_LONG)
-              .show();
+          ctx.showSnackbar(R.string.error_accessing_market, Snackbar.LENGTH_LONG);
         }
         return true;
       case R.id.SETTINGS_COMMAND:
@@ -97,7 +93,7 @@ public class CommonCommands {
             ctx.getString(R.string.feedback_email_message));
         i.putExtra(android.content.Intent.EXTRA_TEXT, messageBody);
         if (!Utils.isIntentAvailable(ctx, i)) {
-          Toast.makeText(ctx, R.string.no_app_handling_email_available, Toast.LENGTH_LONG).show();
+          ctx.showSnackbar(R.string.no_app_handling_email_available, Snackbar.LENGTH_LONG);
         } else {
           ctx.startActivity(i);
         }
@@ -128,11 +124,11 @@ public class CommonCommands {
             "[" + ctx.getString(R.string.app_name) + "] " +  ctx.getString(licenceHandler.getLicenceStatus().getResId()));
         String extraText = String.format(
             "Please send me a new licence key. Current key is %1$s for Android-Id %2$s\nLANGUAGE:%3$s\nVERSION:%4$s",
-            PrefKey.ENTER_LICENCE.getString(null), androidId,
+            PrefKey.LICENCE_LEGACY.getString(null), androidId,
             Locale.getDefault().toString(), DistribHelper.getVersionInfo(ctx));
         i.putExtra(android.content.Intent.EXTRA_TEXT, extraText);
         if (!Utils.isIntentAvailable(ctx, i)) {
-          Toast.makeText(ctx, R.string.no_app_handling_email_available, Toast.LENGTH_LONG).show();
+          ctx.showSnackbar(R.string.no_app_handling_email_available, Snackbar.LENGTH_LONG);
         } else {
           ctx.startActivity(i);
         }

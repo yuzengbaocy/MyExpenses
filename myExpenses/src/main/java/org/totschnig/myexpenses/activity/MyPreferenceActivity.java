@@ -35,7 +35,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
@@ -54,7 +53,6 @@ import org.totschnig.myexpenses.task.TaskExecutionFragment;
 import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.PermissionHelper;
 import org.totschnig.myexpenses.util.Result;
-import org.totschnig.myexpenses.util.UiUtils;
 import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.widget.AbstractWidget;
 import org.totschnig.myexpenses.widget.AccountWidget;
@@ -68,11 +66,12 @@ import static org.totschnig.myexpenses.preference.PrefKey.AUTO_BACKUP;
 import static org.totschnig.myexpenses.preference.PrefKey.AUTO_BACKUP_TIME;
 import static org.totschnig.myexpenses.preference.PrefKey.GROUP_MONTH_STARTS;
 import static org.totschnig.myexpenses.preference.PrefKey.GROUP_WEEK_STARTS;
-import static org.totschnig.myexpenses.preference.PrefKey.PERFORM_PROTECTION;
 import static org.totschnig.myexpenses.preference.PrefKey.PERFORM_PROTECTION_SCREEN;
 import static org.totschnig.myexpenses.preference.PrefKey.PLANNER_CALENDAR_ID;
+import static org.totschnig.myexpenses.preference.PrefKey.PROTECTION_DEVICE_LOCK_SCREEN;
 import static org.totschnig.myexpenses.preference.PrefKey.PROTECTION_ENABLE_ACCOUNT_WIDGET;
 import static org.totschnig.myexpenses.preference.PrefKey.PROTECTION_ENABLE_TEMPLATE_WIDGET;
+import static org.totschnig.myexpenses.preference.PrefKey.PROTECTION_LEGACY;
 import static org.totschnig.myexpenses.preference.PrefKey.SYNC_FREQUCENCY;
 import static org.totschnig.myexpenses.preference.PrefKey.UI_FONTSIZE;
 import static org.totschnig.myexpenses.preference.PrefKey.UI_HOME_SCREEN_SHORTCUTS;
@@ -92,7 +91,6 @@ public class MyPreferenceActivity extends ProtectedFragmentActivity implements
   public static final String KEY_OPEN_PREF_KEY = "openPrefKey";
   private String initialPrefToShow;
   private SettingsFragment activeFragment;
-  private Snackbar snackbar;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -207,7 +205,7 @@ public class MyPreferenceActivity extends ProtectedFragmentActivity implements
     if (key.equals(UI_FONTSIZE.getKey())) {
       updateAllWidgets();
     }
-    if (key.equals(PERFORM_PROTECTION.getKey())) {
+    if (key.equals(PROTECTION_LEGACY.getKey()) || key.equals(PROTECTION_DEVICE_LOCK_SCREEN.getKey())) {
       getFragment().setProtectionDependentsState();
       updateAllWidgets();
     } else if (key.equals(UI_FONTSIZE.getKey()) ||
@@ -245,10 +243,7 @@ public class MyPreferenceActivity extends ProtectedFragmentActivity implements
 
   private void startValidationTask(int taskId, int progressResId) {
     startTaskExecution(taskId, new String[]{}, null, 0);
-    snackbar = Snackbar.make(
-        findViewById(R.id.fragment_container), progressResId, Snackbar.LENGTH_INDEFINITE);
-    UiUtils.configureSnackbarForDarkTheme(snackbar);
-    snackbar.show();
+    showSnackbar(progressResId, Snackbar.LENGTH_INDEFINITE);
   }
 
   private Intent findDirPicker() {
@@ -300,19 +295,13 @@ public class MyPreferenceActivity extends ProtectedFragmentActivity implements
     final String key = preferenceScreen.getKey();
     if (key.equals(PERFORM_PROTECTION_SCREEN.getKey()) &&
         MyApplication.getInstance().isProtected()) {
-      DialogUtils.showPasswordDialog(this, DialogUtils.passwordDialog(this, true), false,
-          new DialogUtils.PasswordDialogUnlockedCallback() {
-            @Override
-            public void onPasswordDialogUnlocked() {
-              startPreferenceScreen(key);
-            }
-          });
+      confirmCredentials(CONFIRM_DEVICE_CREDENTIALS_MANAGE_PROTECTION_SETTINGS_REQUEST, () -> startPerformProtectionScreen(), false);
       return true;
     }
     if (key.equals(UI_HOME_SCREEN_SHORTCUTS.getKey())) {
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
         //TODO on O we will be able to pin the shortcuts
-        Toast.makeText(this, R.string.home_screen_shortcuts_nougate_info, Toast.LENGTH_LONG).show();
+        showSnackbar(R.string.home_screen_shortcuts_nougate_info, Snackbar.LENGTH_LONG);
         return true;
       }
     }
@@ -325,18 +314,28 @@ public class MyPreferenceActivity extends ProtectedFragmentActivity implements
     super.onPostExecute(taskId, o);
     if (taskId == TaskExecutionFragment.TASK_VALIDATE_LICENCE ||
         taskId == TaskExecutionFragment.TASK_REMOVE_LICENCE) {
-      snackbar.dismiss();
+      dismissSnackbar();
       if (o instanceof Result) {
         Result r = ((Result) o);
-        snackbar = Snackbar.make(
-            findViewById(R.id.fragment_container), r.print(this), Snackbar.LENGTH_LONG);
-        UiUtils.configureSnackbarForDarkTheme(snackbar);
-        snackbar.show();
+        showSnackbar(r.print(this), Snackbar.LENGTH_LONG);
         getFragment().setProtectionDependentsState();
         getFragment().configureContribPrefs();
-
       }
     }
+  }
+
+  @Override
+  protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+    super.onActivityResult(requestCode, resultCode, intent);
+    if (requestCode == CONFIRM_DEVICE_CREDENTIALS_MANAGE_PROTECTION_SETTINGS_REQUEST) {
+      if (resultCode == RESULT_OK) {
+        startPerformProtectionScreen();
+      }
+    }
+  }
+
+  private void startPerformProtectionScreen() {
+    startPreferenceScreen(PERFORM_PROTECTION_SCREEN.getKey());
   }
 
   @Override

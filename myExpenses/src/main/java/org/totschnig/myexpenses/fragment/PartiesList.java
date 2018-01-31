@@ -17,8 +17,8 @@ package org.totschnig.myexpenses.fragment;
 
 import android.annotation.SuppressLint;
 import android.database.Cursor;
-import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -30,7 +30,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.activity.ProtectedFragmentActivity;
@@ -38,7 +37,6 @@ import org.totschnig.myexpenses.provider.DatabaseConstants;
 import org.totschnig.myexpenses.provider.TransactionProvider;
 import org.totschnig.myexpenses.task.TaskExecutionFragment;
 import org.totschnig.myexpenses.ui.SimpleCursorAdapter;
-import org.totschnig.myexpenses.util.Utils;
 
 import java.util.ArrayList;
 
@@ -99,8 +97,9 @@ public class PartiesList extends ContextualActionBarFragment implements LoaderMa
             }
           }
         }
+        ProtectedFragmentActivity activity = (ProtectedFragmentActivity) getActivity();
         if (!idList.isEmpty()) {
-          ((ProtectedFragmentActivity) getActivity()).startTaskExecution(
+          activity.startTaskExecution(
               TaskExecutionFragment.TASK_DELETE_PAYEES,
               idList.toArray(new Long[idList.size()]),
               null,
@@ -109,17 +108,19 @@ public class PartiesList extends ContextualActionBarFragment implements LoaderMa
         }
         if (mappedTransactionsCount > 0 || mappedTemplatesCount > 0) {
           String message = "";
-          if (mappedTransactionsCount > 0)
+          if (mappedTransactionsCount > 0) {
             message += getResources().getQuantityString(
                 R.plurals.not_deletable_mapped_transactions,
                 mappedTransactionsCount,
                 mappedTransactionsCount);
-          if (mappedTemplatesCount > 0)
+          }
+          if (mappedTemplatesCount > 0) {
             message += getResources().getQuantityString(
                 R.plurals.not_deletable_mapped_templates,
                 mappedTemplatesCount,
                 mappedTemplatesCount);
-          Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
+          }
+          activity.showSnackbar(message, Snackbar.LENGTH_LONG);
         }
         break;
     }
@@ -143,9 +144,7 @@ public class PartiesList extends ContextualActionBarFragment implements LoaderMa
     // Now create a simple cursor adapter and set it to display
     mAdapter = new SimpleCursorAdapter(
         getActivity(),
-        Utils.hasApiLevel(Build.VERSION_CODES.HONEYCOMB) ?
-            android.R.layout.simple_list_item_activated_1 :
-            android.R.layout.simple_list_item_1,
+        android.R.layout.simple_list_item_activated_1,
         null,
         from,
         to,

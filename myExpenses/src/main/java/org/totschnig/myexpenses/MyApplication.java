@@ -15,8 +15,6 @@
 
 package org.totschnig.myexpenses;
 
-import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -28,7 +26,6 @@ import android.content.res.Configuration;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
 import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -49,6 +46,8 @@ import net.pubnative.sdk.core.Pubnative;
 import org.acra.ACRA;
 import org.acra.config.ACRAConfiguration;
 import org.acra.util.IOUtils;
+import org.totschnig.myexpenses.activity.ProtectedFragmentActivity;
+import org.totschnig.myexpenses.activity.SplashActivity;
 import org.totschnig.myexpenses.di.AppComponent;
 import org.totschnig.myexpenses.di.AppModule;
 import org.totschnig.myexpenses.di.DaggerAppComponent;
@@ -215,6 +214,7 @@ public class MyApplication extends MultiDexApplication implements
       Timber.plant(new Timber.DebugTree());
       Timber.plant(new TagFilterFileLoggingTree(this, PlanExecutor.TAG));
       Timber.plant(new TagFilterFileLoggingTree(this, SyncAdapter.TAG));
+      Timber.plant(new TagFilterFileLoggingTree(this, LicenceHandler.TAG));
     }
   }
 
@@ -345,7 +345,8 @@ public class MyApplication extends MultiDexApplication implements
     return mLastPause;
   }
 
-  public void setLastPause(Activity ctx) {
+  public void setLastPause(ProtectedFragmentActivity ctx) {
+    if (ctx instanceof SplashActivity) return;
     if (!isLocked()) {
       // if we are dealing with an activity called from widget that allows to
       // bypass password protection, we do not reset last pause
@@ -357,6 +358,7 @@ public class MyApplication extends MultiDexApplication implements
       if (!isDataEntryEnabled || !isStartFromWidget) {
         this.mLastPause = System.nanoTime();
       }
+      Timber.i("setting last pause : %d", mLastPause);
     }
   }
 
@@ -372,18 +374,19 @@ public class MyApplication extends MultiDexApplication implements
    * from widget or from an activity called from widget and passwordless
    * data entry from widget is allowed sets isLocked as a side effect
    */
-  public boolean shouldLock(Activity ctx) {
+  public boolean shouldLock(ProtectedFragmentActivity ctx) {
+    if (ctx instanceof SplashActivity) return false;
     boolean isStartFromWidget = ctx == null
         || ctx.getIntent().getBooleanExtra(
         AbstractWidget.EXTRA_START_FROM_WIDGET_DATA_ENTRY, false);
     boolean isProtected = isProtected();
     long lastPause = getLastPause();
+    Timber.i("reading last pause : %d", lastPause);
     boolean isPostDelay = System.nanoTime() - lastPause > (PrefKey.PROTECTION_DELAY_SECONDS
         .getInt(15) * 1000000000L);
     boolean isDataEntryEnabled = PrefKey.PROTECTION_ENABLE_DATA_ENTRY_FROM_WIDGET
         .getBoolean(false);
-    if (isProtected && isPostDelay
-        && (!isDataEntryEnabled || !isStartFromWidget)) {
+    if (isProtected && isPostDelay && !(isDataEntryEnabled && isStartFromWidget)) {
       setLocked(true);
       return true;
     }
@@ -391,7 +394,7 @@ public class MyApplication extends MultiDexApplication implements
   }
 
   public boolean isProtected() {
-    return PrefKey.PERFORM_PROTECTION.getBoolean(false);
+    return PrefKey.PROTECTION_LEGACY.getBoolean(false) || PrefKey.PROTECTION_DEVICE_LOCK_SCREEN.getBoolean(false);
   }
 
   /**
@@ -818,14 +821,11 @@ public class MyApplication extends MultiDexApplication implements
     DailyAutoBackupScheduler.updateAutoBackupAlarms(mSelf);
   }
 
-  @TargetApi(Build.VERSION_CODES.HONEYCOMB)
   private void enableStrictMode() {
     StrictMode.ThreadPolicy.Builder threadPolicyBuilder = new StrictMode.ThreadPolicy.Builder()
         .detectAll()
-        .penaltyLog();
-    if (Utils.hasApiLevel(Build.VERSION_CODES.HONEYCOMB)) {
-      threadPolicyBuilder.penaltyFlashScreen();
-    }
+        .penaltyLog()
+        .penaltyFlashScreen();
     StrictMode.setThreadPolicy(threadPolicyBuilder.build());
     StrictMode.VmPolicy.Builder vmPolicyBuilder = new StrictMode.VmPolicy.Builder()
         .detectAll()
