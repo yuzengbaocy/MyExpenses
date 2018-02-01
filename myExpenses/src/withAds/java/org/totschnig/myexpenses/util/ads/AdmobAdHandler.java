@@ -9,12 +9,10 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 
-import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.model.ContribFeature;
 
 public class AdmobAdHandler extends AdHandler {
-  private static final int INTERSTITIAL_MIN_INTERVAL = BuildConfig.DEBUG ? 2 : 4;
   private static final boolean WITH_RHYTHM = false;
   private static final String PROVIDER_ADMOB = "Admob";
   private AdView admobView;

@@ -30,7 +30,7 @@ allprojects {
 ext {
     compileSdkVersion = 27
     minSdkVersion = 15
-    targetSdkVersion = 27
+    targetSdkVersion = 26 //admob interstitial crashes with 27
     androidSupportLibraryVersion = "27.0.2"
     espressoVersion = "3.0.1"
     androidSupportTestVersion = "1.0.1"
