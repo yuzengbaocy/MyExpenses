@@ -36,5 +36,5 @@ ext {
     androidSupportTestVersion = "1.0.1"
     daggerVersion = "2.9"
     gmsVersion = "11.8.0"
-    okHttpVersion = "3.9.0"
+    okHttpVersion = "3.9.1"
 }
