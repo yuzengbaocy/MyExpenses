@@ -237,7 +237,9 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
 
   @Override
   void saveFileContents(String fileName, String fileContents, String mimeType) throws IOException {
-    saveInputStream(fileName, new ByteArrayInputStream(fileContents.getBytes()), mimeType, accountFolder);
+    ByteArrayInputStream contents = new ByteArrayInputStream(fileContents.getBytes());
+    saveInputStream(fileName, contents, mimeType, accountFolder);
+    contents.close();
   }
 
   @Override
@@ -465,7 +467,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
       accountFolder = driveFolderOptional.get();
     } else {
       MetadataChangeSet.Builder builder = new MetadataChangeSet.Builder()
-          .setTitle(account.label)
+          .setTitle(account.getLabel())
           .setCustomProperty(ACCOUNT_METADATA_UUID_KEY, account.uuid)
           .setCustomProperty(ACCOUNT_METADATA_COLOR_KEY, String.valueOf(account.color))
           .setCustomProperty(ACCOUNT_METADATA_CURRENCY_KEY, account.currency.getCurrencyCode())
