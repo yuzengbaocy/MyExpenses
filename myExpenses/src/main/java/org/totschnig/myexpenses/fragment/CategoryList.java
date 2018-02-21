@@ -56,7 +56,10 @@ import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
-import com.github.mikephil.charting.interfaces.OnChartValueSelectedListener;
+import com.github.mikephil.charting.data.PieEntry;
+import com.github.mikephil.charting.formatter.PercentFormatter;
+import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -96,11 +99,13 @@ import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_AMOUNT;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_CATID;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_CURRENCY;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_EXCLUDE_FROM_TOTALS;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_GROUPING;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_LABEL;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_LABEL_NORMALIZED;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_MAX_VALUE;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_PARENTID;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_ROWID;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_SECOND_GROUP;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_SUM;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_THIS_DAY;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_THIS_MONTH;
@@ -108,6 +113,7 @@ import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_THIS_WEEK;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_THIS_YEAR;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_THIS_YEAR_OF_WEEK_START;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TYPE;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_YEAR;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.TABLE_ACCOUNTS;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.TABLE_CATEGORIES;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.TABLE_TEMPLATES;
@@ -126,9 +132,10 @@ import static org.totschnig.myexpenses.provider.DatabaseConstants.getYearOfMonth
 import static org.totschnig.myexpenses.provider.DatabaseConstants.getYearOfWeekStart;
 
 public class CategoryList extends SortableListFragment implements
-    OnChildClickListener, OnGroupClickListener, LoaderManager.LoaderCallbacks<Cursor> {
+    OnChildClickListener, OnGroupClickListener {
 
   private static final String KEY_CHILD_COUNT = "child_count";
+  public static final String KEY_FILTER = "filter";
   private View mImportButton;
 
   protected int getMenuResource() {
@@ -204,24 +211,18 @@ public class CategoryList extends SortableListFragment implements
       }
       Bundle b = savedInstanceState != null ? savedInstanceState : extras;
 
-      mGrouping = (Grouping) b.getSerializable("grouping");
+      mGrouping = (Grouping) b.getSerializable(KEY_GROUPING);
       if (mGrouping == null) mGrouping = Grouping.NONE;
-      mGroupingYear = b.getInt("groupingYear");
-      mGroupingSecond = b.getInt("groupingSecond");
+      mGroupingYear = b.getInt(KEY_YEAR);
+      mGroupingSecond = b.getInt(KEY_SECOND_GROUP);
       getActivity().supportInvalidateOptionsMenu();
       mManager.initLoader(SUM_CURSOR, null, this);
       mManager.initLoader(DATEINFO_CURSOR, null, this);
       v = inflater.inflate(R.layout.distribution_list, container, false);
-      mChart = (PieChart) v.findViewById(R.id.chart1);
+      mChart = v.findViewById(R.id.chart1);
       mChart.setVisibility(showChart ? View.VISIBLE : View.GONE);
-      mChart.setDescription("");
+      mChart.getDescription().setEnabled(false);
 
-      //Typeface tf = Typeface.createFromAsset(getActivity().getAssets(), "OpenSans-Regular.ttf");
-
-      //mChart.setValueTypeface(tf);
-      //mChart.setCenterTextTypeface(Typeface.createFromAsset(getActivity().getAssets(), "OpenSans-Light.ttf"));
-      //mChart.setUsePercentValues(true);
-      //mChart.setCenterText("Quarterly\nRevenue");
       TypedValue typedValue = new TypedValue();
       getActivity().getTheme().resolveAttribute(android.R.attr.textAppearanceMedium, typedValue, true);
       int[] textSizeAttr = new int[]{android.R.attr.textSize};
@@ -234,15 +235,15 @@ public class CategoryList extends SortableListFragment implements
       // radius of the center hole in percent of maximum radius
       //mChart.setHoleRadius(60f); 
       //mChart.setTransparentCircleRadius(0f);
-      mChart.setDrawSliceText(false);
+      mChart.setDrawEntryLabels(true);
       mChart.setDrawHoleEnabled(true);
       mChart.setDrawCenterText(true);
       mChart.setRotationEnabled(false);
       mChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
 
         @Override
-        public void onValueSelected(Entry e, int dataSetIndex) {
-          int index = e.getXIndex();
+        public void onValueSelected(Entry e, Highlight highlight) {
+          int index = (int) highlight.getX();
           long packedPosition = (lastExpandedPosition == -1) ?
               ExpandableListView.getPackedPositionForGroup(index) :
               ExpandableListView.getPackedPositionForChild(lastExpandedPosition, index);
@@ -257,17 +258,18 @@ public class CategoryList extends SortableListFragment implements
           mListView.setItemChecked(mListView.getCheckedItemPosition(), false);
         }
       });
+      mChart.setUsePercentValues(true);
     } else {
       v = inflater.inflate(R.layout.categories_list, container, false);
       if (savedInstanceState!=null) {
-        mFilter = savedInstanceState.getString("filter");
+        mFilter = savedInstanceState.getString(KEY_FILTER);
       }
     }
-    incomeSumTv = (TextView) v.findViewById(R.id.sum_income);
-    expenseSumTv = (TextView) v.findViewById(R.id.sum_expense);
+    incomeSumTv = v.findViewById(R.id.sum_income);
+    expenseSumTv = v.findViewById(R.id.sum_expense);
     bottomLine = v.findViewById(R.id.BottomLine);
     updateColor();
-    mListView = (ExpandableListView) v.findViewById(R.id.list);
+    mListView = v.findViewById(R.id.list);
     final View emptyView = v.findViewById(R.id.empty);
     mListView.setEmptyView(emptyView);
     mImportButton = emptyView.findViewById(R.id.importButton);
@@ -1077,7 +1079,7 @@ public class CategoryList extends SortableListFragment implements
     ManageCategories ctx = (ManageCategories) getActivity();
     if (ctx.helpVariant.equals(ManageCategories.HelpVariant.distribution)) {
       TransactionListDialogFragment.newInstance(
-          mAccount.getId(), cat_id, isMain, mGrouping, buildGroupingClause(), label)
+          mAccount.getId(), cat_id, isMain, mGrouping, buildGroupingClause(), label, 0)
           .show(getFragmentManager(), TransactionListDialogFragment.class.getName());
       return;
     }
@@ -1108,7 +1110,7 @@ public class CategoryList extends SortableListFragment implements
         mGroupingSecond = 0;
         break;
     }
-    getActivity().supportInvalidateOptionsMenu();
+    getActivity().invalidateOptionsMenu();
     reset();
   }
 
@@ -1146,9 +1148,9 @@ public class CategoryList extends SortableListFragment implements
   @Override
   public void onSaveInstanceState(Bundle outState) {
     super.onSaveInstanceState(outState);
-    outState.putSerializable("grouping", mGrouping);
-    outState.putInt("groupingYear", mGroupingYear);
-    outState.putInt("groupingSecond", mGroupingSecond);
+    outState.putSerializable(KEY_GROUPING, mGrouping);
+    outState.putInt(KEY_YEAR, mGroupingYear);
+    outState.putInt(KEY_SECOND_GROUP, mGroupingSecond);
     if (!TextUtils.isEmpty(mFilter)) {
       outState.putString("filter", mFilter);
     }
@@ -1226,23 +1228,25 @@ public class CategoryList extends SortableListFragment implements
 
   private void setData(Cursor c, ArrayList<Integer> colors) {
     chartDisplaysSubs = c != mGroupCursor;
-    ArrayList<Entry> entries1 = new ArrayList<>();
-    ArrayList<String> xVals = new ArrayList<>();
+    ArrayList<PieEntry> entries = new ArrayList<>();
     if (c != null && c.moveToFirst()) {
       do {
         long sum = c.getLong(c.getColumnIndex(DatabaseConstants.KEY_SUM));
-        xVals.add(c.getString(c.getColumnIndex(DatabaseConstants.KEY_LABEL)));
-        entries1.add(
-            new Entry(
-                (float) sum,
-                c.getPosition()));
+        Timber.d("Sum %f", (float) sum);
+        PieEntry entry = new PieEntry((float) Math.abs(sum));
+        entry.setLabel(c.getString(c.getColumnIndex(DatabaseConstants.KEY_LABEL)));
+        entries.add(entry);
       } while (c.moveToNext());
-      PieDataSet ds1 = new PieDataSet(entries1, "");
+
+      PieDataSet ds1 = new PieDataSet(entries, "");
 
       ds1.setColors(colors);
       ds1.setSliceSpace(2f);
       ds1.setDrawValues(false);
-      mChart.setData(new PieData(xVals, ds1));
+
+      PieData data = new PieData(ds1);
+      data.setValueFormatter(new PercentFormatter());
+      mChart.setData(data);
       mChart.getLegend().setEnabled(false);
       // undo all highlights
       mChart.highlightValues(null);
@@ -1314,19 +1318,22 @@ public class CategoryList extends SortableListFragment implements
   }
 
   private void highlight(int position) {
-    mChart.highlightValue(position, 0);
-    if (position != -1)
+    if (position != -1) {
+      mChart.highlightValue(position, 0);
       setCenterText(position);
+    }
   }
+
 
   private void setCenterText(int position) {
     PieData data = mChart.getData();
 
-    String description = data.getXVals().get(position);
+    PieEntry entry = data.getDataSet().getEntryForIndex(position);
+    String description = entry.getLabel();
 
     String value = data.getDataSet().getValueFormatter().getFormattedValue(
-        Math.abs(mChart.getPercentOfTotal(data.getDataSet().getEntryForXIndex(position).getVal())))
-        + " %";
+        entry.getValue() / data.getYValueSum() * 100f,
+        entry, position, null);
 
     mChart.setCenterText(
         description + "\n" +

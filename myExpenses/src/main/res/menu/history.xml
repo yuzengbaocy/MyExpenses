@@ -13,18 +13,17 @@
 
   You should have received a copy of the GNU General Public License
   along with My Expenses.  If not, see <http://www.gnu.org/licenses/>.
- -->
-<!DOCTYPE resources [
-  <!ENTITY app_name "My Expenses">
-]>
-<resources>
-  <string-array name="whats_new_275">
-    <item>Συγχρονισμό μεταξύ συσκευών μέσω υπηρεσιών σύννεφου</item>
-  </string-array>
-  <string-array name="whats_new_270">
-    <item>Νέο εικονίδιο εκκίνησης</item>
-    <item>Αναζήτηση για μεταφορές</item>
-    <item>Ταξινόμηση σχεδίων με την επόμενη εμφάνιση</item>
-  </string-array>
-    <string name="bug_fixes">Διορθώσεις σφαλμάτων</string>
-    </resources>
+-->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@id/TOGGLE_BALANCE_COMMAND"
+        app:showAsAction="never"
+        android:checkable="true"
+        android:title="@string/menu_history_show_balance"/>
+    <item
+        android:id="@id/TOGGLE_INCLUDE_TRANSFERS_COMMAND"
+        app:showAsAction="never"
+        android:checkable="true"
+        android:title="@string/menu_history_transfers"/>
+</menu>

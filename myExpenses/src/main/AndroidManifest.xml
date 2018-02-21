@@ -316,6 +316,8 @@
             </meta-data>
         </activity>
 
+        <activity android:name=".activity.HistoryActivity" />
+
         <service
             android:name=".service.MyService"
             android:permission="org.totschnig.myexpenses.UNLOCK_PREMIUM" >

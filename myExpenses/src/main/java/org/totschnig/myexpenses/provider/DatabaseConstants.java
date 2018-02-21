@@ -27,7 +27,6 @@ import java.util.Locale;
 
 /**
  * @author Michael Totschnig
- *
  */
 public class DatabaseConstants {
   private static boolean isLocalized = false;
@@ -42,34 +41,39 @@ public class DatabaseConstants {
   private static String WEEK_START;
   private static String WEEK_END;
   private static String COUNT_FROM_WEEK_START_ZERO;
+  private static String WEEK_START_JULIAN;
+  //in sqlite julian days are calculated from noon, in order to make sure that the returned julian day matches the day we need, we set the time to noon.
+  private static final String JULIAN_DAY_OFFSET = "'start of day','+12 hours'";
 
-    private DatabaseConstants() {
-    }
+  private DatabaseConstants() {
+  }
 
-    public static void buildLocalized(Locale locale) {
+  public static void buildLocalized(Locale locale) {
     weekStartsOn = Utils.getFirstDayOfWeekFromPreferenceWithFallbackToLocale(locale);
     monthStartsOn = Integer.parseInt(PrefKey.GROUP_MONTH_STARTS.getString("1"));
     int monthDelta = monthStartsOn - 1;
-    int nextWeekEndSqlite, nextWeekStartsSqlite = weekStartsOn -1; //Sqlite starts with Sunday = 0
-    if(weekStartsOn==Calendar.SUNDAY) {
+    int nextWeekEndSqlite; //Sqlite starts with Sunday = 0
+    int nextWeekStartsSqlite = weekStartsOn - 1;
+    if (weekStartsOn == Calendar.SUNDAY) {
       //weekStartsOn Sunday
       nextWeekEndSqlite = 6;
-    } else  {
+    } else {
       //weekStartsOn Monday or Saturday
-      nextWeekEndSqlite = weekStartsOn -2;
+      nextWeekEndSqlite = weekStartsOn - 2;
     }
-    YEAR_OF_WEEK_START  = "CAST(strftime('%Y',date,'unixepoch','localtime','weekday " + nextWeekEndSqlite + "', '-6 day') AS integer)";
+    YEAR_OF_WEEK_START = "CAST(strftime('%Y',date,'unixepoch','localtime','weekday " + nextWeekEndSqlite + "', '-6 day') AS integer)";
     YEAR_OF_MONTH_START = "CAST(strftime('%Y',date,'unixepoch','localtime','-" + monthDelta + " day') AS integer)";
     WEEK_START = "strftime('%s',date,'unixepoch','localtime','weekday " + nextWeekEndSqlite + "', '-6 day','utc')";
-    THIS_YEAR_OF_WEEK_START  = "CAST(strftime('%Y','now','localtime','weekday " + nextWeekEndSqlite + "', '-6 day') AS integer)";
+    THIS_YEAR_OF_WEEK_START = "CAST(strftime('%Y','now','localtime','weekday " + nextWeekEndSqlite + "', '-6 day') AS integer)";
     WEEK_END = "strftime('%s',date,'unixepoch','localtime','weekday " + nextWeekEndSqlite + "','utc')";
-    WEEK  = "CAST(strftime('%W',date,'unixepoch','localtime','weekday " + nextWeekEndSqlite + "', '-6 day') AS integer)"; //calculated for the beginning of the week
+    WEEK = "CAST(strftime('%W',date,'unixepoch','localtime','weekday " + nextWeekEndSqlite + "', '-6 day') AS integer)"; //calculated for the beginning of the week
     MONTH = "CAST(strftime('%m',date,'unixepoch','localtime','-" + monthDelta + " day') AS integer)";
-    THIS_WEEK  = "CAST(strftime('%W','now','localtime','weekday " + nextWeekEndSqlite + "', '-6 day') AS integer)";
+    THIS_WEEK = "CAST(strftime('%W','now','localtime','weekday " + nextWeekEndSqlite + "', '-6 day') AS integer)";
     THIS_MONTH = "CAST(strftime('%m','now','localtime','-" + monthDelta + " day') AS integer)";
     COUNT_FROM_WEEK_START_ZERO = "strftime('%%s','%d-01-01','weekday 1', 'weekday " + nextWeekStartsSqlite + "', '" +
         "-7 day" +
         "' ,'+%d day','utc')";
+    WEEK_START_JULIAN = "julianday(date,'unixepoch','localtime'," + JULIAN_DAY_OFFSET + ",'weekday " + nextWeekEndSqlite + "', '-6 day')";
     isLocalized = true;
   }
 
@@ -80,10 +84,11 @@ public class DatabaseConstants {
   }
 
   //if we do not cast the result to integer, we would need to do the conversion in Java
-  public static final String YEAR  = "CAST(strftime('%Y',date,'unixepoch','localtime') AS integer)";
-  public static final String THIS_DAY   = "CAST(strftime('%j','now','localtime') AS integer)";
-  public static final String DAY   = "CAST(strftime('%j',date,'unixepoch','localtime') AS integer)";
-  public static final String THIS_YEAR  = "CAST(strftime('%Y','now','localtime') AS integer)";
+  public static final String YEAR = "CAST(strftime('%Y',date,'unixepoch','localtime') AS integer)";
+  public static final String THIS_DAY = "CAST(strftime('%j','now','localtime') AS integer)";
+  public static final String DAY = "CAST(strftime('%j',date,'unixepoch','localtime') AS integer)";
+  public static final String THIS_YEAR = "CAST(strftime('%Y','now','localtime') AS integer)";
+  public static final String DAY_START_JULIAN = "julianday(date,'unixepoch','localtime'," + JULIAN_DAY_OFFSET + ")";
   public static final String KEY_DATE = "date";
   public static final String KEY_AMOUNT = "amount";
   public static final String KEY_COMMENT = "comment";
@@ -120,6 +125,7 @@ public class DatabaseConstants {
   public static final String KEY_INSTANCEID = "instance_id";
   public static final String KEY_CODE = "code";
   public static final String KEY_WEEK_START = "week_start";
+  public static final String KEY_GROUP_START = "group_start";
   public static final String KEY_WEEK_END = "week_end";
   public static final String KEY_DAY = "day";
   public static final String KEY_WEEK = "week";
@@ -229,31 +235,31 @@ public class DatabaseConstants {
    * or the account for transfers
    */
   public static final String LABEL_MAIN =
-    "CASE WHEN " +
-        KEY_TRANSFER_ACCOUNT +
-    " THEN " +
-    "  (SELECT " + KEY_LABEL + " FROM " + TABLE_ACCOUNTS + " WHERE " + KEY_ROWID + " = " + KEY_TRANSFER_ACCOUNT + ") " +
-    "WHEN " +
-    KEY_CATID +
-    " THEN " +
-    "  CASE WHEN " +
-    "    (SELECT " + KEY_PARENTID + " FROM " + TABLE_CATEGORIES + " WHERE " + KEY_ROWID  + " = " + KEY_CATID + ") " +
-    "  THEN " +
-    "    (SELECT " + KEY_LABEL + " FROM " + TABLE_CATEGORIES
-        + " WHERE  " + KEY_ROWID + " = (SELECT " + KEY_PARENTID + " FROM " + TABLE_CATEGORIES
-             + " WHERE " + KEY_ROWID  + " = " + KEY_CATID + ")) " +
-    "  ELSE " +
-    "    (SELECT " + KEY_LABEL + " FROM " + TABLE_CATEGORIES + " WHERE " + KEY_ROWID  + " = " + KEY_CATID + ") " +
-    "  END " +
-    "END AS " + KEY_LABEL_MAIN;
+      "CASE WHEN " +
+          KEY_TRANSFER_ACCOUNT +
+          " THEN " +
+          "  (SELECT " + KEY_LABEL + " FROM " + TABLE_ACCOUNTS + " WHERE " + KEY_ROWID + " = " + KEY_TRANSFER_ACCOUNT + ") " +
+          "WHEN " +
+          KEY_CATID +
+          " THEN " +
+          "  CASE WHEN " +
+          "    (SELECT " + KEY_PARENTID + " FROM " + TABLE_CATEGORIES + " WHERE " + KEY_ROWID + " = " + KEY_CATID + ") " +
+          "  THEN " +
+          "    (SELECT " + KEY_LABEL + " FROM " + TABLE_CATEGORIES
+          + " WHERE  " + KEY_ROWID + " = (SELECT " + KEY_PARENTID + " FROM " + TABLE_CATEGORIES
+          + " WHERE " + KEY_ROWID + " = " + KEY_CATID + ")) " +
+          "  ELSE " +
+          "    (SELECT " + KEY_LABEL + " FROM " + TABLE_CATEGORIES + " WHERE " + KEY_ROWID + " = " + KEY_CATID + ") " +
+          "  END " +
+          "END AS " + KEY_LABEL_MAIN;
 
- public static final String LABEL_SUB =
-    "CASE WHEN " +
-    "  " + KEY_TRANSFER_PEER + " is null AND " + KEY_CATID + " AND (SELECT " + KEY_PARENTID + " FROM " + TABLE_CATEGORIES
-        + " WHERE " + KEY_ROWID + " = " + KEY_CATID + ") " +
-    "THEN " +
-    "  (SELECT " + KEY_LABEL + " FROM " + TABLE_CATEGORIES  + " WHERE " + KEY_ROWID + " = " + KEY_CATID + ") " +
-    "END AS " + KEY_LABEL_SUB;
+  public static final String LABEL_SUB =
+      "CASE WHEN " +
+          "  " + KEY_TRANSFER_PEER + " is null AND " + KEY_CATID + " AND (SELECT " + KEY_PARENTID + " FROM " + TABLE_CATEGORIES
+          + " WHERE " + KEY_ROWID + " = " + KEY_CATID + ") " +
+          "THEN " +
+          "  (SELECT " + KEY_LABEL + " FROM " + TABLE_CATEGORIES + " WHERE " + KEY_ROWID + " = " + KEY_CATID + ") " +
+          "END AS " + KEY_LABEL_SUB;
 
   /**
    * //different from Transaction, since transfer_peer is treated as boolean here
@@ -263,18 +269,18 @@ public class DatabaseConstants {
           "  " + KEY_CATID + " AND (SELECT " + KEY_PARENTID + " FROM " + TABLE_CATEGORIES
           + " WHERE " + KEY_ROWID + " = " + KEY_CATID + ") " +
           "THEN " +
-          "  (SELECT " + KEY_LABEL + " FROM " + TABLE_CATEGORIES  + " WHERE " + KEY_ROWID + " = " + KEY_CATID + ") " +
+          "  (SELECT " + KEY_LABEL + " FROM " + TABLE_CATEGORIES + " WHERE " + KEY_ROWID + " = " + KEY_CATID + ") " +
           "END AS " + KEY_LABEL_SUB;
 
   private static final String FULL_CAT_CASE =
       " CASE WHEN " +
-      " (SELECT " + KEY_PARENTID + " FROM " + TABLE_CATEGORIES + " WHERE " + KEY_ROWID + " = " + KEY_CATID + ") " +
-      " THEN " +
-      " (SELECT " + KEY_LABEL + " FROM " + TABLE_CATEGORIES + " WHERE " + KEY_ROWID + " = " +
-      " (SELECT " + KEY_PARENTID + " FROM " + TABLE_CATEGORIES + " WHERE " + KEY_ROWID + " = " + KEY_CATID + ")) " +
-      " || '" + TransactionList.CATEGORY_SEPARATOR +
-      "' ELSE '' END || " +
-      " (SELECT " + KEY_LABEL + " FROM " + TABLE_CATEGORIES + " WHERE " + KEY_ROWID + " = " + KEY_CATID + ")";
+          " (SELECT " + KEY_PARENTID + " FROM " + TABLE_CATEGORIES + " WHERE " + KEY_ROWID + " = " + KEY_CATID + ") " +
+          " THEN " +
+          " (SELECT " + KEY_LABEL + " FROM " + TABLE_CATEGORIES + " WHERE " + KEY_ROWID + " = " +
+          " (SELECT " + KEY_PARENTID + " FROM " + TABLE_CATEGORIES + " WHERE " + KEY_ROWID + " = " + KEY_CATID + ")) " +
+          " || '" + TransactionList.CATEGORY_SEPARATOR +
+          "' ELSE '' END || " +
+          " (SELECT " + KEY_LABEL + " FROM " + TABLE_CATEGORIES + " WHERE " + KEY_ROWID + " = " + KEY_CATID + ")";
 
   public static final String CAT_AS_LABEL = FULL_CAT_CASE + " AS " + KEY_LABEL;
 
@@ -287,11 +293,11 @@ public class DatabaseConstants {
   public static final String FULL_LABEL =
       "CASE WHEN " +
           "  " + KEY_TRANSFER_ACCOUNT + " " +
-      " THEN " +
-        "  (SELECT " + KEY_LABEL + " FROM " + TABLE_ACCOUNTS + " WHERE " + KEY_ROWID + " = " + KEY_TRANSFER_ACCOUNT + ") " +
-      " ELSE " +
-        FULL_CAT_CASE +
-      " END AS  " + KEY_LABEL;
+          " THEN " +
+          "  (SELECT " + KEY_LABEL + " FROM " + TABLE_ACCOUNTS + " WHERE " + KEY_ROWID + " = " + KEY_TRANSFER_ACCOUNT + ") " +
+          " ELSE " +
+          FULL_CAT_CASE +
+          " END AS  " + KEY_LABEL;
 
 
   public static final String TRANSFER_PEER_PARENT =
@@ -309,7 +315,7 @@ public class DatabaseConstants {
           " THEN " +
           "  (SELECT " + KEY_AMOUNT + " FROM " + TABLE_TRANSACTIONS + " WHERE " + KEY_ROWID + " = " + VIEW_ALL + "." + KEY_TRANSFER_PEER + ") " +
           " ELSE null" +
-      " END AS " + KEY_TRANSFER_AMOUNT;
+          " END AS " + KEY_TRANSFER_AMOUNT;
 
   public static final Long SPLIT_CATID = 0L;
 
@@ -324,12 +330,18 @@ public class DatabaseConstants {
       WHERE_NOT_SPLIT + " AND " + WHERE_NOT_VOID + " AND " + KEY_TRANSFER_PEER + " is null";
   public static final String WHERE_INCOME = KEY_AMOUNT + ">0 AND " + WHERE_TRANSACTION;
   public static final String WHERE_EXPENSE = KEY_AMOUNT + "<0 AND " + WHERE_TRANSACTION;
+  public static final String WHERE_IN = KEY_AMOUNT + ">0 AND " + WHERE_NOT_SPLIT + " AND " + WHERE_NOT_VOID;
+  public static final String WHERE_OUT = KEY_AMOUNT + "<0 AND " + WHERE_NOT_SPLIT + " AND " + WHERE_NOT_VOID;
   public static final String WHERE_TRANSFER =
       WHERE_NOT_SPLIT + " AND " + WHERE_NOT_VOID + " AND " + KEY_TRANSFER_PEER + " is not null";
   public static final String INCOME_SUM =
-    "sum(CASE WHEN " + WHERE_INCOME + " THEN " + KEY_AMOUNT + " ELSE 0 END) AS " + KEY_SUM_INCOME;
+      "sum(CASE WHEN " + WHERE_INCOME + " THEN " + KEY_AMOUNT + " ELSE 0 END) AS " + KEY_SUM_INCOME;
   public static final String EXPENSE_SUM =
       "abs(sum(CASE WHEN " + WHERE_EXPENSE + " THEN " + KEY_AMOUNT + " ELSE 0 END)) AS " + KEY_SUM_EXPENSES;
+  public static final String IN_SUM =
+      "sum(CASE WHEN " + WHERE_IN + " THEN " + KEY_AMOUNT + " ELSE 0 END) AS " + KEY_SUM_INCOME;
+  public static final String OUT_SUM =
+      "abs(sum(CASE WHEN " + WHERE_OUT + " THEN " + KEY_AMOUNT + " ELSE 0 END)) AS " + KEY_SUM_EXPENSES;
   public static final String TRANSFER_SUM =
       "sum(CASE WHEN " + WHERE_TRANSFER + " THEN " + KEY_AMOUNT + " ELSE 0 END) AS " + KEY_SUM_TRANSFERS;
   public static final String HAS_CLEARED =
@@ -356,15 +368,16 @@ public class DatabaseConstants {
       "count(CASE WHEN  " + KEY_TRANSFER_ACCOUNT + ">0 AND " + WHERE_NOT_VOID + "  THEN 1 ELSE null END) as " + KEY_HAS_TRANSFERS;
 
   public static final String WHERE_DEPENDENT = KEY_PARENTID + " = ? OR " + KEY_ROWID + " IN "
-      + "(SELECT " + KEY_TRANSFER_PEER + " FROM " + TABLE_TRANSACTIONS + " WHERE " + KEY_PARENTID + "= ?)";;
+      + "(SELECT " + KEY_TRANSFER_PEER + " FROM " + TABLE_TRANSACTIONS + " WHERE " + KEY_PARENTID + "= ?)";
+  ;
 
   public static final String WHERE_RELATED = KEY_TRANSFER_PEER + " = ? OR " + WHERE_DEPENDENT;
 
   public static final String WHERE_SELF_OR_PEER = KEY_TRANSFER_PEER + " = ? OR " + KEY_ROWID + " = ?";
 
-  public static final String WHERE_SELF_OR_DEPENDENT = KEY_ROWID + " = ? OR "  + WHERE_DEPENDENT;
+  public static final String WHERE_SELF_OR_DEPENDENT = KEY_ROWID + " = ? OR " + WHERE_DEPENDENT;
 
-  public static final String IS_SAME_CURRENCY = KEY_CURRENCY  + " = (SELECT " + KEY_CURRENCY + " from " +
+  public static final String IS_SAME_CURRENCY = KEY_CURRENCY + " = (SELECT " + KEY_CURRENCY + " from " +
       TABLE_ACCOUNTS + " WHERE " + KEY_ROWID + " = " + KEY_TRANSFER_ACCOUNT + ")";
 
   public static String getYearOfWeekStart() {
@@ -390,6 +403,11 @@ public class DatabaseConstants {
   public static String getThisYearOfWeekStart() {
     ensureLocalized();
     return THIS_YEAR_OF_WEEK_START;
+  }
+
+  public static String getWeekStartJulian() {
+    ensureLocalized();
+    return WEEK_START_JULIAN;
   }
 
   public static String getThisWeek() {
