@@ -215,7 +215,9 @@ dependencies {
         exclude group: "com.android.support", module: "support-annotations"
     }
     implementation 'com.itextpdf:itextg:5.5.10'
-    implementation 'ch.acra:acra:4.9.2'
+    implementation "ch.acra:acra-http:" + project.acraVersion
+    implementation "ch.acra:acra-mail:" + project.acraVersion
+    implementation "ch.acra:acra-dialog:" + project.acraVersion
     implementation 'org.apache.commons:commons-lang3:3.4'
     implementation 'com.github.mtotschnig:OpenIAB:3db5d014c3'
     implementation fileTree(dir: 'libs', include: ['in-app-purchasing-2.0.61.jar'])
