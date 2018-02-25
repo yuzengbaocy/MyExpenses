@@ -10,7 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.support.annotation.NonNull;
-import android.support.v4.app.FragmentActivity;
+import android.support.design.widget.Snackbar;
 
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
@@ -53,16 +53,24 @@ public class GoogleDriveBackendProviderFactory extends SyncBackendProviderFactor
   }
 
   @Override
-  public void startSetup(FragmentActivity activity) {
-    activity.startActivityForResult(new Intent(activity, DriveSetupActivity.class),
-        ProtectedFragmentActivity.SYNC_BACKEND_SETUP_REQUEST);
+  public void startSetup(ProtectedFragmentActivity activity) {
+    GoogleApiAvailability googleApiAvailability = GoogleApiAvailability.getInstance();
+    int result = googleApiAvailability.isGooglePlayServicesAvailable(activity);
+    if (result == ConnectionResult.SUCCESS) {
+      activity.startActivityForResult(new Intent(activity, DriveSetupActivity.class),
+          ProtectedFragmentActivity.SYNC_BACKEND_SETUP_REQUEST);
+    } else if (googleApiAvailability.isUserResolvableError(result)) {
+      googleApiAvailability.getErrorDialog(activity, result, 0).show();
+    } else {
+      activity.showSnackbar(String.format(Locale.ROOT, "Google Play Services error %d", result), Snackbar.LENGTH_LONG);
+    }
   }
 
   @Override
   public boolean isEnabled(Context context) {
     GoogleApiAvailability googleApiAvailability = GoogleApiAvailability.getInstance();
     int result = googleApiAvailability.isGooglePlayServicesAvailable(context);
-    return result != ConnectionResult.SERVICE_MISSING && result != ConnectionResult.SERVICE_INVALID;
+    return result == ConnectionResult.SUCCESS || googleApiAvailability.isUserResolvableError(result);
   }
 
   @Override
