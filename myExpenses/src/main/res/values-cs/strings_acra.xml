@@ -5,9 +5,6 @@
   <string name="pref_enable_acra">Povolí automatické posílání záznamů o pádech</string>
   <string name="pref_acra_enabled">Automatické zasílání je zapnuto</string>
   <string name="pref_acra_disabled">Automatické zasílání je vypnuto</string>
-  <string name="pref_acra_syslog">Zahrne systémové záznamy v reportech pádů</string>
-  <string name="pref_acra_syslog_enabled">Systémové záznamy jsou zahrnuty</string>
-  <string name="pref_acra_syslog_disabled">Systémové záznamy nejsou zahrnuty</string>
   <string name="pref_acra_user_email">Uživatelský email bude zahrnut v záznamu pádu</string>
   <string name="pref_acra_user_email_summary">Prosím zadejte vaši emailovou adresu pokud chcete pomoci při ladění a pokud nám chcete umožnit kontaktovat vás.</string>
 </resources>

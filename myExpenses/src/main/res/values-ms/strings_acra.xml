@@ -5,9 +5,6 @@
   <string name="pref_enable_acra">Benarkan penghantaran laporan kerosakan secara automatik</string>
   <string name="pref_acra_enabled">Penghantaran automatik dibenarkan</string>
   <string name="pref_acra_disabled">Penghantara automatik dilumpuhkan</string>
-  <string name="pref_acra_syslog">Sertakan log sistem dalam laporan kerosakan</string>
-  <string name="pref_acra_syslog_enabled">Log sistem disertakan</string>
-  <string name="pref_acra_syslog_disabled">Log sistem tidak disertakan</string>
   <string name="pref_acra_user_email">Emel pengguna disertakan dalam laporan kerosakan</string>
   <string name="pref_acra_user_email_summary">Sila masukkan alamat emel anda jika anda mahu bantu menyahpepijat dan membolehkan kami menghubungi anda.</string>
 </resources>

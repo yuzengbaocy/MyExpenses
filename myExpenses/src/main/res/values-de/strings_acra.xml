@@ -5,9 +5,6 @@
   <string name="pref_enable_acra">Automatischen Versand von Absturzberichten zulassen</string>
   <string name="pref_acra_enabled">Automatischer Versand ist aktiviert</string>
   <string name="pref_acra_disabled">Automatischer Versand ist deaktiviert</string>
-  <string name="pref_acra_syslog">System-Log-Dateien in Absturzberichte aufnehmen</string>
-  <string name="pref_acra_syslog_enabled">System-Log-Dateien werden eingefügt</string>
-  <string name="pref_acra_syslog_disabled">System-Log-Dateien werden nicht eingefügt</string>
   <string name="pref_acra_user_email">Email-Adresse für Absturzberichte</string>
   <string name="pref_acra_user_email_summary">Bitte geben Sie Ihre Email-Adresse an, falls Sie bereit sind beim Aufspüren der Fehler zu helfen, und erlauben, dass wir Sie kontaktieren.</string>
 </resources>

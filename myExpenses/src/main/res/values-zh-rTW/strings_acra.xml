@@ -5,9 +5,6 @@
   <string name="pref_enable_acra">允許自動發送崩潰報告</string>
   <string name="pref_acra_enabled">自動發送已被啟用</string>
   <string name="pref_acra_disabled">自動發送已被禁用</string>
-  <string name="pref_acra_syslog">包含系統日誌到崩潰報告</string>
-  <string name="pref_acra_syslog_enabled">已經包含系統日誌</string>
-  <string name="pref_acra_syslog_disabled">不包括系統日誌</string>
   <string name="pref_acra_user_email">用戶的電子郵件被包含到崩潰報告</string>
   <string name="pref_acra_user_email_summary">如果你願意幫助調試，請輸入您的電子郵件地址，讓我們與您聯繫。</string>
 </resources>
