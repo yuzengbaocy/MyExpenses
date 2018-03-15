@@ -9,6 +9,7 @@ buildscript {
 
 apply plugin: 'com.android.application'
 apply plugin: 'com.jakewharton.hugo'
+apply plugin: 'io.fabric'
 
 def buildVersionNumberBlackBerry() {
     def result = android.defaultConfig.versionName
@@ -123,6 +124,9 @@ android {
             dimension "ads"
         }
         acra {
+            dimension "crashreporting"
+        }
+        crashlytics {
             dimension "crashreporting"
         }
     }
@@ -248,6 +252,9 @@ dependencies {
     withAdsImplementation 'com.facebook.android:audience-network-sdk:4.25.0'
     withAdsImplementation 'com.google.ads.mediation:facebook:4.25.0.0'
 
+    crashlyticsCompile('com.crashlytics.sdk.android:crashlytics:2.9.1@aar') {
+        transitive = true
+    }
     implementation 'com.google.firebase:firebase-core:' + project.gmsVersion
     implementation 'com.google.firebase:firebase-config:' + project.gmsVersion
 

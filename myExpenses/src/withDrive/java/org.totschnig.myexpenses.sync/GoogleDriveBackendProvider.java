@@ -330,7 +330,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
       return getChangeSetFromInputStream(getSequenceFromFileName(metadata.getTitle()),
           driveContents.getInputStream());
     } catch (IOException e) {
-      SyncAdapter.log().e(e);
+      SyncAdapter.log().w(e);
       return ChangeSet.failed;
     } finally {
       driveContents.discard(googleApiClient);
