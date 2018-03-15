@@ -33,10 +33,10 @@ import org.totschnig.myexpenses.model.Account;
 import org.totschnig.myexpenses.model.AccountType;
 import org.totschnig.myexpenses.sync.json.AccountMetaData;
 import org.totschnig.myexpenses.sync.json.ChangeSet;
-import org.totschnig.myexpenses.util.AcraHelper;
-import org.totschnig.myexpenses.util.FileCopyUtils;
+import org.totschnig.myexpenses.util.io.FileCopyUtils;
 import org.totschnig.myexpenses.util.Result;
 import org.totschnig.myexpenses.util.Utils;
+import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -480,7 +480,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
         HashMap<String, String> customData = new HashMap<>();
         customData.put("accountDescription", account.description);
         customData.put("accountDescriptionAbbreviated", StringUtils.abbreviate(account.description, 98));
-        AcraHelper.report(e, customData);
+        CrashHandler.report(e, customData);
       }
       MetadataChangeSet changeSet = builder.build();
       DriveFolder.DriveFolderResult driveFolderResult = baseFolder.createFolder(googleApiClient, changeSet).await();
