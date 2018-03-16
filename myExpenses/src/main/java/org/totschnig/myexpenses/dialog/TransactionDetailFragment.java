@@ -62,10 +62,7 @@ import org.totschnig.myexpenses.ui.SimpleCursorAdapter;
 import org.totschnig.myexpenses.util.CurrencyFormatter;
 import org.totschnig.myexpenses.util.PictureDirHelper;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
-<<<<<<< HEAD
-=======
 import org.totschnig.myexpenses.util.Utils;
->>>>>>> master
 
 import java.math.BigDecimal;
 import java.text.DateFormat;

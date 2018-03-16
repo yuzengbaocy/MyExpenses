@@ -45,7 +45,7 @@ public abstract class CrashHandler {
   }
 
   public abstract void onAttachBaseContext(MyApplication application);
-  
+
   public abstract void setupLogging(Context context);
 
   public abstract void putCustomData(String key, String value);
