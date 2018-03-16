@@ -18,6 +18,7 @@ import org.totschnig.myexpenses.fragment.TransactionList;
 import org.totschnig.myexpenses.sync.webdav.WebDavClient;
 import org.totschnig.myexpenses.task.LicenceApiTask;
 import org.totschnig.myexpenses.util.ads.AdHandler;
+import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
 import org.totschnig.myexpenses.util.licence.LicenceHandler;
 import org.totschnig.myexpenses.viewmodel.RoadmapViewModel;
 
@@ -67,4 +68,6 @@ public interface AppComponent {
   void inject(RoadmapViewModel roadmapViewModel);
 
   void inject(HistoryChart historyChart);
+
+  CrashHandler getCrashHandler();
 }
