@@ -33,8 +33,10 @@ import org.totschnig.myexpenses.retrofit.Issue;
 import org.totschnig.myexpenses.retrofit.Vote;
 import org.totschnig.myexpenses.ui.ContextAwareRecyclerView;
 import org.totschnig.myexpenses.ui.SimpleSeekBarDialog;
+import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.viewmodel.RoadmapViewModel;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -111,6 +113,17 @@ public class RoadmapVoteActivity extends ProtectedFragmentActivity implements
 
   private void validateAndUpdateUi() {
     validateWeights();
+    Collections.sort(dataSet, (issue1, issue2) -> {
+      final Integer weight1 = voteWeights.get(issue1.getNumber());
+      final Integer weight2 = voteWeights.get(issue2.getNumber());
+      if (weight1 != null) {
+        return weight2 == null ? -1 : weight2.compareTo(weight1);
+      }
+      if (weight2 != null) {
+        return 1;
+      }
+      return Utils.compare(issue2.getNumber(), issue1.getNumber());
+    });
     roadmapAdapter.notifyDataSetChanged();
     updateVoteMenuItem();
   }
@@ -278,7 +291,7 @@ public class RoadmapVoteActivity extends ProtectedFragmentActivity implements
         } else {
           voteWeights.remove(issueId);
         }
-        roadmapAdapter.notifyItemChanged(extras.getInt(KEY_POSITION));
+        validateAndUpdateUi();
         updateVoteMenuItem();
         return true;
       }
