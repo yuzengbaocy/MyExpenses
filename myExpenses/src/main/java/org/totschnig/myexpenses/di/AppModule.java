@@ -10,8 +10,10 @@ import com.google.android.vending.licensing.Obfuscator;
 import com.google.android.vending.licensing.PreferenceObfuscator;
 
 import org.totschnig.myexpenses.MyApplication;
+import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandlerImpl;
+import org.totschnig.myexpenses.util.licence.BlackberryLegacyLicenceHandler;
 import org.totschnig.myexpenses.util.licence.InappPurchaseLicenceHandler;
 import org.totschnig.myexpenses.util.licence.LicenceHandler;
 import org.totschnig.myexpenses.util.tracking.Tracker;
@@ -40,7 +42,7 @@ public class AppModule {
   @Provides
   @Singleton
   LicenceHandler providesLicenceHandler(PreferenceObfuscator preferenceObfuscator) {
-    return new InappPurchaseLicenceHandler(application, preferenceObfuscator);
+    return DistribHelper.isBlackberry() ? new BlackberryLegacyLicenceHandler(application, preferenceObfuscator) :  new InappPurchaseLicenceHandler(application, preferenceObfuscator);
   }
 
   @Provides

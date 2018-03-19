@@ -146,18 +146,6 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
     }
   }
 
-  /**
-   * @return true if licenceStatus has been upEd
-   */
-  public boolean registerBlackberryProfessional() {
-    if (LicenceStatus.PROFESSIONAL.equals(licenceStatus)) {
-      return false;
-    } else {
-      updateContribStatus(STATUS_PROFESSIONAL);
-      return true;
-    }
-  }
-
   public OpenIabHelper getIabHelper(Context ctx) {
     if (DistribHelper.isBlackberry()) {
       return null;
@@ -200,7 +188,7 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
     if (contribStatus >= STATUS_PROFESSIONAL) {
       licenceStatus = LicenceStatus.PROFESSIONAL;
     } else if (contribStatus >= STATUS_EXTENDED_TEMPORARY) {
-      licenceStatus = EXTENDED;
+      licenceStatus = LicenceStatus.EXTENDED;
     } else if (contribStatus > 0) {
       licenceStatus = LicenceStatus.CONTRIB;
     } else {
@@ -252,15 +240,15 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
         sku = Config.SKU_EXTENDED;
         break;
       case Professional_1:
-        sku = licenceStatus != null && licenceStatus.equals(EXTENDED) && DistribHelper.isAmazon() ?
+        sku = licenceStatus != null && licenceStatus.equals(LicenceStatus.EXTENDED) && DistribHelper.isAmazon() ?
             Config.SKU_EXTENDED2PROFESSIONAL_1 : Config.SKU_PROFESSIONAL_1;
         break;
       case Professional_12:
-        sku = licenceStatus != null && licenceStatus.equals(EXTENDED) ?
+        sku = licenceStatus != null && licenceStatus.equals(LicenceStatus.EXTENDED) ?
             Config.SKU_EXTENDED2PROFESSIONAL_12 : Config.SKU_PROFESSIONAL_12;
         break;
       case Professional_Amazon:
-        sku = licenceStatus != null && licenceStatus.equals(EXTENDED) ?
+        sku = licenceStatus != null && licenceStatus.equals(LicenceStatus.EXTENDED) ?
             Config.SKU_EXTENDED2PROFESSIONAL_PARENT : Config.SKU_PROFESSIONAL_PARENT;
         break;
       default:
@@ -304,7 +292,7 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
   protected String getMinimumProfessionalMonthlyPrice() {
     long pricesPrefsLong;
     String currencyCode;
-    if (licenceStatus == EXTENDED) {
+    if (licenceStatus == LicenceStatus.EXTENDED) {
       pricesPrefsLong = pricesPrefs.getLong(KEY_EXTENDED2PROFESSIONAL_12_INTRODUCTORY_MONTHLY, 0);
       currencyCode = pricesPrefs.getString(KEY_EXTENDED2PROFESSIONAL_12_CURRENCY_CODE, null);
     } else {
@@ -406,7 +394,7 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
   protected String getProfessionalPriceFallBack() {
     if (DistribHelper.isAmazon()) {
       String priceInfo = Stream.of(Package.Professional_1, Package.Professional_12).map(this::getFormattedPrice).collect(Collectors.joining(", "));
-      if (licenceStatus == EXTENDED) {
+      if (licenceStatus == LicenceStatus.EXTENDED) {
         String regularPrice = pricesPrefs.getString(Config.SKU_PROFESSIONAL_12, null);
         if (regularPrice != null) {
           priceInfo += ". " + context.getString(R.string.extended_upgrade_goodie_subscription_amazon, 15, regularPrice);

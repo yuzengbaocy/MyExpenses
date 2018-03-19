@@ -15,6 +15,7 @@ import org.totschnig.myexpenses.activity.MyExpenses;
 import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.util.licence.InappPurchaseLicenceHandler;
+import org.totschnig.myexpenses.util.licence.LicenceHandler;
 
 import timber.log.Timber;
 
@@ -56,7 +57,7 @@ public class UnlockHandler extends Handler {
 
   private void doUnlock(int status) {
     MyApplication app = MyApplication.getInstance();
-    InappPurchaseLicenceHandler licenceHandler = (InappPurchaseLicenceHandler) app.getLicenceHandler();
+    LicenceHandler licenceHandler = app.getLicenceHandler();
     boolean unlocked = (status == STATUS_BLACKBERRY_PRO) ?
         licenceHandler.registerBlackberryProfessional() :
         licenceHandler.registerUnlockLegacy();
