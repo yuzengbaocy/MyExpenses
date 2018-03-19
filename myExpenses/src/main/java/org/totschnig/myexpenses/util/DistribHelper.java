@@ -27,7 +27,8 @@ public class DistribHelper {
         return "appworld://content/54472888";
       }
     },
-    GITHUB;
+    GITHUB,
+    HUAWEI;
 
     public String getPlattform() {
       return "Android";

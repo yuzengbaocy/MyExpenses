@@ -212,8 +212,7 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
           complain("Another async operation in progress.");
         }
         break;
-      case BLACKBERRY:
-      case GITHUB:
+      default:
         contribBuyGithub(aPackage);
         break;
     }
