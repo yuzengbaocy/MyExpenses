@@ -18,6 +18,9 @@
   <!ENTITY app_name "My Expenses">
 ]>
 <resources>
+  <string-array name="whats_new_2892">
+    <item>@string/stability_improvements</item>
+  </string-array>
   <string-array name="whats_new_2891">
     <item>@string/bug_fixes</item>
   </string-array>

@@ -403,6 +403,7 @@
     </string-array>
 
     <string-array name="versions">
+        <item>321;2.8.9.2</item>
         <item>320;2.8.9.1</item>
         <item>318;2.8.9</item>
         <item>314;2.8.8</item>

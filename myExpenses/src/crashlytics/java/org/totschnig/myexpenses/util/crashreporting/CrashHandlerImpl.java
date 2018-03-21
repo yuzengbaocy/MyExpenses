@@ -19,16 +19,14 @@ public class CrashHandlerImpl extends CrashHandler {
   }
 
   @Override
-  public void setupLogging(Context context) {
-    if (PrefKey.CRASHREPORT_ENABLED.getBoolean(true)) {
-      Fabric.with(context, new Crashlytics());
-      Timber.plant(new CrashReportingTree());
-      putCustomData("UserEmail", PrefKey.CRASHREPORT_USEREMAIL.getString(null));
-    }
+  void setupLoggingDo(Context context) {
+    Fabric.with(context, new Crashlytics());
+    Timber.plant(new CrashReportingTree());
+    putCustomData("UserEmail", PrefKey.CRASHREPORT_USEREMAIL.getString(null));
   }
 
   @Override
-  public void putCustomData(String key, String value) {
+  void putCustomData(String key, String value) {
     Crashlytics.setString(key, value);
   }
 
