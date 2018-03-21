@@ -219,9 +219,6 @@ public class MyApplication extends MultiDexApplication implements
       Timber.plant(new TagFilterFileLoggingTree(this, LicenceHandler.TAG));
     }
     crashHandler.setupLogging(this);
-    crashHandler.putCustomData("Distribution", DistribHelper.getDistribution().name());
-    crashHandler.putCustomData("Installer",
-        getPackageManager().getInstallerPackageName(getPackageName()));
   }
 
   private void registerWidgetObservers() {
@@ -615,7 +612,7 @@ public class MyApplication extends MultiDexApplication implements
       markDataDirty();
     }
 
-    if (key.equals(DEBUG_LOGGING.getKey()) || key.equals(CRASHREPORT_ENABLED.getKey()) || key.equals(CRASHREPORT_USEREMAIL)) {
+    if (key.equals(DEBUG_LOGGING.getKey()) || key.equals(CRASHREPORT_ENABLED.getKey()) || key.equals(CRASHREPORT_USEREMAIL.getKey())) {
       setupLogging();
     }
     // TODO: move to TaskExecutionFragment
