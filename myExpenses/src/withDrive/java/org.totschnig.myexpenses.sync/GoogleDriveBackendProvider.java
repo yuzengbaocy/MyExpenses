@@ -2,10 +2,12 @@ package org.totschnig.myexpenses.sync;
 
 import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 
+import com.annimon.stream.Exceptional;
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.google.android.gms.common.ConnectionResult;
@@ -33,10 +35,9 @@ import org.totschnig.myexpenses.model.Account;
 import org.totschnig.myexpenses.model.AccountType;
 import org.totschnig.myexpenses.sync.json.AccountMetaData;
 import org.totschnig.myexpenses.sync.json.ChangeSet;
-import org.totschnig.myexpenses.util.io.FileCopyUtils;
-import org.totschnig.myexpenses.util.Result;
 import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
+import org.totschnig.myexpenses.util.io.FileCopyUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -67,6 +68,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
       new CustomPropertyKey("accountMetadataType", CustomPropertyKey.PRIVATE);
   private static final CustomPropertyKey LOCK_TOKEN_KEY =
       new CustomPropertyKey(KEY_LOCK_TOKEN, CustomPropertyKey.PRIVATE);
+  private static final Exceptional<Void> SUCCESS = Exceptional.of(() -> null);
   private String folderId;
   private DriveFolder baseFolder, accountFolder;
 
@@ -92,17 +94,17 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   }
 
   private boolean requireSetup() {
-    return setUp(null).success;
+    return setUp(null).isPresent();
   }
 
   @Override
-  public  Result setUp(String authToken) {
+  public Exceptional<Void> setUp(String authToken) {
     long lastFailedSync = sharedPreferences.getLong(KEY_LAST_FAILED_SYNC, 0);
     long currentBackOff = sharedPreferences.getLong(KEY_SYNC_BACKOFF, 0);
     long now = System.currentTimeMillis();
     if (lastFailedSync != 0 && lastFailedSync + currentBackOff > now) {
       Timber.e("Not syncing, waiting for another %d milliseconds", lastFailedSync + currentBackOff - now);
-      return Result.SUCCESS;
+      return SUCCESS;
     }
     if (googleApiClient.isConnected()) {
       return setUpInternal(now);
@@ -112,24 +114,29 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
         return setUpInternal(now);
       } else {
         Timber.e(connectionResult.getErrorMessage());
-        return new Result(false, R.string.sync_io_error_cannot_connect, connectionResult.getResolution());
+        final PendingIntent resolution = connectionResult.getResolution();
+        if (resolution != null) {
+          return Exceptional.of(new ResolvableSetupException(resolution));
+        } else {
+          return Exceptional.of(new Throwable(getContext().getString(R.string.sync_io_error_cannot_connect)));
+        }
       }
     }
   }
 
   @SuppressLint("ApplySharedPref")
-  private Result setUpInternal(long now) {
+  private Exceptional<Void> setUpInternal(long now) {
     Status status = Drive.DriveApi.requestSync(googleApiClient).await();
     if (!status.isSuccess()) {
       Timber.e("Sync failed with code %d", status.getStatusCode());
       long newBackOff = Math.min(sharedPreferences.getLong(KEY_SYNC_BACKOFF, 5000) * 2, 3600000);
       Timber.e("Backing off for %d milliseconds ", newBackOff);
       sharedPreferences.edit().putLong(KEY_LAST_FAILED_SYNC, now).putLong(KEY_SYNC_BACKOFF, newBackOff).commit();
-      return Result.SUCCESS;
+      return SUCCESS;
     } else {
       Timber.i("Sync succeeded");
       sharedPreferences.edit().remove(KEY_LAST_FAILED_SYNC).remove(KEY_SYNC_BACKOFF).apply();
-      return Result.SUCCESS;
+      return SUCCESS;
     }
   }
 

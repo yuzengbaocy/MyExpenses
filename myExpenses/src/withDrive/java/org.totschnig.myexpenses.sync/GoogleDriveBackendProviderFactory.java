@@ -115,8 +115,7 @@ public class GoogleDriveBackendProviderFactory extends SyncBackendProviderFactor
         .build();
     ConnectionResult connectionResult = googleApiClient.blockingConnect();
     if (!connectionResult.isSuccess()) {
-      String errorMessage = connectionResult.getErrorMessage();
-      return new Result(false, R.string.sync_io_error_cannot_connect, connectionResult.getResolution());
+      return Result.ofFailure(R.string.sync_io_error_cannot_connect);
     }
     List<Account> legacyDriveAccounts = GenericAccountService.getAccountsAsStream(application)
         .filter(account -> isLegacyAcccount(account, accountManager))
@@ -137,7 +136,7 @@ public class GoogleDriveBackendProviderFactory extends SyncBackendProviderFactor
     boolean success = allCount == fixCount;
     String result = success ? "Success" : "Failure";
     googleApiClient.disconnect();
-    return new Result(success, String.format(Locale.ROOT, "%s: %d/%d", result, fixCount, allCount));
+    return Result.ofSuccess(String.format(Locale.ROOT, "%s: %d/%d", result, fixCount, allCount));
   }
 
   @Override
