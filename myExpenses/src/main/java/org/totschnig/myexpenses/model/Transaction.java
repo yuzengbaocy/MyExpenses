@@ -25,6 +25,7 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.RemoteException;
+import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.annotation.VisibleForTesting;
 
@@ -340,6 +341,15 @@ public class Transaction extends Model {
     this.equivalentAmount = equivalentAmount;
   }
 
+  @NonNull
+  public CrStatus getCrStatus() {
+    return crStatus;
+  }
+
+  public void setCrStatus(@NonNull CrStatus crStatus) {
+    this.crStatus = crStatus;
+  }
+
   public enum CrStatus {
     UNRECONCILED(Color.GRAY, ""), CLEARED(Color.BLUE, "*"), RECONCILED(Color.GREEN, "X"), VOID(Color.RED, null);
     public int color;
@@ -384,7 +394,7 @@ public class Transaction extends Model {
     }
   }
 
-  public CrStatus crStatus;
+  @NonNull private CrStatus crStatus = CrStatus.UNRECONCILED;
   transient protected Uri pictureUri;
 
   /**
@@ -439,8 +449,8 @@ public class Transaction extends Model {
     t.setMethodId(getLongOrNull(c, KEY_METHODID));
     t.setMethodLabel(DbUtils.getString(c, KEY_METHOD_LABEL));
     t.setCatId(catId);
-    t.setPayeeId(getLongOrNull(c, KEY_PAYEEID));
     t.setPayee(DbUtils.getString(c, KEY_PAYEE_NAME));
+    t.setPayeeId(getLongOrNull(c, KEY_PAYEEID));
     t.setId(id);
     t.setDate(c.getLong(
         c.getColumnIndexOrThrow(KEY_DATE)) * 1000L);
@@ -570,7 +580,6 @@ public class Transaction extends Model {
 
   protected Transaction() {
     setDate(new Date());
-    this.crStatus = CrStatus.UNRECONCILED;
   }
 
   public Transaction(long accountId, Money amount) {
@@ -594,12 +603,12 @@ public class Transaction extends Model {
 
   public void setDate(Date date) {
     if (date == null) {
-      throw new RuntimeException("Transaction date cannot be set to null");
+      throw new NullPointerException("Transaction date cannot be set to null");
     }
     this.date = date;
   }
 
-  private void setDate(Long unixEpoch) {
+  public void setDate(Long unixEpoch) {
     this.setDate(new Date(unixEpoch));
   }
 
@@ -636,7 +645,7 @@ public class Transaction extends Model {
     Uri uri;
     try {
       ContentProviderResult[] result = cr().applyBatch(TransactionProvider.AUTHORITY,
-          buildSaveOperations(0, -1, false));
+          buildSaveOperations());
       if (getId() == 0) {
         //we need to find a uri, otherwise we would crash. Need to handle?
         uri = result[0].uri;
@@ -747,6 +756,10 @@ public class Transaction extends Model {
 
   public String getUncommittedView() {
     return VIEW_UNCOMMITTED;
+  }
+
+  public ArrayList<ContentProviderOperation> buildSaveOperations() {
+    return buildSaveOperations(0, -1, false);
   }
 
   /**
