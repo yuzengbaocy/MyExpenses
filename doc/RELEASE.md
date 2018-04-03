@@ -5,9 +5,9 @@
 * check if version_codes, version_names, upgrade.xml use the correction version code
 * if applicable publish announcement on Google+ and Facebook and add links
 * Test and assemble (replace play with amazon or blackberry if needed)
-  * ./gradlew testPlayWithDriveWithAdsReleaseUnitTest
-  * ./gradlew clean connectedPlayWithDriveWithAdsForTestAndroidTest
-  * ./gradlew clean assemblePlayWithDriveWithAdsRelease
+  * ./gradlew testPlayWithDriveWithAdsCrashlyticsReleaseUnitTest
+  * ./gradlew clean connectedPlayWithDriveWithAdsCrashlyticsForTestAndroidTest
+  * ./gradlew clean assemblePlayWithDriveWithAdsCrashlyticsRelease
 * test upgrade mechanism
 * Create release tag in GIT (git tag r39gp; git push gitlab r39gp)
 * mv APK and mapping.txt into a new folder in releases
