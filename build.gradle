@@ -8,7 +8,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.0'
+        classpath 'com.android.tools.build:gradle:3.1.1'
         classpath 'com.google.gms:google-services:3.2.0'
         classpath 'io.fabric.tools:gradle:1.25.1'
     }
@@ -41,5 +41,5 @@ ext {
     daggerVersion = "2.9"
     gmsVersion = "11.8.0"
     okHttpVersion = "3.9.1"
-    acraVersion = "5.1.1"
+    acraVersion = "5.1.2"
 }
