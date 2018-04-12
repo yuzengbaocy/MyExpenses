@@ -1,11 +1,14 @@
 package org.totschnig.myexpenses.util.licence;
 
+import android.content.Context;
+import android.support.annotation.Nullable;
+
 import com.google.android.vending.licensing.PreferenceObfuscator;
 
 import org.totschnig.myexpenses.MyApplication;
-import org.totschnig.myexpenses.preference.PrefKey;
 
-public class BlackberryLegacyLicenceHandler extends LicenceHandler {
+public class BlackberryLegacyLicenceHandler extends ContribStatusLicenceHandler {
+  private boolean hasLegacyLicence = false;
 
   public BlackberryLegacyLicenceHandler(MyApplication context, PreferenceObfuscator preferenceObfuscator) {
     super(context, preferenceObfuscator);
@@ -15,31 +18,21 @@ public class BlackberryLegacyLicenceHandler extends LicenceHandler {
   public void init() {
     super.init();
     if (licenceStatus == null) {
-      readLegacyKey();
+      readContribStatusFromPrefs();
+      if (licenceStatus != null) {
+        hasLegacyLicence = true;
+      }
     }
   }
 
-  private void readLegacyKey() {
-    int legacyLicenceLevel = Integer.parseInt(licenseStatusPrefs.getString(PrefKey.LICENSE_STATUS.getKey(), "0"));
-    if (legacyLicenceLevel >= 10) {
-      licenceStatus = LicenceStatus.PROFESSIONAL;
-    } else if (legacyLicenceLevel > 0) {
-      licenceStatus = LicenceStatus.EXTENDED;
-    }
+  @Override
+  int getLegacyStatus() {
+    return STATUS_EXTENDED_PERMANENT;
   }
 
-  /**
-   * @return true if licenceStatus has been upEd
-   */
-  public boolean registerUnlockLegacy() {
-    if (licenceStatus == null) {
-      licenceStatus = LicenceStatus.EXTENDED;
-      licenseStatusPrefs.putString(LICENSE_STATUS_KEY, licenceStatus.name());
-      licenseStatusPrefs.commit();
-      return true;
-    } else {
-      return false;
-    }
+  @Override
+  public String getProLicenceAction(Context context) {
+    return hasLegacyLicence ? null : super.getProLicenceAction(context);
   }
 
   /**
@@ -49,10 +42,14 @@ public class BlackberryLegacyLicenceHandler extends LicenceHandler {
     if (LicenceStatus.PROFESSIONAL.equals(licenceStatus)) {
       return false;
     } else {
-      licenceStatus = LicenceStatus.PROFESSIONAL;
-      licenseStatusPrefs.putString(LICENSE_STATUS_KEY, licenceStatus.name());
-      licenseStatusPrefs.commit();
+      updateContribStatus(STATUS_PROFESSIONAL);
       return true;
     }
+  }
+
+  @Nullable
+  @Override
+  public String getExtendedUpgradeGoodieMessage(Package selectedPackage) {
+    return hasLegacyLicence ? null : super.getExtendedUpgradeGoodieMessage(selectedPackage);
   }
 }

@@ -14,7 +14,6 @@ import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.activity.MyExpenses;
 import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.Utils;
-import org.totschnig.myexpenses.util.licence.InappPurchaseLicenceHandler;
 import org.totschnig.myexpenses.util.licence.LicenceHandler;
 
 import timber.log.Timber;
@@ -34,9 +33,6 @@ public class UnlockHandler extends Handler {
   @Override
   public void handleMessage(Message msg) {
     MyApplication app = MyApplication.getInstance();
-    if (InappPurchaseLicenceHandler.STATUS_ENABLED_LEGACY_SECOND == (((InappPurchaseLicenceHandler) app.getLicenceHandler()).getContribStatus())) {
-      return;
-    }
     Timber.i("Now handling answer from license verification service; got status %d.", msg.what);
     switch (msg.what) {
       case STATUS_FINAL:

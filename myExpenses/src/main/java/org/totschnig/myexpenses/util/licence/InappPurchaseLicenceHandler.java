@@ -30,7 +30,7 @@ import java.util.UUID;
 
 import timber.log.Timber;
 
-public class InappPurchaseLicenceHandler extends LicenceHandler {
+public class InappPurchaseLicenceHandler extends ContribStatusLicenceHandler {
 
   private static final String KEY_EXTENDED2PROFESSIONAL_12_INTRODUCTORY_PRICE = "e2p_12_introductory_price";
   private static final String KEY_EXTENDED2PROFESSIONAL_12_CURRENCY_CODE = "e2p_12_currency_code";
@@ -40,43 +40,10 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
   private static final String KEY_CURRENT_SUBSCRIPTION = "current_subscription";
   private static final String KEY_ORDER_ID = "order_id";
 
-  private int contribStatus;
   public final static boolean IS_CHROMIUM = Build.BRAND.equals("chromium");
 
   private static final long REFUND_WINDOW = 172800000L;
   private static final int STATUS_DISABLED = 0;
-
-  /**
-   * this status was used before and including the APP_GRATIS campaign
-   */
-  //public static final String STATUS_ENABLED_LEGACY_FIRST = "1";
-  /**
-   * this status was used after the APP_GRATIS campaign in order to distinguish
-   * between free riders and buyers
-   */
-  public static final int STATUS_ENABLED_LEGACY_SECOND = 2;
-
-  /**
-   * user has recently purchased, and is inside a two days window
-   */
-  public static final int STATUS_ENABLED_TEMPORARY = 3;
-
-  /**
-   * user has recently purchased, and is inside a two days window
-   */
-  //public static final String STATUS_ENABLED_VERIFICATION_NEEDED = "4";
-
-  /**
-   * recheck passed
-   */
-  public static final int STATUS_ENABLED_PERMANENT = 5;
-
-  private static final int STATUS_EXTENDED_TEMPORARY = 6;
-
-  public static final int STATUS_EXTENDED_PERMANENT = 7;
-
-  public static final int STATUS_PROFESSIONAL = 10;
-
 
   String PRICES_PREFS_FILE = "license_prices";
   SharedPreferences pricesPrefs;
@@ -87,9 +54,14 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
   }
 
   @Override
+  int getLegacyStatus() {
+    return STATUS_ENABLED_LEGACY_SECOND;
+  }
+
+  @Override
   public void init() {
     d("init");
-    setContribStatus(Integer.parseInt(licenseStatusPrefs.getString(PrefKey.LICENSE_STATUS.getKey(), "0")));
+    readContribStatusFromPrefs();
   }
 
   /**
@@ -123,7 +95,7 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
    * After 2 days, if purchase cannot be verified, we set back
    */
   public void maybeCancel() {
-    if (contribStatus != STATUS_ENABLED_LEGACY_SECOND) {
+    if (getContribStatus() != STATUS_ENABLED_LEGACY_SECOND) {
       long timestamp = Long.parseLong(licenseStatusPrefs.getString(
           PrefKey.LICENSE_INITIAL_TIMESTAMP.getKey(), "0"));
       long now = System.currentTimeMillis();
@@ -134,22 +106,7 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
     }
   }
 
-  /**
-   * @return true if licenceStatus has been upEd
-   */
-  public boolean registerUnlockLegacy() {
-    if (licenceStatus == null) {
-      updateContribStatus(STATUS_ENABLED_LEGACY_SECOND);
-      return true;
-    } else {
-      return false;
-    }
-  }
-
   public OpenIabHelper getIabHelper(Context ctx) {
-    if (DistribHelper.isBlackberry()) {
-      return null;
-    }
     OpenIabHelper.Options.Builder builder =
         new OpenIabHelper.Options.Builder()
             .setVerifyMode(OpenIabHelper.Options.VERIFY_EVERYTHING)
@@ -171,38 +128,6 @@ public class InappPurchaseLicenceHandler extends LicenceHandler {
       }
     }
     return new OpenIabHelper(ctx, builder.build());
-  }
-
-  /**
-   * Sets the licencestatus from contribStatus and commits licenseStatusPrefs
-   */
-  private void updateContribStatus(int contribStatus) {
-    licenseStatusPrefs.putString(PrefKey.LICENSE_STATUS.getKey(), String.valueOf(contribStatus));
-    licenseStatusPrefs.commit();
-    setContribStatus(contribStatus);
-    update();
-  }
-
-  synchronized private void setContribStatus(int contribStatus) {
-    this.contribStatus = contribStatus;
-    if (contribStatus >= STATUS_PROFESSIONAL) {
-      licenceStatus = LicenceStatus.PROFESSIONAL;
-    } else if (contribStatus >= STATUS_EXTENDED_TEMPORARY) {
-      licenceStatus = LicenceStatus.EXTENDED;
-    } else if (contribStatus > 0) {
-      licenceStatus = LicenceStatus.CONTRIB;
-    } else {
-      licenceStatus = null;
-    }
-    d("valueSet");
-  }
-
-  synchronized public int getContribStatus() {
-    return contribStatus;
-  }
-
-  private void d(String event) {
-    //Timber.d("ADBUG-%s: %s-%s, contrib status %s", event, this, Thread.currentThread(), contribStatus);
   }
 
   public void storeSkuDetails(Inventory inventory) {
