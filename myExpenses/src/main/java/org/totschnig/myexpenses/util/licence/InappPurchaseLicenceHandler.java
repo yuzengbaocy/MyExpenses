@@ -289,6 +289,7 @@ public class InappPurchaseLicenceHandler extends ContribStatusLicenceHandler {
   }
 
   @Override
+  @NonNull
   public String getProLicenceAction(Context context) {
     Package switchPackage = getPackageForSwitch();
     return switchPackage == null ? "" : getExtendOrSwitchMessage(switchPackage);
@@ -308,8 +309,6 @@ public class InappPurchaseLicenceHandler extends ContribStatusLicenceHandler {
     switch (DistribHelper.getDistribution()) {
       case AMAZON:
         return new Package[]{Package.Professional_Amazon};
-      case BLACKBERRY:
-        return new Package[]{Package.Professional_Blackberry};
       default:
         return new Package[]{Package.Professional_1, Package.Professional_12};
     }
@@ -359,5 +358,15 @@ public class InappPurchaseLicenceHandler extends ContribStatusLicenceHandler {
         return super.buildRoadmapVoteKey();
       }
     }
+  }
+
+  @Override
+  public boolean doesUseIAP() {
+    return true;
+  }
+
+  @Override
+  public boolean needsKeyEntry() {
+    return false;
   }
 }
