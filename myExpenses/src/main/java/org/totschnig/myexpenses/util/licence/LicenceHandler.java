@@ -161,6 +161,10 @@ public class LicenceHandler {
     return false;
   }
 
+  public boolean needsMigration() {
+    return false;
+  }
+
   public Package[] getProPackages() {
     return new Package[]{Package.Professional_6, Package.Professional_36};
   }
@@ -193,7 +197,8 @@ public class LicenceHandler {
     return getProPackages();
   }
 
-  public String getProLicenceAction(Context context) {
+
+  @NonNull public String getProLicenceAction(Context context) {
     return context.getString(R.string.extend_validity);
   }
 
@@ -299,5 +304,19 @@ public class LicenceHandler {
    */
   public boolean registerBlackberryProfessional() {
     return false;
+  }
+
+  public int[] getPaymentOptions(Package aPackage) {
+    return (aPackage.getDefaultPrice() >= 500) ?
+        new int[]{R.string.donate_button_paypal, R.string.donate_button_invoice} :
+        new int[]{R.string.donate_button_paypal};
+  }
+
+  public boolean doesUseIAP() {
+    return false;
+  }
+
+  public boolean needsKeyEntry() {
+    return true;
   }
 }

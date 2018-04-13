@@ -63,10 +63,6 @@ public class DistribHelper {
     return !isBlackberry();
   }
 
-  public static boolean doesUseIAP() {
-    return isPlay() || isAmazon();
-  }
-
   public static Distribution getDistribution() {
     return Distribution.valueOf(BuildConfig.DISTRIBUTION);
   }
