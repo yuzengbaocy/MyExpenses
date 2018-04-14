@@ -7,7 +7,6 @@ import android.support.annotation.Nullable;
 import com.google.android.vending.licensing.PreferenceObfuscator;
 
 import org.totschnig.myexpenses.MyApplication;
-import org.totschnig.myexpenses.R;
 
 public class BlackberryLegacyLicenceHandler extends ContribStatusLicenceHandler {
   private boolean hasLegacyLicence = false;
@@ -73,11 +72,6 @@ public class BlackberryLegacyLicenceHandler extends ContribStatusLicenceHandler 
   @Override
   public String getExtendedUpgradeGoodieMessage(Package selectedPackage) {
     return hasLegacyLicence ? null : super.getExtendedUpgradeGoodieMessage(selectedPackage);
-  }
-
-  @Override
-  public int[] getPaymentOptions(Package aPackage) {
-    return new int[]{R.string.donate_button_invoice};
   }
 
   @Override
