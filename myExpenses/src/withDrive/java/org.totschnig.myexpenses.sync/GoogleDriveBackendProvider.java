@@ -11,6 +11,7 @@ import com.annimon.stream.Exceptional;
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.drive.Drive;
@@ -113,10 +114,15 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
       if (connectionResult.isSuccess()) {
         return setUpInternal(now);
       } else {
-        Timber.e(connectionResult.getErrorMessage());
         final PendingIntent resolution = connectionResult.getResolution();
         if (resolution != null) {
-          return Exceptional.of(new ResolvableSetupException(resolution));
+          return Exceptional.of(new ResolvableSetupException(resolution, connectionResult.getErrorMessage()));
+        }
+        if (GoogleApiAvailability.getInstance().isUserResolvableError(connectionResult.getErrorCode())) {
+          GoogleApiAvailability.getInstance().showErrorNotification(getContext(), connectionResult);
+          //we return ResolvableSetupException to indicate that there is a resolution, but with null
+          //resolution since GoogleApiAvailability is taking care of generating notification
+          return Exceptional.of(new ResolvableSetupException(null, null));
         } else {
           return Exceptional.of(new Throwable(getContext().getString(R.string.sync_io_error_cannot_connect)));
         }
