@@ -121,6 +121,11 @@ android {
             versionName buildVersionNumberBlackBerry()
             buildConfigField "String", "DISTRIBUTION", "\"BLACKBERRY\""
         }
+        huawei {
+            dimension "distribution"
+            buildConfigField "String", "DISTRIBUTION", "\"HUAWEI\""
+
+        }
         withDrive {
             dimension "drive"
         }

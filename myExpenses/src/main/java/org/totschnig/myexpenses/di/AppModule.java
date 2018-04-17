@@ -14,6 +14,7 @@ import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandlerImpl;
 import org.totschnig.myexpenses.util.licence.BlackberryLegacyLicenceHandler;
+import org.totschnig.myexpenses.util.licence.HashLicenceHandler;
 import org.totschnig.myexpenses.util.licence.InappPurchaseLicenceHandler;
 import org.totschnig.myexpenses.util.licence.LicenceHandler;
 import org.totschnig.myexpenses.util.tracking.Tracker;
@@ -42,7 +43,16 @@ public class AppModule {
   @Provides
   @Singleton
   LicenceHandler providesLicenceHandler(PreferenceObfuscator preferenceObfuscator) {
-    return DistribHelper.isBlackberry() ? new BlackberryLegacyLicenceHandler(application, preferenceObfuscator) :  new InappPurchaseLicenceHandler(application, preferenceObfuscator);
+    switch (DistribHelper.getDistribution()) {
+      case BLACKBERRY:
+        return new BlackberryLegacyLicenceHandler(application, preferenceObfuscator);
+      case HUAWEI:
+        return new LicenceHandler(application, preferenceObfuscator);
+      case PLAY:
+      case AMAZON:
+       return new InappPurchaseLicenceHandler(application, preferenceObfuscator);
+    }
+    return new HashLicenceHandler(application, preferenceObfuscator);
   }
 
   @Provides
