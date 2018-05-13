@@ -1,25 +1,19 @@
-package org.totschnig.myexpenses.test.provider;
+package org.totschnig.myexpenses.provider;
 
-import android.Manifest;
-import android.app.AlarmManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.os.Build;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.rule.GrantPermissionRule;
-import android.util.Log;
 
 import org.junit.After;
-import org.junit.Assume;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
 import org.totschnig.myexpenses.preference.PrefKey;
-import org.totschnig.myexpenses.provider.DatabaseConstants;
-import org.totschnig.myexpenses.provider.DbUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -31,63 +25,26 @@ import java.util.TimeZone;
 
 import static junit.framework.Assert.assertEquals;
 
-public class DateCalculationTest  {
+/**
+ * This test can be run from the command line with different timezones
+ * TZ=Etc/GMT+5 ./gradlew testAcraDebugUnitTest --tests org.totschnig.myexpenses.provider.DateCalculationTest
+ */
+@RunWith(RobolectricTestRunner.class)
+@Config(packageName = "org.totschnig.myexpenses")
+public class DateCalculationTest {
 
   // Contains an SQLite database, used as test data
   private SQLiteDatabase mDb;
 
-  String TABLE = "test_dates";
-  String KEY_DATE = "date";
+  private String TABLE = "test_dates";
+  private String KEY_DATE = "date";
   private Random random;
   private Calendar calendar;
 
-  @Rule
-  public GrantPermissionRule grantPermissionRule = GrantPermissionRule.grant(
-      Manifest.permission.WRITE_CALENDAR, Manifest.permission.SET_TIME_ZONE);
-  private AlarmManager alarmManager;
-  private String originalTimeZone;
-
-
-  /*
-   * Sets up the test environment before each test method. Creates a mock content resolver,
-   * gets the provider under test, and creates a new database for the provider.
-   */
   @Before
-  public void setUp() throws Exception {
-    originalTimeZone = TimeZone.getDefault().getID();
-    //On O SET_TIME_ZONE has become restricted
-    Assume.assumeTrue(Build.VERSION.SDK_INT < Build.VERSION_CODES.O);
-    mDb = new MyDbHelper(InstrumentationRegistry.getTargetContext()).getWritableDatabase();
-    alarmManager = (AlarmManager) InstrumentationRegistry.getTargetContext().getSystemService(Context.ALARM_SERVICE);
-  }
-
-  @After
-  public void after() {
-    alarmManager.setTimeZone(originalTimeZone);
-  }
-
-  @Test
-  public void testDateCalculationsForWeekGroupsWithAllWeekDaysForAllTimeZoneOffsets() throws InterruptedException {
-    int[] timezones = {-11, -7, -3, 0, 4, 8, 12};
-    for (int i: timezones) {
-      Log.d("DEBUG", "now setting timezone with offset " + i);
-      int rawOffset = i * 60 * 60 * 1000;
-      String timeZone = TimeZone.getAvailableIDs(rawOffset)[0];
-      alarmManager.setTimeZone(timeZone);
-      //TODO do not know how to wait for effect of time zone change
-      Thread.sleep(200);
-      assertEquals(TimeZone.getDefault().getRawOffset(), rawOffset);
-      for (int j = Calendar.SUNDAY; j <= Calendar.SATURDAY; j++) {
-        doTheTest(timeZone, j);
-      }
-    }
-  }
-
-  private void doTheTest(String timeZone, int configuredWeekStart) {
-    calendar = Calendar.getInstance();
-    PrefKey.GROUP_WEEK_STARTS.putString(String.valueOf(configuredWeekStart));
-    DatabaseConstants.buildLocalized(Locale.getDefault());
-    assertEquals(configuredWeekStart, DatabaseConstants.weekStartsOn);
+  public void setUp() {
+    final Context targetContext = RuntimeEnvironment.application;
+    mDb = new MyDbHelper(targetContext).getWritableDatabase();
     ContentValues v = new ContentValues();
     for (int year = 2010; year < 2022; year++) {
       int month = 11, day = 26;
@@ -107,6 +64,28 @@ public class DateCalculationTest  {
         }
       }
     }
+  }
+
+  @After
+  public void cleanUp() {
+    mDb.close();
+    mDb = null;
+  }
+
+  @Test
+  public void testDateCalculationsForWeekGroupsWithAllWeekDays() {
+    final String timeZone = TimeZone.getDefault().getDisplayName();
+    System.out.println(timeZone);
+    for (int j = Calendar.SUNDAY; j <= Calendar.SATURDAY; j++) {
+      doTheTest(timeZone, j);
+    }
+  }
+
+  private void doTheTest(String timeZone, int configuredWeekStart) {
+    calendar = Calendar.getInstance();
+    PrefKey.GROUP_WEEK_STARTS.putString(String.valueOf(configuredWeekStart));
+    DatabaseConstants.buildLocalized(Locale.getDefault());
+    assertEquals(configuredWeekStart, DatabaseConstants.weekStartsOn);
     String[] projection = {
         DatabaseConstants.getYearOfWeekStart() + " AS year",
         DatabaseConstants.getWeek() + " AS week",
@@ -144,8 +123,8 @@ public class DateCalculationTest  {
       long weekEndFromGroupAsTimeStamp = check.getLong(1);
       int dayOfYearOfWeekEndFromGroup = getDayOfYearFromTimestamp(weekEndFromGroupAsTimeStamp);
       assertEquals(String.format(Locale.ROOT,
-          "With timezone %s and week starts on %d, for date %s (%d) comparing weekStart %d did not match weekStart from group %d",
-          timeZone, configuredWeekStart, date, unixTimeStamp, weekStartAsTimeStamp, weekStartFromGroupAsTimeStamp),
+          "With timezone %s and week starts on %d, for date %s (%d) comparing weekStart %d did not match weekStart from group (%d,%d) %d",
+          timeZone, configuredWeekStart, date, unixTimeStamp, weekStartAsTimeStamp, year, week, weekStartFromGroupAsTimeStamp),
           dayOfYearOfWeekStart, dayOfYearOfWeekStartFromGroup);
       assertEquals(String.format(Locale.ROOT,
           "With timezone %s and week starts on %d, for date %s (%d) comparing weekEnd %d did not match weekEnd from group %d",
@@ -155,7 +134,6 @@ public class DateCalculationTest  {
       c.moveToNext();
     }
     c.close();
-    mDb.execSQL("DELETE FROM " + TABLE);
   }
 
   private int getDayOfYearFromTimestamp(long timestamp) {
@@ -165,7 +143,7 @@ public class DateCalculationTest  {
 
   private class MyDbHelper extends SQLiteOpenHelper {
 
-    public MyDbHelper(Context context) {
+    MyDbHelper(Context context) {
       super(context, "datecalculationtest", null, 1);
     }
 

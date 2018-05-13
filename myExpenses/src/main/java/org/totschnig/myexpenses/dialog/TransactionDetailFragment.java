@@ -37,10 +37,16 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import org.threeten.bp.Instant;
+import org.threeten.bp.ZoneId;
+import org.threeten.bp.ZonedDateTime;
+import org.threeten.bp.format.DateTimeFormatter;
+import org.threeten.bp.format.FormatStyle;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.activity.ExpenseEdit;
@@ -55,18 +61,17 @@ import org.totschnig.myexpenses.model.Plan;
 import org.totschnig.myexpenses.model.SplitTransaction;
 import org.totschnig.myexpenses.model.Transaction;
 import org.totschnig.myexpenses.model.Transfer;
+import org.totschnig.myexpenses.preference.PrefHandler;
 import org.totschnig.myexpenses.provider.DbUtils;
 import org.totschnig.myexpenses.provider.TransactionProvider;
 import org.totschnig.myexpenses.task.TaskExecutionFragment;
-import org.totschnig.myexpenses.ui.SimpleCursorAdapter;
 import org.totschnig.myexpenses.util.CurrencyFormatter;
 import org.totschnig.myexpenses.util.PictureDirHelper;
+import org.totschnig.myexpenses.util.UiUtils;
 import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
 
 import java.math.BigDecimal;
-import java.text.DateFormat;
-import java.util.Locale;
 
 import javax.inject.Inject;
 
@@ -88,6 +93,9 @@ public class TransactionDetailFragment extends CommitSafeDialogFragment implemen
   @Inject
   CurrencyFormatter currencyFormatter;
 
+  @Inject
+  PrefHandler prefHandler;
+
   @BindView(R.id.progress)
   View progressView;
   @BindView(R.id.error)
@@ -106,6 +114,8 @@ public class TransactionDetailFragment extends CommitSafeDialogFragment implemen
   TextView categoryLabelView;
   @BindView(R.id.PayeeLabel)
   TextView payeeLabelView;
+  @BindView(R.id.DateLabel)
+  TextView dateLabel;
   @BindView(R.id.Account)
   TextView accountView;
   @BindView(R.id.Category)
@@ -124,12 +134,16 @@ public class TransactionDetailFragment extends CommitSafeDialogFragment implemen
   View statusRow;
   @BindView(R.id.PlanRow)
   View planRow;
+  @BindView(R.id.Date2Row)
+  View date2Row;
   @BindView(R.id.OriginalAmountRow)
   View originalAmountRow;
   @BindView(R.id.EquivalentAmountRow)
   View equivalentAmountRow;
   @BindView(R.id.Date)
   TextView dateView;
+  @BindView(R.id.Date2)
+  TextView date2View;
   @BindView(R.id.Amount)
   TextView amountView;
   @BindView(R.id.OriginalAmount)
@@ -375,11 +389,21 @@ public class TransactionDetailFragment extends CommitSafeDialogFragment implemen
       equivalentAmountView.setText(formatCurrencyAbs(equivalentAmount));
     }
 
-    //noinspection SetTextI18n
-    dateView.setText(String.format(Locale.getDefault(), "%s %s",
-        DateFormat.getDateInstance(DateFormat.FULL).format(mTransaction.getDate()),
-        DateFormat.getTimeInstance(DateFormat.SHORT).format(mTransaction.getDate())));
-
+    UiUtils.DateMode dateMode = UiUtils.getDateMode(account, prefHandler);
+    DateTimeFormatter dateTimeFormatter;
+    if (dateMode == UiUtils.DateMode.DATE_TIME) {
+      dateTimeFormatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.LONG);
+    } else {
+      dateTimeFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL);
+      if (dateMode == UiUtils.DateMode.BOOKING_VALUE) {
+        dateLabel.setText(R.string.booking_date);
+        date2Row.setVisibility(View.VISIBLE);
+        date2View.setText(ZonedDateTime.ofInstant(Instant.ofEpochSecond(mTransaction.getValueDate()),
+            ZoneId.systemDefault()).format(dateTimeFormatter));
+      }
+    }
+    dateView.setText(ZonedDateTime.ofInstant(Instant.ofEpochSecond(mTransaction.getDate()),
+        ZoneId.systemDefault()).format(dateTimeFormatter));
 
     if (!mTransaction.getComment().equals("")) {
       commentView.setText(mTransaction.getComment());
@@ -403,7 +427,7 @@ public class TransactionDetailFragment extends CommitSafeDialogFragment implemen
     if (mTransaction.getMethodId() != null) {
       methodView.setText(PaymentMethod.getInstanceFromDb(mTransaction.getMethodId()).getLabel());
     } else {
-     methodRow.setVisibility(View.GONE);
+      methodRow.setVisibility(View.GONE);
     }
 
     if (account.getType().equals(AccountType.CASH)) {

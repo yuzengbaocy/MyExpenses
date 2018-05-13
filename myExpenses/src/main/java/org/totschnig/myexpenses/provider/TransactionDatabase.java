@@ -107,6 +107,7 @@ import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TYPE;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_USAGES;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_UUID;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_VALUE;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_VALUE_DATE;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.SPLIT_CATID;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.STATUS_UNCOMMITTED;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.TABLE_ACCOUNTS;
@@ -135,7 +136,7 @@ import static org.totschnig.myexpenses.provider.DatabaseConstants.VIEW_UNCOMMITT
 import static org.totschnig.myexpenses.util.PermissionHelper.PermissionGroup.CALENDAR;
 
 public class TransactionDatabase extends SQLiteOpenHelper {
-  public static final int DATABASE_VERSION = 72;
+  public static final int DATABASE_VERSION = 73;
   private static final String DATABASE_NAME = "data";
   private Context mCtx;
 
@@ -155,6 +156,7 @@ public class TransactionDatabase extends SQLiteOpenHelper {
           + KEY_ROWID + " integer primary key autoincrement, "
           + KEY_COMMENT + " text, "
           + KEY_DATE + " datetime not null, "
+          + KEY_VALUE_DATE + " datetime not null, "
           + KEY_AMOUNT + " integer not null, "
           + KEY_CATID + " integer references " + TABLE_CATEGORIES + "(" + KEY_ROWID + "), "
           + KEY_ACCOUNTID + " integer not null references " + TABLE_ACCOUNTS + "(" + KEY_ROWID + ") ON DELETE CASCADE,"
@@ -399,6 +401,7 @@ public class TransactionDatabase extends SQLiteOpenHelper {
           + KEY_PARENT_UUID + " text, "
           + KEY_COMMENT + " text, "
           + KEY_DATE + " datetime, "
+          + KEY_VALUE_DATE + " datetime, "
           + KEY_AMOUNT + " integer, "
           + KEY_ORIGINAL_AMOUNT + " integer, "
           + KEY_ORIGINAL_CURRENCY + " text, "
@@ -421,6 +424,7 @@ public class TransactionDatabase extends SQLiteOpenHelper {
       + KEY_PARENT_UUID + ", "
       + KEY_COMMENT + ", "
       + KEY_DATE + ", "
+      + KEY_VALUE_DATE + ", "
       + KEY_AMOUNT + ", "
       + KEY_ORIGINAL_AMOUNT + ", "
       + KEY_ORIGINAL_CURRENCY + ", "
@@ -438,6 +442,7 @@ public class TransactionDatabase extends SQLiteOpenHelper {
       + String.format(Locale.US, SELECT_PARENT_UUID_TEMPLATE, "new") + ", "
       + "new." + KEY_COMMENT + ", "
       + "new." + KEY_DATE + ", "
+      + "new." + KEY_VALUE_DATE + ", "
       + "new." + KEY_AMOUNT + ", "
       + "new." + KEY_ORIGINAL_AMOUNT + ", "
       + "new." + KEY_ORIGINAL_CURRENCY + ", "
@@ -527,6 +532,7 @@ public class TransactionDatabase extends SQLiteOpenHelper {
           + KEY_PARENT_UUID + ", "
           + KEY_COMMENT + ", "
           + KEY_DATE + ", "
+          + KEY_VALUE_DATE + ", "
           + KEY_AMOUNT + ", "
           + KEY_ORIGINAL_AMOUNT+ ", "
           + KEY_ORIGINAL_CURRENCY + ", "
@@ -544,6 +550,7 @@ public class TransactionDatabase extends SQLiteOpenHelper {
           + String.format(Locale.US, SELECT_PARENT_UUID_TEMPLATE, "new") + ", "
           + buildChangeTriggerDefinitionForColumn(KEY_COMMENT) + ", "
           + buildChangeTriggerDefinitionForColumn(KEY_DATE) + ", "
+          + buildChangeTriggerDefinitionForColumn(KEY_VALUE_DATE) + ", "
           + buildChangeTriggerDefinitionForColumn(KEY_AMOUNT) + ", "
           + buildChangeTriggerDefinitionForColumn(KEY_ORIGINAL_AMOUNT) + ", "
           + buildChangeTriggerDefinitionForColumn(KEY_ORIGINAL_CURRENCY) + ", "
@@ -1547,7 +1554,6 @@ public class TransactionDatabase extends SQLiteOpenHelper {
 
       if (oldVersion < 66) {
         db.execSQL(String.format("CREATE TABLE %s (%s text unique not null, %s text unique not null);", "settings", "key", "value"));
-        createOrRefreshChangelogTriggers(db);
       }
 
       if (oldVersion < 67) {
@@ -1639,7 +1645,6 @@ public class TransactionDatabase extends SQLiteOpenHelper {
         db.execSQL("ALTER TABLE changes add column original_amount integer");
         db.execSQL("ALTER TABLE changes add column original_currency text");
         db.execSQL("ALTER TABLE changes add column equivalent_amount integer");
-        createOrRefreshChangelogTriggers(db);
       }
       if (oldVersion < 72) {
         //add new change type
@@ -1659,6 +1664,11 @@ public class TransactionDatabase extends SQLiteOpenHelper {
                   "(account_id, type, sync_sequence_local, uuid, timestamp, parent_uuid, comment, date, amount, original_amount, original_currency, equivalent_amount, cat_id, payee_id, transfer_account, method_id, cr_status, number, picture_id)" +
             "SELECT account_id, type, sync_sequence_local, uuid, timestamp, parent_uuid, comment, date, amount, original_amount, original_currency, equivalent_amount, cat_id, payee_id, transfer_account, method_id, cr_status, number, picture_id FROM changes_old");
         db.execSQL("DROP TABLE changes_old");
+      }
+      if (oldVersion < 73) {
+        db.execSQL("ALTER TABLE transactions add column value_date");
+        db.execSQL("ALTER TABLE changes add column value_date");
+        createOrRefreshChangelogTriggers(db);
       }
     } catch (SQLException e) {
       throw Utils.hasApiLevel(Build.VERSION_CODES.JELLY_BEAN) ?

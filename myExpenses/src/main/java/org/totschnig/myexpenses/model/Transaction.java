@@ -28,18 +28,22 @@ import android.os.RemoteException;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.annotation.VisibleForTesting;
+import android.support.v4.util.Pair;
 
 import org.apache.commons.lang3.StringUtils;
+import org.threeten.bp.LocalDate;
+import org.threeten.bp.ZonedDateTime;
+import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.provider.DatabaseConstants;
 import org.totschnig.myexpenses.provider.DbUtils;
 import org.totschnig.myexpenses.provider.TransactionProvider;
 import org.totschnig.myexpenses.util.AppDirHelper;
 import org.totschnig.myexpenses.util.CurrencyFormatter;
-import org.totschnig.myexpenses.util.io.FileCopyUtils;
 import org.totschnig.myexpenses.util.PictureDirHelper;
 import org.totschnig.myexpenses.util.TextUtils;
 import org.totschnig.myexpenses.util.Utils;
+import org.totschnig.myexpenses.util.io.FileCopyUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,6 +55,7 @@ import java.util.Locale;
 
 import timber.log.Timber;
 
+import static android.text.TextUtils.isEmpty;
 import static org.totschnig.myexpenses.contract.TransactionsContract.Transactions.TYPE_SPLIT;
 import static org.totschnig.myexpenses.contract.TransactionsContract.Transactions.TYPE_TRANSACTION;
 import static org.totschnig.myexpenses.contract.TransactionsContract.Transactions.TYPE_TRANSFER;
@@ -94,6 +99,7 @@ import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TRANSFER_A
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TRANSFER_PEER;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_TRANSFER_PEER_PARENT;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_UUID;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_VALUE_DATE;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_WEEK;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_WEEK_END;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_WEEK_START;
@@ -131,7 +137,11 @@ public class Transaction extends Model {
   private String payee = "";
   private String referenceNumber = "";
   private String label = "";
-  private Date date;
+  /**
+   * seconds since epoch
+   */
+  private long date;
+  private long valueDate;
   private Money amount;
   private Money transferAmount;
   private Money originalAmount;
@@ -143,9 +153,9 @@ public class Transaction extends Model {
   private Long parentId = null;
   private Long payeeId = null;
 
-  private Plan initialPlan;
+  private Pair<Plan.Recurrence, LocalDate> initialPlan;
 
-  public void setInitialPlan(Plan initialPlan) {
+  public void setInitialPlan(Pair<Plan.Recurrence, LocalDate> initialPlan) {
     this.initialPlan = initialPlan;
   }
 
@@ -173,6 +183,7 @@ public class Transaction extends Model {
     PROJECTION_BASE = new String[]{
         KEY_ROWID,
         KEY_DATE,
+        KEY_VALUE_DATE,
         KEY_AMOUNT,
         KEY_COMMENT,
         KEY_CATID,
@@ -405,7 +416,7 @@ public class Transaction extends Model {
    */
   public static Transaction getInstanceFromDb(long id) {
     Transaction t;
-    String[] projection = new String[]{KEY_ROWID, KEY_DATE, KEY_AMOUNT, KEY_COMMENT, KEY_CATID,
+    String[] projection = new String[]{KEY_ROWID, KEY_DATE, KEY_VALUE_DATE, KEY_AMOUNT, KEY_COMMENT, KEY_CATID,
         FULL_LABEL, KEY_PAYEEID, KEY_PAYEE_NAME, KEY_TRANSFER_PEER, KEY_TRANSFER_ACCOUNT,
         KEY_ACCOUNTID, KEY_METHODID, KEY_PARENTID, KEY_CR_STATUS, KEY_REFERENCE_NUMBER, KEY_CURRENCY,
         KEY_PICTURE_URI, KEY_METHOD_LABEL, KEY_STATUS, TRANSFER_AMOUNT, KEY_TEMPLATEID, KEY_UUID, KEY_ORIGINAL_AMOUNT, KEY_ORIGINAL_CURRENCY,
@@ -452,8 +463,10 @@ public class Transaction extends Model {
     t.setPayee(DbUtils.getString(c, KEY_PAYEE_NAME));
     t.setPayeeId(getLongOrNull(c, KEY_PAYEEID));
     t.setId(id);
-    t.setDate(c.getLong(
-        c.getColumnIndexOrThrow(KEY_DATE)) * 1000L);
+    final long date = c.getLong(c.getColumnIndexOrThrow(KEY_DATE));
+    t.setDate(date);
+    final Long valueDate = getLongOrNull(c, KEY_VALUE_DATE);
+    t.setValueDate(valueDate == null ? date : valueDate);
     t.setComment(DbUtils.getString(c, KEY_COMMENT));
     t.setReferenceNumber(DbUtils.getString(c, KEY_REFERENCE_NUMBER));
     t.setLabel(DbUtils.getString(c, KEY_LABEL));
@@ -580,7 +593,8 @@ public class Transaction extends Model {
   }
 
   protected Transaction() {
-    setDate(new Date());
+    setDate(ZonedDateTime.now());
+    setValueDate(ZonedDateTime.now());
   }
 
   public Transaction(long accountId, Money amount) {
@@ -602,19 +616,34 @@ public class Transaction extends Model {
     this.catId = catId;
   }
 
+  @Deprecated
   public void setDate(Date date) {
-    if (date == null) {
-      throw new NullPointerException("Transaction date cannot be set to null");
-    }
-    this.date = date;
+    setDate(date.getTime()/1000);
   }
 
-  public void setDate(Long unixEpoch) {
-    this.setDate(new Date(unixEpoch));
+  public void setDate(ZonedDateTime zonedDateTime) {
+    setDate(zonedDateTime.toEpochSecond());
   }
 
-  public Date getDate() {
+  public void setDate(long unixEpoch) {
+    this.date = unixEpoch;
+  }
+
+  public long getDate() {
     return date;
+  }
+
+
+  public void setValueDate(ZonedDateTime zonedDateTime) {
+    setValueDate(zonedDateTime.toEpochSecond());
+  }
+
+  public void setValueDate(long unixEpoch) {
+    this.valueDate = unixEpoch;
+  }
+
+  public long getValueDate() {
+    return valueDate;
   }
 
   /**
@@ -662,10 +691,16 @@ public class Transaction extends Model {
       ContribFeature.ATTACH_PICTURE.recordUsage();
     }
 
-    if (initialPlan != null) {
-      originTemplate = new Template(this, initialPlan.title);
+    if (initialPlan != null && initialPlan.first != null && initialPlan.second != null) {
+      String title = isEmpty(getPayee()) ?
+          (isSplit() || isEmpty(getLabel()) ?
+              (isEmpty(getComment()) ?
+                  MyApplication.getInstance().getString(R.string.menu_create_template) :
+                  getComment()) :getLabel()) : getPayee();
+      originTemplate = new Template(this, title);
+      String description = originTemplate.compileDescription(MyApplication.getInstance(), CurrencyFormatter.instance());
       originTemplate.setPlanExecutionAutomatic(true);
-      originTemplate.setPlan(initialPlan);
+      originTemplate.setPlan(new Plan(initialPlan.second, initialPlan.first, title, description));
       originTemplate.save(getId());
     }
     return uri;
@@ -821,8 +856,8 @@ public class Transaction extends Model {
     }
     initialValues.put(KEY_COMMENT, getComment());
     initialValues.put(KEY_REFERENCE_NUMBER, getReferenceNumber());
-    //store in UTC
-    initialValues.put(KEY_DATE, getDate().getTime() / 1000);
+    initialValues.put(KEY_DATE, getDate());
+    initialValues.put(KEY_VALUE_DATE, getValueDate());
 
     initialValues.put(KEY_AMOUNT, getAmount().getAmountMinor());
     initialValues.put(KEY_CATID, getCatId());
@@ -1087,10 +1122,7 @@ public class Transaction extends Model {
         return false;
     } else if (!getComment().equals(other.getComment()))
       return false;
-    if (getDate() == null) {
-      if (other.getDate() != null)
-        return false;
-    } else if (Math.abs(getDate().getTime() - other.getDate().getTime()) > 30000) //30 seconds tolerance
+    if (getDate() != other.getDate())
       return false;
     if (getId() == null) {
       if (other.getId() != null)
@@ -1129,7 +1161,7 @@ public class Transaction extends Model {
     result = 31 * result + (this.getPayee() != null ? this.getPayee().hashCode() : 0);
     result = 31 * result + (this.getReferenceNumber() != null ? this.getReferenceNumber().hashCode() : 0);
     result = 31 * result + (this.getLabel() != null ? this.getLabel().hashCode() : 0);
-    result = 31 * result + (this.getDate() != null ? this.getDate().hashCode() : 0);
+    result = 31 * result + Long.valueOf(getDate()).hashCode();
     result = 31 * result + (this.getAmount() != null ? this.getAmount().hashCode() : 0);
     result = 31 * result + (this.getTransferAmount() != null ? this.getTransferAmount().hashCode() : 0);
     result = 31 * result + (this.catId != null ? this.catId.hashCode() : 0);
