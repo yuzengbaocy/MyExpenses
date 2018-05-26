@@ -26,6 +26,14 @@ import timber.log.Timber;
 
 public class PlatformAdHandlerFactory implements AdHandlerFactory {
   private ConsentForm form;
+
+  @Override
+  public boolean isRequestLocationInEeaOrUnknown() {
+    return requestLocationInEeaOrUnknown;
+  }
+
+  private boolean requestLocationInEeaOrUnknown;
+
   @Override
   public AdHandler create(ViewGroup adContainer, PrefHandler prefHandler) {
     Context context = adContainer.getContext();
@@ -96,7 +104,7 @@ public class PlatformAdHandlerFactory implements AdHandlerFactory {
   }
 
   @Override
-  public void gdprConsent(ProtectedFragmentActivity context, boolean forceShow) {
+  public void gdprConsent(ProtectedFragmentActivity context, boolean forceShow, PrefHandler prefHandler) {
     if (forceShow) {
       showGdprConsentForm(context);
     } else {
@@ -106,8 +114,10 @@ public class PlatformAdHandlerFactory implements AdHandlerFactory {
 
         @Override
         public void onConsentInfoUpdated(ConsentStatus consentStatus) {
-          if (consentStatus == ConsentStatus.UNKNOWN && consentInformation.isRequestLocationInEeaOrUnknown()) {
-            showGdprConsentForm(context);
+          requestLocationInEeaOrUnknown = consentInformation.isRequestLocationInEeaOrUnknown();
+          if (consentStatus == ConsentStatus.UNKNOWN && requestLocationInEeaOrUnknown) {
+            if (!AdHandler.isAdDisabled(context, prefHandler))
+              showGdprConsentForm(context);
           }
         }
 

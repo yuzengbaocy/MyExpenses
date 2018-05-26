@@ -1,8 +1,10 @@
 package org.totschnig.myexpenses.util.ads;
 
+import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.ads.mediation.admob.AdMobAdapter;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
@@ -10,6 +12,7 @@ import com.google.android.gms.ads.AdView;
 
 import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.R;
+import org.totschnig.myexpenses.preference.PrefKey;
 
 public class AdmobAdHandler extends AdHandler {
   private static final String PROVIDER_ADMOB = "Admob";
@@ -66,10 +69,13 @@ public class AdmobAdHandler extends AdHandler {
   }
 
   private AdRequest buildAdmobRequest() {
-    return new AdRequest.Builder()
-        //.addTestDevice("5EB15443712776CA9D760C5FF145709D")
-        //.addTestDevice("0C9A9324A2B59536C630C2571458C698")
-        .build();
+    final AdRequest.Builder builder = new AdRequest.Builder();
+    if (!prefHandler.getBoolean(PrefKey.PERSONALIZED_AD_CONSENT, true)) {
+      Bundle extras = new Bundle();
+      extras.putString("npa", "1");
+      builder.addNetworkExtrasBundle(AdMobAdapter.class, extras);
+    }
+    return builder.build();
   }
 
   protected void requestNewInterstitialDo() {
