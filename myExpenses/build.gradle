@@ -219,9 +219,9 @@ dependencies {
     implementation 'frankiesardo:icepick:3.2.0'
     compileOnly 'frankiesardo:icepick-processor:3.2.0'
     annotationProcessor 'frankiesardo:icepick-processor:3.2.0'
-    implementation 'com.google.code.gson:gson:2.8.1'
-    compileOnly 'com.google.auto.value:auto-value:1.4'
-    annotationProcessor 'com.google.auto.value:auto-value:1.4'
+    implementation 'com.google.code.gson:gson:2.8.4'
+    compileOnly 'com.google.auto.value:auto-value:1.5.2'
+    annotationProcessor 'com.google.auto.value:auto-value:1.5.2'
     annotationProcessor 'com.ryanharter.auto.value:auto-value-gson:0.4.6'
     compileOnly 'com.ryanharter.auto.value:auto-value-gson:0.4.6'
     annotationProcessor 'com.gabrielittner.auto.value:auto-value-cursor:1.0.1'
@@ -240,7 +240,7 @@ dependencies {
     implementation 'com.github.mtotschnig:OpenIAB:3db5d014c3'
     implementation fileTree(dir: 'libs', include: ['in-app-purchasing-2.0.61.jar'])
     implementation 'org.apache.commons:commons-csv:1.5'
-    implementation 'com.squareup.picasso:picasso:2.5.2'
+    implementation 'com.squareup.picasso:picasso:2.71828'
     implementation 'com.github.mtotschnig:MPAndroidChart:StackedBarCharValueTextColor-SNAPSHOT'
     //implementation 'com.github.PhilJay:MPAndroidChart:v3.0.3'
     implementation 'com.github.mtotschnig:Caldroid:a86eb51428'
@@ -282,7 +282,7 @@ dependencies {
 
     implementation supportCompile
 
-    implementation 'net.pubnative:sdk:2.0.4'
+    implementation 'net.pubnative:sdk:2.0.12'
 
     implementation project(path: ':setupwizard')
 
