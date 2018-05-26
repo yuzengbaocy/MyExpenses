@@ -615,7 +615,6 @@ continuar?</string>
   <string name="progress_dialog_checking_sync_backend">Verificando o backend</string>
   <string name="template">Modelo</string>
   <string name="contrib_feature_synchronization_label" tools:ignore="UnusedResources">Sincronização na nuvem</string>
-  <string name="licence_status">O status da sua licença</string>
   <string name="all_contrib_key_features">Todas os recursos da Chave Contrib</string>
   <string name="all_extended_key_features">Todos os recursos da Chave Estendida</string>
   <string name="upgrade_now">Atualizar agora</string>
@@ -669,7 +668,7 @@ continuar?</string>
   <string name="progress_removing_licence">Removendo a licença</string>
   <string name="licence_removal_success">A chave da licença foi liberada com sucesso deste dispositivo.</string>
   <string name="professional_key">Chave Profissional</string>
-  <string name="n_months">%s meses</string>
+  <string name="n_months">%d meses</string>
   <string name="professionalPriceShortInfo">a partir de %s / mês</string>
   <string name="eu_vat_info">Para os residentes da União Europeia, os preços exibidos não incluem o VAT.</string>
   <string name="licence_migration_info">{app_name} implementa um novo mecanismo de validação de licença. Por favor, solicite uma nova chave.</string>
@@ -719,4 +718,6 @@ continuar?</string>
   <string name="home_currency_change_warning">Se você mudar a sua moeda local, quantias equivalentes e taxas de câmbio serão perdidas e será necessário defini-las novamente. Deseja continuar?</string>
   <!--This is the label for the action that breaks up a split transaction into its parts.-->
   <string name="split_transaction_one_error">Não foi possível dividir a transação.</string>
+  <!--the date on which the transaction took place, aka transaction date, as opposed to value date-->
+  <!--the date when the entry to an account is considered effective in accounting (https://en.wikipedia.org/wiki/Value_date) as opposed to booking date-->
 </resources>

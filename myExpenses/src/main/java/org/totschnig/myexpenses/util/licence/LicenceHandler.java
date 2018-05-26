@@ -15,6 +15,9 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.googleUtils.Inventory;
 import org.onepf.oms.appstore.googleUtils.Purchase;
+import org.threeten.bp.LocalTime;
+import org.threeten.bp.ZoneId;
+import org.threeten.bp.ZonedDateTime;
 import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
@@ -35,6 +38,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import timber.log.Timber;
 
@@ -46,7 +50,7 @@ public class LicenceHandler {
   protected final Context context;
   private boolean isSandbox = BuildConfig.DEBUG;
 
-  public LicenceStatus getLicenceStatus() {
+  @Nullable public LicenceStatus getLicenceStatus() {
     return licenceStatus;
   }
 
@@ -111,10 +115,12 @@ public class LicenceHandler {
       licenceStatus = licence.getType();
       licenseStatusPrefs.putString(LICENSE_STATUS_KEY, licenceStatus.name());
       if (licence.getValidSince() != null) {
-        licenseStatusPrefs.putString(LICENSE_VALID_SINCE_KEY, String.valueOf(licence.getValidSince().getTime()));
+        ZonedDateTime validSince = licence.getValidSince().atTime(LocalTime.MAX).atZone(ZoneId.of("Etc/GMT-14"));
+        licenseStatusPrefs.putString(LICENSE_VALID_SINCE_KEY, String.valueOf(validSince.toEpochSecond() * 1000));
       }
       if (licence.getValidUntil() != null) {
-        licenseStatusPrefs.putString(LICENSE_VALID_UNTIL_KEY, String.valueOf(licence.getValidUntil().getTime()));
+        ZonedDateTime validUntil = licence.getValidUntil().atTime(LocalTime.MAX).atZone(ZoneId.of("Etc/GMT+12"));
+        licenseStatusPrefs.putString(LICENSE_VALID_UNTIL_KEY, String.valueOf(validUntil.toEpochSecond() * 1000));
       } else {
         licenseStatusPrefs.remove(LICENSE_VALID_UNTIL_KEY);
       }
@@ -140,12 +146,29 @@ public class LicenceHandler {
 
   @Nullable
   public String getFormattedPrice(Package aPackage) {
-    return aPackage.getFormattedPrice(context, aPackage.getFormattedPriceRaw());
+    return getFormattedPriceWithExtra(aPackage, false);
+  }
+
+  @Nullable
+  private String getFormattedPriceWithExtra(Package aPackage, boolean withExtra) {
+    return aPackage.getFormattedPrice(context, withExtra);
+  }
+
+  public String getFormattedPriceWithSaving(Package aPackage) {
+    final boolean withExtra = licenceStatus == LicenceStatus.EXTENDED;
+    String formattedPrice = getFormattedPriceWithExtra(aPackage, withExtra);
+    final Package base = Package.Professional_6;
+    if (aPackage == base) return formattedPrice;
+    return String.format(Locale.ROOT, "%s (- %d %%)", formattedPrice,
+        100 - (aPackage.getDefaultPrice() * 100 * base.getDuration(withExtra) /
+            (aPackage.getDuration(withExtra) * base.getDefaultPrice())));
   }
 
   public String getExtendOrSwitchMessage(Package aPackage) {
     Preconditions.checkArgument(aPackage.isProfessional());
-    Date extendedDate = DateUtils.addMonths(getValidUntilDate(), aPackage.getDuration());
+    Date extendedDate = DateUtils.addMonths(
+        new Date(Math.max(getValidUntilMillis(), System.currentTimeMillis())),
+        aPackage.getDuration(false));
     return context.getString(R.string.extend_until,
         Utils.getDateFormatSafe(context).format(extendedDate),
         aPackage.getFormattedPriceRaw());
@@ -158,8 +181,16 @@ public class LicenceHandler {
 
   @NonNull
   private Date getValidUntilDate() {
-    return new Date(Long.parseLong(
-        licenseStatusPrefs.getString(LICENSE_VALID_UNTIL_KEY, "0")));
+    return new Date(getValidUntilMillis());
+  }
+
+  public long getValidUntilMillis() {
+    return Long.parseLong(licenseStatusPrefs.getString(LICENSE_VALID_UNTIL_KEY, "0"));
+  }
+
+
+  public long getValidSinceMillis() {
+    return Long.parseLong(licenseStatusPrefs.getString(LICENSE_VALID_SINCE_KEY, "0"));
   }
 
   public boolean hasLegacyLicence() {
@@ -171,7 +202,7 @@ public class LicenceHandler {
   }
 
   public Package[] getProPackages() {
-    return new Package[]{Package.Professional_6, Package.Professional_36};
+    return new Package[]{Package.Professional_6, Package.Professional_18, Package.Professional_30};
   }
 
   @Nullable
@@ -180,7 +211,7 @@ public class LicenceHandler {
   }
 
   public String getProfessionalPriceShortInfo() {
-    String minimumProfessionalMonthlyPrice = getMinimumProfessionalMonthlyPrice();
+    String minimumProfessionalMonthlyPrice = getMinimumProfessionalMonthlyPrice(licenceStatus == LicenceStatus.EXTENDED);
     if (minimumProfessionalMonthlyPrice != null) {
       return context.getString(R.string.professionalPriceShortInfo, minimumProfessionalMonthlyPrice);
     } else {
@@ -192,9 +223,10 @@ public class LicenceHandler {
     return null;
   }
 
-  protected String getMinimumProfessionalMonthlyPrice() {
+  protected String getMinimumProfessionalMonthlyPrice(boolean withExtra) {
+    final Package aPackage = Package.Professional_30;
     return CurrencyFormatter.instance().formatCurrency(
-        new Money(Currency.getInstance("EUR"), (long) Math.ceil((double) Package.Professional_36.getDefaultPrice() / 36)));
+        new Money(Currency.getInstance("EUR"), aPackage.getMonthlyPrice(withExtra)));
   }
 
   @Nullable
@@ -203,7 +235,8 @@ public class LicenceHandler {
   }
 
 
-  @NonNull public String getProLicenceAction(Context context) {
+  @NonNull
+  public String getProLicenceAction(Context context) {
     return context.getString(R.string.extend_validity);
   }
 
@@ -236,7 +269,7 @@ public class LicenceHandler {
   }
 
   @VisibleForTesting
-  public  @Nullable
+  public @Nullable
   String findHighestValidSku(List<String> inventory) {
     return Stream.of(inventory)
         .filter(sku -> extractLicenceStatusFromSku(sku) != null)
@@ -270,7 +303,7 @@ public class LicenceHandler {
   }
 
   @Nullable
-  public LicenceStatus handlePurchase(@Nullable String  sku, @Nullable String orderId) {
+  public LicenceStatus handlePurchase(@Nullable String sku, @Nullable String orderId) {
     LicenceStatus licenceStatus = sku != null ? extractLicenceStatusFromSku(sku) : null;
     if (licenceStatus != null) {
       switch (licenceStatus) {
@@ -339,7 +372,7 @@ public class LicenceHandler {
   }
 
   public String getBackendUri() {
-    return isSandbox ? "https://myexpenses-licencedb-staging.herokuapp.com"  : "https://licencedb.myexpenses.mobi/";
+    return isSandbox ? "https://myexpenses-licencedb-staging.herokuapp.com" : "https://licencedb.myexpenses.mobi/";
   }
 
   private String getPaypalLocale() {
@@ -387,5 +420,35 @@ public class LicenceHandler {
       default:
         return "en_US";
     }
+  }
+
+  public void handleExpiration() {
+    long licenceDuration = getValidUntilMillis() - getValidSinceMillis();
+    if (TimeUnit.MILLISECONDS.toDays(licenceDuration) > 240) { // roughly eight months
+      licenceStatus = LicenceStatus.EXTENDED;
+      licenseStatusPrefs.putString(LICENSE_STATUS_KEY, licenceStatus.name());
+      licenseStatusPrefs.remove(LICENSE_VALID_UNTIL_KEY);licenseStatusPrefs.commit();
+      licenseStatusPrefs.commit();
+    } else {
+      updateLicenceStatus(null);
+    }
+  }
+
+  public String getButtonLabel(Package aPackage) {
+    int resId;
+    switch (aPackage) {
+      case Contrib:
+        resId = LicenceStatus.CONTRIB.getResId();
+        break;
+      case Upgrade:
+        resId = R.string.pref_contrib_purchase_title_upgrade;
+        break;
+      case Extended:
+        resId = LicenceStatus.EXTENDED.getResId();
+        break;
+      default:
+        resId = LicenceStatus.PROFESSIONAL.getResId();
+    }
+    return String.format("%s (%s)", context.getString(resId), getFormattedPriceWithExtra(aPackage, licenceStatus == LicenceStatus.EXTENDED));
   }
 }

@@ -5,6 +5,12 @@ import android.content.SharedPreferences.Editor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
+import android.support.v7.widget.PopupMenu;
+import android.view.Menu;
+
+import com.annimon.stream.function.Function;
 
 import org.onepf.oms.OpenIabHelper;
 import org.totschnig.myexpenses.MyApplication;
@@ -14,22 +20,40 @@ import org.totschnig.myexpenses.dialog.ConfirmationDialogFragment;
 import org.totschnig.myexpenses.dialog.VersionDialogFragment;
 import org.totschnig.myexpenses.model.ContribFeature;
 import org.totschnig.myexpenses.model.Transaction;
-import org.totschnig.myexpenses.preference.PrefKey;
+import org.totschnig.myexpenses.preference.PrefHandler;
 import org.totschnig.myexpenses.preference.PreferenceUtils;
 import org.totschnig.myexpenses.provider.TransactionProvider;
 import org.totschnig.myexpenses.provider.filter.Criteria;
+import org.totschnig.myexpenses.ui.SnackbarAction;
 import org.totschnig.myexpenses.util.ContribUtils;
 import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.PermissionHelper;
 import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
 import org.totschnig.myexpenses.util.licence.LicenceHandler;
+import org.totschnig.myexpenses.util.licence.Package;
 
 import java.io.File;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import javax.inject.Inject;
 
 import timber.log.Timber;
 
+import static android.text.format.DateUtils.DAY_IN_MILLIS;
+import static org.totschnig.myexpenses.preference.PrefKey.APP_DIR;
+import static org.totschnig.myexpenses.preference.PrefKey.AUTO_FILL_LEGACY;
+import static org.totschnig.myexpenses.preference.PrefKey.CATEGORIES_SORT_BY_USAGES_LEGACY;
+import static org.totschnig.myexpenses.preference.PrefKey.CURRENT_VERSION;
+import static org.totschnig.myexpenses.preference.PrefKey.HOME_CURRENCY;
+import static org.totschnig.myexpenses.preference.PrefKey.LICENCE_MIGRATION_INFO_SHOWN;
+import static org.totschnig.myexpenses.preference.PrefKey.PLANNER_CALENDAR_ID;
+import static org.totschnig.myexpenses.preference.PrefKey.PROFESSIONAL_EXPIRATION_REMINDER_LAST_SHOWN;
+import static org.totschnig.myexpenses.preference.PrefKey.PROFESSIONAL_UPSELL_SNACKBAR_SHOWN;
+import static org.totschnig.myexpenses.preference.PrefKey.SHARE_TARGET;
+import static org.totschnig.myexpenses.preference.PrefKey.SORT_ORDER_LEGACY;
+import static org.totschnig.myexpenses.preference.PrefKey.SYNC_UPSELL_NOTIFICATION_SHOWN;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_ACCOUNTID;
 import static org.totschnig.myexpenses.util.PermissionHelper.PermissionGroup.CALENDAR;
 
@@ -38,10 +62,20 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
   public static final String TAG_VERSION_INFO = "VERSION_INFO";
   private OpenIabHelper mHelper;
 
+  @Inject
+  LicenceHandler licenceHandler;
+
+  @Inject
+  PrefHandler prefHandler;
+
+  @Override
+  protected void injectDependencies() {
+    MyApplication.getInstance().getAppComponent().inject(this);
+  }
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    LicenceHandler licenceHandler = MyApplication.getInstance().getLicenceHandler();
     mHelper = licenceHandler.getIabHelper(this);
     if (mHelper != null) {
       try {
@@ -69,6 +103,91 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
     }
   }
 
+  @Override
+  protected void onPostCreate(@Nullable Bundle savedInstanceState) {
+    super.onPostCreate(savedInstanceState);
+    if (mHelper == null) {
+      if (licenceHandler.getLicenceStatus() != null) {
+        switch (licenceHandler.getLicenceStatus()) {
+          case CONTRIB:
+          case EXTENDED: {
+            if (!prefHandler.getBoolean(PROFESSIONAL_UPSELL_SNACKBAR_SHOWN, false)) {
+              String message = "Professional Licence Spring Sale: " + licenceHandler.getProfessionalPriceShortInfo();
+              showUpsellSnackbar(message, R.string.upgrade_now, licenceHandler::getFormattedPriceWithSaving,
+                  new Snackbar.Callback() {
+                    @Override
+                    public void onDismissed(Snackbar transientBottomBar, int event) {
+                      if ((event == DISMISS_EVENT_SWIPE) || (event == DISMISS_EVENT_ACTION)) {
+                        prefHandler.putBoolean(PROFESSIONAL_UPSELL_SNACKBAR_SHOWN, true);
+                      }
+                    }
+                  });
+            }
+            break;
+          }
+          case PROFESSIONAL: {
+            long licenceValidity = licenceHandler.getValidUntilMillis();
+            if (licenceValidity != 0) {
+              final long now = System.currentTimeMillis();
+              final long daysToGo = TimeUnit.MILLISECONDS.toDays(licenceValidity - now);
+              if (daysToGo <= 7 && (now -
+                  prefHandler.getLong(PROFESSIONAL_EXPIRATION_REMINDER_LAST_SHOWN, 0)
+                  > DAY_IN_MILLIS)) {
+                String message;
+                if (daysToGo > 1) {
+                  message = getString(R.string.licence_expires_n_days, daysToGo);
+                } else if (daysToGo == 1) {
+                  message = getString(R.string.licence_expires_tomorrow);
+                } else if (daysToGo == 0) {
+                  message = getString(R.string.licence_expires_today);
+                } else if (daysToGo == -1) {
+                  message = getString(R.string.licence_expired_yesterday);
+                } else {
+                  if (daysToGo < -7) {//grace period is over,
+                    licenceHandler.handleExpiration();
+                  }
+                  message = getString(R.string.licence_has_expired_n_days, -daysToGo);
+                }
+
+                showUpsellSnackbar(message, R.string.extend_validity, licenceHandler::getExtendOrSwitchMessage,
+                    new Snackbar.Callback() {
+                      @Override
+                      public void onDismissed(Snackbar transientBottomBar, int event) {
+                        if ((event == DISMISS_EVENT_SWIPE) || (event == DISMISS_EVENT_ACTION)) {
+                          prefHandler.putLong(PROFESSIONAL_EXPIRATION_REMINDER_LAST_SHOWN, now);
+                        }
+                      }
+                    });
+              }
+            }
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  private void showUpsellSnackbar(String message, int actionLabel, Function<Package, String> formatter,
+                                  Snackbar.Callback callback) {
+    showSnackbar(message, Snackbar.LENGTH_INDEFINITE,
+        new SnackbarAction(actionLabel, v -> {
+          Package[] proPackages = licenceHandler.getProPackages();
+          if (proPackages != null) {
+            PopupMenu popup = new PopupMenu(this, v);
+            popup.setOnMenuItemClickListener(item -> {
+              startActivity(ContribInfoDialogActivity.getIntentFor(LaunchActivity.this,
+                  proPackages[item.getItemId()], false));
+              return true;
+            });
+            Menu popupMenu = popup.getMenu();
+            for (int i = 0; i < proPackages.length; i++) {
+              popupMenu.add(Menu.NONE, i, Menu.NONE, formatter.apply(proPackages[i]));
+            }
+            popup.show();
+          }
+        }), callback);
+  }
+
   /**
    * check if this is the first invocation of a new version
    * in which case help dialog is presented
@@ -76,18 +195,18 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
    * and display information to be presented upon app launch
    */
   public void newVersionCheck() {
-    int prev_version = PrefKey.CURRENT_VERSION.getInt(-1);
+    int prev_version = prefHandler.getInt(CURRENT_VERSION, -1);
     int current_version = DistribHelper.getVersionNumber();
     if (prev_version < current_version) {
       if (prev_version == -1) {
         return;
       }
       boolean showImportantUpgradeInfo = prev_version < 309;
-      PrefKey.CURRENT_VERSION.putInt(current_version);
+      prefHandler.putInt(CURRENT_VERSION, current_version);
       SharedPreferences settings = MyApplication.getInstance().getSettings();
       Editor edit = settings.edit();
       if (prev_version < 19) {
-        edit.putString(PrefKey.SHARE_TARGET.getKey(), settings.getString("ftp_target", ""));
+        edit.putString(prefHandler.getKey(SHARE_TARGET), settings.getString("ftp_target", ""));
         edit.remove("ftp_target");
         edit.apply();
       }
@@ -97,8 +216,8 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
                 KEY_ACCOUNTID + " not in (SELECT _id FROM accounts)", null));
       }
       if (prev_version < 30) {
-        if (!"".equals(PrefKey.SHARE_TARGET.getString(""))) {
-          edit.putBoolean(PrefKey.SHARE_TARGET.getKey(), true);
+        if (!"".equals(prefHandler.getString(SHARE_TARGET, ""))) {
+          edit.putBoolean(prefHandler.getKey(SHARE_TARGET), true);
           edit.apply();
         }
       }
@@ -137,24 +256,24 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
         edit.apply();
       }
       if (prev_version < 202) {
-        String appDir = PrefKey.APP_DIR.getString(null);
+        String appDir = prefHandler.getString(APP_DIR, null);
         if (appDir != null) {
-          PrefKey.APP_DIR.putString(Uri.fromFile(new File(appDir)).toString());
+          prefHandler.putString(APP_DIR, Uri.fromFile(new File(appDir)).toString());
         }
       }
       if (prev_version < 221) {
-        PrefKey.SORT_ORDER_LEGACY.putString(
-            PrefKey.CATEGORIES_SORT_BY_USAGES_LEGACY.getBoolean(true) ?
+        prefHandler.putString(SORT_ORDER_LEGACY,
+            prefHandler.getBoolean(CATEGORIES_SORT_BY_USAGES_LEGACY, true) ?
                 "USAGES" : "ALPHABETIC");
       }
       if (prev_version < 303) {
-        if (PrefKey.AUTO_FILL_LEGACY.getBoolean(false)) {
+        if (prefHandler.getBoolean(AUTO_FILL_LEGACY, false)) {
           PreferenceUtils.enableAutoFill();
         }
-        PrefKey.AUTO_FILL_LEGACY.remove();
+        prefHandler.remove(AUTO_FILL_LEGACY);
       }
       if (prev_version < 316) {
-        PrefKey.HOME_CURRENCY.putString(Utils.getHomeCurrency().getCurrencyCode());
+        prefHandler.putString(HOME_CURRENCY, Utils.getHomeCurrency().getCurrencyCode());
       }
 
 
@@ -162,22 +281,22 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
           .show(getSupportFragmentManager(), TAG_VERSION_INFO);
     } else {
       if (MyApplication.getInstance().getLicenceHandler().needsMigration() &&
-          !PrefKey.LICENCE_MIGRATION_INFO_SHOWN.getBoolean(false)) {
+          !prefHandler.getBoolean(LICENCE_MIGRATION_INFO_SHOWN, false)) {
         Bundle bundle = new Bundle();
         bundle.putCharSequence(
             ConfirmationDialogFragment.KEY_MESSAGE,
             Utils.getTextWithAppName(this, R.string.licence_migration_info));
         bundle.putInt(ConfirmationDialogFragment.KEY_COMMAND_POSITIVE,
             R.id.REQUEST_LICENCE_MIGRATION_COMMAND);
-        bundle.putString(ConfirmationDialogFragment.KEY_PREFKEY, PrefKey
-            .LICENCE_MIGRATION_INFO_SHOWN.getKey());
+        bundle.putString(ConfirmationDialogFragment.KEY_PREFKEY,
+            LICENCE_MIGRATION_INFO_SHOWN.getKey());
         bundle.putInt(ConfirmationDialogFragment.KEY_POSITIVE_BUTTON_LABEL, R.string.pref_request_licence_title);
         ConfirmationDialogFragment.newInstance(bundle).show(getSupportFragmentManager(),
             "RESTORE");
       }
       if (!ContribFeature.SYNCHRONIZATION.hasAccess() && ContribFeature.SYNCHRONIZATION.usagesLeft() < 1 &&
-          !PrefKey.SYNC_UPSELL_NOTIFICATION_SHOWN.getBoolean(false)) {
-        PrefKey.SYNC_UPSELL_NOTIFICATION_SHOWN.putBoolean(true);
+          !prefHandler.getBoolean(SYNC_UPSELL_NOTIFICATION_SHOWN, false)) {
+        prefHandler.putBoolean(SYNC_UPSELL_NOTIFICATION_SHOWN, true);
         ContribUtils.showContribNotification(this, ContribFeature.SYNCHRONIZATION);
       }
     }
@@ -185,7 +304,7 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
   }
 
   private void checkCalendarPermission() {
-    if (!PrefKey.PLANNER_CALENDAR_ID.getString("-1").equals("-1")) {
+    if (!prefHandler.getString(PLANNER_CALENDAR_ID, "-1").equals("-1")) {
       if (!CALENDAR.hasPermission(this)) {
         requestPermission(CALENDAR);
       }
