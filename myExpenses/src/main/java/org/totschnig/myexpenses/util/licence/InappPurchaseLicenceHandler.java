@@ -198,7 +198,8 @@ public class InappPurchaseLicenceHandler extends ContribStatusLicenceHandler {
   @Nullable
   public String getFormattedPrice(Package aPackage) {
     String pricesPrefsString = getDisplayPriceForPackage(aPackage);
-    return pricesPrefsString != null ? aPackage.getFormattedPrice(context, pricesPrefsString) : null;
+    return pricesPrefsString != null ?
+        aPackage.getFormattedPrice(context, pricesPrefsString, false) : null;
   }
 
   @Override
@@ -214,7 +215,7 @@ public class InappPurchaseLicenceHandler extends ContribStatusLicenceHandler {
   }
 
   @Override
-  protected String getMinimumProfessionalMonthlyPrice() {
+  protected String getMinimumProfessionalMonthlyPrice(boolean withExtra) {
     long pricesPrefsLong;
     String currencyCode;
     if (licenceStatus == LicenceStatus.EXTENDED) {
