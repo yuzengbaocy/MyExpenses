@@ -12,7 +12,6 @@ import com.amazon.device.ads.DefaultAdListener;
 import com.amazon.device.ads.InterstitialAd;
 
 import org.totschnig.myexpenses.BuildConfig;
-import org.totschnig.myexpenses.model.ContribFeature;
 
 public class AmaAdHandler extends AdHandler {
   private static final String PROVIDER_AMA = "AmazonMobileAds";
@@ -36,8 +35,7 @@ public class AmaAdHandler extends AdHandler {
   private void showBannerAma() {
     amaView = new AdLayout(context);
     adContainer.addView(amaView);
-    String APP_KEY = BuildConfig.DEBUG ?
-        "sample-app-v1_pub-2" : "325c1c24185c46ccae8ec2cd4b2c290c";
+    String APP_KEY = "325c1c24185c46ccae8ec2cd4b2c290c";
     AdRegistration.enableLogging(BuildConfig.DEBUG);
     // For debugging purposes flag all ad requests as tests, but set to false for production builds.
     AdRegistration.enableTesting(BuildConfig.DEBUG);
@@ -109,7 +107,7 @@ public class AmaAdHandler extends AdHandler {
   public void onResume() {
     if (mAmaBannerShown) {
       //activity might have been resumed after user has bought contrib key
-      if (ContribFeature.AD_FREE.hasAccess()) {
+      if (isAdDisabled()) {
         hide();
         mAmaBannerShown = false;
       }

@@ -1,6 +1,5 @@
 package org.totschnig.myexpenses.util.ads;
 
-import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -9,11 +8,10 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 
+import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.R;
-import org.totschnig.myexpenses.model.ContribFeature;
 
 public class AdmobAdHandler extends AdHandler {
-  private static final boolean WITH_RHYTHM = false;
   private static final String PROVIDER_ADMOB = "Admob";
   private AdView admobView;
   private com.google.android.gms.ads.InterstitialAd admobInterstitialAd;
@@ -37,7 +35,7 @@ public class AdmobAdHandler extends AdHandler {
     AdSize adSize;
     switch (sizeSpec) {
       case "SMART_BANNER":
-        adSize = WITH_RHYTHM ? AdSize.BANNER : AdSize.SMART_BANNER;
+        adSize = AdSize.SMART_BANNER;
         break;
       case "FULL_BANNER":
         adSize = AdSize.FULL_BANNER;
@@ -46,8 +44,8 @@ public class AdmobAdHandler extends AdHandler {
         adSize = AdSize.BANNER;
     }
     admobView.setAdSize(adSize);
-    admobView.setAdUnitId(context.getString(WITH_RHYTHM ? R.string.admob_unitid_rhythm :
-        R.string.admob_unitid_mainscreen));
+    admobView.setAdUnitId(BuildConfig.DEBUG ? "ca-app-pub-3940256099942544/6300978111" :
+        context.getString(R.string.admob_unitid_mainscreen));
     adContainer.addView(admobView);
     admobView.loadAd(buildAdmobRequest());
     trackBannerRequest(PROVIDER_ADMOB);
@@ -57,11 +55,6 @@ public class AdmobAdHandler extends AdHandler {
         trackBannerLoaded(PROVIDER_ADMOB);
         mAdMobBannerShown = true;
         admobView.setVisibility(View.VISIBLE);
-        if (WITH_RHYTHM) {
-          adContainer.getLayoutParams().height = (int) TypedValue.applyDimension(
-              TypedValue.COMPLEX_UNIT_DIP, AdSize.BANNER.getHeight(),
-              context.getResources().getDisplayMetrics());
-        }
       }
 
       @Override
@@ -113,7 +106,7 @@ public class AdmobAdHandler extends AdHandler {
   public void onResume() {
     if (mAdMobBannerShown) {
       //activity might have been resumed after user has bought contrib key
-      if (ContribFeature.AD_FREE.hasAccess()) {
+      if (isAdDisabled()) {
         admobView.destroy();
         hide();
         mAdMobBannerShown = false;

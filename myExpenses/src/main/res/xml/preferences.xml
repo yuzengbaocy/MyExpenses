@@ -257,7 +257,7 @@
             android:title="@string/pref_perform_protection_title">
             <SwitchPreferenceCompat
                 android:key="@string/pref_protection_device_lock_screen_key"
-                android:title="@string/pref_protection_device_lock_screen_title" />
+                android:title="@string/pref_protection_device_lock_screen_title"/>
             <org.totschnig.myexpenses.preference.PasswordPreference
                 android:key="@string/pref_protection_password_key"
                 android:title="@string/pref_protection_password_title"/>
@@ -340,6 +340,39 @@
         </Preference>
     </PreferenceCategory>
 
+
+    <PreferenceCategory
+        android:key="@string/pref_category_privacy_key"
+        android:title="@string/pref_category_title_privacy">
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            android:key="@string/pref_tracking_key"
+            android:summary="@string/pref_tracking_summary"
+            android:title="@string/pref_tracking_title"/>
+        <PreferenceScreen
+            android:key="@string/pref_crash_reports_key"
+            android:title="@string/pref_category_title_crash_reports">
+            <Preference
+                style="?preferenceInformationStyle"
+                android:key="@string/pre_acra_info_key"/>
+            <SwitchPreferenceCompat
+                android:defaultValue="true"
+                android:key="@string/pref_crashreport_enabled_key"
+                android:summaryOff="@string/pref_acra_disabled"
+                android:summaryOn="@string/pref_acra_enabled"
+                android:title="@string/pref_enable_acra"/>
+            <EditTextPreference
+                android:dependency="@string/pref_crashreport_enabled_key"
+                android:inputType="textUri"
+                android:key="@string/pref_crashreport_useremail_key"
+                android:summary="@string/pref_acra_user_email_summary"
+                android:title="@string/pref_acra_user_email"/>
+        </PreferenceScreen>
+        <Preference
+            android:key="@string/pref_ad_consent_key"
+            android:title="@string/pref_ad_consent_title"/>
+    </PreferenceCategory>
+
     <PreferenceCategory
         android:key="@string/pref_category_advanced_key"
         android:title="@string/pref_category_title_advanced">
@@ -355,11 +388,6 @@
         <ListPreference
             android:key="@string/pref_planner_calendar_id_key"
             android:title="@string/pref_planning_calendar_title"/>
-        <SwitchPreferenceCompat
-            android:defaultValue="true"
-            android:key="@string/pref_tracking_key"
-            android:summary="@string/pref_tracking_summary"
-            android:title="@string/pref_tracking_title"/>
         <com.pavelsikun.seekbarpreference.SeekBarPreferenceCompat
             android:defaultValue="10"
             android:key="@string/pref_webdav_timeout_key"
@@ -374,29 +402,10 @@
 
             <SwitchPreferenceCompat
                 android:key="@string/pref_debug_logging_key"
-                android:summary="@string/pref_debug_logging_summary" />
+                android:summary="@string/pref_debug_logging_summary"/>
             <SwitchPreferenceCompat
                 android:key="@string/pref_debug_show_ads_key"
-                android:summary="Ads" />
-        </PreferenceScreen>
-        <PreferenceScreen
-            android:key="@string/pref_crash_reports_key"
-            android:title="@string/pref_category_title_crash_reports">
-            <Preference
-                android:key="@string/pre_acra_info_key"
-                style="?preferenceInformationStyle"/>
-            <SwitchPreferenceCompat
-                android:defaultValue="true"
-                android:key="@string/pref_crashreport_enabled_key"
-                android:summaryOff="@string/pref_acra_disabled"
-                android:summaryOn="@string/pref_acra_enabled"
-                android:title="@string/pref_enable_acra"/>
-            <EditTextPreference
-                android:dependency="@string/pref_crashreport_enabled_key"
-                android:inputType="textUri"
-                android:key="@string/pref_crashreport_useremail_key"
-                android:summary="@string/pref_acra_user_email_summary"
-                android:title="@string/pref_acra_user_email"/>
+                android:summary="Ads"/>
         </PreferenceScreen>
     </PreferenceCategory>
 </PreferenceScreen> 
