@@ -148,7 +148,6 @@ android {
 
     lintOptions {
         disable 'InvalidPackage', 'MissingQuantity', 'MissingTranslation', 'ImpliedQuantity'
-        abortOnError false
     }
 
     dexOptions {
@@ -208,7 +207,9 @@ List supportCompile = ['com.android.support:appcompat-v7:' + project.androidSupp
                        'com.android.support:gridlayout-v7:' + project.androidSupportLibraryVersion,
                        'com.android.support:preference-v14:' + project.androidSupportLibraryVersion,
                         //make GradleCompatible lint check happy
-                       'com.android.support:exifinterface:' + project.androidSupportLibraryVersion]
+                       'com.android.support:exifinterface:' + project.androidSupportLibraryVersion,
+                        //make GradleCompatible lint check happy
+                       'com.android.support:customtabs:' + project.androidSupportLibraryVersion]
 
 dependencies {
     implementation project(':transactionscontract')
@@ -262,8 +263,8 @@ dependencies {
 
     implementation 'com.jakewharton.timber:timber:4.7.0'
 
-    withDriveImplementation 'com.google.android.gms:play-services-drive:' + project.gmsVersion
-    withAdsImplementation 'com.google.android.gms:play-services-ads:' + project.gmsVersion
+    withDriveImplementation 'com.google.android.gms:play-services-ads:15.0.1'
+    withAdsImplementation 'com.google.android.gms:play-services-drive:15.0.1'
     //noinspection GradleDynamicVersion
     withAdsImplementation 'com.amazon.android:mobile-ads:5.+'
 
