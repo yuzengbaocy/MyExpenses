@@ -5,7 +5,8 @@
 * check if version_codes, version_names, upgrade.xml use the correction version code
 * if applicable publish announcement on Google+ and Facebook and add links
 * Test and assemble (replace play with amazon or blackberry if needed)
-  * ./gradlew check
+  * ./gradlew lintPlayWithDriveWithAdsCrashlyticsRelease
+  * ./gradlew testPlayWithDriveWithAdsCrashlyticsReleaseUnitTest
   * ./gradlew clean connectedPlayWithDriveWithAdsCrashlyticsForTestAndroidTest
   * ./gradlew clean assemblePlayWithDriveWithAdsCrashlyticsRelease
 * test upgrade mechanism
