@@ -20,12 +20,12 @@ public class AdmobAdHandler extends AdHandler {
   private com.google.android.gms.ads.InterstitialAd admobInterstitialAd;
   private boolean mAdMobBannerShown = false, mInterstitialShown = false;
 
-  public AdmobAdHandler(ViewGroup adContainer) {
-    super(adContainer);
+  AdmobAdHandler(AdHandlerFactory factory, ViewGroup adContainer) {
+    super(factory, adContainer);
   }
 
   public void init() {
-    if (isAdDisabled()) {
+    if (shouldShowAd()) {
       hide();
     } else {
       showBannerAdmob();
@@ -112,7 +112,7 @@ public class AdmobAdHandler extends AdHandler {
   public void onResume() {
     if (mAdMobBannerShown) {
       //activity might have been resumed after user has bought contrib key
-      if (isAdDisabled()) {
+      if (shouldShowAd()) {
         admobView.destroy();
         hide();
         mAdMobBannerShown = false;

@@ -40,10 +40,9 @@ public class PlatformAdHandlerFactory extends DefaultAdHandlerFactory {
 
   @Override
   public AdHandler create(ViewGroup adContainer) {
-    Context context = adContainer.getContext();
-    if (AdHandler.isAdDisabled(context, prefHandler)) {
+    if (isAdDisabled()) {
       FirebaseAnalytics.getInstance(context).setUserProperty("AdHandler", "NoOp");
-      return new NoOpAdHandler(adContainer);
+      return new NoOpAdHandler();
     }
     FirebaseRemoteConfig remoteConfig = FirebaseRemoteConfig.getInstance();
     FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
@@ -57,8 +56,8 @@ public class PlatformAdHandlerFactory extends DefaultAdHandlerFactory {
     String adHandler = remoteConfig.getString("ad_handling_waterfall");
     FirebaseAnalytics.getInstance(context).setUserProperty("AdHandler", adHandler);
     AdHandler[] adHandlers = getAdHandlers(adContainer, adHandler);
-    return adHandlers.length > 0 ? new WaterfallAdHandler(adContainer, adHandlers) :
-        new NoOpAdHandler(adContainer);
+    return adHandlers.length > 0 ? new WaterfallAdHandler(this, adContainer, adHandlers) :
+        new NoOpAdHandler();
   }
 
   private void showGdprConsentForm(ProtectedFragmentActivity context) {
@@ -114,7 +113,7 @@ public class PlatformAdHandlerFactory extends DefaultAdHandlerFactory {
             switch(consentStatus) {
               case UNKNOWN:
                 clearConsent();
-                if (!AdHandler.isAdDisabled(context, prefHandler)) {
+                if (!isAdDisabled()) {
                   showGdprConsentForm(context);
                 }
                 break;
@@ -136,18 +135,18 @@ public class PlatformAdHandlerFactory extends DefaultAdHandlerFactory {
   }
 
   @VisibleForTesting
-  public static AdHandler[] getAdHandlers(ViewGroup adContainer, String adHandler) {
+  public AdHandler[] getAdHandlers(ViewGroup adContainer, String adHandler) {
     return Stream.of(adHandler.split(":"))
         .map(handler -> instantiate(handler, adContainer))
         .filter(element -> element != null)
         .toArray(size -> new AdHandler[size]);
   }
 
-  private  static AdHandler instantiate(String handler, ViewGroup adContainer) {
+  private  AdHandler instantiate(String handler, ViewGroup adContainer) {
     switch (handler) {
-      case "Ama": return new AmaAdHandler(adContainer);
-      case "PubNative": return new PubNativeAdHandler(adContainer);
-      case "AdMob": return new AdmobAdHandler(adContainer);
+      case "Ama": return new AmaAdHandler(this, adContainer);
+      case "PubNative": return new PubNativeAdHandler(this, adContainer);
+      case "AdMob": return new AdmobAdHandler(this, adContainer);
       default: return null;
     }
   }

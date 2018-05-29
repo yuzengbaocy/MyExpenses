@@ -8,13 +8,15 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.di.AppComponent;
+import org.totschnig.myexpenses.preference.PrefHandler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 public class PlatformAdHandlerFactoryTest {
-  ViewGroup adContainer;
+  private ViewGroup adContainer;
+  private PlatformAdHandlerFactory factory;
 
   @Before
   public void setup() {
@@ -26,11 +28,12 @@ public class PlatformAdHandlerFactoryTest {
     when(mockApplication.getAppComponent()).thenReturn(mockAppComponent);
     when(mockContext.getApplicationContext()).thenReturn(mockApplication);
     when(adContainer.getContext()).thenReturn(mockContext);
+    factory = new PlatformAdHandlerFactory(mockApplication, Mockito.mock(PrefHandler.class));
   }
 
   @Test
-  public void getDefaultAdHandlers() throws Exception {
-    AdHandler[] adHandlers = PlatformAdHandlerFactory.getAdHandlers(adContainer, "Ama:PubNative:AdMob");
+  public void getDefaultAdHandlers() {
+    AdHandler[] adHandlers = factory.getAdHandlers(adContainer, "Ama:PubNative:AdMob");
     assertThat(adHandlers).hasSize(3);
     assertThat(adHandlers[0]).isInstanceOf(AmaAdHandler.class);
     assertThat(adHandlers[1]).isInstanceOf(PubNativeAdHandler.class);
@@ -38,14 +41,14 @@ public class PlatformAdHandlerFactoryTest {
   }
 
   @Test
-  public void getEmptyAdHandlers() throws Exception {
-    AdHandler[] adHandlers = PlatformAdHandlerFactory.getAdHandlers(adContainer, "");
+  public void getEmptyAdHandlers() {
+    AdHandler[] adHandlers = factory.getAdHandlers(adContainer, "");
     assertThat(adHandlers).isEmpty();
   }
 
   @Test
-  public void ignoreUnknownAdHandlers() throws Exception {
-    AdHandler[] adHandlers = PlatformAdHandlerFactory.getAdHandlers(adContainer, "Ama:Bogus:AdMob");
+  public void ignoreUnknownAdHandlers() {
+    AdHandler[] adHandlers = factory.getAdHandlers(adContainer, "Ama:Bogus:AdMob");
     assertThat(adHandlers).hasSize(2);
     assertThat(adHandlers[0]).isInstanceOf(AmaAdHandler.class);
     assertThat(adHandlers[1]).isInstanceOf(AdmobAdHandler.class);

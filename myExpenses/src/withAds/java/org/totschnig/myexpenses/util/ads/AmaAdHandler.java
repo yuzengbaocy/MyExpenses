@@ -20,12 +20,12 @@ public class AmaAdHandler extends AdHandler {
   private boolean mAmaInterstitialLoaded = false;
   private boolean mAmaBannerShown = false, mInterstitialShown = false;
 
-  public AmaAdHandler(ViewGroup adContainer) {
-    super(adContainer);
+  public AmaAdHandler(AdHandlerFactory factory, ViewGroup adContainer) {
+    super(factory, adContainer);
   }
 
   public void init() {
-    if (isAdDisabled()) {
+    if (shouldShowAd()) {
       hide();
     } else {
       showBannerAma();
@@ -107,7 +107,7 @@ public class AmaAdHandler extends AdHandler {
   public void onResume() {
     if (mAmaBannerShown) {
       //activity might have been resumed after user has bought contrib key
-      if (isAdDisabled()) {
+      if (shouldShowAd()) {
         hide();
         mAmaBannerShown = false;
       }
