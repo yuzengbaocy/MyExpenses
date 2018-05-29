@@ -5,7 +5,7 @@ import org.totschnig.myexpenses.activity.ImageViewIntentProvider;
 import org.totschnig.myexpenses.activity.SystemImageViewIntentProvider;
 import org.totschnig.myexpenses.preference.PrefHandler;
 import org.totschnig.myexpenses.util.ads.AdHandlerFactory;
-import org.totschnig.myexpenses.util.ads.DefaultAdHandlerFactory;
+import org.totschnig.myexpenses.util.ads.PlatformAdHandlerFactory;
 
 import javax.inject.Singleton;
 
@@ -23,6 +23,6 @@ public class UiModule {
   @Provides
   @Singleton
   AdHandlerFactory provideAdHandlerFactory(MyApplication application, PrefHandler prefHandler) {
-    return new DefaultAdHandlerFactory(application, prefHandler);
+    return new PlatformAdHandlerFactory(application, prefHandler);
   }
 }

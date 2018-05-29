@@ -24,10 +24,12 @@ import java.net.URL;
 
 import timber.log.Timber;
 
-import static org.totschnig.myexpenses.preference.PrefKey.PERSONALIZED_AD_CONSENT;
-
-public class PlatformAdHandlerFactory implements AdHandlerFactory {
+public class PlatformAdHandlerFactory extends DefaultAdHandlerFactory {
   private ConsentForm form;
+
+  public PlatformAdHandlerFactory(Context context, PrefHandler prefHandler) {
+    super(context, prefHandler);
+  }
 
   @Override
   public boolean isRequestLocationInEeaOrUnknown() {
@@ -37,7 +39,7 @@ public class PlatformAdHandlerFactory implements AdHandlerFactory {
   private boolean requestLocationInEeaOrUnknown;
 
   @Override
-  public AdHandler create(ViewGroup adContainer, PrefHandler prefHandler) {
+  public AdHandler create(ViewGroup adContainer) {
     Context context = adContainer.getContext();
     if (AdHandler.isAdDisabled(context, prefHandler)) {
       FirebaseAnalytics.getInstance(context).setUserProperty("AdHandler", "NoOp");
@@ -59,7 +61,7 @@ public class PlatformAdHandlerFactory implements AdHandlerFactory {
         new NoOpAdHandler(adContainer);
   }
 
-  private void showGdprConsentForm(ProtectedFragmentActivity context, PrefHandler prefHandler) {
+  private void showGdprConsentForm(ProtectedFragmentActivity context) {
     URL privacyUrl;
     try {
       privacyUrl = new URL("http://www.myexpenses.mobi/#privacy");
@@ -77,12 +79,10 @@ public class PlatformAdHandlerFactory implements AdHandlerFactory {
           public void onConsentFormClosed(
               ConsentStatus consentStatus, Boolean userPrefersAdFree) {
             if (userPrefersAdFree ||consentStatus == ConsentStatus.UNKNOWN) {
-              prefHandler.remove(PERSONALIZED_AD_CONSENT);
-              context.onGdprNoConsent();
+              clearConsent();
+              context.dispatchCommand(R.id.CONTRIB_INFO_COMMAND, null);
             } else {
-              final boolean personalized = consentStatus == ConsentStatus.PERSONALIZED;
-              prefHandler.putBoolean(PERSONALIZED_AD_CONSENT, personalized);
-              context.onGdprConsent(personalized);
+              setConsent(consentStatus == ConsentStatus.PERSONALIZED);
             }
           }
 
@@ -99,9 +99,9 @@ public class PlatformAdHandlerFactory implements AdHandlerFactory {
   }
 
   @Override
-  public void gdprConsent(ProtectedFragmentActivity context, boolean forceShow, PrefHandler prefHandler) {
+  public void gdprConsent(ProtectedFragmentActivity context, boolean forceShow) {
     if (forceShow) {
-      showGdprConsentForm(context, prefHandler);
+      showGdprConsentForm(context);
     } else {
       ConsentInformation consentInformation = ConsentInformation.getInstance(context);
       String[] publisherIds = {"pub-5381507717489755"};
@@ -113,20 +113,17 @@ public class PlatformAdHandlerFactory implements AdHandlerFactory {
           if (requestLocationInEeaOrUnknown) {
             switch(consentStatus) {
               case UNKNOWN:
-                prefHandler.remove(PERSONALIZED_AD_CONSENT);
+                clearConsent();
                 if (!AdHandler.isAdDisabled(context, prefHandler)) {
-                  showGdprConsentForm(context, prefHandler);
+                  showGdprConsentForm(context);
                 }
                 break;
-              case NON_PERSONALIZED:
-                prefHandler.putBoolean(PERSONALIZED_AD_CONSENT, false);
-                break;
-              case PERSONALIZED:
-                prefHandler.putBoolean(PERSONALIZED_AD_CONSENT, true);
+              default:
+                setConsent(consentStatus == ConsentStatus.PERSONALIZED);
                 break;
             }
           } else {
-            prefHandler.remove(PERSONALIZED_AD_CONSENT);
+            clearConsent();
           }
         }
 
