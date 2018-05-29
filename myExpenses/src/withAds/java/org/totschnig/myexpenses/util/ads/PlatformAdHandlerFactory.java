@@ -42,7 +42,7 @@ public class PlatformAdHandlerFactory extends DefaultAdHandlerFactory {
   public AdHandler create(ViewGroup adContainer) {
     if (isAdDisabled()) {
       FirebaseAnalytics.getInstance(context).setUserProperty("AdHandler", "NoOp");
-      return new NoOpAdHandler();
+      return new NoOpAdHandler(this, adContainer);
     }
     FirebaseRemoteConfig remoteConfig = FirebaseRemoteConfig.getInstance();
     FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
@@ -57,7 +57,7 @@ public class PlatformAdHandlerFactory extends DefaultAdHandlerFactory {
     FirebaseAnalytics.getInstance(context).setUserProperty("AdHandler", adHandler);
     AdHandler[] adHandlers = getAdHandlers(adContainer, adHandler);
     return adHandlers.length > 0 ? new WaterfallAdHandler(this, adContainer, adHandlers) :
-        new NoOpAdHandler();
+        new NoOpAdHandler(this, adContainer);
   }
 
   private void showGdprConsentForm(ProtectedFragmentActivity context) {
