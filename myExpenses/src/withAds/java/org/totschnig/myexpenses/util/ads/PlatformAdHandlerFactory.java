@@ -71,7 +71,9 @@ public class PlatformAdHandlerFactory extends DefaultAdHandlerFactory {
         .withListener(new ConsentFormListener() {
           @Override
           public void onConsentFormLoaded() {
-            form.show();
+            if (!context.isFinishing()) {
+              form.show();
+            }
           }
 
           @Override
