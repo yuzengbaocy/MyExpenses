@@ -106,7 +106,7 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
         sampleAdView = new SampleAdView(context);
 
         // Assumes that the serverParameter is the AdUnit for the Sample Network.
-        sampleAdView.setAdUnit(serverParameter);
+        sampleAdView.setAdUnit("bogus");
 
         // Internally, smart banners use constants to represent their ad size, which means a call to
         // AdSize.getHeight could return a negative value. You can accommodate this by using
