@@ -49,6 +49,8 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
 
+import com.google.android.gms.ads.MobileAds;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
@@ -197,6 +199,7 @@ public class MyExpenses extends LaunchActivity implements
 
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
+    MobileAds.initialize(this, "ca-app-pub-5381507717489755~8602009224");
 
     adHandler = adHandlerFactory.create(findViewById(R.id.adContainer));
     adHandler.init();
