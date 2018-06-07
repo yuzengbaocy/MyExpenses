@@ -10,7 +10,6 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 
-import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.preference.PrefKey;
 
@@ -47,8 +46,7 @@ public class AdmobAdHandler extends AdHandler {
         adSize = AdSize.BANNER;
     }
     admobView.setAdSize(adSize);
-    admobView.setAdUnitId(BuildConfig.DEBUG ? "ca-app-pub-3940256099942544/6300978111" :
-        context.getString(R.string.admob_unitid_mainscreen));
+    admobView.setAdUnitId(context.getString(R.string.admob_unitid_custom));
     adContainer.addView(admobView);
     admobView.loadAd(buildAdmobRequest());
     trackBannerRequest(PROVIDER_ADMOB);
