@@ -1,9 +1,11 @@
 package org.totschnig.myexpenses.util.licence;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 
 import com.google.android.vending.licensing.PreferenceObfuscator;
 
+import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.preference.PrefKey;
 
 import timber.log.Timber;
@@ -61,6 +63,11 @@ public abstract class ContribStatusLicenceHandler extends LicenceHandler {
     } else {
       return false;
     }
+  }
+
+  @Override
+  public boolean isEnabledFor(@NonNull LicenceStatus licenceStatus) {
+    return BuildConfig.UNLOCK_SWITCH || super.isEnabledFor(licenceStatus);
   }
 
   /**

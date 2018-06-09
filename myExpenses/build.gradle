@@ -61,6 +61,7 @@ android {
 
         buildConfigField "String", "BUILD_DATE", "\"" + getDate() + "\""
         buildConfigField "String", "DISTRIBUTION", "\"GITHUB\""
+        buildConfigField "boolean", "UNLOCK_SWITCH", getPropertyIfDefined("UNLOCK", "false")
         testInstrumentationRunner "org.totschnig.myexpenses.MyTestRunner"
         testProguardFile "proguard-test.txt"
 
