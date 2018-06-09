@@ -22,6 +22,7 @@ import android.os.Bundle;
 import android.support.annotation.Keep;
 import android.util.DisplayMetrics;
 
+import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.customevent.CustomEventBanner;
@@ -103,29 +104,36 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
          * listener.onAdClosed(this);
          */
 
-        sampleAdView = new SampleAdView(context);
+        PartnerProgram partnerProgram = null;
+        try {
+            partnerProgram = PartnerProgram.valueOf(serverParameter);
+        } catch (IllegalArgumentException ignored) {
+        }
 
-        // Assumes that the serverParameter is the AdUnit for the Sample Network.
-        sampleAdView.setAdUnit("bogus");
+        if (partnerProgram == null) {
+            listener.onAdFailedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
+        } else {
+            sampleAdView = new SampleAdView(context);
 
-        // Internally, smart banners use constants to represent their ad size, which means a call to
-        // AdSize.getHeight could return a negative value. You can accommodate this by using
-        // AdSize.getHeightInPixels and AdSize.getWidthInPixels instead, and then adjusting to match
-        // the device's display metrics.
-        int widthInPixels = size.getWidthInPixels(context);
-        int heightInPixels = size.getHeightInPixels(context);
-        DisplayMetrics displayMetrics = Resources.getSystem().getDisplayMetrics();
-        int widthInDp = Math.round(widthInPixels / displayMetrics.density);
-        int heightInDp = Math.round(heightInPixels / displayMetrics.density);
+            // Internally, smart banners use constants to represent their ad size, which means a call to
+            // AdSize.getHeight could return a negative value. You can accommodate this by using
+            // AdSize.getHeightInPixels and AdSize.getWidthInPixels instead, and then adjusting to match
+            // the device's display metrics.
+            int widthInPixels = size.getWidthInPixels(context);
+            int heightInPixels = size.getHeightInPixels(context);
+            DisplayMetrics displayMetrics = Resources.getSystem().getDisplayMetrics();
+            int widthInDp = Math.round(widthInPixels / displayMetrics.density);
+            int heightInDp = Math.round(heightInPixels / displayMetrics.density);
 
-        sampleAdView.setSize(new SampleAdSize(widthInDp, heightInDp));
+            sampleAdView.setSize(new SampleAdSize(widthInDp, heightInDp));
 
-        // Implement a SampleAdListener and forward callbacks to mediation. The callback forwarding
-        // is handled by SampleBannerEventFowarder.
-        sampleAdView.setAdListener(new SampleCustomBannerEventForwarder(listener, sampleAdView));
+            // Implement a SampleAdListener and forward callbacks to mediation. The callback forwarding
+            // is handled by SampleBannerEventFowarder.
+            sampleAdView.setAdListener(new SampleCustomBannerEventForwarder(listener, sampleAdView));
 
-        // Make an ad request.
-        sampleAdView.fetchAd(createSampleRequest(mediationAdRequest));
+            // Make an ad request.
+            sampleAdView.fetchAd(createSampleRequest(mediationAdRequest));
+        }
     }
 
     /**
