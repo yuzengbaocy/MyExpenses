@@ -55,12 +55,13 @@ android {
             minSdkVersion project.minSdkVersion
         }
         targetSdkVersion project.targetSdkVersion
-        versionCode 328
-        versionName '2.9.1'
+        versionCode 329
+        versionName '2.9.1.1'
         multiDexEnabled true
 
         buildConfigField "String", "BUILD_DATE", "\"" + getDate() + "\""
         buildConfigField "String", "DISTRIBUTION", "\"GITHUB\""
+        buildConfigField "boolean", "UNLOCK_SWITCH", getPropertyIfDefined("UNLOCK", "false")
         testInstrumentationRunner "org.totschnig.myexpenses.MyTestRunner"
         testProguardFile "proguard-test.txt"
 
@@ -274,6 +275,7 @@ dependencies {
     }
     implementation 'com.google.firebase:firebase-core:16.0.0'
     implementation 'com.google.firebase:firebase-config:16.0.0'
+    implementation 'com.google.firebase:firebase-ads:15.0.1'
 
     implementation 'org.slf4j:slf4j-api:1.7.21'
     implementation 'com.github.tony19:logback-android-core:1.1.1-6'
