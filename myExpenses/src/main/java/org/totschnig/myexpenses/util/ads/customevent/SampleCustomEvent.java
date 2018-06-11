@@ -34,6 +34,7 @@ import com.google.android.gms.ads.mediation.customevent.CustomEventInterstitial;
 import com.google.android.gms.ads.mediation.customevent.CustomEventInterstitialListener;
 
 import org.totschnig.myexpenses.MyApplication;
+import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.util.tracking.Tracker;
 
 import java.util.ArrayList;
@@ -152,7 +153,8 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
   }
 
   private boolean shouldShow(PartnerProgram partnerProgram) {
-    return partnerProgram.equals(PartnerProgram.AUXMONEY);
+    final String country = Utils.getCountryFromTelephonyManager();
+    return country != null && partnerProgram.shouldShowIn(country);
   }
 
   @VisibleForTesting
