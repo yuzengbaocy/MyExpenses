@@ -20,8 +20,11 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.Keep;
+import android.support.annotation.VisibleForTesting;
 import android.util.DisplayMetrics;
 
+import com.annimon.stream.Optional;
+import com.annimon.stream.Stream;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
@@ -29,6 +32,12 @@ import com.google.android.gms.ads.mediation.customevent.CustomEventBanner;
 import com.google.android.gms.ads.mediation.customevent.CustomEventBannerListener;
 import com.google.android.gms.ads.mediation.customevent.CustomEventInterstitial;
 import com.google.android.gms.ads.mediation.customevent.CustomEventInterstitialListener;
+
+import org.totschnig.myexpenses.MyApplication;
+import org.totschnig.myexpenses.util.tracking.Tracker;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A custom event for the Sample ad network. Custom events allow publishers to write their own
@@ -104,36 +113,59 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
      * listener.onAdClosed(this);
      */
 
-    PartnerProgram partnerProgram = null;
-    try {
-      partnerProgram = PartnerProgram.valueOf(serverParameter);
-    } catch (IllegalArgumentException ignored) {
-    }
+    final List<PartnerProgram> partnerPrograms = parsePrograms(serverParameter);
 
-    if (partnerProgram == null) {
+    if (partnerPrograms.isEmpty()) {
       listener.onAdFailedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
     } else {
-      sampleAdView = new SampleAdView(context);
+      Optional<PartnerProgram> partnerProgram = Stream.of(partnerPrograms).filter(this::shouldShow)
+          .findFirst();
+      if (partnerProgram.isPresent()) {
 
-      // Internally, smart banners use constants to represent their ad size, which means a call to
-      // AdSize.getHeight could return a negative value. You can accommodate this by using
-      // AdSize.getHeightInPixels and AdSize.getWidthInPixels instead, and then adjusting to match
-      // the device's display metrics.
-      int widthInPixels = size.getWidthInPixels(context);
-      int heightInPixels = size.getHeightInPixels(context);
-      DisplayMetrics displayMetrics = Resources.getSystem().getDisplayMetrics();
-      int widthInDp = Math.round(widthInPixels / displayMetrics.density);
-      int heightInDp = Math.round(heightInPixels / displayMetrics.density);
+        sampleAdView = new SampleAdView(context);
 
-      sampleAdView.setSize(new SampleAdSize(widthInDp, heightInDp));
+        // Internally, smart banners use constants to represent their ad size, which means a call to
+        // AdSize.getHeight could return a negative value. You can accommodate this by using
+        // AdSize.getHeightInPixels and AdSize.getWidthInPixels instead, and then adjusting to match
+        // the device's display metrics.
+        int widthInPixels = size.getWidthInPixels(context);
+        int heightInPixels = size.getHeightInPixels(context);
+        DisplayMetrics displayMetrics = Resources.getSystem().getDisplayMetrics();
+        int widthInDp = Math.round(widthInPixels / displayMetrics.density);
+        int heightInDp = Math.round(heightInPixels / displayMetrics.density);
 
-      // Implement a SampleAdListener and forward callbacks to mediation. The callback forwarding
-      // is handled by SampleBannerEventFowarder.
-      sampleAdView.setAdListener(new SampleCustomBannerEventForwarder(listener, sampleAdView));
+        sampleAdView.setSize(new SampleAdSize(widthInDp, heightInDp));
 
-      // Make an ad request.
-      sampleAdView.fetchAd(createSampleRequest(mediationAdRequest));
+        // Implement a SampleAdListener and forward callbacks to mediation. The callback forwarding
+        // is handled by SampleBannerEventFowarder.
+        sampleAdView.setAdListener(new SampleCustomBannerEventForwarder(listener, sampleAdView));
+
+        // Make an ad request.
+        sampleAdView.fetchAd(partnerProgram.get());
+        Bundle bundle = new Bundle(1);
+        bundle.putString(Tracker.EVENT_PARAM_AD_PROVIDER, partnerProgram.get().name());
+        MyApplication.getInstance().getAppComponent().tracker().logEvent(Tracker.EVENT_AD_CUSTOM, bundle);
+      } else {
+        listener.onAdFailedToLoad(AdRequest.ERROR_CODE_NO_FILL);
+      }
     }
+  }
+
+  private boolean shouldShow(PartnerProgram partnerProgram) {
+    return partnerProgram.equals(PartnerProgram.AUXMONEY);
+  }
+
+  @VisibleForTesting
+  protected List<PartnerProgram> parsePrograms(String serverParameter) {
+    List<PartnerProgram> result = new ArrayList<>();
+    if (serverParameter != null) {
+      for (String parameter: serverParameter.split(",")) {
+        try {
+          result.add(PartnerProgram.valueOf(parameter.trim()));
+        } catch (IllegalArgumentException ignored) {}
+      }
+    }
+    return result;
   }
 
   /**
