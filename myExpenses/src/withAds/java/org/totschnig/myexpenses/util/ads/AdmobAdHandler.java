@@ -24,7 +24,7 @@ public class AdmobAdHandler extends AdHandler {
   }
 
   public void init() {
-    if (shouldShowAd()) {
+    if (shouldHideAd()) {
       hide();
     } else {
       showBannerAdmob();
@@ -110,7 +110,7 @@ public class AdmobAdHandler extends AdHandler {
   public void onResume() {
     if (mAdMobBannerShown) {
       //activity might have been resumed after user has bought contrib key
-      if (shouldShowAd()) {
+      if (shouldHideAd()) {
         admobView.destroy();
         hide();
         mAdMobBannerShown = false;
