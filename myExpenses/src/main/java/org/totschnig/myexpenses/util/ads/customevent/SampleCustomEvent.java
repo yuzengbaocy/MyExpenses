@@ -21,6 +21,7 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.Keep;
 import android.support.annotation.VisibleForTesting;
+import android.support.v4.util.Pair;
 import android.util.DisplayMetrics;
 
 import com.annimon.stream.Optional;
@@ -116,35 +117,34 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
 
     final List<PartnerProgram> partnerPrograms = parsePrograms(serverParameter);
 
+    // Internally, smart banners use constants to represent their ad size, which means a call to
+    // AdSize.getHeight could return a negative value. You can accommodate this by using
+    // AdSize.getHeightInPixels and AdSize.getWidthInPixels instead, and then adjusting to match
+    // the device's display metrics.
+    int widthInPixels = size.getWidthInPixels(context);
+    int heightInPixels = size.getHeightInPixels(context);
+    DisplayMetrics displayMetrics = Resources.getSystem().getDisplayMetrics();
+    int widthInDp = Math.round(widthInPixels / displayMetrics.density);
+    int heightInDp = Math.round(heightInPixels / displayMetrics.density);
+
     if (partnerPrograms.isEmpty()) {
       listener.onAdFailedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
     } else {
-      Optional<PartnerProgram> partnerProgram = Stream.of(partnerPrograms).filter(this::shouldShow)
+      Optional<Pair<PartnerProgram, Integer>> contentProvider = Stream.of(partnerPrograms)
+          .filter(this::shouldShow)
+          .map(partnerProgram1 -> Pair.create(partnerProgram1, partnerProgram1.pickContentResId(context, size)))
+          .filter(pair -> pair.second != 0)
           .findFirst();
-      if (partnerProgram.isPresent()) {
-
+      if (contentProvider.isPresent()) {
         sampleAdView = new SampleAdView(context);
-
-        // Internally, smart banners use constants to represent their ad size, which means a call to
-        // AdSize.getHeight could return a negative value. You can accommodate this by using
-        // AdSize.getHeightInPixels and AdSize.getWidthInPixels instead, and then adjusting to match
-        // the device's display metrics.
-        int widthInPixels = size.getWidthInPixels(context);
-        int heightInPixels = size.getHeightInPixels(context);
-        DisplayMetrics displayMetrics = Resources.getSystem().getDisplayMetrics();
-        int widthInDp = Math.round(widthInPixels / displayMetrics.density);
-        int heightInDp = Math.round(heightInPixels / displayMetrics.density);
-
-        sampleAdView.setSize(new SampleAdSize(widthInDp, heightInDp));
-
         // Implement a SampleAdListener and forward callbacks to mediation. The callback forwarding
-        // is handled by SampleBannerEventFowarder.
+        // is handled by SampleBannerEventForwarder.
         sampleAdView.setAdListener(new SampleCustomBannerEventForwarder(listener, sampleAdView));
 
         // Make an ad request.
-        sampleAdView.fetchAd(partnerProgram.get());
+        sampleAdView.fetchAd(contentProvider.get().second);
         Bundle bundle = new Bundle(1);
-        bundle.putString(Tracker.EVENT_PARAM_AD_PROVIDER, partnerProgram.get().name());
+        bundle.putString(Tracker.EVENT_PARAM_AD_PROVIDER, contentProvider.get().first.name());
         MyApplication.getInstance().getAppComponent().tracker().logEvent(Tracker.EVENT_AD_CUSTOM, bundle);
       } else {
         listener.onAdFailedToLoad(AdRequest.ERROR_CODE_NO_FILL);
@@ -161,10 +161,11 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
   protected List<PartnerProgram> parsePrograms(String serverParameter) {
     List<PartnerProgram> result = new ArrayList<>();
     if (serverParameter != null) {
-      for (String parameter: serverParameter.split(",")) {
+      for (String parameter : serverParameter.split(",")) {
         try {
           result.add(PartnerProgram.valueOf(parameter.trim()));
-        } catch (IllegalArgumentException ignored) {}
+        } catch (IllegalArgumentException ignored) {
+        }
       }
     }
     return result;
