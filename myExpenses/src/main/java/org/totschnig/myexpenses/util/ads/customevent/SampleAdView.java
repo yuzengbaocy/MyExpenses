@@ -17,7 +17,10 @@
 package org.totschnig.myexpenses.util.ads.customevent;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 import com.google.android.gms.ads.AdSize;
 
@@ -36,6 +39,15 @@ public class SampleAdView extends WebView {
    */
   public SampleAdView(Context context) {
     super(context);
+    setWebViewClient(new WebViewClient() {
+      @Override
+      public boolean shouldOverrideUrlLoading(WebView view, String url) {
+        listener.onAdFullScreen();
+        Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        context.startActivity(i);
+        return true;
+      }
+    });
   }
 
   /**
@@ -57,13 +69,13 @@ public class SampleAdView extends WebView {
   }
 
   /**
-   * @param contentResId The resource identifier that holds the html we want to show.
+   * @param content The add content.
    */
-  public void fetchAd(Integer contentResId) {
+  public void fetchAd(String content) {
     if (listener == null) {
       return;
     }
-    this.loadData(getResources().getString(contentResId), "text/html", "utf-8");
+    this.loadData(String.format("<center>%s</center>", content), "text/html", "utf-8");
     listener.onAdFetchSucceeded();
   }
 

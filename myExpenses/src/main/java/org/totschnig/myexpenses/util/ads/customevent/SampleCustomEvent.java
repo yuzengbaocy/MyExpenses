@@ -17,14 +17,12 @@
 package org.totschnig.myexpenses.util.ads.customevent;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.Keep;
 import android.support.annotation.VisibleForTesting;
 import android.support.v4.util.Pair;
-import android.util.DisplayMetrics;
 
-import com.annimon.stream.Optional;
+import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
@@ -35,11 +33,14 @@ import com.google.android.gms.ads.mediation.customevent.CustomEventInterstitial;
 import com.google.android.gms.ads.mediation.customevent.CustomEventInterstitialListener;
 
 import org.totschnig.myexpenses.MyApplication;
-import org.totschnig.myexpenses.util.Utils;
+import org.totschnig.myexpenses.di.AppComponent;
 import org.totschnig.myexpenses.util.tracking.Tracker;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+
+import javax.inject.Inject;
 
 /**
  * A custom event for the Sample ad network. Custom events allow publishers to write their own
@@ -62,6 +63,9 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
    * Represents a {@link SampleInterstitial}.
    */
   private SampleInterstitial sampleInterstitial;
+
+  @Inject
+  String userCountry;
 
   /**
    * The event is being destroyed. Perform any necessary cleanup here.
@@ -117,44 +121,40 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
 
     final List<PartnerProgram> partnerPrograms = parsePrograms(serverParameter);
 
-    // Internally, smart banners use constants to represent their ad size, which means a call to
-    // AdSize.getHeight could return a negative value. You can accommodate this by using
-    // AdSize.getHeightInPixels and AdSize.getWidthInPixels instead, and then adjusting to match
-    // the device's display metrics.
-    int widthInPixels = size.getWidthInPixels(context);
-    int heightInPixels = size.getHeightInPixels(context);
-    DisplayMetrics displayMetrics = Resources.getSystem().getDisplayMetrics();
-    int widthInDp = Math.round(widthInPixels / displayMetrics.density);
-    int heightInDp = Math.round(heightInPixels / displayMetrics.density);
-
+    final AppComponent appComponent = MyApplication.getInstance().getAppComponent();
     if (partnerPrograms.isEmpty()) {
       listener.onAdFailedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
     } else {
-      Optional<Pair<PartnerProgram, Integer>> contentProvider = Stream.of(partnerPrograms)
-          .filter(this::shouldShow)
+      final String country = appComponent.userCountry();
+      List<Pair<PartnerProgram, Integer>> contentProviders = Stream.of(partnerPrograms)
+          .filter(partnerProgram -> partnerProgram.shouldShowIn(country))
           .map(partnerProgram1 -> Pair.create(partnerProgram1, partnerProgram1.pickContentResId(context, size)))
           .filter(pair -> pair.second != 0)
-          .findFirst();
-      if (contentProvider.isPresent()) {
+          .collect(Collectors.toList());
+      final int nrOfProviders = contentProviders.size();
+      if (nrOfProviders > 0) {
+        Random r = new Random();
+        Pair<PartnerProgram, Integer> contentProvider;
+        if (nrOfProviders == 1) {
+          contentProvider = contentProviders.get(0);
+        } else {
+          contentProvider = contentProviders.get(r.nextInt(nrOfProviders));
+        }
         sampleAdView = new SampleAdView(context);
         // Implement a SampleAdListener and forward callbacks to mediation. The callback forwarding
         // is handled by SampleBannerEventForwarder.
         sampleAdView.setAdListener(new SampleCustomBannerEventForwarder(listener, sampleAdView));
 
         // Make an ad request.
-        sampleAdView.fetchAd(contentProvider.get().second);
+        String[] adContent = context.getResources().getStringArray(contentProvider.second);
+        sampleAdView.fetchAd(adContent[r.nextInt(adContent.length)]);
         Bundle bundle = new Bundle(1);
-        bundle.putString(Tracker.EVENT_PARAM_AD_PROVIDER, contentProvider.get().first.name());
-        MyApplication.getInstance().getAppComponent().tracker().logEvent(Tracker.EVENT_AD_CUSTOM, bundle);
+        bundle.putString(Tracker.EVENT_PARAM_AD_PROVIDER, contentProvider.first.name());
+        appComponent.tracker().logEvent(Tracker.EVENT_AD_CUSTOM, bundle);
       } else {
         listener.onAdFailedToLoad(AdRequest.ERROR_CODE_NO_FILL);
       }
     }
-  }
-
-  private boolean shouldShow(PartnerProgram partnerProgram) {
-    final String country = Utils.getCountryFromTelephonyManager();
-    return country != null && partnerProgram.shouldShowIn(country);
   }
 
   @VisibleForTesting

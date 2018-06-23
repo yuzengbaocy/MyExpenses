@@ -1,6 +1,7 @@
 package org.totschnig.myexpenses.util.ads.customevent;
 
 import android.content.Context;
+import android.support.annotation.ArrayRes;
 import android.support.annotation.NonNull;
 
 import com.annimon.stream.Stream;
@@ -42,15 +43,22 @@ public enum PartnerProgram {
   }
 
   @NonNull
+  @ArrayRes
   public int pickContentResId(Context context, AdSize requested) {
     Timber.d("%s", requested);
-    return Stream.of(adSizes).filter(value -> requested.getWidthInPixels(context) >= value.adSize.getWidthInPixels(context) &&
-        requested.getHeightInPixels(context) >= value.adSize.getHeightInPixels(context))
+    return Stream.of(adSizes).filter(value -> {
+      final int requestedWidthInPixels = requested.getWidthInPixels(context);
+      final int adSizeWidthInPixels = value.adSize.getWidthInPixels(context);
+      final int requestedHeightInPixels = requested.getHeightInPixels(context);
+      final int adSizeHeightInPixels = value.adSize.getHeightInPixels(context);
+      return requestedWidthInPixels >= adSizeWidthInPixels &&
+          requestedHeightInPixels >= adSizeHeightInPixels;
+    })
         .peek(myAdSize -> Timber.d("%s", myAdSize))
         .map(adSize -> {
           final String name = "finance_ads_html_" + name() + "_" + adSize.name();
           Timber.d(name);
-          return context.getResources().getIdentifier(name, "string", context.getPackageName());
+          return context.getResources().getIdentifier(name, "array", context.getPackageName());
         })
         .filter(resId -> resId != 0)
         .findFirst().orElse(0);

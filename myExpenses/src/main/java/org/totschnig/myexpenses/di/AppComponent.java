@@ -24,6 +24,7 @@ import org.totschnig.myexpenses.util.licence.LicenceHandler;
 import org.totschnig.myexpenses.util.tracking.Tracker;
 import org.totschnig.myexpenses.viewmodel.RoadmapViewModel;
 
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 import dagger.Component;
@@ -74,6 +75,8 @@ public interface AppComponent {
   CrashHandler getCrashHandler();
 
   Tracker tracker();
+
+  @Named("userCountry") String userCountry();
 
   void inject(DonateDialogFragment donateDialogFragment);
 }
