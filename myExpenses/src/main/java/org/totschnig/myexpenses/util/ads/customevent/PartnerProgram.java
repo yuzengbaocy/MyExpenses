@@ -1,8 +1,8 @@
 package org.totschnig.myexpenses.util.ads.customevent;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.support.annotation.ArrayRes;
-import android.support.annotation.NonNull;
 
 import com.annimon.stream.Stream;
 import com.google.android.gms.ads.AdSize;
@@ -16,6 +16,8 @@ import timber.log.Timber;
 public enum PartnerProgram {
   SAVEDO(new String[]{"at"}, new MyAdSize[]{}),
   AUXMONEY(new String[]{"de"}, new MyAdSize[]{MyAdSize.LEADERBOARD, MyAdSize.FULL_BANNER});
+
+  private static final String CONTENT_RES_PREFIX = "finance_ads_html_";
 
   private enum MyAdSize {
     FULL_BANNER(AdSize.FULL_BANNER), LEADERBOARD(AdSize.LEADERBOARD);
@@ -42,7 +44,6 @@ public enum PartnerProgram {
     return distributionCountries.contains(country);
   }
 
-  @NonNull
   @ArrayRes
   public int pickContentResId(Context context, AdSize requested) {
     Timber.d("%s", requested);
@@ -62,5 +63,12 @@ public enum PartnerProgram {
         })
         .filter(resId -> resId != 0)
         .findFirst().orElse(0);
+  }
+
+  @ArrayRes
+  public int pickContentInterstitial(Context context) {
+    int orientation = context.getResources().getConfiguration().orientation;
+    final String name = CONTENT_RES_PREFIX + name() + "_" + (orientation == Configuration.ORIENTATION_PORTRAIT ? "PORTRAIT" : "LANDSCAPE");
+    return context.getResources().getIdentifier(name, "array", context.getPackageName());
   }
 }

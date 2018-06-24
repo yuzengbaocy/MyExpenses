@@ -17,34 +17,24 @@
 package org.totschnig.myexpenses.util.ads.customevent;
 
 import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
+import android.support.v4.util.Pair;
 
 /**
- * An ad view for the sample ad network. This is an example of an ad view that most ad network SDKs
+ * A sample interstitial ad. This is an example of an interstitial class that most ad networks SDKs
  * have.
  */
-public class AdView extends WebView {
+public class Interstitial {
   private AdListener listener;
+  private WebViewHelper webViewHelper;
+  private Pair<PartnerProgram, String> contentProvider;
 
   /**
-   * Create a new {@link AdView}.
+   * Create a new {@link Interstitial}.
    *
    * @param context An Android {@link Context}.
    */
-  public AdView(Context context) {
-    super(context);
-    setWebViewClient(new WebViewClient() {
-      @Override
-      public boolean shouldOverrideUrlLoading(WebView view, String url) {
-        listener.onAdFullScreen();
-        Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-        context.startActivity(i);
-        return true;
-      }
-    });
+  public Interstitial(Context context) {
+    webViewHelper = new WebViewHelper(context);
   }
 
   /**
@@ -57,20 +47,40 @@ public class AdView extends WebView {
   }
 
   /**
-   * @param content The add content.
+   * Fetch an ad. Instead of doing an actual ad fetch, we will randomly decide to succeed, or
+   * fail with different error codes.
+   *
    */
-  public void fetchAd(String content) {
+  public void fetchAd() {
     if (listener == null) {
       return;
     }
-    this.loadData(String.format("<center>%s</center>", content), "text/html", "utf-8");
+    // If the publisher didn't set an ad unit, return a bad request.
+    if (contentProvider == null) {
+      listener.onAdFetchFailed(ErrorCode.BAD_REQUEST);
+    }
     listener.onAdFetchSucceeded();
   }
 
   /**
-   * Destroy the banner.
+   * Shows the interstitial.
+   */
+  public void show() {
+    // Notify the developer that a full screen view will be presented.
+    listener.onAdFullScreen();
+    webViewHelper.openWebViewInOverlay(contentProvider.second);
+  }
+
+  /**
+   * Destroy the interstitial.
    */
   public void destroy() {
     listener = null;
+    webViewHelper = null;
+  }
+
+  public void setContentProvider(Pair<PartnerProgram, String> contentProvider) {
+    this.contentProvider = contentProvider;
   }
 }
+

@@ -125,9 +125,12 @@ public class PlatformAdHandlerFactory extends DefaultAdHandlerFactory {
 
   private  AdHandler instantiate(String handler, ViewGroup adContainer) {
     switch (handler) {
+      case "Custom": return new AdmobAdHandler(this, adContainer,
+          R.string.admob_unitid_custom_banner, R.string.admob_unitid_custom_interstitial);
       case "Ama": return new AmaAdHandler(this, adContainer);
       case "PubNative": return new PubNativeAdHandler(this, adContainer);
-      case "AdMob": return new AdmobAdHandler(this, adContainer);
+      case "AdMob": return new AdmobAdHandler(this, adContainer,
+          R.string.admob_unitid_mainscreen, R.string.admob_unitid_interstitial);
       default: return null;
     }
   }

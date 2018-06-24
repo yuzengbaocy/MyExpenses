@@ -19,6 +19,7 @@ package org.totschnig.myexpenses.util.ads.customevent;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Keep;
+import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 import android.support.v4.util.Pair;
 
@@ -39,8 +40,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import javax.inject.Inject;
-
 /**
  * A custom event for the Sample ad network. Custom events allow publishers to write their own
  * mediation adapter.
@@ -59,12 +58,9 @@ public class CustomEvent implements CustomEventBanner, CustomEventInterstitial {
   private AdView adView;
 
   /**
-   * Represents a {@link SampleInterstitial}.
+   * Represents a {@link Interstitial}.
    */
-  private SampleInterstitial sampleInterstitial;
-
-  @Inject
-  String userCountry;
+  private Interstitial interstitial;
 
   /**
    * The event is being destroyed. Perform any necessary cleanup here.
@@ -101,59 +97,56 @@ public class CustomEvent implements CustomEventBanner, CustomEventInterstitial {
                               AdSize size,
                               MediationAdRequest mediationAdRequest,
                               Bundle customEventExtras) {
-    /*
-     * In this method, you should:
-     *
-     * 1. Create your banner view.
-     * 2. Set your ad network's listener.
-     * 3. Make an ad request.
-     *
-     * When setting your ad network's listener, don't forget to send the following callbacks:
-     *
-     * listener.onAdLoaded(this);
-     * listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_*);
-     * listener.onAdClicked(this);
-     * listener.onAdOpened(this);
-     * listener.onAdLeftApplication(this);
-     * listener.onAdClosed(this);
-     */
 
     final List<PartnerProgram> partnerPrograms = parsePrograms(serverParameter);
 
     final AppComponent appComponent = MyApplication.getInstance().getAppComponent();
-    if (partnerPrograms.isEmpty()) {
+    if (size == null || partnerPrograms.isEmpty()) {
       listener.onAdFailedToLoad(com.google.android.gms.ads.AdRequest.ERROR_CODE_INVALID_REQUEST);
     } else {
-      final String country = appComponent.userCountry();
-      List<Pair<PartnerProgram, Integer>> contentProviders = Stream.of(partnerPrograms)
-          .filter(partnerProgram -> partnerProgram.shouldShowIn(country))
-          .map(partnerProgram1 -> Pair.create(partnerProgram1, partnerProgram1.pickContentResId(context, size)))
-          .filter(pair -> pair.second != 0)
-          .collect(Collectors.toList());
-      final int nrOfProviders = contentProviders.size();
-      if (nrOfProviders > 0) {
-        Random r = new Random();
-        Pair<PartnerProgram, Integer> contentProvider;
-        if (nrOfProviders == 1) {
-          contentProvider = contentProviders.get(0);
-        } else {
-          contentProvider = contentProviders.get(r.nextInt(nrOfProviders));
-        }
+      Pair<PartnerProgram, String> contentProvider = pickContent(partnerPrograms,
+          appComponent.userCountry(), context, size);
+      if (contentProvider == null) {
+        listener.onAdFailedToLoad(com.google.android.gms.ads.AdRequest.ERROR_CODE_NO_FILL);
+      } else {
         adView = new AdView(context);
         // Implement a SampleAdListener and forward callbacks to mediation. The callback forwarding
         // is handled by SampleBannerEventForwarder.
         adView.setAdListener(new CustomBannerEventForwarder(listener, adView));
 
         // Make an ad request.
-        String[] adContent = context.getResources().getStringArray(contentProvider.second);
-        adView.fetchAd(adContent[r.nextInt(adContent.length)]);
+        adView.fetchAd(contentProvider.second);
         Bundle bundle = new Bundle(1);
         bundle.putString(Tracker.EVENT_PARAM_AD_PROVIDER, contentProvider.first.name());
         appComponent.tracker().logEvent(Tracker.EVENT_AD_CUSTOM, bundle);
-      } else {
-        listener.onAdFailedToLoad(com.google.android.gms.ads.AdRequest.ERROR_CODE_NO_FILL);
       }
     }
+  }
+
+  @Nullable
+  private Pair<PartnerProgram, String> pickContent(
+      List<PartnerProgram> partnerPrograms, String userCountry, Context context,
+      @Nullable AdSize size) {
+    List<Pair<PartnerProgram, Integer>> contentProviders = Stream.of(partnerPrograms)
+        .filter(partnerProgram -> partnerProgram.shouldShowIn(userCountry))
+        .map(partnerProgram ->
+            Pair.create(partnerProgram, size == null ? partnerProgram.pickContentInterstitial(context) :
+                partnerProgram.pickContentResId(context, size)))
+        .filter(pair -> pair.second != 0)
+        .collect(Collectors.toList());
+    final int nrOfProviders = contentProviders.size();
+    if (nrOfProviders > 0) {
+      final Random random = new Random();
+      Pair<PartnerProgram, Integer> contentProvider;
+      if (nrOfProviders == 1) {
+        contentProvider = contentProviders.get(0);
+      } else {
+        contentProvider = contentProviders.get(random.nextInt(nrOfProviders));
+      }
+      String[] adContent = context.getResources().getStringArray(contentProvider.second);
+      return Pair.create(contentProvider.first, adContent[random.nextInt(adContent.length)]);
+    }
+    return null;
   }
 
   @VisibleForTesting
@@ -205,21 +198,37 @@ public class CustomEvent implements CustomEventBanner, CustomEventInterstitial {
      * listener.onAdClosed(this);
      */
 
-    sampleInterstitial = new SampleInterstitial(context);
+    final List<PartnerProgram> partnerPrograms = parsePrograms(serverParameter);
 
-    // Here we're assuming the serverParameter is the ad unit for the Sample Ad Network.
-    sampleInterstitial.setAdUnit(serverParameter);
+    final AppComponent appComponent = MyApplication.getInstance().getAppComponent();
+    if (partnerPrograms.isEmpty()) {
+      listener.onAdFailedToLoad(com.google.android.gms.ads.AdRequest.ERROR_CODE_INVALID_REQUEST);
+    } else {
+      Pair<PartnerProgram, String> contentProvider = pickContent(partnerPrograms,
+          appComponent.userCountry(), context, null);
+      if (contentProvider == null) {
+        listener.onAdFailedToLoad(com.google.android.gms.ads.AdRequest.ERROR_CODE_NO_FILL);
+      } else {
+        interstitial = new Interstitial(context);
 
-    // Implement a SampleAdListener and forward callbacks to mediation.
-    sampleInterstitial.setAdListener(new CustomInterstitialEventForwarder(listener));
+        // Here we're assuming the serverParameter is the ad unit for the Sample Ad Network.
+        interstitial.setContentProvider(contentProvider);
 
-    // Make an ad request.
-    sampleInterstitial.fetchAd(createSampleRequest(mediationAdRequest));
+        // Implement a SampleAdListener and forward callbacks to mediation.
+        interstitial.setAdListener(new CustomInterstitialEventForwarder(listener));
+
+        // Make an ad request.
+        interstitial.fetchAd();
+        Bundle bundle = new Bundle(1);
+        bundle.putString(Tracker.EVENT_PARAM_AD_PROVIDER, contentProvider.first.name());
+        appComponent.tracker().logEvent(Tracker.EVENT_AD_CUSTOM, bundle);
+      }
+    }
   }
 
   @Override
   public void showInterstitial() {
     // Show your interstitial ad.
-    sampleInterstitial.show();
+    interstitial.show();
   }
 }

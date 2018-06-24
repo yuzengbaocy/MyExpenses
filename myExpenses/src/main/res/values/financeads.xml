@@ -14,4 +14,8 @@
         <item><![CDATA[<a href="https://www.financeads.net/tc.php?t=28223C56034753B" target="_blank"><img src="https://www.financeads.net/tb.php?t=28223V56034753B&https=1" alt="" border="0" width="468" height="60"></a>]]></item>
         <item><![CDATA[<a href="https://www.financeads.net/tc.php?t=28223C56034760B" target="_blank"><img src="https://www.financeads.net/tb.php?t=28223V56034760B&https=1" alt="" border="0" width="468" height="60"></a>]]></item>
     </string-array>
+    <string-array name="finance_ads_html_AUXMONEY_PORTRAIT">
+        <item><![CDATA[<a href="https://www.financeads.net/tc.php?t=28223C56019762B" target="_blank"><img src="https://www.financeads.net/tb.php?t=28223V56019762B&https=1" alt="" border="0" width="160" height="600"></a>]]></item>
+        <item><![CDATA[<a href="https://www.financeads.net/tc.php?t=28223C56019777B" target="_blank"><img src="https://www.financeads.net/tb.php?t=28223V56019777B&https=1" alt="" border="0" width="160" height="600"></a>]]></item>
+    </string-array>
 </resources>
