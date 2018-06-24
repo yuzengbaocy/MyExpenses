@@ -112,7 +112,7 @@ public class CustomEvent implements CustomEventBanner, CustomEventInterstitial {
         adView = new AdView(context);
         // Implement a SampleAdListener and forward callbacks to mediation. The callback forwarding
         // is handled by SampleBannerEventForwarder.
-        adView.setAdListener(new CustomBannerEventForwarder(listener, adView));
+        adView.setAdListener(listener);
 
         // Make an ad request.
         adView.fetchAd(contentProvider.second);
@@ -211,14 +211,12 @@ public class CustomEvent implements CustomEventBanner, CustomEventInterstitial {
       } else {
         interstitial = new Interstitial(context);
 
-        // Here we're assuming the serverParameter is the ad unit for the Sample Ad Network.
         interstitial.setContentProvider(contentProvider);
 
-        // Implement a SampleAdListener and forward callbacks to mediation.
-        interstitial.setAdListener(new CustomInterstitialEventForwarder(listener));
+        interstitial.setAdListener(listener);
 
-        // Make an ad request.
         interstitial.fetchAd();
+        listener.onAdLoaded();
         Bundle bundle = new Bundle(1);
         bundle.putString(Tracker.EVENT_PARAM_AD_PROVIDER, contentProvider.first.name());
         appComponent.tracker().logEvent(Tracker.EVENT_AD_CUSTOM, bundle);

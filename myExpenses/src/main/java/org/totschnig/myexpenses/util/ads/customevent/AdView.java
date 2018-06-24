@@ -22,12 +22,10 @@ import android.net.Uri;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-/**
- * An ad view for the sample ad network. This is an example of an ad view that most ad network SDKs
- * have.
- */
+import com.google.android.gms.ads.mediation.customevent.CustomEventBannerListener;
+
 public class AdView extends WebView {
-  private AdListener listener;
+  private CustomEventBannerListener listener;
 
   /**
    * Create a new {@link AdView}.
@@ -39,7 +37,9 @@ public class AdView extends WebView {
     setWebViewClient(new WebViewClient() {
       @Override
       public boolean shouldOverrideUrlLoading(WebView view, String url) {
-        listener.onAdFullScreen();
+        listener.onAdClicked();
+        listener.onAdOpened();
+        listener.onAdLeftApplication();
         Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         context.startActivity(i);
         return true;
@@ -52,7 +52,7 @@ public class AdView extends WebView {
    *
    * @param listener The ad listener.
    */
-  public void setAdListener(AdListener listener) {
+  public void setAdListener(CustomEventBannerListener listener) {
     this.listener = listener;
   }
 
@@ -64,7 +64,7 @@ public class AdView extends WebView {
       return;
     }
     this.loadData(String.format("<center>%s</center>", content), "text/html", "utf-8");
-    listener.onAdFetchSucceeded();
+    listener.onAdLoaded(this);
   }
 
   /**

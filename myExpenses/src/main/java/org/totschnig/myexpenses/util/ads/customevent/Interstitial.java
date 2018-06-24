@@ -16,17 +16,25 @@
 
 package org.totschnig.myexpenses.util.ads.customevent;
 
+import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Color;
+import android.net.Uri;
 import android.support.v4.util.Pair;
+import android.view.View;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
-/**
- * A sample interstitial ad. This is an example of an interstitial class that most ad networks SDKs
- * have.
- */
-public class Interstitial {
-  private AdListener listener;
-  private WebViewHelper webViewHelper;
+import com.google.android.gms.ads.mediation.customevent.CustomEventInterstitialListener;
+
+import org.totschnig.myexpenses.R;
+
+public class Interstitial implements View.OnClickListener {
+  private CustomEventInterstitialListener listener;
   private Pair<PartnerProgram, String> contentProvider;
+  private Context context;
+  private Dialog mWebviewDialog;
 
   /**
    * Create a new {@link Interstitial}.
@@ -34,7 +42,7 @@ public class Interstitial {
    * @param context An Android {@link Context}.
    */
   public Interstitial(Context context) {
-    webViewHelper = new WebViewHelper(context);
+    this.context = context;
   }
 
   /**
@@ -42,24 +50,14 @@ public class Interstitial {
    *
    * @param listener The ad listener.
    */
-  public void setAdListener(AdListener listener) {
+  public void setAdListener(CustomEventInterstitialListener listener) {
     this.listener = listener;
   }
 
   /**
-   * Fetch an ad. Instead of doing an actual ad fetch, we will randomly decide to succeed, or
-   * fail with different error codes.
-   *
+   * Fetch an ad. Currently does nothing, since content is stored locally
    */
   public void fetchAd() {
-    if (listener == null) {
-      return;
-    }
-    // If the publisher didn't set an ad unit, return a bad request.
-    if (contentProvider == null) {
-      listener.onAdFetchFailed(ErrorCode.BAD_REQUEST);
-    }
-    listener.onAdFetchSucceeded();
   }
 
   /**
@@ -67,8 +65,42 @@ public class Interstitial {
    */
   public void show() {
     // Notify the developer that a full screen view will be presented.
-    listener.onAdFullScreen();
-    webViewHelper.openWebViewInOverlay(contentProvider.second);
+    listener.onAdOpened();
+    openWebViewInOverlay();
+  }
+
+  private void openWebViewInOverlay() {
+    mWebviewDialog = new Dialog(context, android.R.style.Theme_Black_NoTitleBar_Fullscreen);
+
+    View view = View.inflate(context, R.layout.webview_modal, null);
+    View closeButton = view.findViewById(R.id.closeOverlay);
+    closeButton.setOnClickListener(this);
+
+    WebView webView = view.findViewById(R.id.webviewoverlay);
+    webView.setBackgroundColor(Color.TRANSPARENT);
+    webView.loadData(String.format("<center>%s</center>", contentProvider.second), "text/html", "utf-8");
+    webView.setWebViewClient(new WebViewClient() {
+      @Override
+      public boolean shouldOverrideUrlLoading(WebView view, String url) {
+        listener.onAdClicked();
+        listener.onAdLeftApplication();
+        Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        context.startActivity(i);
+        return true;
+      }
+    });
+    mWebviewDialog.setContentView(view);
+    mWebviewDialog.show();
+  }
+
+
+  @Override
+  public void onClick(View v) {
+    if (mWebviewDialog != null) {
+      mWebviewDialog.dismiss();
+      listener.onAdClosed();
+      destroy();
+    }
   }
 
   /**
@@ -76,7 +108,6 @@ public class Interstitial {
    */
   public void destroy() {
     listener = null;
-    webViewHelper = null;
   }
 
   public void setContentProvider(Pair<PartnerProgram, String> contentProvider) {
