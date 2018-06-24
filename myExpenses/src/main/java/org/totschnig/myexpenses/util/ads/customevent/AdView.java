@@ -19,10 +19,15 @@ package org.totschnig.myexpenses.util.ads.customevent;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
+import android.support.v4.util.Pair;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import com.google.android.gms.ads.mediation.customevent.CustomEventBannerListener;
+
+import org.totschnig.myexpenses.MyApplication;
+import org.totschnig.myexpenses.util.tracking.Tracker;
 
 public class AdView extends WebView {
   private CustomEventBannerListener listener;
@@ -56,15 +61,16 @@ public class AdView extends WebView {
     this.listener = listener;
   }
 
-  /**
-   * @param content The add content.
-   */
-  public void fetchAd(String content) {
+  public void fetchAd(Pair<PartnerProgram, String> contentProvider) {
     if (listener == null) {
       return;
     }
-    this.loadData(String.format("<center>%s</center>", content), "text/html", "utf-8");
+    Bundle bundle = new Bundle(1);
+    bundle.putString(Tracker.EVENT_PARAM_AD_PROVIDER, contentProvider.first.name());
+    MyApplication.getInstance().getAppComponent().tracker().logEvent(Tracker.EVENT_AD_CUSTOM, bundle);
+    this.loadData(String.format("<center>%s</center>", contentProvider.second), "text/html", "utf-8");
     listener.onAdLoaded(this);
+    contentProvider.first.record();
   }
 
   /**

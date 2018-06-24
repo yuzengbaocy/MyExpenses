@@ -3,9 +3,12 @@ package org.totschnig.myexpenses.util.ads.customevent;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.support.annotation.ArrayRes;
+import android.support.annotation.NonNull;
 
 import com.annimon.stream.Stream;
 import com.google.android.gms.ads.AdSize;
+
+import org.totschnig.myexpenses.MyApplication;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,11 +16,14 @@ import java.util.List;
 
 import timber.log.Timber;
 
+import static android.text.format.DateUtils.HOUR_IN_MILLIS;
+
 public enum PartnerProgram {
   SAVEDO(new String[]{"at"}, new MyAdSize[]{}),
   AUXMONEY(new String[]{"de"}, new MyAdSize[]{MyAdSize.LEADERBOARD, MyAdSize.FULL_BANNER});
 
   private static final String CONTENT_RES_PREFIX = "finance_ads_html_";
+  private static final String PREFERENCE_PREFIX = "finance_ads_last_shown_";
 
   private enum MyAdSize {
     FULL_BANNER(AdSize.FULL_BANNER), LEADERBOARD(AdSize.LEADERBOARD);
@@ -41,7 +47,13 @@ public enum PartnerProgram {
   }
 
   public boolean shouldShowIn(String country) {
-    return distributionCountries.contains(country);
+    return distributionCountries.contains(country) &&
+        System.currentTimeMillis() - MyApplication.getInstance().getSettings().getLong(getPrefKey(),0) > HOUR_IN_MILLIS * 4;
+  }
+
+  @NonNull
+  private String getPrefKey() {
+    return PREFERENCE_PREFIX + name();
   }
 
   @ArrayRes
@@ -57,7 +69,7 @@ public enum PartnerProgram {
     })
         .peek(myAdSize -> Timber.d("%s", myAdSize))
         .map(adSize -> {
-          final String name = "finance_ads_html_" + name() + "_" + adSize.name();
+          final String name = CONTENT_RES_PREFIX + name() + "_" + adSize.name();
           Timber.d(name);
           return context.getResources().getIdentifier(name, "array", context.getPackageName());
         })
@@ -70,5 +82,9 @@ public enum PartnerProgram {
     int orientation = context.getResources().getConfiguration().orientation;
     final String name = CONTENT_RES_PREFIX + name() + "_" + (orientation == Configuration.ORIENTATION_PORTRAIT ? "PORTRAIT" : "LANDSCAPE");
     return context.getResources().getIdentifier(name, "array", context.getPackageName());
+  }
+
+  public void record() {
+    MyApplication.getInstance().getSettings().edit().putLong(getPrefKey(), System.currentTimeMillis()).apply();
   }
 }

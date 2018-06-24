@@ -34,7 +34,6 @@ import com.google.android.gms.ads.mediation.customevent.CustomEventInterstitialL
 
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.di.AppComponent;
-import org.totschnig.myexpenses.util.tracking.Tracker;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -115,10 +114,7 @@ public class CustomEvent implements CustomEventBanner, CustomEventInterstitial {
         adView.setAdListener(listener);
 
         // Make an ad request.
-        adView.fetchAd(contentProvider.second);
-        Bundle bundle = new Bundle(1);
-        bundle.putString(Tracker.EVENT_PARAM_AD_PROVIDER, contentProvider.first.name());
-        appComponent.tracker().logEvent(Tracker.EVENT_AD_CUSTOM, bundle);
+        adView.fetchAd(contentProvider);
       }
     }
   }
@@ -182,21 +178,6 @@ public class CustomEvent implements CustomEventBanner, CustomEventInterstitial {
                                     String serverParameter,
                                     MediationAdRequest mediationAdRequest,
                                     Bundle customEventExtras) {
-    /*
-     * In this method, you should:
-     *
-     * 1. Create your interstitial ad.
-     * 2. Set your ad network's listener.
-     * 3. Make an ad request.
-     *
-     * When setting your ad network's listener, don't forget to send the following callbacks:
-     *
-     * listener.onAdLoaded(this);
-     * listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_*);
-     * listener.onAdOpened(this);
-     * listener.onAdLeftApplication(this);
-     * listener.onAdClosed(this);
-     */
 
     final List<PartnerProgram> partnerPrograms = parsePrograms(serverParameter);
 
@@ -217,9 +198,6 @@ public class CustomEvent implements CustomEventBanner, CustomEventInterstitial {
 
         interstitial.fetchAd();
         listener.onAdLoaded();
-        Bundle bundle = new Bundle(1);
-        bundle.putString(Tracker.EVENT_PARAM_AD_PROVIDER, contentProvider.first.name());
-        appComponent.tracker().logEvent(Tracker.EVENT_AD_CUSTOM, bundle);
       }
     }
   }

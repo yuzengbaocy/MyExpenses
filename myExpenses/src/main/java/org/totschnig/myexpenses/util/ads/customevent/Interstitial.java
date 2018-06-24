@@ -21,6 +21,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.v4.util.Pair;
 import android.view.View;
 import android.webkit.WebView;
@@ -28,7 +29,9 @@ import android.webkit.WebViewClient;
 
 import com.google.android.gms.ads.mediation.customevent.CustomEventInterstitialListener;
 
+import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
+import org.totschnig.myexpenses.util.tracking.Tracker;
 
 public class Interstitial implements View.OnClickListener {
   private CustomEventInterstitialListener listener;
@@ -67,6 +70,10 @@ public class Interstitial implements View.OnClickListener {
     // Notify the developer that a full screen view will be presented.
     listener.onAdOpened();
     openWebViewInOverlay();
+    Bundle bundle = new Bundle(1);
+    bundle.putString(Tracker.EVENT_PARAM_AD_PROVIDER, contentProvider.first.name());
+    MyApplication.getInstance().getAppComponent().tracker().logEvent(Tracker.EVENT_AD_CUSTOM, bundle);
+    contentProvider.first.record();
   }
 
   private void openWebViewInOverlay() {
