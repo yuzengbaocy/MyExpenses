@@ -20,10 +20,10 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.mediation.customevent.CustomEventInterstitialListener;
 
 /**
- * A {@link SampleAdListener} that forwards events to AdMob Mediation's
+ * A {@link AdListener} that forwards events to AdMob Mediation's
  * {@link CustomEventInterstitialListener}.
  */
-public class SampleCustomInterstitialEventForwarder extends SampleAdListener {
+public class CustomInterstitialEventForwarder extends AdListener {
     private final CustomEventInterstitialListener interstitialListener;
 
     /**
@@ -31,7 +31,7 @@ public class SampleCustomInterstitialEventForwarder extends SampleAdListener {
      * @param listener An AdMob Mediation {@link CustomEventInterstitialListener} that should
      *                 receive forwarded events.
      */
-    public SampleCustomInterstitialEventForwarder(CustomEventInterstitialListener listener) {
+    public CustomInterstitialEventForwarder(CustomEventInterstitialListener listener) {
         this.interstitialListener = listener;
     }
 
@@ -41,7 +41,7 @@ public class SampleCustomInterstitialEventForwarder extends SampleAdListener {
     }
 
     @Override
-    public void onAdFetchFailed(SampleErrorCode errorCode) {
+    public void onAdFetchFailed(ErrorCode errorCode) {
         switch (errorCode) {
             case UNKNOWN:
                 interstitialListener.onAdFailedToLoad(AdRequest.ERROR_CODE_INTERNAL_ERROR);

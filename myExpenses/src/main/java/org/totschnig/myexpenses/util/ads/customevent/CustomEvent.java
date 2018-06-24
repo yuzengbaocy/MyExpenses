@@ -24,7 +24,6 @@ import android.support.v4.util.Pair;
 
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
-import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.customevent.CustomEventBanner;
@@ -51,13 +50,13 @@ import javax.inject.Inject;
  * annotation to make sure that the adapter is not removed when minifying the project.
  */
 @Keep
-public class SampleCustomEvent implements CustomEventBanner, CustomEventInterstitial {
-  protected static final String TAG = SampleCustomEvent.class.getSimpleName();
+public class CustomEvent implements CustomEventBanner, CustomEventInterstitial {
+  protected static final String TAG = CustomEvent.class.getSimpleName();
 
   /**
-   * The {@link SampleAdView} representing a banner ad.
+   * The {@link AdView} representing a banner ad.
    */
-  private SampleAdView sampleAdView;
+  private AdView adView;
 
   /**
    * Represents a {@link SampleInterstitial}.
@@ -72,8 +71,8 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
    */
   @Override
   public void onDestroy() {
-    if (sampleAdView != null) {
-      sampleAdView.destroy();
+    if (adView != null) {
+      adView.destroy();
     }
   }
 
@@ -123,7 +122,7 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
 
     final AppComponent appComponent = MyApplication.getInstance().getAppComponent();
     if (partnerPrograms.isEmpty()) {
-      listener.onAdFailedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
+      listener.onAdFailedToLoad(com.google.android.gms.ads.AdRequest.ERROR_CODE_INVALID_REQUEST);
     } else {
       final String country = appComponent.userCountry();
       List<Pair<PartnerProgram, Integer>> contentProviders = Stream.of(partnerPrograms)
@@ -140,19 +139,19 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
         } else {
           contentProvider = contentProviders.get(r.nextInt(nrOfProviders));
         }
-        sampleAdView = new SampleAdView(context);
+        adView = new AdView(context);
         // Implement a SampleAdListener and forward callbacks to mediation. The callback forwarding
         // is handled by SampleBannerEventForwarder.
-        sampleAdView.setAdListener(new SampleCustomBannerEventForwarder(listener, sampleAdView));
+        adView.setAdListener(new CustomBannerEventForwarder(listener, adView));
 
         // Make an ad request.
         String[] adContent = context.getResources().getStringArray(contentProvider.second);
-        sampleAdView.fetchAd(adContent[r.nextInt(adContent.length)]);
+        adView.fetchAd(adContent[r.nextInt(adContent.length)]);
         Bundle bundle = new Bundle(1);
         bundle.putString(Tracker.EVENT_PARAM_AD_PROVIDER, contentProvider.first.name());
         appComponent.tracker().logEvent(Tracker.EVENT_AD_CUSTOM, bundle);
       } else {
-        listener.onAdFailedToLoad(AdRequest.ERROR_CODE_NO_FILL);
+        listener.onAdFailedToLoad(com.google.android.gms.ads.AdRequest.ERROR_CODE_NO_FILL);
       }
     }
   }
@@ -172,13 +171,13 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
   }
 
   /**
-   * Helper method to create a {@link SampleAdRequest}.
+   * Helper method to create a {@link AdRequest}.
    *
    * @param mediationAdRequest The mediation request with targeting information.
-   * @return The created {@link SampleAdRequest}.
+   * @return The created {@link AdRequest}.
    */
-  private SampleAdRequest createSampleRequest(MediationAdRequest mediationAdRequest) {
-    SampleAdRequest request = new SampleAdRequest();
+  private AdRequest createSampleRequest(MediationAdRequest mediationAdRequest) {
+    AdRequest request = new AdRequest();
     request.setTestMode(mediationAdRequest.isTesting());
     request.setKeywords(mediationAdRequest.getKeywords());
     return request;
@@ -212,7 +211,7 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
     sampleInterstitial.setAdUnit(serverParameter);
 
     // Implement a SampleAdListener and forward callbacks to mediation.
-    sampleInterstitial.setAdListener(new SampleCustomInterstitialEventForwarder(listener));
+    sampleInterstitial.setAdListener(new CustomInterstitialEventForwarder(listener));
 
     // Make an ad request.
     sampleInterstitial.fetchAd(createSampleRequest(mediationAdRequest));

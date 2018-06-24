@@ -20,21 +20,21 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.mediation.customevent.CustomEventBannerListener;
 
 /**
- * A {@link SampleAdListener} that forwards events to AdMob's
+ * A {@link AdListener} that forwards events to AdMob's
  * {@link CustomEventBannerListener}.
  */
-public class SampleCustomBannerEventForwarder extends SampleAdListener {
+public class CustomBannerEventForwarder extends AdListener {
     private final CustomEventBannerListener bannerListener;
-    private final SampleAdView adView;
+    private final AdView adView;
 
     /**
      * Creates a new {@code SampleBannerEventForwarder}.
      * @param listener An AdMob Mediation {@link CustomEventBannerListener} that should receive
      *                 forwarded events.
-     * @param adView   A {@link SampleAdView}.
+     * @param adView   A {@link AdView}.
      */
-    public SampleCustomBannerEventForwarder(
-        CustomEventBannerListener listener, SampleAdView adView) {
+    public CustomBannerEventForwarder(
+        CustomEventBannerListener listener, AdView adView) {
         this.bannerListener = listener;
         this.adView = adView;
     }
@@ -45,7 +45,7 @@ public class SampleCustomBannerEventForwarder extends SampleAdListener {
     }
 
     @Override
-    public void onAdFetchFailed(SampleErrorCode errorCode) {
+    public void onAdFetchFailed(ErrorCode errorCode) {
         switch (errorCode) {
             case UNKNOWN:
                 bannerListener.onAdFailedToLoad(AdRequest.ERROR_CODE_INTERNAL_ERROR);

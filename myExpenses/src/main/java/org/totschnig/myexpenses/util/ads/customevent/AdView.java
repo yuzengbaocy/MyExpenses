@@ -28,16 +28,16 @@ import com.google.android.gms.ads.AdSize;
  * An ad view for the sample ad network. This is an example of an ad view that most ad network SDKs
  * have.
  */
-public class SampleAdView extends WebView {
+public class AdView extends WebView {
   private AdSize adSize;
-  private SampleAdListener listener;
+  private AdListener listener;
 
   /**
-   * Create a new {@link SampleAdView}.
+   * Create a new {@link AdView}.
    *
    * @param context An Android {@link Context}.
    */
-  public SampleAdView(Context context) {
+  public AdView(Context context) {
     super(context);
     setWebViewClient(new WebViewClient() {
       @Override
@@ -60,11 +60,11 @@ public class SampleAdView extends WebView {
   }
 
   /**
-   * Sets a {@link SampleAdListener} to listen for ad events.
+   * Sets a {@link AdListener} to listen for ad events.
    *
    * @param listener The ad listener.
    */
-  public void setAdListener(SampleAdListener listener) {
+  public void setAdListener(AdListener listener) {
     this.listener = listener;
   }
 

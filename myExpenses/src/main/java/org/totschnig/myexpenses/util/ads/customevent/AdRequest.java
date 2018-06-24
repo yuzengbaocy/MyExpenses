@@ -22,12 +22,12 @@ import java.util.Set;
  * A sample ad request used to load an ad. This is an example of some targeting options an ad
  * network may provide.
  */
-public class SampleAdRequest {
+public class AdRequest {
 
     /**
-     * Creates a new {@link SampleAdRequest}.
+     * Creates a new {@link AdRequest}.
      */
-    public SampleAdRequest() {
+    public AdRequest() {
     }
 
     /**

@@ -19,7 +19,7 @@ package org.totschnig.myexpenses.util.ads.customevent;
 /**
  * Error codes for reasons why an ad request may fail.
  */
-public enum SampleErrorCode {
+public enum ErrorCode {
     UNKNOWN,
     BAD_REQUEST,
     NETWORK_ERROR,

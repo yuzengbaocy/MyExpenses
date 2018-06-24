@@ -29,7 +29,7 @@ import java.util.Random;
 public class SampleInterstitial {
     private final Context context;
     private String adUnit;
-    private SampleAdListener listener;
+    private AdListener listener;
 
     /**
      * Create a new {@link SampleInterstitial}.
@@ -48,10 +48,10 @@ public class SampleInterstitial {
     }
 
     /**
-     * Sets a {@link SampleAdListener} to listen for ad events.
+     * Sets a {@link AdListener} to listen for ad events.
      * @param listener The ad listener.
      */
-    public void setAdListener(SampleAdListener listener) {
+    public void setAdListener(AdListener listener) {
         this.listener = listener;
     }
 
@@ -60,14 +60,14 @@ public class SampleInterstitial {
      * fail with different error codes.
      * @param request The ad request with targeting information.
      */
-    public void fetchAd(SampleAdRequest request) {
+    public void fetchAd(AdRequest request) {
         if (listener == null) {
             return;
         }
 
         // If the publisher didn't set an ad unit, return a bad request.
         if (adUnit == null) {
-            listener.onAdFetchFailed(SampleErrorCode.BAD_REQUEST);
+            listener.onAdFetchFailed(ErrorCode.BAD_REQUEST);
         }
 
         Random random = new Random();
@@ -76,13 +76,13 @@ public class SampleInterstitial {
             if (nextInt < 80) {
                 listener.onAdFetchSucceeded();
             } else if (nextInt < 85) {
-                listener.onAdFetchFailed(SampleErrorCode.UNKNOWN);
+                listener.onAdFetchFailed(ErrorCode.UNKNOWN);
             } else if (nextInt < 90) {
-                listener.onAdFetchFailed(SampleErrorCode.BAD_REQUEST);
+                listener.onAdFetchFailed(ErrorCode.BAD_REQUEST);
             } else if (nextInt < 95) {
-                listener.onAdFetchFailed(SampleErrorCode.NETWORK_ERROR);
+                listener.onAdFetchFailed(ErrorCode.NETWORK_ERROR);
             } else if (nextInt < 100) {
-                listener.onAdFetchFailed(SampleErrorCode.NO_INVENTORY);
+                listener.onAdFetchFailed(ErrorCode.NO_INVENTORY);
             }
         }
     }
