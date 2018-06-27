@@ -56,7 +56,7 @@ public class AdmobAdHandler extends AdHandler {
         adSize = AdSize.BANNER;
     }
     admobView.setAdSize(adSize);
-    admobView.setAdUnitId(BuildConfig.DEBUG ? "ca-app-pub-3940256099942544/6300978111" :
+    admobView.setAdUnitId(isTest() ? "ca-app-pub-3940256099942544/6300978111" :
         context.getString(bannerUnitId));
     adContainer.addView(admobView);
     admobView.loadAd(buildAdmobRequest());
@@ -87,6 +87,10 @@ public class AdmobAdHandler extends AdHandler {
     return builder.build();
   }
 
+  private boolean isTest() {
+    return BuildConfig.DEBUG;
+  }
+
   protected void requestNewInterstitialDo() {
     if (interstitialUnitId == 0) {
       onInterstitialFailed();
@@ -94,7 +98,7 @@ public class AdmobAdHandler extends AdHandler {
     }
     mInterstitialShown = false;
     admobInterstitialAd = new InterstitialAd(context);
-    admobInterstitialAd.setAdUnitId(BuildConfig.DEBUG ? "ca-app-pub-3940256099942544/1033173712" :
+    admobInterstitialAd.setAdUnitId(isTest() ? "ca-app-pub-3940256099942544/1033173712" :
         context.getString(interstitialUnitId));
     trackInterstitialRequest(PROVIDER_ADMOB);
     admobInterstitialAd.loadAd(buildAdmobRequest());

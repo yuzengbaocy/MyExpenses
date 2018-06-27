@@ -19,14 +19,16 @@ import timber.log.Timber;
 import static android.text.format.DateUtils.HOUR_IN_MILLIS;
 
 public enum PartnerProgram {
-  SAVEDO(new String[]{"at"}, new MyAdSize[]{}),
-  AUXMONEY(new String[]{"de"}, new MyAdSize[]{MyAdSize.LEADERBOARD, MyAdSize.FULL_BANNER});
+  SAVEDO(new String[]{"at"}, new MyAdSize[]{MyAdSize.SMALL}),
+  GROWNEY(new String[]{"de"}, new MyAdSize[]{MyAdSize.SMALL}),
+  COMDIRECT(new String[]{"de"}, new MyAdSize[]{MyAdSize.FULL_BANNER}),
+  AUXMONEY(new String[]{"de"}, new MyAdSize[]{MyAdSize.FULL_BANNER});
 
   private static final String CONTENT_RES_PREFIX = "finance_ads_html_";
   private static final String PREFERENCE_PREFIX = "finance_ads_last_shown_";
 
   private enum MyAdSize {
-    FULL_BANNER(AdSize.FULL_BANNER), LEADERBOARD(AdSize.LEADERBOARD);
+    SMALL(new AdSize(200,50)), BANNER(AdSize.BANNER), FULL_BANNER(AdSize.FULL_BANNER), LEADERBOARD(AdSize.LEADERBOARD);
 
     final AdSize adSize;
 
