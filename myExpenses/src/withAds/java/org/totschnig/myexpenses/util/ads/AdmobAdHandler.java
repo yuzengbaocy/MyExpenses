@@ -94,7 +94,7 @@ public class AdmobAdHandler extends AdHandler {
     }
     mInterstitialShown = false;
     admobInterstitialAd = new InterstitialAd(context);
-    admobInterstitialAd.setAdUnitId((BuildConfig.DEBUG ? "ca-app-pub-3940256099942544/1033173712" :
+    admobInterstitialAd.setAdUnitId(BuildConfig.DEBUG ? "ca-app-pub-3940256099942544/1033173712" :
         context.getString(interstitialUnitId));
     trackInterstitialRequest(PROVIDER_ADMOB);
     admobInterstitialAd.loadAd(buildAdmobRequest());
