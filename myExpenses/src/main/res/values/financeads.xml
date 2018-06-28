@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+<!--
+    <item><![CDATA[]]></item>
+-->
     <string-array name="finance_ads_html_AUXMONEY_FULL_BANNER">
         <item><![CDATA[<a href="https://www.financeads.net/tc.php?t=28223C56019764B" target="_blank"><img src="https://www.financeads.net/tb.php?t=28223V56019764B&https=1" alt="" border="0" width="468" height="60"></a>]]></item>
         <item><![CDATA[<a href="https://www.financeads.net/tc.php?t=28223C56019788B" target="_blank"><img src="https://www.financeads.net/tb.php?t=28223V56019788B&https=1" alt="" border="0" width="468" height="60"></a>]]></item>
