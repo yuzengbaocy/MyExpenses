@@ -25,7 +25,7 @@ public class AmaAdHandler extends AdHandler {
   }
 
   public void init() {
-    if (shouldShowAd()) {
+    if (shouldHideAd()) {
       hide();
     } else {
       showBannerAma();
@@ -107,7 +107,7 @@ public class AmaAdHandler extends AdHandler {
   public void onResume() {
     if (mAmaBannerShown) {
       //activity might have been resumed after user has bought contrib key
-      if (shouldShowAd()) {
+      if (shouldHideAd()) {
         hide();
         mAmaBannerShown = false;
       }

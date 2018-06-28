@@ -32,7 +32,7 @@ public class PubNativeAdHandler extends AdHandler {
 
   @Override
   public void init() {
-    if (shouldShowAd()) {
+    if (shouldHideAd()) {
       hide();
     } else {
       PNRequest request = new PNRequest();

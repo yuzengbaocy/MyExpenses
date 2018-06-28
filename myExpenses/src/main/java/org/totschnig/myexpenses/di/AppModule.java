@@ -9,10 +9,12 @@ import com.google.android.vending.licensing.AESObfuscator;
 import com.google.android.vending.licensing.Obfuscator;
 import com.google.android.vending.licensing.PreferenceObfuscator;
 
+import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.preference.PrefHandler;
 import org.totschnig.myexpenses.preference.PrefHandlerImpl;
 import org.totschnig.myexpenses.util.DistribHelper;
+import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandlerImpl;
 import org.totschnig.myexpenses.util.licence.BlackberryLegacyLicenceHandler;
@@ -94,6 +96,13 @@ public class AppModule {
   @Named("deviceId")
   protected String provideDeviceId() {
     return Settings.Secure.getString(application.getContentResolver(), Settings.Secure.ANDROID_ID);
+  }
+
+  @Provides
+  @Singleton
+  @Named("userCountry")
+  protected String provideUserCountry() {
+    return BuildConfig.DEBUG ? "de" : Utils.getCountryFromTelephonyManager();
   }
 
   @Provides

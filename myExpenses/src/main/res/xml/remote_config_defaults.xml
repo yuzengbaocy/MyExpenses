@@ -2,6 +2,6 @@
 <defaultsMap>
     <entry>
         <key>ad_handling_waterfall</key>
-        <value>Ama:PubNative:AdMob</value>
+        <value>Custom:Ama:PubNative:AdMob</value>
     </entry>
 </defaultsMap>
