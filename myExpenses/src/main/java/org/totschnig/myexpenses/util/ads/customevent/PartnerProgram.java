@@ -22,7 +22,9 @@ public enum PartnerProgram {
   SAVEDO(new String[]{"at"}, new MyAdSize[]{MyAdSize.SMALL}),
   GROWNEY(new String[]{"de"}, new MyAdSize[]{MyAdSize.SMALL}),
   COMDIRECT(new String[]{"de"}, new MyAdSize[]{MyAdSize.FULL_BANNER}),
-  AUXMONEY(new String[]{"de"}, new MyAdSize[]{MyAdSize.FULL_BANNER});
+  AUXMONEY(new String[]{"de"}, new MyAdSize[]{MyAdSize.FULL_BANNER}),
+  LIBERTYCARD(new String[]{"ch"}, new MyAdSize[]{})
+  ;
 
   private static final String CONTENT_RES_PREFIX = "finance_ads_html_";
   private static final String PREFERENCE_PREFIX = "finance_ads_last_shown_";
