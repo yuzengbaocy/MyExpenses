@@ -4,7 +4,10 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.support.annotation.ArrayRes;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.util.Pair;
 
+import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import com.google.android.gms.ads.AdSize;
 
@@ -13,6 +16,7 @@ import org.totschnig.myexpenses.MyApplication;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 import timber.log.Timber;
 
@@ -90,5 +94,31 @@ public enum PartnerProgram {
 
   public void record() {
     MyApplication.getInstance().getSettings().edit().putLong(getPrefKey(), System.currentTimeMillis()).apply();
+  }
+
+  @Nullable
+  public static Pair<PartnerProgram, String> pickContent(
+      List<PartnerProgram> partnerPrograms, String userCountry, Context context,
+      @Nullable AdSize size) {
+    List<Pair<PartnerProgram, Integer>> contentProviders = Stream.of(partnerPrograms)
+        .filter(partnerProgram -> partnerProgram.shouldShowIn(userCountry))
+        .map(partnerProgram ->
+            Pair.create(partnerProgram, size == null ? partnerProgram.pickContentInterstitial(context) :
+                partnerProgram.pickContentResId(context, size)))
+        .filter(pair -> pair.second != 0)
+        .collect(Collectors.toList());
+    final int nrOfProviders = contentProviders.size();
+    if (nrOfProviders > 0) {
+      final Random random = new Random();
+      Pair<PartnerProgram, Integer> contentProvider;
+      if (nrOfProviders == 1) {
+        contentProvider = contentProviders.get(0);
+      } else {
+        contentProvider = contentProviders.get(random.nextInt(nrOfProviders));
+      }
+      String[] adContent = context.getResources().getStringArray(contentProvider.second);
+      return Pair.create(contentProvider.first, adContent[random.nextInt(adContent.length)]);
+    }
+    return null;
   }
 }

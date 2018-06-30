@@ -19,12 +19,9 @@ package org.totschnig.myexpenses.util.ads.customevent;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Keep;
-import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 import android.support.v4.util.Pair;
 
-import com.annimon.stream.Collectors;
-import com.annimon.stream.Stream;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.customevent.CustomEventBanner;
@@ -37,7 +34,6 @@ import org.totschnig.myexpenses.di.AppComponent;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
  * A custom event for the Sample ad network. Custom events allow publishers to write their own
@@ -103,7 +99,7 @@ public class CustomEvent implements CustomEventBanner, CustomEventInterstitial {
     if (size == null || partnerPrograms.isEmpty()) {
       listener.onAdFailedToLoad(com.google.android.gms.ads.AdRequest.ERROR_CODE_INVALID_REQUEST);
     } else {
-      Pair<PartnerProgram, String> contentProvider = pickContent(partnerPrograms,
+      Pair<PartnerProgram, String> contentProvider = PartnerProgram.pickContent(partnerPrograms,
           appComponent.userCountry(), context, size);
       if (contentProvider == null) {
         listener.onAdFailedToLoad(com.google.android.gms.ads.AdRequest.ERROR_CODE_NO_FILL);
@@ -117,32 +113,6 @@ public class CustomEvent implements CustomEventBanner, CustomEventInterstitial {
         adView.fetchAd(contentProvider);
       }
     }
-  }
-
-  @Nullable
-  private Pair<PartnerProgram, String> pickContent(
-      List<PartnerProgram> partnerPrograms, String userCountry, Context context,
-      @Nullable AdSize size) {
-    List<Pair<PartnerProgram, Integer>> contentProviders = Stream.of(partnerPrograms)
-        .filter(partnerProgram -> partnerProgram.shouldShowIn(userCountry))
-        .map(partnerProgram ->
-            Pair.create(partnerProgram, size == null ? partnerProgram.pickContentInterstitial(context) :
-                partnerProgram.pickContentResId(context, size)))
-        .filter(pair -> pair.second != 0)
-        .collect(Collectors.toList());
-    final int nrOfProviders = contentProviders.size();
-    if (nrOfProviders > 0) {
-      final Random random = new Random();
-      Pair<PartnerProgram, Integer> contentProvider;
-      if (nrOfProviders == 1) {
-        contentProvider = contentProviders.get(0);
-      } else {
-        contentProvider = contentProviders.get(random.nextInt(nrOfProviders));
-      }
-      String[] adContent = context.getResources().getStringArray(contentProvider.second);
-      return Pair.create(contentProvider.first, adContent[random.nextInt(adContent.length)]);
-    }
-    return null;
   }
 
   @VisibleForTesting
@@ -185,7 +155,7 @@ public class CustomEvent implements CustomEventBanner, CustomEventInterstitial {
     if (partnerPrograms.isEmpty()) {
       listener.onAdFailedToLoad(com.google.android.gms.ads.AdRequest.ERROR_CODE_INVALID_REQUEST);
     } else {
-      Pair<PartnerProgram, String> contentProvider = pickContent(partnerPrograms,
+      Pair<PartnerProgram, String> contentProvider = PartnerProgram.pickContent(partnerPrograms,
           appComponent.userCountry(), context, null);
       if (contentProvider == null) {
         listener.onAdFailedToLoad(com.google.android.gms.ads.AdRequest.ERROR_CODE_NO_FILL);
