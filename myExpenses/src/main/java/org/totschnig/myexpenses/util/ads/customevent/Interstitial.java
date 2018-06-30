@@ -27,14 +27,12 @@ import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import com.google.android.gms.ads.mediation.customevent.CustomEventInterstitialListener;
-
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.util.tracking.Tracker;
 
 public class Interstitial implements View.OnClickListener {
-  private CustomEventInterstitialListener listener;
+  private AdListener listener;
   private Pair<PartnerProgram, String> contentProvider;
   private Context context;
   private Dialog mWebviewDialog;
@@ -53,7 +51,7 @@ public class Interstitial implements View.OnClickListener {
    *
    * @param listener The ad listener.
    */
-  public void setAdListener(CustomEventInterstitialListener listener) {
+  public void setAdListener(AdListener listener) {
     this.listener = listener;
   }
 
@@ -113,7 +111,7 @@ public class Interstitial implements View.OnClickListener {
   /**
    * Destroy the interstitial.
    */
-  public void destroy() {
+  private void destroy() {
     listener = null;
   }
 

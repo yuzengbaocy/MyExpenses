@@ -24,13 +24,11 @@ import android.support.v4.util.Pair;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import com.google.android.gms.ads.mediation.customevent.CustomEventBannerListener;
-
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.util.tracking.Tracker;
 
 public class AdView extends WebView {
-  private CustomEventBannerListener listener;
+  private AdListener listener;
 
   /**
    * Create a new {@link AdView}.
@@ -57,7 +55,7 @@ public class AdView extends WebView {
    *
    * @param listener The ad listener.
    */
-  public void setAdListener(CustomEventBannerListener listener) {
+  public void setAdListener(AdListener listener) {
     this.listener = listener;
   }
 
@@ -69,7 +67,7 @@ public class AdView extends WebView {
     bundle.putString(Tracker.EVENT_PARAM_AD_PROVIDER, contentProvider.first.name());
     MyApplication.getInstance().getAppComponent().tracker().logEvent(Tracker.EVENT_AD_CUSTOM, bundle);
     this.loadData(String.format("<center>%s</center>", contentProvider.second), "text/html", "utf-8");
-    listener.onAdLoaded(this);
+    listener.onBannerLoaded(this);
     contentProvider.first.record();
   }
 

@@ -16,37 +16,24 @@
 
 package org.totschnig.myexpenses.util.ads.customevent;
 
+import android.view.View;
+
 /**
  * A sample ad listener to listen for ad events. These ad events more or less represent the events
  * that a typical ad network would provide.
  */
-public abstract class AdListener {
-    /**
-     * Called when an ad is successfully fetched.
-     */
-    public void onAdFetchSucceeded() {
-        // Default is to do nothing.
-    }
+interface AdListener {
+    void onAdFailedToLoad(int errorCode);
 
-    /**
-     * Called when an ad fetch fails.
-     * @param code The reason the fetch failed.
-     */
-    public void onAdFetchFailed(ErrorCode code) {
-        // Default is to do nothing.
-    }
+    void onAdOpened();
 
-    /**
-     * Called when an ad goes full screen.
-     */
-    public void onAdFullScreen() {
-        // Default is to do nothing.
-    }
+    void onAdClicked();
 
-    /**
-     * Called when an ad is closed.
-     */
-    public void onAdClosed() {
-        // Default is to do nothing.
-    }
+    void onAdClosed();
+
+    void onAdLeftApplication();
+
+    void onBannerLoaded(View view);
+
+    void onInterstitialLoaded();
 }

@@ -111,7 +111,7 @@ public class CustomEvent implements CustomEventBanner, CustomEventInterstitial {
         adView = new AdView(context);
         // Implement a SampleAdListener and forward callbacks to mediation. The callback forwarding
         // is handled by SampleBannerEventForwarder.
-        adView.setAdListener(listener);
+        adView.setAdListener(new CustomEventForwarder(listener));
 
         // Make an ad request.
         adView.fetchAd(contentProvider);
@@ -194,7 +194,7 @@ public class CustomEvent implements CustomEventBanner, CustomEventInterstitial {
 
         interstitial.setContentProvider(contentProvider);
 
-        interstitial.setAdListener(listener);
+        interstitial.setAdListener(new CustomEventForwarder(listener));
 
         interstitial.fetchAd();
         listener.onAdLoaded();
