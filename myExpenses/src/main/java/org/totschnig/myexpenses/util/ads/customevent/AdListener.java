@@ -22,18 +22,25 @@ import android.view.View;
  * A sample ad listener to listen for ad events. These ad events more or less represent the events
  * that a typical ad network would provide.
  */
-interface AdListener {
-    void onAdFailedToLoad(int errorCode);
 
-    void onAdOpened();
+public abstract class AdListener {
 
-    void onAdClicked();
+  public void onAdFailedToLoad(int errorCode) {}
 
-    void onAdClosed();
+  public void onAdOpened() {}
 
-    void onAdLeftApplication();
 
-    void onBannerLoaded(View view);
+  public void onAdClicked() {}
 
-    void onInterstitialLoaded();
+
+  public void onAdClosed() {}
+
+
+  public void onAdLeftApplication() {}
+
+
+  public void onBannerLoaded(View view) {}
+
+
+  public void onInterstitialLoaded() { }
 }

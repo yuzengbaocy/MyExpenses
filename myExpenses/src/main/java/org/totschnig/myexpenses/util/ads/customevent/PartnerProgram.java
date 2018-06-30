@@ -57,7 +57,7 @@ public enum PartnerProgram {
 
   private final List<String> distributionCountries;
   /**
-   * List should be sorted by width then height, since this order is expected by {@link #pickContentResId(Context, int, int)}
+   * List should be sorted by width then height, since this order is expected by {@link #pickContentResId(Context, int)}
    */
   private final List<MyAdSize> adSizes;
 
@@ -77,11 +77,8 @@ public enum PartnerProgram {
   }
 
   @ArrayRes
-  public int pickContentResId(Context context, int availableWidth, int availableHeight) {
-    return Stream.of(adSizes).filter(value -> {
-      return availableWidth >= value.getWidth() &&
-          availableHeight >= value.getHeight();
-    })
+  public int pickContentResId(Context context, int availableWidth) {
+    return Stream.of(adSizes).filter(value -> availableWidth >= value.getWidth())
         .peek(myAdSize -> Timber.d("%s", myAdSize))
         .map(adSize -> {
           final String name = CONTENT_RES_PREFIX + name() + "_" + adSize.name();
@@ -106,13 +103,13 @@ public enum PartnerProgram {
   @Nullable
   public static Pair<PartnerProgram, String> pickContent(
       List<PartnerProgram> partnerPrograms, String userCountry, Context context,
-      int availableWidth, int availableHeight) {
-    boolean forInterstitial = availableWidth == -1 && availableHeight == -1;
+      int availableWidth) {
+    boolean forInterstitial = availableWidth == -1;
     List<Pair<PartnerProgram, Integer>> contentProviders = Stream.of(partnerPrograms)
         .filter(partnerProgram -> partnerProgram.shouldShowIn(userCountry))
         .map(partnerProgram ->
             Pair.create(partnerProgram, forInterstitial ? partnerProgram.pickContentInterstitial(context) :
-                partnerProgram.pickContentResId(context, availableWidth, availableHeight)))
+                partnerProgram.pickContentResId(context, availableWidth)))
         .filter(pair -> pair.second != 0)
         .collect(Collectors.toList());
     final int nrOfProviders = contentProviders.size();

@@ -44,6 +44,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
@@ -196,8 +198,18 @@ public class MyExpenses extends LaunchActivity implements
     setContentView(R.layout.activity_main);
     MobileAds.initialize(this, "ca-app-pub-5381507717489755~8602009224");
 
-    adHandler = adHandlerFactory.create(findViewById(R.id.adContainer));
-    adHandler.init();
+    final ViewGroup adContainer = findViewById(R.id.adContainer);
+    adHandler = adHandlerFactory.create(adContainer);
+    adContainer.getViewTreeObserver().addOnGlobalLayoutListener(
+        new ViewTreeObserver.OnGlobalLayoutListener() {
+
+          @Override
+          public void onGlobalLayout() {
+            adContainer.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+            adHandler.init();
+          }
+        });
+
     adHandler.maybeRequestNewInterstitial();
 
     mDrawerLayout = findViewById(R.id.drawer_layout);
