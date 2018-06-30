@@ -102,12 +102,10 @@ public class CustomEvent implements CustomEventBanner, CustomEventInterstitial {
       listener.onAdFailedToLoad(com.google.android.gms.ads.AdRequest.ERROR_CODE_INVALID_REQUEST);
     } else {
       int widthInPixels = size.getWidthInPixels(context);
-      int heightInPixels = size.getHeightInPixels(context);
       DisplayMetrics displayMetrics = Resources.getSystem().getDisplayMetrics();
       int widthInDp = Math.round(widthInPixels / displayMetrics.density);
-      int heightInDp = Math.round(heightInPixels / displayMetrics.density);
       Pair<PartnerProgram, String> contentProvider = PartnerProgram.pickContent(partnerPrograms,
-          appComponent.userCountry(), context, widthInDp, heightInDp);
+          appComponent.userCountry(), context, widthInDp);
       if (contentProvider == null) {
         listener.onAdFailedToLoad(com.google.android.gms.ads.AdRequest.ERROR_CODE_NO_FILL);
       } else {
@@ -163,7 +161,7 @@ public class CustomEvent implements CustomEventBanner, CustomEventInterstitial {
       listener.onAdFailedToLoad(com.google.android.gms.ads.AdRequest.ERROR_CODE_INVALID_REQUEST);
     } else {
       Pair<PartnerProgram, String> contentProvider = PartnerProgram.pickContent(partnerPrograms,
-          appComponent.userCountry(), context, -1, -1);
+          appComponent.userCountry(), context, -1);
       if (contentProvider == null) {
         listener.onAdFailedToLoad(com.google.android.gms.ads.AdRequest.ERROR_CODE_NO_FILL);
       } else {

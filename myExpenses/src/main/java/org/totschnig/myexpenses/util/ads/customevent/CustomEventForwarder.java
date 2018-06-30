@@ -6,7 +6,7 @@ import com.google.android.gms.ads.mediation.customevent.CustomEventBannerListene
 import com.google.android.gms.ads.mediation.customevent.CustomEventInterstitialListener;
 import com.google.android.gms.ads.mediation.customevent.CustomEventListener;
 
-public class CustomEventForwarder implements AdListener {
+public class CustomEventForwarder extends AdListener {
   private final CustomEventListener listener;
 
   public CustomEventForwarder(CustomEventListener listener) {
