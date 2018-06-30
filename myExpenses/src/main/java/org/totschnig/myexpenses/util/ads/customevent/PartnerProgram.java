@@ -9,7 +9,6 @@ import android.support.v4.util.Pair;
 
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
-import com.google.android.gms.ads.AdSize;
 
 import org.totschnig.myexpenses.MyApplication;
 
@@ -34,18 +33,31 @@ public enum PartnerProgram {
   private static final String PREFERENCE_PREFIX = "finance_ads_last_shown_";
 
   private enum MyAdSize {
-    SMALL(new AdSize(200,50)), BANNER(AdSize.BANNER), FULL_BANNER(AdSize.FULL_BANNER), LEADERBOARD(AdSize.LEADERBOARD);
+    SMALL(200,50),
+    BANNER(320, 50),
+    FULL_BANNER(468, 60),
+    LEADERBOARD(728, 90);
 
-    final AdSize adSize;
+    private final int width;
+    private final int height;
 
-    MyAdSize(AdSize adSize) {
-      this.adSize = adSize;
+    MyAdSize(int width, int height) {
+      this.width = width;
+      this.height = height;
+    }
+
+    public int getWidth() {
+      return width;
+    }
+
+    public int getHeight() {
+      return height;
     }
   }
 
   private final List<String> distributionCountries;
   /**
-   * List should be sorted by width then height, since this order is expected by {@link #pickContentResId(Context, AdSize)}
+   * List should be sorted by width then height, since this order is expected by {@link #pickContentResId(Context, int, int)}
    */
   private final List<MyAdSize> adSizes;
 
@@ -65,15 +77,10 @@ public enum PartnerProgram {
   }
 
   @ArrayRes
-  public int pickContentResId(Context context, AdSize requested) {
-    Timber.d("%s", requested);
+  public int pickContentResId(Context context, int availableWidth, int availableHeight) {
     return Stream.of(adSizes).filter(value -> {
-      final int requestedWidthInPixels = requested.getWidthInPixels(context);
-      final int adSizeWidthInPixels = value.adSize.getWidthInPixels(context);
-      final int requestedHeightInPixels = requested.getHeightInPixels(context);
-      final int adSizeHeightInPixels = value.adSize.getHeightInPixels(context);
-      return requestedWidthInPixels >= adSizeWidthInPixels &&
-          requestedHeightInPixels >= adSizeHeightInPixels;
+      return availableWidth >= value.getWidth() &&
+          availableHeight >= value.getHeight();
     })
         .peek(myAdSize -> Timber.d("%s", myAdSize))
         .map(adSize -> {
@@ -99,12 +106,13 @@ public enum PartnerProgram {
   @Nullable
   public static Pair<PartnerProgram, String> pickContent(
       List<PartnerProgram> partnerPrograms, String userCountry, Context context,
-      @Nullable AdSize size) {
+      int availableWidth, int availableHeight) {
+    boolean forInterstitial = availableWidth == -1 && availableHeight == -1;
     List<Pair<PartnerProgram, Integer>> contentProviders = Stream.of(partnerPrograms)
         .filter(partnerProgram -> partnerProgram.shouldShowIn(userCountry))
         .map(partnerProgram ->
-            Pair.create(partnerProgram, size == null ? partnerProgram.pickContentInterstitial(context) :
-                partnerProgram.pickContentResId(context, size)))
+            Pair.create(partnerProgram, forInterstitial ? partnerProgram.pickContentInterstitial(context) :
+                partnerProgram.pickContentResId(context, availableWidth, availableHeight)))
         .filter(pair -> pair.second != 0)
         .collect(Collectors.toList());
     final int nrOfProviders = contentProviders.size();

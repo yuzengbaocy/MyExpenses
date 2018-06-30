@@ -17,10 +17,12 @@
 package org.totschnig.myexpenses.util.ads.customevent;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.Keep;
 import android.support.annotation.VisibleForTesting;
 import android.support.v4.util.Pair;
+import android.util.DisplayMetrics;
 
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
@@ -99,8 +101,13 @@ public class CustomEvent implements CustomEventBanner, CustomEventInterstitial {
     if (size == null || partnerPrograms.isEmpty()) {
       listener.onAdFailedToLoad(com.google.android.gms.ads.AdRequest.ERROR_CODE_INVALID_REQUEST);
     } else {
+      int widthInPixels = size.getWidthInPixels(context);
+      int heightInPixels = size.getHeightInPixels(context);
+      DisplayMetrics displayMetrics = Resources.getSystem().getDisplayMetrics();
+      int widthInDp = Math.round(widthInPixels / displayMetrics.density);
+      int heightInDp = Math.round(heightInPixels / displayMetrics.density);
       Pair<PartnerProgram, String> contentProvider = PartnerProgram.pickContent(partnerPrograms,
-          appComponent.userCountry(), context, size);
+          appComponent.userCountry(), context, widthInDp, heightInDp);
       if (contentProvider == null) {
         listener.onAdFailedToLoad(com.google.android.gms.ads.AdRequest.ERROR_CODE_NO_FILL);
       } else {
@@ -156,7 +163,7 @@ public class CustomEvent implements CustomEventBanner, CustomEventInterstitial {
       listener.onAdFailedToLoad(com.google.android.gms.ads.AdRequest.ERROR_CODE_INVALID_REQUEST);
     } else {
       Pair<PartnerProgram, String> contentProvider = PartnerProgram.pickContent(partnerPrograms,
-          appComponent.userCountry(), context, null);
+          appComponent.userCountry(), context, -1, -1);
       if (contentProvider == null) {
         listener.onAdFailedToLoad(com.google.android.gms.ads.AdRequest.ERROR_CODE_NO_FILL);
       } else {
