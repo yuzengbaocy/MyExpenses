@@ -82,3 +82,6 @@
 }
 
 -keep class org.totschnig.myexpenses.sync.GoogleDriveBackendProviderFactory
+
+#needed for RecyclerViewActions, only for flavors we run tests on production
+-keep class android.support.v7.widget.RecyclerView { *; }
