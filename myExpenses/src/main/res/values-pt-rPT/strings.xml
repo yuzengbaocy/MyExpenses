@@ -441,9 +441,9 @@
   <string name="menu_create_folder">Nova pasta</string>
   <!--This string is used for navigating up in the folder browser-->
   <string name="menu_up">Para cima</string>
-  <!--Move an account up in the account list-->
+  <!--This is used as content description for the navigation control in the widgets-->
   <string name="menu_sort_up">Para cima</string>
-  <!--Move an account down in the account list-->
+  <!--This is used as content description for the navigation control in the widgets-->
   <string name="menu_sort_down">Para baixo</string>
   <string name="create_new_folder_fail">Falha ao criar a pasta</string>
   <string name="widget_title_accounts">As minhas contas</string>
@@ -540,7 +540,6 @@
   <string name="menu_sort">Ordenar por</string>
   <string name="pref_sort_order_last_used">Última utilização</string>
   <string name="pref_sort_order_custom">Personalizado</string>
-  <string name="dialog_info_custom_sort">Utilize os comandos Para cima e Para baixo no menu de contexto de cada item para alterar a respetiva ordenação.</string>
   <string name="content_description_calculator">Calculadora</string>
   <!--describes the state of a plan instance that has not yet been applied, i.e. no transaction has been entered into the database for it. Used as content description for icon in list.-->
   <string name="plan_instance_state_open">aberto</string>

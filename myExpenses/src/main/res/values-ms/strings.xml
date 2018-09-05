@@ -443,9 +443,9 @@
   <string name="menu_create_folder">Folder baharu</string>
   <!--This string is used for navigating up in the folder browser-->
   <string name="menu_up">Naik</string>
-  <!--Move an account up in the account list-->
+  <!--This is used as content description for the navigation control in the widgets-->
   <string name="menu_sort_up">Naik</string>
-  <!--Move an account down in the account list-->
+  <!--This is used as content description for the navigation control in the widgets-->
   <string name="menu_sort_down">Turun</string>
   <string name="create_new_folder_fail">Gagal mencipta folder</string>
   <string name="widget_title_accounts">Akaun saya</string>
@@ -544,7 +544,6 @@
   <string name="menu_sort">Isih mengikut</string>
   <string name="pref_sort_order_last_used">Terakhir digunakan</string>
   <string name="pref_sort_order_custom">Suai</string>
-  <string name="dialog_info_custom_sort">Guna perintah Naik dan Turun dalam setiap menu konteks item untuk mengubah kedudukan isihnya.</string>
   <string name="content_description_calculator">Kalkulator</string>
   <!--describes the state of a plan instance that has not yet been applied, i.e. no transaction has been entered into the database for it. Used as content description for icon in list.-->
   <string name="plan_instance_state_open">buka</string>

@@ -375,8 +375,8 @@
   <string name="menu_categories_setup_default">设置默认类别</string>
   <string name="menu_create_folder">新建文件夹</string>
   <!--This string is used for navigating up in the folder browser-->
-  <!--Move an account up in the account list-->
-  <!--Move an account down in the account list-->
+  <!--This is used as content description for the navigation control in the widgets-->
+  <!--This is used as content description for the navigation control in the widgets-->
   <string name="create_new_folder_fail">目录建立失败</string>
   <string name="widget_title_accounts">我的账户</string>
   <string name="widget_title_templates">我的模板</string>
@@ -456,7 +456,6 @@
   <string name="copied_to_clipboard">复制到剪切板</string>
   <string name="menu_sort">排序</string>
   <string name="pref_sort_order_custom">自定义</string>
-  <string name="dialog_info_custom_sort">使用每个项里面的上下命令改变它的排序位子</string>
   <string name="content_description_calculator">计算器</string>
   <!--describes the state of a plan instance that has not yet been applied, i.e. no transaction has been entered into the database for it. Used as content description for icon in list.-->
   <string name="plan_instance_state_open">打开</string>

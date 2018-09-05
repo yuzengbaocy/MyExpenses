@@ -124,11 +124,6 @@
             android:name=".activity.ManageCategories"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.Light.DialogWhenLarge">
-            <intent-filter>
-                <action android:name="myexpenses.intent.manage.categories"/>
-
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable">
@@ -139,38 +134,18 @@
             android:name=".activity.BackupRestoreActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.Light.Dialog">
-            <intent-filter>
-                <action android:name="myexpenses.intent.backup"/>
-
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-            <intent-filter>
-                <action android:name="myexpenses.intent.restore"/>
-
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
         </activity>
 
         <activity
             android:name=".activity.GrisbiImport"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.Light.Dialog">
-            <intent-filter>
-                <action android:name="myexpenses.intent.import_from_grisbi"/>
-
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
         </activity>
 
         <activity
             android:name=".activity.QifImport"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.Light.Dialog">
-            <intent-filter>
-                <action android:name="myexpenses.intent.import"/>
-
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
         </activity>
 
         <activity
@@ -198,22 +173,12 @@
             android:name=".activity.ManageParties"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.Light.DialogWhenLarge">
-            <intent-filter>
-                <action android:name="myexpenses.intent.manage.parties"/>
-
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
         </activity>
 
         <activity
             android:name=".activity.ManageStaleImages"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.Light.DialogWhenLarge">
-            <intent-filter>
-                <action android:name="myexpenses.intent.manage.stale_images"/>
-
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
         </activity>
 
         <activity
@@ -241,11 +206,6 @@
             android:name=".activity.ManageMethods"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.Light.DialogWhenLarge">
-            <intent-filter>
-                <action android:name="myexpenses.intent.manage.methods"/>
-
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
         </activity>
 
         <activity
@@ -273,22 +233,12 @@
             android:name=".activity.ManageCurrencies"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.Light.DialogWhenLarge">
-            <intent-filter>
-                <action android:name="myexpenses.intent.manage.currencies"/>
-
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
         </activity>
 
         <activity
             android:name=".activity.ManageSyncBackends"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.Light.DialogWhenLarge">
-            <intent-filter>
-                <action android:name="myexpenses.intent.manage.sync_backends"/>
-
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
         </activity>
         
         <activity
@@ -305,11 +255,6 @@
         </activity>
 
         <activity android:name=".activity.RoadmapVoteActivity">
-            <intent-filter>
-                <action android:name="myexpenses.intent.roadmap"/>
-
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable">

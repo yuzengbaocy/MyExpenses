@@ -451,9 +451,9 @@
   <string name="menu_create_folder">Nowy folder</string>
   <!--This string is used for navigating up in the folder browser-->
   <string name="menu_up">Do góry</string>
-  <!--Move an account up in the account list-->
+  <!--This is used as content description for the navigation control in the widgets-->
   <string name="menu_sort_up">Do góry</string>
-  <!--Move an account down in the account list-->
+  <!--This is used as content description for the navigation control in the widgets-->
   <string name="menu_sort_down">W dół</string>
   <string name="create_new_folder_fail">Nie udało się utworzyć folderu</string>
   <string name="widget_title_accounts">Moje konta</string>
@@ -551,7 +551,6 @@
   <string name="menu_sort">Sortuj według</string>
   <string name="pref_sort_order_last_used">Ostatnio używane</string>
   <string name="pref_sort_order_custom">Spersonalizowany </string>
-  <string name="dialog_info_custom_sort">Użyj poleceń W górę i W dół w menu kontekstowym każdego elementu, aby zmienić jego pozycję sortowania.</string>
   <string name="content_description_calculator">Kalkulator</string>
   <!--describes the state of a plan instance that has not yet been applied, i.e. no transaction has been entered into the database for it. Used as content description for icon in list.-->
   <string name="plan_instance_state_open">otwarty</string>

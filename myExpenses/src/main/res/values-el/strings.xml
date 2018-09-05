@@ -440,9 +440,9 @@
   <string name="menu_create_folder">Νέος φάκελος</string>
   <!--This string is used for navigating up in the folder browser-->
   <string name="menu_up">Πάνω</string>
-  <!--Move an account up in the account list-->
+  <!--This is used as content description for the navigation control in the widgets-->
   <string name="menu_sort_up">Πάνω</string>
-  <!--Move an account down in the account list-->
+  <!--This is used as content description for the navigation control in the widgets-->
   <string name="menu_sort_down">Κάτων</string>
   <string name="create_new_folder_fail">Αποτυχία δημιουργίας του φακέλου</string>
   <string name="widget_title_accounts">Οι λογαριασμοί μου</string>
@@ -539,7 +539,6 @@
   <string name="menu_sort">Ταξινόμηση κατά</string>
   <string name="pref_sort_order_last_used">Τελευταία χρήση</string>
   <string name="pref_sort_order_custom">Προσαρμοσμένο</string>
-  <string name="dialog_info_custom_sort">Χρησιμοποιήστε τις Πάνω και Κάτω εντολές στο μενού του κάθε αντικειμένου ώστε να αλλάξετε την σειρά ταξινόμησης</string>
   <string name="content_description_calculator">Αριθμομηχανή</string>
   <!--describes the state of a plan instance that has not yet been applied, i.e. no transaction has been entered into the database for it. Used as content description for icon in list.-->
   <string name="plan_instance_state_open">ανοιχτό</string>

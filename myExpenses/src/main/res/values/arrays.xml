@@ -126,8 +126,6 @@
     <string-array name="NavigationDrawer_cabitems" tools:ignore="UnusedResources">
         <item>edit</item>
         <item>delete</item>
-        <item>sort_up</item>
-        <item>sort_down</item>
     </string-array>
 
     <string-array name="ManageMethods_cabitems" tools:ignore="UnusedResources">
@@ -339,6 +337,10 @@
         <item>form_date.time_help_text</item>
         <item>form_date.time_help_text_configuration</item>
     </string-array>
+    <string-array name="menu_NavigationDrawer_sort_help_text">
+        <item>menu_NavigationDrawer_sort_help_text</item>
+        <item>menu_NavigationDrawer_sort_help_text_custom</item>
+    </string-array>
 
     <string-array name="AccountEdit_menuitems" tools:ignore="UnusedResources">
         <item>save</item>
@@ -413,7 +415,7 @@
     </string-array>
 
     <string-array name="versions">
-        <item>331;2.9.1.3</item>
+        <item>333;2.9.2</item>
         <item>328;2.9.1</item>
         <item>323;2.9.0</item>
         <item>318;2.8.9</item>

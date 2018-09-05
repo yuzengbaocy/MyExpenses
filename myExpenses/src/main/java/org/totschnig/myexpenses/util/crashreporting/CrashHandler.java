@@ -1,11 +1,13 @@
 package org.totschnig.myexpenses.util.crashreporting;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.provider.DbUtils;
 import org.totschnig.myexpenses.util.DistribHelper;
+import org.totschnig.myexpenses.util.licence.LicenceStatus;
 
 import java.util.Map;
 
@@ -85,4 +87,8 @@ public abstract class CrashHandler {
 
     }
   };
+
+  public void setLicenceStatus(@NonNull LicenceStatus licenceStatus) {
+    putCustomData("Licence", licenceStatus.name());
+  }
 }

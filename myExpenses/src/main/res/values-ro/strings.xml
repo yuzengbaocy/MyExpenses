@@ -414,9 +414,9 @@
   <string name="menu_create_folder">Folder nou</string>
   <!--This string is used for navigating up in the folder browser-->
   <string name="menu_up">Sus</string>
-  <!--Move an account up in the account list-->
+  <!--This is used as content description for the navigation control in the widgets-->
   <string name="menu_sort_up">Sus</string>
-  <!--Move an account down in the account list-->
+  <!--This is used as content description for the navigation control in the widgets-->
   <string name="create_new_folder_fail">Eşec la crearea folderului</string>
   <string name="widget_title_accounts">Conturile mele</string>
   <string name="widget_title_templates">Şabloanele mele</string>
@@ -487,7 +487,6 @@
   <string name="menu_sort">Setează dupa</string>
   <string name="pref_sort_order_last_used">Ultima utilizate</string>
   <string name="pref_sort_order_custom">Custom</string>
-  <string name="dialog_info_custom_sort">Utilizeaza tastele În sus şi În jos  din  fiecare meniu contextual  pentru a schimba poziţia de sortare. a elementului</string>
   <string name="content_description_calculator">Calculator</string>
   <!--describes the state of a plan instance that has not yet been applied, i.e. no transaction has been entered into the database for it. Used as content description for icon in list.-->
   <string name="plan_instance_state_open">deschis</string>

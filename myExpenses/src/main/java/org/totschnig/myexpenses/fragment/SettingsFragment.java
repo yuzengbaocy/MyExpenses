@@ -68,7 +68,6 @@ import org.totschnig.myexpenses.util.ShareUtils;
 import org.totschnig.myexpenses.util.ShortcutHelper;
 import org.totschnig.myexpenses.util.UiUtils;
 import org.totschnig.myexpenses.util.Utils;
-import org.totschnig.myexpenses.util.ads.AdHandler;
 import org.totschnig.myexpenses.util.ads.AdHandlerFactory;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
 import org.totschnig.myexpenses.util.io.FileUtils;
@@ -96,11 +95,10 @@ import static org.totschnig.myexpenses.activity.ProtectedFragmentActivity.RESULT
 import static org.totschnig.myexpenses.contract.TransactionsContract.Transactions.TYPE_SPLIT;
 import static org.totschnig.myexpenses.contract.TransactionsContract.Transactions.TYPE_TRANSACTION;
 import static org.totschnig.myexpenses.contract.TransactionsContract.Transactions.TYPE_TRANSFER;
-import static org.totschnig.myexpenses.preference.PrefKey.PERSONALIZED_AD_CONSENT;
 import static org.totschnig.myexpenses.preference.PrefKey.APP_DIR;
 import static org.totschnig.myexpenses.preference.PrefKey.AUTO_BACKUP;
-import static org.totschnig.myexpenses.preference.PrefKey.AUTO_BACKUP_INFO;
 import static org.totschnig.myexpenses.preference.PrefKey.AUTO_BACKUP_CLOUD;
+import static org.totschnig.myexpenses.preference.PrefKey.AUTO_BACKUP_INFO;
 import static org.totschnig.myexpenses.preference.PrefKey.CATEGORY_CONTRIB;
 import static org.totschnig.myexpenses.preference.PrefKey.CATEGORY_MANAGE;
 import static org.totschnig.myexpenses.preference.PrefKey.CATEGORY_PRIVACY;
@@ -122,6 +120,7 @@ import static org.totschnig.myexpenses.preference.PrefKey.NEW_LICENCE;
 import static org.totschnig.myexpenses.preference.PrefKey.NEXT_REMINDER_RATE;
 import static org.totschnig.myexpenses.preference.PrefKey.PERFORM_PROTECTION_SCREEN;
 import static org.totschnig.myexpenses.preference.PrefKey.PERFORM_SHARE;
+import static org.totschnig.myexpenses.preference.PrefKey.PERSONALIZED_AD_CONSENT;
 import static org.totschnig.myexpenses.preference.PrefKey.PLANNER_CALENDAR_ID;
 import static org.totschnig.myexpenses.preference.PrefKey.PROTECTION_DELAY_SECONDS;
 import static org.totschnig.myexpenses.preference.PrefKey.PROTECTION_DEVICE_LOCK_SCREEN;
@@ -140,6 +139,7 @@ import static org.totschnig.myexpenses.preference.PrefKey.SHORTCUT_CREATE_SPLIT;
 import static org.totschnig.myexpenses.preference.PrefKey.SHORTCUT_CREATE_TRANSACTION;
 import static org.totschnig.myexpenses.preference.PrefKey.SHORTCUT_CREATE_TRANSFER;
 import static org.totschnig.myexpenses.preference.PrefKey.SYNC_NOTIFICATION;
+import static org.totschnig.myexpenses.preference.PrefKey.SYNC_WIFI_ONLY;
 import static org.totschnig.myexpenses.preference.PrefKey.TRACKING;
 import static org.totschnig.myexpenses.preference.PrefKey.UI_HOME_SCREEN_SHORTCUTS;
 import static org.totschnig.myexpenses.preference.PrefKey.UI_LANGUAGE;
@@ -313,6 +313,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
       languagePref.setEntries(getLocaleArray(getContext()));
 
       findPreference(SYNC_NOTIFICATION).setOnPreferenceChangeListener(storeInDatabaseChangeListener);
+      findPreference(SYNC_WIFI_ONLY).setOnPreferenceChangeListener(storeInDatabaseChangeListener);
 
       findPreference(getString(R.string.pref_follow_gplus_key)).setTitle(
           Utils.getTextWithAppName(getContext(), R.string.pref_follow_gplus_title));
@@ -910,8 +911,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
   public boolean onResult(@NonNull String dialogTag, int which, @NonNull Bundle extras) {
     if (DIALOG_VALIDATE_LICENCE.equals(dialogTag)) {
       if (which == BUTTON_POSITIVE) {
-        NEW_LICENCE.putString(extras.getString(KEY_KEY));
-        LICENCE_EMAIL.putString(extras.getString(KEY_EMAIL));
+        NEW_LICENCE.putString(extras.getString(KEY_KEY).trim());
+        LICENCE_EMAIL.putString(extras.getString(KEY_EMAIL).trim());
         activity().validateLicence();
       }
     } else if (DIALOG_MANAGE_LICENCE.equals(dialogTag)) {
