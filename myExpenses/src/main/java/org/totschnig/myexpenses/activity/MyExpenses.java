@@ -469,16 +469,24 @@ public class MyExpenses extends LaunchActivity implements
     startActivityForResult(i, EDIT_TRANSACTION_REQUEST);
   }
 
+  @Override
+  protected void doHelp(Object tag) {
+    setHelpVariant();
+    super.doHelp(tag);
+  }
+
   /**
    * @param command
    * @param tag
    * @return true if command has been handled
    */
   public boolean dispatchCommand(int command, Object tag) {
+    if (super.dispatchCommand(command, tag)) {
+      return true;
+    }
     Intent i;
     TransactionList tl;
     switch (command) {
-
       case R.id.DISTRIBUTION_COMMAND:
         tl = getCurrentFragment();
         if (tl != null && tl.hasMappedCategories()) {
@@ -548,9 +556,6 @@ public class MyExpenses extends LaunchActivity implements
         //for result is needed since it allows us to inspect the calling activity
         startActivity(i);
         return true;
-      case R.id.HELP_COMMAND:
-        setHelpVariant();
-        break;
       case R.id.MANAGE_PLANS_COMMAND:
         i = new Intent(this, ManageTemplates.class);
         startActivity(i);
@@ -567,7 +572,7 @@ public class MyExpenses extends LaunchActivity implements
             i.putExtra(KEY_CURRENCY, (String) tag);
           startActivityForResult(i, CREATE_ACCOUNT_REQUEST);
         } else {
-          CommonCommands.showContribDialog(this, ContribFeature.ACCOUNTS_UNLIMITED, null);
+          showContribDialog(ContribFeature.ACCOUNTS_UNLIMITED, null);
         }
         return true;
       case R.id.DELETE_ACCOUNT_COMMAND_DO:
@@ -659,7 +664,7 @@ public class MyExpenses extends LaunchActivity implements
         return true;
       }
     }
-    return super.dispatchCommand(command, tag);
+    return false;
   }
 
   public void showExportDisabledCommand() {
