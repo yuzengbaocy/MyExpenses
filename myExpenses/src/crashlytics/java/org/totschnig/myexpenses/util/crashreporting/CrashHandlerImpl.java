@@ -13,6 +13,8 @@ import timber.log.Timber;
 
 public class CrashHandlerImpl extends CrashHandler {
 
+  private CrashReportingTree crashReportingTree;
+
   @Override
   public void onAttachBaseContext(MyApplication application) {
 
@@ -21,13 +23,18 @@ public class CrashHandlerImpl extends CrashHandler {
   @Override
   void setupLoggingDo(Context context) {
     Fabric.with(context, new Crashlytics());
-    Timber.plant(new CrashReportingTree());
+    if (crashReportingTree == null) {
+      crashReportingTree = new CrashReportingTree();
+      Timber.plant(crashReportingTree);
+    }
     putCustomData("UserEmail", PrefKey.CRASHREPORT_USEREMAIL.getString(null));
   }
 
   @Override
   void putCustomData(String key, String value) {
-    Crashlytics.setString(key, value);
+    if (Fabric.isInitialized()) {
+      Crashlytics.setString(key, value);
+    }
   }
 
   private static class CrashReportingTree extends Timber.Tree {
