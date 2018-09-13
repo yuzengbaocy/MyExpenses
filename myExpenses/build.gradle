@@ -57,8 +57,8 @@ android {
             minSdkVersion project.minSdkVersion
         }
         targetSdkVersion project.targetSdkVersion
-        versionCode 336
-        versionName '2.9.2'
+        versionCode 337
+        versionName '2.9.2.1'
         multiDexEnabled true
 
         buildConfigField "String", "BUILD_DATE", "\"" + getDate() + "\""
@@ -154,6 +154,9 @@ android {
             dimension "crashreporting"
         }
         conscript {
+            dimension "security"
+        }
+        gms {
             dimension "security"
         }
     }
