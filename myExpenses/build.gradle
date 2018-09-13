@@ -57,8 +57,8 @@ android {
             minSdkVersion project.minSdkVersion
         }
         targetSdkVersion project.targetSdkVersion
-        versionCode 337
-        versionName '2.9.2.1'
+        versionCode 338
+        versionName '2.9.3'
         multiDexEnabled true
 
         buildConfigField "String", "BUILD_DATE", "\"" + getDate() + "\""
@@ -314,6 +314,8 @@ dependencies {
     implementation 'com.jakewharton.threetenabp:threetenabp:1.1.0'
 
     implementation 'com.google.android.ads.consent:consent-library:1.0.3'
+
+    implementation 'com.github.lzyzsd:circleprogress:1.2.1'
 
     conscriptImplementation 'org.conscrypt:conscrypt-android:1.2.0'
 
