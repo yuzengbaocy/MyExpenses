@@ -2,7 +2,8 @@ buildscript {
     repositories {
         google()
         jcenter()
-        maven { url "https://oss.sonatype.org/content/repositories/snapshots" } // For Spoon snapshot, until 2.0.0 is released
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+        // For Spoon snapshot, until 2.0.0 is released
     }
     dependencies {
         classpath 'com.jakewharton.hugo:hugo-plugin:1.2.1'
@@ -12,7 +13,8 @@ buildscript {
 }
 
 repositories {
-    maven { url "https://oss.sonatype.org/content/repositories/snapshots" } // For Spoon snapshot, until 2.0.0 is released
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+    // For Spoon snapshot, until 2.0.0 is released
 }
 
 apply plugin: 'com.android.application'
@@ -39,7 +41,7 @@ def getPropertyIfDefined(property) {
 
 def getPropertyIfDefined(property, defaultValue) {
     if (project.hasProperty(property)) {
-        return project.ext.properties[property]
+        return project.properties[property]
     }
     return defaultValue
 }
@@ -100,6 +102,10 @@ android {
             applicationIdSuffix ".fortest"
             manifestPlaceholders = [appName: "My Expenses Test", debug: "true"]
             matchingFallbacks = ['debug']
+            buildConfigField "String", "TEST_LANG", quote(getPropertyIfDefined("testLang", "en"))
+            buildConfigField "String", "TEST_COUNTRY", quote(getPropertyIfDefined("testCountry", "US"))
+            buildConfigField "String", "TEST_CURRENCY", quote(getPropertyIfDefined("testCurrency", "USD"))
+            buildConfigField "int", "TEST_SCENARIO", getPropertyIfDefined('testScenario', "1")
         }
     }
 
@@ -108,7 +114,7 @@ android {
         type.resValue "string", 'sync_account_type', defaultConfig.applicationId + type.applicationIdSuffix + ".sync"
     }
 
-    flavorDimensions "distribution", "drive", "ads", "crashreporting"
+    flavorDimensions "distribution", "drive", "ads", "crashreporting", "security"
 
     productFlavors {
         play {
@@ -147,6 +153,9 @@ android {
         crashlytics {
             dimension "crashreporting"
         }
+        conscript {
+            dimension "security"
+        }
     }
 
     lintOptions {
@@ -177,7 +186,7 @@ android {
             setIgnore(true)
         }
 
-        if(project.hasProperty("buildType") && !variant.buildType.name.equals(project.ext.buildType)) {
+        if (project.hasProperty("buildType") && !variant.buildType.name.equals(project.ext.buildType)) {
             setIgnore(true)
         }
 
@@ -303,6 +312,7 @@ dependencies {
 
     implementation 'com.google.android.ads.consent:consent-library:1.0.3'
 
+    conscriptImplementation 'org.conscrypt:conscrypt-android:1.2.0'
 
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:' + project.espressoVersion
     androidTestImplementation 'junit:junit:4.12'
@@ -338,7 +348,7 @@ spoon {
     //Ignore annotation must be removed from class TestMain
     //otherwise Runner will fail resolving the test
     className = "org.totschnig.myexpenses.test.screenshots.TestMain"
-    methodName = "testLang_en"
+    methodName = "mkScreenShots"
     grantAll = true
 }
 
@@ -347,11 +357,5 @@ task copyFileForFixture(type: com.novoda.gradle.command.Files) {
         push "tests/script/screenshot.jpg", "/sdcard/Android/data/org.totschnig.myexpenses.fortest/files/screenshot.jpg"
     }
 }
-task generateScreenshots(type: GradleBuild) {
-    tasks = ['copyFileForFixture', 'spoon']
-}
-
-
-
 
 apply plugin: 'com.google.gms.google-services'
