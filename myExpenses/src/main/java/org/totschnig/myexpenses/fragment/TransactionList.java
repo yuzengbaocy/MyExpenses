@@ -11,7 +11,7 @@
  *
  *   You should have received a copy of the GNU General Public License
  *   along with My Expenses.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.totschnig.myexpenses.fragment;
 
@@ -29,6 +29,8 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri.Builder;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Parcelable;
+import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
@@ -56,6 +58,10 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.TextView;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.threeten.bp.LocalDateTime;
+import org.threeten.bp.ZoneId;
+import org.threeten.bp.ZonedDateTime;
+import org.threeten.bp.temporal.ChronoUnit;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.activity.ExpenseEdit;
@@ -79,6 +85,7 @@ import org.totschnig.myexpenses.model.SortDirection;
 import org.totschnig.myexpenses.model.Transaction.CrStatus;
 import org.totschnig.myexpenses.model.Transfer;
 import org.totschnig.myexpenses.preference.PrefHandler;
+import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.provider.DatabaseConstants;
 import org.totschnig.myexpenses.provider.DbUtils;
 import org.totschnig.myexpenses.provider.TransactionProvider;
@@ -98,6 +105,8 @@ import org.totschnig.myexpenses.util.CurrencyFormatter;
 import org.totschnig.myexpenses.util.Result;
 import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
+
+import java.util.Locale;
 
 import javax.inject.Inject;
 
@@ -181,7 +190,9 @@ public class TransactionList extends ContextualActionBarFragment implements
   private boolean mappedPayees;
   private boolean mappedMethods;
   private boolean hasTransfers;
+  private boolean firstLoadCompleted;
   private Cursor mTransactionsCursor;
+  private Parcelable listState;
 
   @BindView(R.id.list)
   ExpandableStickyListHeadersListView mListView;
@@ -252,6 +263,7 @@ public class TransactionList extends ContextualActionBarFragment implements
     mOpeningBalance = mAccount.openingBalance.getAmountMinor();
     MyApplication.getInstance().getSettings().registerOnSharedPreferenceChangeListener(this);
     MyApplication.getInstance().getAppComponent().inject(this);
+    firstLoadCompleted = (savedInstanceState != null);
   }
 
   private void setAdapter() {
@@ -350,6 +362,12 @@ public class TransactionList extends ContextualActionBarFragment implements
   }
 
   @Override
+  public void onDestroyView() {
+    listState = mListView.getWrappedList().onSaveInstanceState();
+    super.onDestroyView();
+  }
+
+  @Override
   public boolean dispatchCommandMultiple(int command,
                                          SparseBooleanArray positions, Long[] itemIds) {
     MyExpenses ctx = (MyExpenses) getActivity();
@@ -443,7 +461,7 @@ public class TransactionList extends ContextualActionBarFragment implements
         //super is handling deactivation of mActionMode
         break;
       case R.id.CREATE_TEMPLATE_COMMAND:
-        if (isSplitAtPosition(acmi.position) && !prefHandler.getBoolean(NEW_SPLIT_TEMPLATE_ENABLED,true)) {
+        if (isSplitAtPosition(acmi.position) && !prefHandler.getBoolean(NEW_SPLIT_TEMPLATE_ENABLED, true)) {
           ctx.showContribDialog(ContribFeature.SPLIT_TEMPLATE, null);
           return true;
         }
@@ -545,7 +563,7 @@ public class TransactionList extends ContextualActionBarFragment implements
   }
 
   @Override
-  public void onLoadFinished(Loader<Cursor> arg0, Cursor c) {
+  public void onLoadFinished(@NonNull Loader<Cursor> arg0, Cursor c) {
     switch (arg0.getId()) {
       case TRANSACTION_CURSOR:
         mTransactionsCursor = c;
@@ -564,6 +582,21 @@ public class TransactionList extends ContextualActionBarFragment implements
           indexesCalculated = true;
         }
         mAdapter.swapCursor(c);
+        if (c.getCount() > 0) {
+          if (firstLoadCompleted) {
+            if (listState != null) {
+              mListView.post(() -> {
+                mListView.getWrappedList().onRestoreInstanceState(listState);
+                listState = null;
+              });
+            }
+          } else {
+            if (prefHandler.getBoolean(PrefKey.SCROLL_TO_CURRENT_DATE, false)) {
+              mListView.post(() -> mListView.setSelection(findCurrentPosition(c)));
+            }
+          }
+        }
+        firstLoadCompleted = true;
         invalidateCAB();
         break;
       case SUM_CURSOR:
@@ -602,6 +635,32 @@ public class TransactionList extends ContextualActionBarFragment implements
         if (mTransactionsCursor != null)
           mAdapter.notifyDataSetChanged();
     }
+  }
+
+  private int findCurrentPosition(Cursor c) {
+    int dateColumn = c.getColumnIndex(KEY_DATE);
+    switch (mSortDirection) {
+      case ASC:
+        long startOfToday = ZonedDateTime.of(LocalDateTime.now().truncatedTo(ChronoUnit.DAYS), ZoneId.systemDefault()).toEpochSecond();
+        if (c.moveToLast()) {
+          do {
+            if (c.getLong(dateColumn) <= startOfToday) {
+              return c.isLast() ? c.getPosition() :  c.getPosition() + 1;
+            }
+          } while (c.moveToPrevious());
+        }
+        break;
+      case DESC:
+        long endOfDay = ZonedDateTime.of(LocalDateTime.now().truncatedTo(ChronoUnit.DAYS).plusDays(1), ZoneId.systemDefault()).toEpochSecond();
+        if (c.moveToFirst()) {
+          do {
+            if (c.getLong(dateColumn) < endOfDay) {
+              return c.getPosition();
+            }
+          } while (c.moveToNext());
+        }
+    }
+    return 0;
   }
 
   private long calculateHeaderId(int year, int second) {
@@ -888,9 +947,8 @@ public class TransactionList extends ContextualActionBarFragment implements
 
   public void addFilterCriteria(Integer id, Criteria c) {
     mFilter.put(id, c);
-    MyApplication.getInstance().getSettings().edit().putString(
-        KEY_FILTER + "_" + c.columnName + "_" + mAccount.getId(), c.toStringExtra())
-        .apply();
+    prefHandler.putString(
+        prefNameForCriteria(c.columnName), c.toStringExtra());
     refresh(true);
   }
 
@@ -904,17 +962,22 @@ public class TransactionList extends ContextualActionBarFragment implements
     Criteria c = mFilter.get(id);
     boolean isFiltered = c != null;
     if (isFiltered) {
-      MyApplication.getInstance().getSettings().edit().remove(
-          KEY_FILTER + "_" + c.columnName + "_" + mAccount.getId())
-          .apply();
+      prefHandler.remove(prefNameForCriteria(c.columnName));
       mFilter.remove(id);
       refresh(true);
     }
     return isFiltered;
   }
 
+  private String prefNameForCriteria(String criteriaColumn) {
+    return String.format(Locale.ROOT, "%s_%s_%d", KEY_FILTER, criteriaColumn, mAccount.getId());
+  }
+
 
   public void clearFilter() {
+    for (int i = 0, size = getFilterCriteria().size(); i < size; i++) {
+      prefHandler.remove(prefNameForCriteria(getFilterCriteria().valueAt(i).columnName));
+    }
     mFilter.clear();
     refresh(true);
   }
@@ -976,7 +1039,7 @@ public class TransactionList extends ContextualActionBarFragment implements
   }
 
   @Override
-  public void onSaveInstanceState(Bundle outState) {
+  public void onSaveInstanceState(@NonNull Bundle outState) {
     super.onSaveInstanceState(outState);
     outState.putSparseParcelableArray(KEY_FILTER, mFilter.getCriteria());
   }
@@ -1060,36 +1123,35 @@ public class TransactionList extends ContextualActionBarFragment implements
   }
 
   private void restoreFilterFromPreferences() {
-    SharedPreferences settings = MyApplication.getInstance().getSettings();
-    String filter = settings.getString(KEY_FILTER + "_" + KEY_CATID + "_" + mAccount.getId(), null);
+    String filter = prefHandler.getString(prefNameForCriteria(KEY_CATID), null);
     if (filter != null) {
       mFilter.put(R.id.FILTER_CATEGORY_COMMAND, CategoryCriteria.fromStringExtra(filter));
     }
-    filter = settings.getString(KEY_FILTER + "_" + KEY_AMOUNT + "_" + mAccount.getId(), null);
+    filter = prefHandler.getString(prefNameForCriteria(KEY_AMOUNT), null);
     if (filter != null) {
       mFilter.put(R.id.FILTER_AMOUNT_COMMAND, AmountCriteria.fromStringExtra(filter));
     }
-    filter = settings.getString(KEY_FILTER + "_" + KEY_COMMENT + "_" + mAccount.getId(), null);
+    filter = prefHandler.getString(prefNameForCriteria(KEY_COMMENT), null);
     if (filter != null) {
       mFilter.put(R.id.FILTER_COMMENT_COMMAND, CommentCriteria.fromStringExtra(filter));
     }
-    filter = settings.getString(KEY_FILTER + "_" + KEY_CR_STATUS + "_" + mAccount.getId(), null);
+    filter = prefHandler.getString(prefNameForCriteria(KEY_CR_STATUS), null);
     if (filter != null) {
       mFilter.put(R.id.FILTER_STATUS_COMMAND, CrStatusCriteria.fromStringExtra(filter));
     }
-    filter = settings.getString(KEY_FILTER + "_" + KEY_PAYEEID + "_" + mAccount.getId(), null);
+    filter = prefHandler.getString(prefNameForCriteria(KEY_PAYEEID), null);
     if (filter != null) {
       mFilter.put(R.id.FILTER_PAYEE_COMMAND, PayeeCriteria.fromStringExtra(filter));
     }
-    filter = settings.getString(KEY_FILTER + "_" + KEY_METHODID + "_" + mAccount.getId(), null);
+    filter = prefHandler.getString(prefNameForCriteria(KEY_METHODID), null);
     if (filter != null) {
       mFilter.put(R.id.FILTER_METHOD_COMMAND, MethodCriteria.fromStringExtra(filter));
     }
-    filter = settings.getString(KEY_FILTER + "_" + KEY_DATE + "_" + mAccount.getId(), null);
+    filter = prefHandler.getString(prefNameForCriteria(KEY_DATE), null);
     if (filter != null) {
       mFilter.put(R.id.FILTER_DATE_COMMAND, DateCriteria.fromStringExtra(filter));
     }
-    filter = settings.getString(KEY_FILTER + "_" + KEY_TRANSFER_ACCOUNT + "_" + mAccount.getId(), null);
+    filter = prefHandler.getString(prefNameForCriteria(KEY_TRANSFER_ACCOUNT), null);
     if (filter != null) {
       mFilter.put(R.id.FILTER_TRANSFER_COMMAND, TransferCriteria.fromStringExtra(filter));
     }
