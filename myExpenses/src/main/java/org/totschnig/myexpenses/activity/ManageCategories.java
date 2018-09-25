@@ -11,7 +11,7 @@
  *
  *   You should have received a copy of the GNU General Public License
  *   along with My Expenses.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.totschnig.myexpenses.activity;
 
@@ -35,6 +35,7 @@ import android.view.View;
 import org.apache.commons.lang3.ArrayUtils;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
+import org.totschnig.myexpenses.adapter.CategoryTreeAdapter;
 import org.totschnig.myexpenses.dialog.ProgressDialogFragment;
 import org.totschnig.myexpenses.dialog.SelectMainCategoryDialogFragment;
 import org.totschnig.myexpenses.fragment.CategoryList;
@@ -50,7 +51,10 @@ import org.totschnig.myexpenses.util.ShareUtils;
 
 import java.util.ArrayList;
 
+import eltos.simpledialogfragment.color.SimpleColorDialog;
 import eltos.simpledialogfragment.input.SimpleInputDialog;
+
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_ROWID;
 
 /**
  * SelectCategory activity allows to select categories while editing a transaction
@@ -80,50 +84,43 @@ public class ManageCategories extends ProtectedFragmentActivity implements
   private static final int SWIPE_THRESHOLD_VELOCITY = 100;
   private CategoryList mListFragment;
 
+  @NonNull
+  public String getAction() {
+    Intent intent = getIntent();
+    String action = intent.getAction();
+    return action == null ? ACTION_SELECT_MAPPING : action;
+  }
+
   public CategoryList getListFragment() {
     return mListFragment;
   }
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
-    Intent intent = getIntent();
-    String action = intent.getAction();
+    String action = getAction();
     int title = 0;
     setTheme(ACTION_DISTRIBUTION.equals(action) ?
         MyApplication.getThemeId() : MyApplication.getThemeIdEditDialog());
     super.onCreate(savedInstanceState);
-    switch (action == null ? "" : action) {
+    switch (action) {
       case Intent.ACTION_MAIN:
       case ACTION_MANAGE:
         setHelpVariant(HelpVariant.manage);
         title = R.string.pref_manage_categories_title;
         break;
-      case ACTION_DISTRIBUTION:
+      case ACTION_DISTRIBUTION: {
         setHelpVariant(HelpVariant.distribution);
         //title is set in categories list
-        break;
-      case ACTION_SELECT_FILTER:
-        setHelpVariant(HelpVariant.select_filter);
-        title = R.string.search_category;
-        break;
-      case ACTION_SELECT_MAPPING:
-      default:
-        setHelpVariant(HelpVariant.select_mapping);
-        title = R.string.select_category;
-    }
-    if (getHelpVariant().equals(HelpVariant.distribution)) {
-      DisplayMetrics dm = getResources().getDisplayMetrics();
+        DisplayMetrics dm = getResources().getDisplayMetrics();
 
-      final int REL_SWIPE_MIN_DISTANCE = (int) (SWIPE_MIN_DISTANCE * dm.densityDpi / 160.0f);
-      final int REL_SWIPE_MAX_OFF_PATH = (int) (SWIPE_MAX_OFF_PATH * dm.densityDpi / 160.0f);
-      final int REL_SWIPE_THRESHOLD_VELOCITY = (int) (SWIPE_THRESHOLD_VELOCITY * dm.densityDpi / 160.0f);
-      mDetector = new GestureDetector(this,
-          new GestureDetector.SimpleOnGestureListener() {
-            @Override
-            public boolean onFling(MotionEvent e1, MotionEvent e2,
-                                   float velocityX, float velocityY) {
-              //http://stackoverflow.com/questions/937313/android-basic-gesture-detection
-              try {
+        final int REL_SWIPE_MIN_DISTANCE = (int) (SWIPE_MIN_DISTANCE * dm.densityDpi / 160.0f);
+        final int REL_SWIPE_MAX_OFF_PATH = (int) (SWIPE_MAX_OFF_PATH * dm.densityDpi / 160.0f);
+        final int REL_SWIPE_THRESHOLD_VELOCITY = (int) (SWIPE_THRESHOLD_VELOCITY * dm.densityDpi / 160.0f);
+        mDetector = new GestureDetector(this,
+            new GestureDetector.SimpleOnGestureListener() {
+              @Override
+              public boolean onFling(MotionEvent e1, MotionEvent e2,
+                                     float velocityX, float velocityY) {
                 if (Math.abs(e1.getY() - e2.getY()) > REL_SWIPE_MAX_OFF_PATH)
                   return false;
                 if (e1.getX() - e2.getX() > REL_SWIPE_MIN_DISTANCE
@@ -135,18 +132,25 @@ public class ManageCategories extends ProtectedFragmentActivity implements
                   mListFragment.back();
                   return true;
                 }
-              } catch (Exception e) {
+                return false;
               }
-              return false;
-            }
-          });
+            });
+      }
+      break;
+      case ACTION_SELECT_FILTER:
+        setHelpVariant(HelpVariant.select_filter);
+        title = R.string.search_category;
+        break;
+      case ACTION_SELECT_MAPPING:
+        setHelpVariant(HelpVariant.select_mapping);
+        title = R.string.select_category;
     }
     setContentView(R.layout.select_category);
     setupToolbar(true);
     if (title != 0) getSupportActionBar().setTitle(title);
     FragmentManager fm = getSupportFragmentManager();
     mListFragment = ((CategoryList) fm.findFragmentById(R.id.category_list));
-    if (getHelpVariant().equals(HelpVariant.select_mapping) || getHelpVariant().equals(HelpVariant.manage)) {
+    if (action.equals(ACTION_SELECT_MAPPING) || action.equals(ACTION_MANAGE)) {
       configureFloatingActionButton(R.string.menu_create_main_cat);
     } else {
       findViewById(R.id.CREATE_COMMAND).setVisibility(View.GONE);
@@ -156,7 +160,8 @@ public class ManageCategories extends ProtectedFragmentActivity implements
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
     MenuInflater inflater = getMenuInflater();
-    if (getHelpVariant().equals(HelpVariant.distribution)) {
+    String action = getAction();
+    if (action.equals(ACTION_DISTRIBUTION)) {
       inflater.inflate(R.menu.distribution, menu);
       inflater.inflate(R.menu.grouping, menu);
 
@@ -166,7 +171,7 @@ public class ManageCategories extends ProtectedFragmentActivity implements
 
       typeButton.setOnCheckedChangeListener((buttonView, isChecked) -> mListFragment.setType(isChecked));
 
-    } else if (!getHelpVariant().equals(HelpVariant.select_filter)) {
+    } else if (!action.equals(ACTION_SELECT_FILTER)) {
       inflater.inflate(R.menu.sort, menu);
       inflater.inflate(R.menu.categories, menu);
     }
@@ -238,7 +243,7 @@ public class ManageCategories extends ProtectedFragmentActivity implements
    */
   public void editCat(String label, Long catId) {
     Bundle args = new Bundle();
-    args.putLong(DatabaseConstants.KEY_ROWID, catId);
+    args.putLong(KEY_ROWID, catId);
     SimpleInputDialog.build()
         .title(R.string.menu_edit_cat)
         .cancelable(false)
@@ -249,6 +254,18 @@ public class ManageCategories extends ProtectedFragmentActivity implements
         .neut()
         .extra(args)
         .show(this, DIALOG_EDIT_CATEGORY);
+  }
+
+  public void editCategoryColor(CategoryTreeAdapter.Category c) {
+    Bundle args = new Bundle();
+    args.putLong(KEY_ROWID, c.id);
+    SimpleColorDialog.build()
+        .allowCustom(true)
+        .cancelable(false)
+        .neut()
+        .extra(args)
+        .colorPreset(c.color)
+        .show(this, EDIT_COLOR_DIALOG);
   }
 
   /**
@@ -286,6 +303,7 @@ public class ManageCategories extends ProtectedFragmentActivity implements
 
   @Override
   public boolean onResult(@NonNull String dialogTag, int which, @NonNull Bundle extras) {
+    final long id = extras.getLong(KEY_ROWID);
     if ((DIALOG_NEW_CATEGORY.equals(dialogTag) || DIALOG_EDIT_CATEGORY.equals(dialogTag))
         && which == BUTTON_POSITIVE) {
       Long parentId = null;
@@ -293,10 +311,19 @@ public class ManageCategories extends ProtectedFragmentActivity implements
         parentId = extras.getLong(DatabaseConstants.KEY_PARENTID);
       }
       mCategory = new Category(
-          extras.getLong(DatabaseConstants.KEY_ROWID),
+          id,
           extras.getString(SimpleInputDialog.TEXT),
           parentId);
       startDbWriteTask(false);
+      finishActionMode();
+      return true;
+    }
+    if (EDIT_COLOR_DIALOG.equals(dialogTag) && which == BUTTON_POSITIVE) {
+      startTaskExecution(
+          TaskExecutionFragment.TASK_CATEGORY_COLOR,
+          new Long[]{id},
+          extras.getInt(SimpleColorDialog.COLOR),
+          R.string.progress_dialog_saving);
       finishActionMode();
       return true;
     }
@@ -323,7 +350,7 @@ public class ManageCategories extends ProtectedFragmentActivity implements
   public void onPostExecute(Object result) {
     if (result == null) {
       showSnackbar(getString(R.string.already_defined,
-              mCategory != null ? mCategory.getLabel() : ""),
+          mCategory != null ? mCategory.getLabel() : ""),
           Snackbar.LENGTH_LONG);
     }
     super.onPostExecute(result);
@@ -355,9 +382,13 @@ public class ManageCategories extends ProtectedFragmentActivity implements
           break;
         case TaskExecutionFragment.TASK_MOVE_CATEGORY:
           getListFragment().reset();
+          break;
       }
     }
-    showSnackbar(r.print(this), Snackbar.LENGTH_LONG);
+    final String print = r.print0(this);
+    if (print != null) {
+      showSnackbar(print, Snackbar.LENGTH_LONG);
+    }
   }
 
   @Override

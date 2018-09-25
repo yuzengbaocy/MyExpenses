@@ -178,6 +178,7 @@
         <item>create_sub_cat</item>
         <item>delete</item>
         <item>move</item>
+        <item>color</item>
     </string-array>
     <string-array name="ManageCategories_select_mapping_cabitems" tools:ignore="UnusedResources">
         <item>select_category</item>
@@ -188,6 +189,9 @@
     </string-array>
     <string-array name="ManageCategories_select_filter_cabitems" tools:ignore="UnusedResources">
         <item>select_category</item>
+    </string-array>
+    <string-array name="ManageCategories_distribution_cabitems" tools:ignore="UnusedResources">
+        <item>color</item>
     </string-array>
 
     <string-array name="ExpenseEdit_transaction_menuitems" tools:ignore="UnusedResources">
@@ -416,6 +420,7 @@
     </string-array>
 
     <string-array name="versions">
+        <item>342;2.9.5</item>
         <item>341;2.9.4</item>
         <item>339;2.9.3</item>
         <item>336;2.9.2</item>

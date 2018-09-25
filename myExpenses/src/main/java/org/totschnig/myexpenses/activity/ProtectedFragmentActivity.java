@@ -105,6 +105,7 @@ import static org.totschnig.myexpenses.preference.PrefKey.UI_THEME_KEY;
 import static org.totschnig.myexpenses.task.TaskExecutionFragment.TASK_RESTORE;
 import static org.totschnig.myexpenses.util.DistribHelper.getMarketSelfUri;
 import static org.totschnig.myexpenses.util.DistribHelper.getVersionInfo;
+import static org.totschnig.myexpenses.util.TextUtils.concatResStrings;
 
 public abstract class ProtectedFragmentActivity extends AppCompatActivity
     implements MessageDialogListener, OnSharedPreferenceChangeListener,
@@ -133,7 +134,7 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
   protected static final int CONFIRM_DEVICE_CREDENTIALS_MANAGE_PROTECTION_SETTINGS_REQUEST = 21;
   public static final String SAVE_TAG = "SAVE_TASK";
   public static final int RESULT_RESTORE_OK = RESULT_FIRST_USER + 1;
-  public static final String ACCOUNT_COLOR_DIALOG = "editColorDialog";
+  public static final String EDIT_COLOR_DIALOG = "editColorDialog";
 
   public static final String ASYNC_TAG = "ASYNC_TASK";
   public static final String PROGRESS_TAG = "PROGRESS";
@@ -302,7 +303,7 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
 
   public void showDeviceLockScreenWarning() {
     showSnackbar(
-        Utils.concatResStrings(this, " ", R.string.warning_device_lock_screen_not_set_up_1, R.string.warning_device_lock_screen_not_set_up_2),
+        concatResStrings(this, " ", R.string.warning_device_lock_screen_not_set_up_1, R.string.warning_device_lock_screen_not_set_up_2),
         Snackbar.LENGTH_LONG);
   }
 
@@ -409,7 +410,7 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
         startActivity(i);
         return true;
       case R.id.HELP_COMMAND:
-        doHelp(tag);
+        doHelp((String) tag);
         return true;
       case R.id.REQUEST_LICENCE_MIGRATION_COMMAND:
         LicenceHandler licenceHandler = MyApplication.getInstance().getLicenceHandler();
@@ -452,11 +453,11 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
     startActivityForResult(i, ProtectedFragmentActivity.CONTRIB_REQUEST);
   }
 
-  protected void doHelp(Object tag) {
+  protected void doHelp(String variant) {
     Intent i;
     i = new Intent(this, Help.class);
     i.putExtra(HelpDialogFragment.KEY_VARIANT,
-        tag != null ? (Enum<?>) tag : getHelpVariant());
+        variant != null ? variant : getHelpVariant());
     //for result is needed since it allows us to inspect the calling activity
     startActivityForResult(i, 0);
   }
@@ -909,8 +910,8 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
     adHandlerFactory.gdprConsent(this, forceShow);
   }
 
-  public Enum<?> getHelpVariant() {
-    return helpVariant;
+  public String getHelpVariant() {
+    return helpVariant != null ? helpVariant.name() : null;
   }
 
   protected void setHelpVariant(@Nullable Enum<?> helpVariant) {

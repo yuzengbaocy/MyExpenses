@@ -145,6 +145,7 @@ import static org.totschnig.myexpenses.preference.PrefKey.TRACKING;
 import static org.totschnig.myexpenses.preference.PrefKey.UI_HOME_SCREEN_SHORTCUTS;
 import static org.totschnig.myexpenses.preference.PrefKey.UI_LANGUAGE;
 import static org.totschnig.myexpenses.util.PermissionHelper.PermissionGroup.CALENDAR;
+import static org.totschnig.myexpenses.util.TextUtils.concatResStrings;
 
 public class SettingsFragment extends PreferenceFragmentCompat implements
     Preference.OnPreferenceChangeListener,
@@ -321,6 +322,9 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
       if (!adHandlerFactory.isRequestLocationInEeaOrUnknown() || adHandlerFactory.isAdDisabled()) {
         privacyCategory.removePreference(pref);
       }
+      if (privacyCategory.getPreferenceCount() == 0) {
+        preferenceScreen.removePreference(privacyCategory);
+      }
 
       ListPreference languagePref = ((ListPreference) findPreference(UI_LANGUAGE));
       languagePref.setEntries(getLocaleArray(getContext()));
@@ -438,7 +442,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
     PreferenceScreen screen = getPreferenceScreen();
     boolean isRoot = matches(screen, ROOT_SCREEN);
     CharSequence title = isRoot ?
-        Utils.concatResStrings(activity, " ", R.string.app_name, R.string.menu_settings) :
+        concatResStrings(activity, " ", R.string.app_name, R.string.menu_settings) :
         screen.getTitle();
     actionBar.setTitle(title);
     boolean hasMasterSwitch = handleScreenWithMasterSwitch(PERFORM_SHARE);

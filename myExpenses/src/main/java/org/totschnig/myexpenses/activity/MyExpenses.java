@@ -95,6 +95,7 @@ import org.totschnig.myexpenses.util.CurrencyFormatter;
 import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.Result;
 import org.totschnig.myexpenses.util.ShareUtils;
+import org.totschnig.myexpenses.util.TextUtils;
 import org.totschnig.myexpenses.util.UiUtils;
 import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.util.ads.AdHandler;
@@ -301,7 +302,7 @@ public class MyExpenses extends LaunchActivity implements
     });
     registerForContextMenu(mDrawerList);
 
-    requireFloatingActionButtonWithContentDescription(Utils.concatResStrings(this, ". ",
+    requireFloatingActionButtonWithContentDescription(TextUtils.concatResStrings(this, ". ",
         R.string.menu_create_transaction, R.string.menu_create_transfer, R.string.menu_create_split));
     if (savedInstanceState != null) {
       mExportFormat = savedInstanceState.getString("exportFormat");
@@ -485,9 +486,9 @@ public class MyExpenses extends LaunchActivity implements
   }
 
   @Override
-  protected void doHelp(Object tag) {
+  protected void doHelp(String variant) {
     setHelpVariant();
-    super.doHelp(tag);
+    super.doHelp(variant);
   }
 
   /**

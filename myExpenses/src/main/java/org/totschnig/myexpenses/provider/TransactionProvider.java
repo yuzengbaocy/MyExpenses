@@ -49,6 +49,7 @@ import org.totschnig.myexpenses.model.Transaction;
 import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.sync.json.TransactionChange;
 import org.totschnig.myexpenses.util.BackupUtils;
+import org.totschnig.myexpenses.util.ColorUtils;
 import org.totschnig.myexpenses.util.PlanInfoCursorWrapper;
 import org.totschnig.myexpenses.util.Result;
 import org.totschnig.myexpenses.util.Utils;
@@ -406,9 +407,8 @@ public class TransactionProvider extends ContentProvider {
         if (projection == null) {
           projection = Category.PROJECTION;
         }
-        if (sortOrder == null) {
-          sortOrder = Utils.defaultOrderBy(KEY_LABEL, PrefKey.SORT_ORDER_CATEGORIES);
-        }
+        sortOrder = "case when " + KEY_PARENTID + " is null then 0 else 1 end, " + KEY_PARENTID + ", "
+            + (sortOrder == null ? Utils.defaultOrderBy(KEY_LABEL, PrefKey.SORT_ORDER_CATEGORIES) : sortOrder);
         break;
       case CATEGORY_ID:
         qb.setTables(TABLE_CATEGORIES);
@@ -886,6 +886,9 @@ public class TransactionProvider extends ContentProvider {
           throw new SQLiteConstraintException();
         }
         mCursor.close();
+        if (parentId == null && !values.containsKey(KEY_COLOR)) {
+          values.put(KEY_COLOR, suggestNewCategoryColor(db));
+        }
         id = db.insertOrThrow(TABLE_CATEGORIES, null, values);
         newUri = CATEGORIES_URI + "/" + id;
         break;
@@ -941,6 +944,21 @@ public class TransactionProvider extends ContentProvider {
       notifyChange(TEMPLATES_UNCOMMITTED_URI, false);
     }
     return id > 0 ? Uri.parse(newUri) : null;
+  }
+
+  private int suggestNewCategoryColor(SQLiteDatabase db) {
+    String[] projection = new String[] {
+        "color",
+        "(select count(*) from categories where parent_id is null and color=t.color) as count"
+    };
+    Cursor cursor = db.query(ColorUtils.MAIN_COLORS_AS_TABLE(), projection, null, null, null, null, "count ASC", "1");
+    int result = 0;
+    if (cursor != null) {
+      cursor.moveToFirst();
+      result = cursor.getInt(0);
+      cursor.close();
+    }
+    return result;
   }
 
   @Override
@@ -1237,16 +1255,15 @@ public class TransactionProvider extends ContentProvider {
             throw new SQLiteConstraintException();
           }
           c.close();
-          if (!TextUtils.isEmpty(where)) {
-            whereString = " AND (" + where + ')';
-          } else {
-            whereString = "";
-          }
-          count = db.update(TABLE_CATEGORIES, values, "_id = " + segment + whereString,
-              whereArgs);
-          break;
         }
-        return 0;//nothing to do
+        if (!TextUtils.isEmpty(where)) {
+          whereString = " AND (" + where + ')';
+        } else {
+          whereString = "";
+        }
+        count = db.update(TABLE_CATEGORIES, values, "_id = " + segment + whereString,
+            whereArgs);
+        break;
       case METHOD_ID:
         segment = uri.getPathSegments().get(1);
         if (!TextUtils.isEmpty(where)) {
