@@ -13,10 +13,11 @@ import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.activity.MyExpenses;
 import org.totschnig.myexpenses.util.DistribHelper;
-import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.util.licence.LicenceHandler;
 
 import timber.log.Timber;
+
+import static org.totschnig.myexpenses.util.TextUtils.concatResStrings;
 
 /**
  * This handler is used in <s>two different</s> one scenario<s>s</s>:
@@ -44,7 +45,7 @@ public class UnlockHandler extends Handler {
         if (!DistribHelper.isPlay()) {
           doUnlock(msg.what);
         } else {
-          showNotif(Utils.concatResStrings(app, " ", R.string.licence_validation_failure,
+          showNotif(concatResStrings(app, " ", R.string.licence_validation_failure,
               R.string.licence_validation_upgrade_needed));
         }
         break;
@@ -67,7 +68,7 @@ public class UnlockHandler extends Handler {
     MyApplication app = MyApplication.getInstance();
     NotificationManager notificationManager =
         (NotificationManager) app.getSystemService(Context.NOTIFICATION_SERVICE);
-    String title = Utils.concatResStrings(app, " ", R.string.app_name, R.string.contrib_key);
+    String title = concatResStrings(app, " ", R.string.app_name, R.string.contrib_key);
     NotificationCompat.Builder builder =
         new NotificationCompat.Builder(app)
             .setSmallIcon(R.drawable.ic_stat_notification_sigma)
