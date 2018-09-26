@@ -15,6 +15,7 @@ import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 import org.totschnig.myexpenses.adapter.CategoryTreeAdapter;
 import org.totschnig.myexpenses.provider.DatabaseConstants;
+import org.totschnig.myexpenses.viewmodel.data.Category;
 
 import static org.hamcrest.Matchers.is;
 
@@ -109,9 +110,9 @@ public class Matchers {
   }
 
   public static Matcher withCategoryLabel(Matcher nameMatcher) {
-    return new TypeSafeMatcher<CategoryTreeAdapter.Category>() {
+    return new TypeSafeMatcher<Category>() {
       @Override
-      public boolean matchesSafely(CategoryTreeAdapter.Category category) {
+      public boolean matchesSafely(Category category) {
         return nameMatcher.matches(category.label);
       }
 
