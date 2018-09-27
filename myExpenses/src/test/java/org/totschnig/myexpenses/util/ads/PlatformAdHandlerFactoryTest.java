@@ -28,7 +28,7 @@ public class PlatformAdHandlerFactoryTest {
     when(mockApplication.getAppComponent()).thenReturn(mockAppComponent);
     when(mockContext.getApplicationContext()).thenReturn(mockApplication);
     when(adContainer.getContext()).thenReturn(mockContext);
-    factory = new PlatformAdHandlerFactory(mockApplication, Mockito.mock(PrefHandler.class));
+    factory = new PlatformAdHandlerFactory(mockApplication, Mockito.mock(PrefHandler.class), "de");
   }
 
   @Test

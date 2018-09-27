@@ -5,7 +5,6 @@ import android.support.annotation.VisibleForTesting;
 import android.view.ViewGroup;
 
 import com.annimon.stream.Stream;
-import com.google.ads.consent.ConsentForm;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
@@ -15,10 +14,9 @@ import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.preference.PrefHandler;
 
 public class PlatformAdHandlerFactory extends DefaultAdHandlerFactory {
-  private ConsentForm form;
 
-  public PlatformAdHandlerFactory(Context context, PrefHandler prefHandler) {
-    super(context, prefHandler);
+  public PlatformAdHandlerFactory(Context context, PrefHandler prefHandler, String userCountry) {
+    super(context, prefHandler, userCountry);
   }
 
   @Override
