@@ -26,7 +26,6 @@ import org.totschnig.myexpenses.util.DistribHelper;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Currency;
-import java.util.UUID;
 
 import timber.log.Timber;
 
@@ -298,11 +297,6 @@ public class InappPurchaseLicenceHandler extends ContribStatusLicenceHandler {
 
   public String getCurrentSubscription() {
     return licenseStatusPrefs.getString(KEY_CURRENT_SUBSCRIPTION, null);
-  }
-
-  @Override
-  public String getPayLoad() {
-    return (IS_CHROMIUM || DistribHelper.isAmazon()) ? null : UUID.randomUUID().toString();
   }
 
   @Override
