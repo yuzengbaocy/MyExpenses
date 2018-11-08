@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import com.google.android.vending.licensing.PreferenceObfuscator;
 
 import org.totschnig.myexpenses.BuildConfig;
+import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.preference.PrefKey;
 
 import timber.log.Timber;
@@ -47,7 +48,7 @@ public abstract class ContribStatusLicenceHandler extends LicenceHandler {
 
   private int contribStatus;
 
-  ContribStatusLicenceHandler(Context context, PreferenceObfuscator preferenceObfuscator) {
+  ContribStatusLicenceHandler(MyApplication context, PreferenceObfuscator preferenceObfuscator) {
     super(context, preferenceObfuscator);
   }
 

@@ -16,6 +16,7 @@ import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.AmazonAppstore;
 import org.onepf.oms.appstore.googleUtils.Inventory;
 import org.onepf.oms.appstore.googleUtils.SkuDetails;
+import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.contrib.Config;
 import org.totschnig.myexpenses.model.Money;
@@ -47,7 +48,7 @@ public class InappPurchaseLicenceHandler extends ContribStatusLicenceHandler {
   String PRICES_PREFS_FILE = "license_prices";
   SharedPreferences pricesPrefs;
 
-  public InappPurchaseLicenceHandler(Context context, PreferenceObfuscator preferenceObfuscator) {
+  public InappPurchaseLicenceHandler(MyApplication context, PreferenceObfuscator preferenceObfuscator) {
     super(context, preferenceObfuscator);
     pricesPrefs = context.getSharedPreferences(PRICES_PREFS_FILE, Context.MODE_PRIVATE);
   }
