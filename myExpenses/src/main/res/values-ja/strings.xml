@@ -592,8 +592,8 @@
   <string name="dialog_confirm_sync_remove_backend">リモートバックエンド %s は削除されます。 これはローカルまたはリモートに保存されたデータには影響しませんが、同期ステータスは失われます。 続けますか?</string>
   <string name="dialog_confirm_sync_link_local">このアカウントのリモートデータは削除されます。 他のデバイスがリンクされていないことを確認してください。</string>
   <string name="dialog_confirm_sync_link_remote">このアカウントのローカルデータは削除されます。</string>
-  <string name="warning_synchronization_limited_trial">同期機能は %s までテストできます。</string>
-  <string name="warning_synchronization_limit_reached">同期機能をテストする試用期間が終了しました。</string>
+  <string name="warning_limited_trial">%1$s機能は %2$s までテストできます。</string>
+  <string name="warning_trial_limit_reached">%s機能をテストする試用期間が終了しました。</string>
   <string name="warning_synchronization_folder_usage">このフォルダーは、さまざまなデバイス上の{app_name}のインストール間でデータを同期するために使用されます。 内容を手動で変更しないでください。</string>
   <string name="warning_synchronization_select_parent" tools:ignore="UnusedResources">選択したフォルダーは、既存のバックエンドのアカウントに対応します。 このバックエンドを再利用するには、その親フォルダーを選択する必要があります。</string>
   <string name="select_unsynced_accounts">選択した勘定はこのバックエンドに同期されます</string>
@@ -731,6 +731,7 @@
   <string name="licence_has_expired_n_days">プロフェッショナルキーは %d 日前に期限が切れています</string>
   <string name="pref_category_title_privacy">プライバシー</string>
   <string name="pref_ad_consent_title">パーソナライズされた広告</string>
+  <string name="ad_consent_non_personalized">パーソナライズされていない広告</string>
   <string name="gdpr_consent_message">{app_name} のサポート、メンテナンス、開発を維持するために {ad_provider} と提携して広告を表示しています。 あなたの同意を求めます。 広告が表示されないようにするには、広告なしバージョンの料金をお支払いください。</string>
   <string name="gdpr_consent_button_yes">はい、続行して広告を表示します</string>
   <string name="gdpr_consent_button_no">広告なしバージョンを購入します</string>
@@ -749,4 +750,6 @@
   <string name="saving_goal">貯蓄目標</string>
   <string name="credit_limit">クレジット限度</string>
   <string name="clear_all_filters">すべてのフィルターをクリア</string>
+  <string name="pref_scroll_to_current_date_summary">アプリの起動時に、取引リストを現在の日付にスクロールします</string>
+  <string name="professional_key_fallback_info">少なくとも 1 年間アクティブで、更新されていないプロフェッショナルキーのサブスクリプションは、自動的に無制限の延長キーに変換されます。</string>
 </resources>

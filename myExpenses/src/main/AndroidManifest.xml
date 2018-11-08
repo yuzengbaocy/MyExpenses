@@ -130,6 +130,9 @@
             </meta-data>
         </activity>
 
+        <activity android:name=".activity.Distribution"
+                  android:exported="false"
+                  android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
         <activity
             android:name=".activity.BackupRestoreActivity"
             android:exported="false"
@@ -309,6 +312,10 @@
         <activity
             android:name=".activity.SimpleImageActivity"
             android:theme="@style/Launch"/>
+
+        <activity android:name=".activity.BudgetActivity"
+                  android:exported="false"
+                  android:theme="@style/Theme.AppCompat.Light.DialogWhenLarge"/>
 
         <service
             android:name=".service.AutoBackupService"

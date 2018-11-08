@@ -82,6 +82,7 @@
     <string-array name="MyExpenses_menuitems" tools:ignore="UnusedResources">
         <item>search</item>
         <item>manage_plans</item>
+        <item>budget</item>
         <item>distribution</item>
         <item>history</item>
         <item>reset</item>
@@ -92,6 +93,7 @@
     <string-array name="MyExpenses_crStatus_menuitems" tools:ignore="UnusedResources">
         <item>search</item>
         <item>manage_plans</item>
+        <item>budget</item>
         <item>distribution</item>
         <item>history</item>
         <item>reset</item>
@@ -166,7 +168,7 @@
         <item>search</item>
         <item>categories_setup_default</item>
     </string-array>
-    <string-array name="ManageCategories_distribution_menuitems" tools:ignore="UnusedResources">
+    <string-array name="Distribution_menuitems" tools:ignore="UnusedResources">
         <item>grouping</item>
         <item>back</item>
         <item>forward</item>
@@ -190,8 +192,19 @@
     <string-array name="ManageCategories_select_filter_cabitems" tools:ignore="UnusedResources">
         <item>select_category</item>
     </string-array>
-    <string-array name="ManageCategories_distribution_cabitems" tools:ignore="UnusedResources">
+    <string-array name="Distribution_cabitems" tools:ignore="UnusedResources">
         <item>color</item>
+        <item>show_transactions</item>
+    </string-array>
+
+    <string-array name="BudgetActivity_menuitems" tools:ignore="UnusedResources">
+        <item>switch_budget</item>
+        <item>manage_categories</item>
+        <item>back.forward</item>
+    </string-array>
+    <string-array name="BudgetActivity_cabitems" tools:ignore="UnusedResources">
+        <item>color</item>
+        <item>show_transactions</item>
     </string-array>
 
     <string-array name="ExpenseEdit_transaction_menuitems" tools:ignore="UnusedResources">
@@ -338,8 +351,8 @@
         <item>cab_split_help_text</item>
     </string-array>
     <string-array name="form_date_time_help_text" tools:ignore="UnusedResources">
-        <item>form_date.time_help_text</item>
-        <item>form_date.time_help_text_configuration</item>
+        <item>form_date_time_help_text</item>
+        <item>form_date_time_help_text_configuration</item>
     </string-array>
     <string-array name="menu_NavigationDrawer_sort_help_text" tools:ignore="UnusedResources">
         <item>menu_NavigationDrawer_sort_help_text</item>
@@ -420,7 +433,7 @@
     </string-array>
 
     <string-array name="versions">
-        <item>344;2.9.5.1</item>
+        <item>345;2.9.6</item>
         <item>343;2.9.5</item>
         <item>341;2.9.4</item>
         <item>339;2.9.3</item>

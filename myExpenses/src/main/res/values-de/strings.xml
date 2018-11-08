@@ -600,8 +600,8 @@
   <string name="dialog_confirm_sync_remove_backend">Das entfernte Backend %s wird entfernt. Dadurch werden lokal und entfernt gespeicherte Daten nicht berührt, aber der Status der Synchronisation geht verloren. Möchten Sie fortfahren?</string>
   <string name="dialog_confirm_sync_link_local">Entfernte Daten für dieses Konto werden gelöscht. Achten Sie darauf, dass keine anderen Geräte mit diesem verbunden sind.</string>
   <string name="dialog_confirm_sync_link_remote">Lokale Daten für dieses Konto werden gelöscht.</string>
-  <string name="warning_synchronization_limited_trial">Die Synchronisierungs-Funktion kann bis %s getestet werden.</string>
-  <string name="warning_synchronization_limit_reached">Die Probezeit für die Synchronisierungs-Funktion ist abgelaufen.</string>
+  <string name="warning_limited_trial">Die Funktion %1$s kann bis %2$s getestet werden.</string>
+  <string name="warning_trial_limit_reached">Die Probezeit für die Funktion %s ist abgelaufen.</string>
   <string name="warning_synchronization_folder_usage">Dieser Ordner wird für die Synchronisierung von Daten zwischen den Installationen von {app_name} auf verschiedenen Geräten verwendet. Bitte ändern Sie dessen Inhalt nicht manuell.</string>
   <string name="warning_synchronization_select_parent" tools:ignore="UnusedResources">Der Ordner, den Sie ausgewählt haben, entspricht einem Konto eines bestehenden Backends. Sie müssen den übergeordneten Ordner auswählen, um dieses Backend wiederzuverwenden.</string>
   <string name="select_unsynced_accounts">Wählen Sie die Konten aus, die mit diesem Backend synchronisiert werden sollen.</string>
@@ -740,7 +740,8 @@
   <string name="licence_expired_yesterday">Ihr professioneller Schlüssel ist gestern abgelaufen</string>
   <string name="licence_has_expired_n_days">Ihr professioneller Schlüssel ist vor  %d Tagen abgelaufen</string>
   <string name="pref_category_title_privacy">Privatsphäre</string>
-  <string name="pref_ad_consent_title">Personalisierte Anzeigen</string>
+  <string name="pref_ad_consent_title">Personalisierte Werbung</string>
+  <string name="ad_consent_non_personalized">Nicht personalisierte Werbung</string>
   <string name="gdpr_consent_message">Wir arbeiten mit {ad_provider} zusammen, um den Support, die Wartung und die Entwicklung von {app_name} durch das Anzeigen von Werbung zu unterstützen. Wir möchten um Ihre Zustimmung bitten. Wenn Sie keine Anzeigen sehen möchten, zahlen Sie bitte für die werbefreie Version.</string>
   <string name="gdpr_consent_button_yes">Ja, weiterhin Werbung anzeigen</string>
   <string name="gdpr_consent_button_no">Für die werbefreie Version bezahlen</string>
