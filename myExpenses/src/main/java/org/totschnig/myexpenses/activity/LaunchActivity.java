@@ -29,14 +29,11 @@ import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.PermissionHelper;
 import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
-import org.totschnig.myexpenses.util.licence.LicenceHandler;
 import org.totschnig.myexpenses.util.licence.Package;
 
 import java.io.File;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import javax.inject.Inject;
 
 import timber.log.Timber;
 
@@ -59,9 +56,6 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
 
   public static final String TAG_VERSION_INFO = "VERSION_INFO";
   private OpenIabHelper mHelper;
-
-  @Inject
-  LicenceHandler licenceHandler;
 
   @Override
   protected void injectDependencies() {
@@ -183,7 +177,7 @@ public abstract class LaunchActivity extends ProtectedFragmentActivity {
       if (prev_version == -1) {
         return;
       }
-      boolean showImportantUpgradeInfo = prev_version < 309;
+      boolean showImportantUpgradeInfo = false;
       prefHandler.putInt(CURRENT_VERSION, current_version);
       SharedPreferences settings = MyApplication.getInstance().getSettings();
       Editor edit = settings.edit();

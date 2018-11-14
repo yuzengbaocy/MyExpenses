@@ -26,7 +26,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.PopupMenu;
 import android.text.Spannable;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -45,7 +44,6 @@ import com.annimon.stream.Stream;
 
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
-import org.totschnig.myexpenses.activity.RoadmapVoteActivity;
 import org.totschnig.myexpenses.dialog.MessageDialogFragment.MessageDialogListener;
 
 import java.util.List;
@@ -106,13 +104,7 @@ public class VersionDialogFragment extends CommitSafeDialogFragment implements O
           makeVisibleAndClickable(learn_more, R.string.learn_more, new ClickableSpan() {
             @Override
             public void onClick(View v) {
-              PopupMenu popup = new PopupMenu(getActivity(), heading);
-              popup.setOnMenuItemClickListener(item -> {
-                showMoreInfo(item.getItemId(), getResources().getStringArray(resId));
-                return true;
-              });
-              popup.inflate(R.menu.version_info);
-              popup.show();
+              showMoreInfo(getResources().getStringArray(resId)[0]);
             }
           });
         }
@@ -120,7 +112,7 @@ public class VersionDialogFragment extends CommitSafeDialogFragment implements O
       }
     };
     lv.setAdapter(adapter);
-    if (getArguments().getBoolean(KEY_WITH_IMPORTANT_UPGRADE_INFO)) {
+/*    if (getArguments().getBoolean(KEY_WITH_IMPORTANT_UPGRADE_INFO)) {
       view.findViewById(R.id.ImportantUpgradeInfoHeading).setVisibility(View.VISIBLE);
       TextView importantUpgradeInfoBody = view.findViewById(R.id.ImportantUpgradeInfoBody);
       importantUpgradeInfoBody.setVisibility(View.VISIBLE);
@@ -132,7 +124,7 @@ public class VersionDialogFragment extends CommitSafeDialogFragment implements O
          getActivity().startActivity(new Intent(getContext(), RoadmapVoteActivity.class));
         }
       });
-    }
+    }*/
 
     AlertDialog.Builder builder = new AlertDialog.Builder(ctx)
         .setTitle(getString(R.string.help_heading_whats_new))
@@ -152,16 +144,8 @@ public class VersionDialogFragment extends CommitSafeDialogFragment implements O
     textView.setMovementMethod(LinkMovementMethod.getInstance());
   }
 
-  void showMoreInfo(final int itemId, String[] postIds) {
-    String uri = null;
-    switch (itemId) {
-      case R.id.facebook:
-        uri = "https://www.facebook.com/MyExpenses/posts/" + postIds[0];
-        break;
-      case R.id.google:
-        uri = "https://plus.google.com/+MyexpensesMobi/posts/" + postIds[1];
-        break;
-    }
+  void showMoreInfo(String postId) {
+    String uri = "https://www.facebook.com/MyExpenses/posts/" + postId;
     Intent i = new Intent(Intent.ACTION_VIEW);
     i.setData(Uri.parse(uri));
     startActivity(i);

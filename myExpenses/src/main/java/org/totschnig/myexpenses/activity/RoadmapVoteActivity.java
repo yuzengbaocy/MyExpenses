@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -27,8 +28,8 @@ import com.annimon.stream.Stream;
 
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
-import org.totschnig.myexpenses.dialog.ConfirmationDialogFragment;
 import org.totschnig.myexpenses.model.ContribFeature;
+import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.retrofit.Issue;
 import org.totschnig.myexpenses.retrofit.Vote;
 import org.totschnig.myexpenses.ui.ContextAwareRecyclerView;
@@ -46,14 +47,19 @@ import java.util.Map;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import eltos.simpledialogfragment.SimpleDialog;
+import eltos.simpledialogfragment.form.Input;
+import eltos.simpledialogfragment.form.SimpleFormDialog;
 
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_ROWID;
+import static org.totschnig.myexpenses.viewmodel.RoadmapViewModel.EXPECTED_MINIMAL_VERSION;
 import static org.totschnig.myexpenses.viewmodel.RoadmapViewModel.ROADMAP_URL;
 
 public class RoadmapVoteActivity extends ProtectedFragmentActivity implements
     SimpleDialog.OnDialogResultListener {
   private static final String DIALOG_TAG_ISSUE_VOTE = "issueVote";
+  private static final String DIALOG_TAG_SUBMIT_VOTE = "ROADMAP_VOTE";
   private static final String KEY_POSITION = "position";
+  private static final String KEY_EMAIL = "EMAIL";
   @BindView(R.id.my_recycler_view)
   ContextAwareRecyclerView recyclerView;
   private List<Issue> dataSet;
@@ -100,9 +106,11 @@ public class RoadmapVoteActivity extends ProtectedFragmentActivity implements
     roadmapViewModel.getVoteResult().observe(this,
         result -> {
           if (result != null) {
-            lastVote = result;
+            if (result.isSuccess()) {
+              lastVote = result.getExtra();
+            }
+            publishResult(result.print(this));
           }
-          publishResult(result != null ? "Your vote has been recorded" : "Failure while submitting your vote");
         });
     roadmapViewModel.getLastVote().observe(this,
         result -> {
@@ -113,7 +121,7 @@ public class RoadmapVoteActivity extends ProtectedFragmentActivity implements
               validateAndUpdateUi();
             }
           }
-          roadmapViewModel.loadData(true);
+          roadmapViewModel.loadData(EXPECTED_MINIMAL_VERSION <= getVersionFromPref());
         });
   }
 
@@ -121,6 +129,11 @@ public class RoadmapVoteActivity extends ProtectedFragmentActivity implements
   protected void onPause() {
     super.onPause();
     roadmapViewModel.cacheWeights(voteWeights);
+  }
+
+
+  private int getVersionFromPref() {
+    return prefHandler.getInt(PrefKey.ROADMAP_VERSION, 0 );
   }
 
   private void validateAndUpdateUi() {
@@ -162,7 +175,7 @@ public class RoadmapVoteActivity extends ProtectedFragmentActivity implements
   private void publishResult(String message) {
     isLoading = false;
     dismissSnackbar();
-    showSnackbar(message, Snackbar.LENGTH_SHORT);
+    showSnackbar(message, Snackbar.LENGTH_LONG);
   }
 
   @Override
@@ -225,25 +238,26 @@ public class RoadmapVoteActivity extends ProtectedFragmentActivity implements
         return true;
       }
       case R.id.ROADMAP_SUBMIT_VOTE: {
-        if (lastVote != null && lastVote.getVote().equals(voteWeights)) {
+        if (lastVote != null && lastVote.getVote().equals(voteWeights) && lastVote.getVersion() == getVersionFromPref()) {
           showSnackbar("Modify your vote, before submitting it again.", Snackbar.LENGTH_LONG);
         } else {
-          Bundle b = new Bundle();
-          b.putInt(ConfirmationDialogFragment.KEY_TITLE, R.string.roadmap_vote);
-          b.putString(ConfirmationDialogFragment.KEY_MESSAGE, lastVote == null ? "Your vote will be submitted" : "Your vote will be updated");
-          b.putInt(ConfirmationDialogFragment.KEY_COMMAND_POSITIVE, R.id.ROADMAP_SUBMIT_VOTE_DO);
-          ConfirmationDialogFragment.newInstance(b).show(getSupportFragmentManager(), "ROADMAP_VOTE");
+          final boolean emailIsKnown = getEmail() != null;
+          int msg = emailIsKnown ? R.string.roadmap_update_confirmation : R.string.roadmap_email_rationale;
+          final SimpleFormDialog simpleFormDialog = SimpleFormDialog.build().msg(msg);
+          if (!emailIsKnown) {
+            simpleFormDialog.fields(Input.email(KEY_EMAIL).required());
+          }
+          simpleFormDialog.show(this, DIALOG_TAG_SUBMIT_VOTE);
         }
-        return true;
-      }
-      case R.id.ROADMAP_SUBMIT_VOTE_DO: {
-        showSnackbar("Submitting vote ...", Snackbar.LENGTH_INDEFINITE);
-        isLoading = true;
-        roadmapViewModel.submitVote(lastVote != null ? lastVote.getKey() : null, new HashMap<>(voteWeights));
         return true;
       }
     }
     return false;
+  }
+
+  @Nullable
+  protected String getEmail() {
+    return lastVote != null? lastVote.getEmail() : null;
   }
 
   private void updateVoteMenuItem() {
@@ -316,18 +330,33 @@ public class RoadmapVoteActivity extends ProtectedFragmentActivity implements
 
   @Override
   public boolean onResult(@NonNull String dialogTag, int which, @NonNull Bundle extras) {
-    switch (dialogTag) {
-      case DIALOG_TAG_ISSUE_VOTE: {
-        int value = extras.getInt(SimpleSeekBarDialog.SEEKBAR_VALUE);
-        int issueId = extras.getInt(KEY_ROWID);
-        if (value > 0) {
-          voteWeights.put(issueId, value);
-        } else {
-          voteWeights.remove(issueId);
+    if (which == BUTTON_POSITIVE) {
+      switch (dialogTag) {
+        case DIALOG_TAG_ISSUE_VOTE: {
+          int value = extras.getInt(SimpleSeekBarDialog.SEEKBAR_VALUE);
+          int issueId = extras.getInt(KEY_ROWID);
+          if (value > 0) {
+            voteWeights.put(issueId, value);
+          } else {
+            voteWeights.remove(issueId);
+          }
+          validateAndUpdateUi();
+          updateVoteMenuItem();
+          return true;
         }
-        validateAndUpdateUi();
-        updateVoteMenuItem();
-        return true;
+        case DIALOG_TAG_SUBMIT_VOTE: {
+          showSnackbar("Submitting vote ...", Snackbar.LENGTH_INDEFINITE);
+          isLoading = true;
+          boolean isPro = ContribFeature.ROADMAP_VOTING.hasAccess();
+          String email =  getEmail();
+          if (email == null) {
+            email = extras.getString(KEY_EMAIL);
+          }
+          String key = lastVote != null ? lastVote.getKey() : licenceHandler.buildRoadmapVoteKey();
+          Vote vote = new Vote(key, new HashMap<>(voteWeights), isPro, email, getVersionFromPref());
+          roadmapViewModel.submitVote(vote);
+          return true;
+        }
       }
     }
     return false;

@@ -17,6 +17,7 @@ package org.totschnig.myexpenses.activity;
 
 import android.app.Activity;
 import android.app.KeyguardManager;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -160,6 +161,9 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
   @Inject
   protected PrefHandler prefHandler;
 
+  @Inject
+  protected LicenceHandler licenceHandler;
+
   public int getColorIncome() {
     return colorIncome;
   }
@@ -282,7 +286,11 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
           .createConfirmDeviceCredentialIntent(null, null);
       if (intent != null) {
         if (shouldHideWindow) hideWindow();
-        startActivityForResult(intent, requestCode);
+        try {
+          startActivityForResult(intent, requestCode);
+        } catch (ActivityNotFoundException e) {
+          showSnackbar("No activity found for confirming device credentials", Snackbar.LENGTH_LONG);
+        }
       } else {
         showDeviceLockScreenWarning();
         if (legacyUnlockCallback != null) {
@@ -366,7 +374,6 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
         startActivityForResult(i, ProtectedFragmentActivity.PREFERENCES_REQUEST);
         return true;
       case R.id.FEEDBACK_COMMAND: {
-        LicenceHandler licenceHandler = MyApplication.getInstance().getLicenceHandler();
         LicenceStatus licenceStatus = licenceHandler.getLicenceStatus();
         String licenceInfo = "";
         if (licenceStatus != null) {
@@ -410,7 +417,6 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
         doHelp((String) tag);
         return true;
       case R.id.REQUEST_LICENCE_MIGRATION_COMMAND:
-        LicenceHandler licenceHandler = MyApplication.getInstance().getLicenceHandler();
         String androidId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
         i = new Intent(android.content.Intent.ACTION_SEND);
         i.setType("plain/text");

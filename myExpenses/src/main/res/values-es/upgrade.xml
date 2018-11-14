@@ -18,6 +18,17 @@
   <!ENTITY app_name "My Expenses">
 ]>
 <resources>
+  <string-array name="whats_new_295">
+    <item>Colores personalizados para categorías principales</item>
+  </string-array>
+  <string-array name="whats_new_293">
+    <item>Objetivos de ahorro y límites de crédito</item>
+    <item>Grupo de cuentas (por tipo y divisa) pueden agruparse</item>
+  </string-array>
+  <string-array name="whats_new_292">
+    <item>Lista de cuenta rediseñada</item>
+    <item>La sincronización puede limitarse a vía Wi-Fi</item>
+  </string-array>
   <string-array name="whats_new_291">
     <item>La hora de transacción ahora es opcional</item>
     <item>Se diferencia entre fecha de reserva y fecha de valor de forma opcional</item>
@@ -59,30 +70,6 @@
   <string-array name="whats_new_280">
     <item>Traducción a Hebreo</item>
     <item>Seleccionar un color de cuenta personalizado</item>
-  </string-array>
-  <string-array name="whats_new_279">
-    <item>Los símbolos de moneda se pueden configurar</item>
-  </string-array>
-  <string-array name="whats_new_278">
-    <item>Accesos directos a la aplicación para Android 7.1</item>
-  </string-array>
-  <string-array name="whats_new_277">
-    <item>Las copias de seguridad automáticas se pueden guardar en los servicios de nube</item>
-  </string-array>
-  <string-array name="whats_new_276">
-    <item>Pequeñas mejoras</item>
-  </string-array>
-  <string-array name="whats_new_275">
-    <item>Sincronización entre varios dispositivos vía servicios en la nube</item>
-  </string-array>
-  <string-array name="whats_new_271">
-    <item>Se han resuelto problemas en los proyectos con dispositivos Samsung</item>
-    <item>Editar transacciones desde la pantalla de distribución</item>
-  </string-array>
-  <string-array name="whats_new_270">
-    <item>Nuevo icono</item>
-    <item>Búsqueda para transferencias</item>
-    <item>Los proyectos pueden ser ordenados por futuras instancias</item>
   </string-array>
     <string name="bug_fixes">Corrección de errores</string>
     <string name="performance_enhancement">Mejora de rendimiento</string>

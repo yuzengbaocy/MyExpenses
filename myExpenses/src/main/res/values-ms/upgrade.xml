@@ -18,6 +18,31 @@
   <!ENTITY app_name "My Expenses">
 ]>
 <resources>
+  <string-array name="whats_new_295">
+    <item>Warna suai untuk kategori utama</item>
+  </string-array>
+  <string-array name="whats_new_293">
+    <item>Matlamat simpanan dan had kredit</item>
+    <item>Kumpulan akaun (per jenis atau matawang) boleh dikuncupkan</item>
+  </string-array>
+  <string-array name="whats_new_292">
+    <item>Senarai akaun direka semula</item>
+    <item>Penyegerakan boleh dihadkan dengan Wi-Fi</item>
+  </string-array>
+  <string-array name="whats_new_291">
+    <item>Masa transaksi kini adalah pilihan</item>
+    <item>Boleh bezakan di antara tarikh tempahan dengan tarikh nilai secara pilihan</item>
+  </string-array>
+  <string-array name="whats_new_290">
+    <item>Transaksi berbilang boleh dikumpulkan menjadi satu transaksi pengasingan</item>
+    <item>Transaksi pengasingan boleh dinyahkumpulkan</item>
+  </string-array>
+  <string-array name="whats_new_289">
+    <item>Pertukaran diantara matawang asing dengan matawang negara sendiri</item>
+  </string-array>
+  <string-array name="whats_new_288">
+    <item>Carta sejarah (Aliran tunai)</item>
+  </string-array>
   <string-array name="whats_new_287">
     <item>Dilindungi oleh skrin kunci peranti</item>
   </string-array>
@@ -46,30 +71,7 @@
     <item>Terjemahan bahasa Ibrani</item>
     <item>Pemilih untuk warna akaun suai</item>
   </string-array>
-  <string-array name="whats_new_279">
-    <item>Simbol matawang boleh dikonfigurkan</item>
-  </string-array>
-  <string-array name="whats_new_278">
-    <item>Pintasan Apl untuk Android 7.1</item>
-  </string-array>
-  <string-array name="whats_new_277">
-    <item>Auto sandar boleh disimpan dalam bahagian belakang awan</item>
-  </string-array>
-  <string-array name="whats_new_276">
-    <item>Penambahbaikan kecil</item>
-  </string-array>
-  <string-array name="whats_new_275">
-    <item>Penyegerakan merentasi peranti melalui perkhidmatan awan</item>
-  </string-array>
-  <string-array name="whats_new_271">
-    <item>Masalah plan pada peranti Samsung telah dibaiki</item>
-    <item>Sunting transaksi dari skrin pengagihan</item>
-  </string-array>
-  <string-array name="whats_new_270">
-    <item>Ikon pelancar baharu</item>
-    <item>Gelintar pemindahan</item>
-    <item>Isih plan pada tika berikutnya</item>
-  </string-array>
     <string name="bug_fixes">Pembaikan pepijat</string>
     <string name="performance_enhancement">Penambahbaikan prestasi</string>
-    </resources>
+    <string name="stability_improvements">Penambahbaikan kestabilan</string>
+</resources>
