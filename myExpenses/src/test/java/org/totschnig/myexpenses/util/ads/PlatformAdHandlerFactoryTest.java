@@ -33,11 +33,10 @@ public class PlatformAdHandlerFactoryTest {
 
   @Test
   public void getDefaultAdHandlers() {
-    AdHandler[] adHandlers = factory.getAdHandlers(adContainer, "Ama:PubNative:AdMob");
-    assertThat(adHandlers).hasSize(3);
+    AdHandler[] adHandlers = factory.getAdHandlers(adContainer, "Ama:AdMob");
+    assertThat(adHandlers).hasSize(2);
     assertThat(adHandlers[0]).isInstanceOf(AmaAdHandler.class);
-    assertThat(adHandlers[1]).isInstanceOf(PubNativeAdHandler.class);
-    assertThat(adHandlers[2]).isInstanceOf(AdmobAdHandler.class);
+    assertThat(adHandlers[1]).isInstanceOf(AdmobAdHandler.class);
   }
 
   @Test
