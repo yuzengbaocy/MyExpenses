@@ -586,7 +586,7 @@ public class TransactionProvider extends ContentProvider {
               Account.HOME_AGGREGATE_ID + " AS " + KEY_ROWID,
               "'' AS " + KEY_LABEL,
               "'' AS " + KEY_DESCRIPTION,
-              "sum(" + KEY_OPENING_BALANCE + " * " + DatabaseConstants.getExchangeRate(TABLE_ACCOUNTS)
+              "sum(" + KEY_OPENING_BALANCE + " * " + DatabaseConstants.getExchangeRate(TABLE_ACCOUNTS, KEY_ROWID)
                   + ") AS " + KEY_OPENING_BALANCE,
               "'" + AGGREGATE_HOME_CURRENCY_CODE + "' AS " + KEY_CURRENCY,
               "-1 AS " + KEY_COLOR,
@@ -1135,7 +1135,7 @@ public class TransactionProvider extends ContentProvider {
             whereArgs);
         break;
       case TRANSACTION_UNDELETE:
-        segment = uri.getLastPathSegment();
+        segment = uri.getPathSegments().get(1);
         whereArgs = new String[]{segment, segment, segment};
         ContentValues v = new ContentValues();
         v.put(KEY_CR_STATUS, Transaction.CrStatus.UNRECONCILED.name());
