@@ -400,7 +400,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
         .setDescription(getPropertyWithDefault(customProperties, ACCOUNT_METADATA_DESCRIPTION_KEY, ""))
         .setColor(getPropertyWithDefault(customProperties, ACCOUNT_METADATA_COLOR_KEY, Account.DEFAULT_COLOR))
         .setCurrency(getPropertyWithDefault(customProperties, ACCOUNT_METADATA_CURRENCY_KEY,
-            Utils.getSaveDefault().getCurrencyCode()))
+            Utils.getHomeCurrency().code()))
         .setUuid(uuid)
         .setLabel(metadata.getTitle()).build());
   }
@@ -483,7 +483,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
           .setTitle(account.getLabel())
           .setCustomProperty(ACCOUNT_METADATA_UUID_KEY, account.uuid)
           .setCustomProperty(ACCOUNT_METADATA_COLOR_KEY, String.valueOf(account.color))
-          .setCustomProperty(ACCOUNT_METADATA_CURRENCY_KEY, account.currency.getCurrencyCode())
+          .setCustomProperty(ACCOUNT_METADATA_CURRENCY_KEY, account.getCurrencyUnit().code())
           .setCustomProperty(ACCOUNT_METADATA_TYPE_KEY, account.getType().name())
           .setCustomProperty(ACCOUNT_METADATA_OPENING_BALANCE_KEY, String.valueOf(account.openingBalance.getAmountMinor()));
       try {

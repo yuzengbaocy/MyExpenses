@@ -19,6 +19,7 @@ import org.onepf.oms.appstore.googleUtils.SkuDetails;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.contrib.Config;
+import org.totschnig.myexpenses.model.CurrencyUnit;
 import org.totschnig.myexpenses.model.Money;
 import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.util.CurrencyFormatter;
@@ -227,7 +228,7 @@ public class InappPurchaseLicenceHandler extends ContribStatusLicenceHandler {
     }
     if (currencyCode == null || pricesPrefsLong == 0) return null;
     return CurrencyFormatter.instance().formatCurrency(
-        new Money(Currency.getInstance(currencyCode),
+        new Money(CurrencyUnit.create(Currency.getInstance(currencyCode)),
             new BigDecimal(pricesPrefsLong).divide(new BigDecimal(1000000))));
   }
 

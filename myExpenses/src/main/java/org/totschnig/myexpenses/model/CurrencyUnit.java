@@ -8,7 +8,6 @@ import java.util.Currency;
 
 @AutoValue
 public abstract class CurrencyUnit implements Serializable {
-  @VisibleForTesting
   public static CurrencyUnit create(Currency currency) {
     return create(currency.getCurrencyCode(), currency.getSymbol(), currency.getDefaultFractionDigits());
   }
