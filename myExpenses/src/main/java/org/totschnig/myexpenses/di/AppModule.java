@@ -11,6 +11,8 @@ import com.google.android.vending.licensing.PreferenceObfuscator;
 
 import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
+import org.totschnig.myexpenses.model.CurrencyContext;
+import org.totschnig.myexpenses.model.PreferencesCurrencyContext;
 import org.totschnig.myexpenses.preference.PrefHandler;
 import org.totschnig.myexpenses.preference.PrefHandlerImpl;
 import org.totschnig.myexpenses.util.DistribHelper;
@@ -126,5 +128,12 @@ public class AppModule {
   @Singleton
   protected PrefHandler providePrefHandler(MyApplication context) {
     return new PrefHandlerImpl(context);
+  }
+
+
+  @Provides
+  @Singleton
+  protected CurrencyContext provideCurrencyContext(PrefHandler prefHandler) {
+    return new PreferencesCurrencyContext(prefHandler);
   }
 }
