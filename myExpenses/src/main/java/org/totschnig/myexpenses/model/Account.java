@@ -257,7 +257,9 @@ public class Account extends Model {
   }
 
   private double adjustExchangeRate(double raw) {
-    int minorUnitDelta = currencyUnit.fractionDigits() - Utils.getHomeCurrency().fractionDigits();
+    final int thisFractionDigits = currencyUnit.fractionDigits();
+    final int homeFractionDigits = Utils.getHomeCurrency().fractionDigits();
+    int minorUnitDelta = thisFractionDigits - homeFractionDigits;
     return raw * Math.pow(10, minorUnitDelta);
   }
 
