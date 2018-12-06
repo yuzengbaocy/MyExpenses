@@ -366,6 +366,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
       throw new IOException("Error while trying to get change set");
     }
     MetadataBuffer metadataBuffer = metadataBufferResult.getMetadataBuffer();
+    SyncAdapter.log().i("Getting data from shard %d", sequenceNumber.shard);
     final List<ChangeSet> entries = Stream.of(metadataBuffer)
         .filter(metadata -> isNewerJsonFile(sequenceNumber.number, metadata.getTitle()))
         .map(metadata -> getChangeSetFromMetadata(sequenceNumber.shard, metadata))
@@ -380,11 +381,14 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
           throw new IOException("Error while trying to get change set");
         }
         metadataBuffer = metadataBufferResult.getMetadataBuffer();
+        SyncAdapter.log().i("Getting data from shard %d", nextShard);
+        int finalNextShard = nextShard;
         Stream.of(metadataBuffer)
             .filter(metadata -> isNewerJsonFile(0, metadata.getTitle()))
-            .map(metadata -> getChangeSetFromMetadata(nextShard, metadata))
+            .map(metadata -> getChangeSetFromMetadata(finalNextShard, metadata))
             .forEach(entries::add);
         metadataBuffer.release();
+        nextShard++;
       } else {
         break;
       }
@@ -415,6 +419,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
       SyncAdapter.log().e("Unable to open %s", driveId.getResourceId());
       return null;
     }
+    SyncAdapter.log().i("Getting data from file %s", metadata.getTitle());
     DriveContents driveContents = driveContentsResult.getDriveContents();
     try {
       return getChangeSetFromInputStream(new SequenceNumber(shard, getSequenceFromFileName(metadata.getTitle())),
