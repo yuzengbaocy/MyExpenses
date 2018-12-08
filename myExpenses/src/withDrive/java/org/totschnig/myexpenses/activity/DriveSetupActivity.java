@@ -16,6 +16,7 @@ package org.totschnig.myexpenses.activity;
 
 import android.accounts.AccountManager;
 import android.app.Dialog;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.IntentSender.SendIntentException;
@@ -70,9 +71,13 @@ public class DriveSetupActivity extends ProtectedFragmentActivity implements
     Icepick.restoreInstanceState(this, savedInstanceState);
 
     if (savedInstanceState == null) {
-      startActivityForResult(AccountPicker.newChooseAccountIntent(null,
-          null, new String[]{"com.google"}, true, null, null, null, null),
-          REQUEST_ACCOUNT_PICKER);
+      try {
+        startActivityForResult(AccountPicker.newChooseAccountIntent(null,
+            null, new String[]{"com.google"}, true, null, null, null, null),
+            REQUEST_ACCOUNT_PICKER);
+      } catch (ActivityNotFoundException e) {
+       reportProblemToUser(e.getMessage());
+      }
     }
   }
 
