@@ -1,6 +1,5 @@
 package org.totschnig.myexpenses.util.licence;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
 
 import com.google.android.vending.licensing.PreferenceObfuscator;
@@ -8,6 +7,7 @@ import com.google.android.vending.licensing.PreferenceObfuscator;
 import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.preference.PrefKey;
+import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
 
 import timber.log.Timber;
 
@@ -48,8 +48,8 @@ public abstract class ContribStatusLicenceHandler extends LicenceHandler {
 
   private int contribStatus;
 
-  ContribStatusLicenceHandler(MyApplication context, PreferenceObfuscator preferenceObfuscator) {
-    super(context, preferenceObfuscator);
+  ContribStatusLicenceHandler(MyApplication context, PreferenceObfuscator preferenceObfuscator, CrashHandler crashHandler) {
+    super(context, preferenceObfuscator, crashHandler);
   }
 
   abstract int getLegacyStatus();
@@ -58,7 +58,7 @@ public abstract class ContribStatusLicenceHandler extends LicenceHandler {
    * @return true if licenceStatus has been upEd
    */
   public boolean registerUnlockLegacy() {
-    if (licenceStatus == null) {
+    if (getLicenceStatus() == null) {
       updateContribStatus(getLegacyStatus());
       return true;
     } else {
@@ -88,13 +88,13 @@ public abstract class ContribStatusLicenceHandler extends LicenceHandler {
   synchronized private void setContribStatus(int contribStatus) {
     this.contribStatus = contribStatus;
     if (contribStatus >= STATUS_PROFESSIONAL) {
-      licenceStatus = LicenceStatus.PROFESSIONAL;
+      setLicenceStatus(LicenceStatus.PROFESSIONAL);
     } else if (contribStatus >= STATUS_EXTENDED_TEMPORARY) {
-      licenceStatus = LicenceStatus.EXTENDED;
+      setLicenceStatus(LicenceStatus.EXTENDED);
     } else if (contribStatus > 0) {
-      licenceStatus = LicenceStatus.CONTRIB;
+      setLicenceStatus(LicenceStatus.CONTRIB);
     } else {
-      licenceStatus = null;
+      setLicenceStatus(null);
     }
     d("valueSet");
   }

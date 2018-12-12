@@ -24,6 +24,7 @@ import org.totschnig.myexpenses.model.Money;
 import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.util.CurrencyFormatter;
 import org.totschnig.myexpenses.util.DistribHelper;
+import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -49,8 +50,8 @@ public class InappPurchaseLicenceHandler extends ContribStatusLicenceHandler {
   String PRICES_PREFS_FILE = "license_prices";
   SharedPreferences pricesPrefs;
 
-  public InappPurchaseLicenceHandler(MyApplication context, PreferenceObfuscator preferenceObfuscator) {
-    super(context, preferenceObfuscator);
+  public InappPurchaseLicenceHandler(MyApplication context, PreferenceObfuscator preferenceObfuscator, CrashHandler crashHandler) {
+    super(context, preferenceObfuscator, crashHandler);
     pricesPrefs = context.getSharedPreferences(PRICES_PREFS_FILE, Context.MODE_PRIVATE);
   }
 
@@ -155,6 +156,7 @@ public class InappPurchaseLicenceHandler extends ContribStatusLicenceHandler {
 
   public String getSkuForPackage(Package aPackage) {
     String sku;
+    LicenceStatus licenceStatus = getLicenceStatus();
     switch (aPackage) {
       case Contrib:
         sku = Config.SKU_PREMIUM;
@@ -219,7 +221,7 @@ public class InappPurchaseLicenceHandler extends ContribStatusLicenceHandler {
   protected String getMinimumProfessionalMonthlyPrice(boolean withExtra) {
     long pricesPrefsLong;
     String currencyCode;
-    if (licenceStatus == LicenceStatus.EXTENDED) {
+    if (getLicenceStatus() == LicenceStatus.EXTENDED) {
       pricesPrefsLong = pricesPrefs.getLong(KEY_EXTENDED2PROFESSIONAL_12_INTRODUCTORY_MONTHLY, 0);
       currencyCode = pricesPrefs.getString(KEY_EXTENDED2PROFESSIONAL_12_CURRENCY_CODE, null);
     } else {
@@ -315,7 +317,7 @@ public class InappPurchaseLicenceHandler extends ContribStatusLicenceHandler {
   protected String getProfessionalPriceFallBack() {
     if (DistribHelper.isAmazon()) {
       String priceInfo = Stream.of(Package.Professional_1, Package.Professional_12).map(this::getFormattedPrice).collect(Collectors.joining(", "));
-      if (licenceStatus == LicenceStatus.EXTENDED) {
+      if (getLicenceStatus() == LicenceStatus.EXTENDED) {
         String regularPrice = pricesPrefs.getString(Config.SKU_PROFESSIONAL_12, null);
         if (regularPrice != null) {
           priceInfo += ". " + context.getString(R.string.extended_upgrade_goodie_subscription_amazon, 15, regularPrice);

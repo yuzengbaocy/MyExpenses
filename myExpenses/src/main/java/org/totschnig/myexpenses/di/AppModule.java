@@ -48,17 +48,17 @@ public class AppModule {
 
   @Provides
   @Singleton
-  LicenceHandler providesLicenceHandler(PreferenceObfuscator preferenceObfuscator) {
+  LicenceHandler providesLicenceHandler(PreferenceObfuscator preferenceObfuscator, CrashHandler crashHandler) {
     switch (DistribHelper.getDistribution()) {
       case BLACKBERRY:
-        return new BlackberryLegacyLicenceHandler(application, preferenceObfuscator);
+        return new BlackberryLegacyLicenceHandler(application, preferenceObfuscator, crashHandler);
       case HUAWEI:
-        return new LicenceHandler(application, preferenceObfuscator);
+        return new LicenceHandler(application, preferenceObfuscator, crashHandler);
       case PLAY:
       case AMAZON:
-       return new InappPurchaseLicenceHandler(application, preferenceObfuscator);
+       return new InappPurchaseLicenceHandler(application, preferenceObfuscator, crashHandler);
     }
-    return new HashLicenceHandler(application, preferenceObfuscator);
+    return new HashLicenceHandler(application, preferenceObfuscator, crashHandler);
   }
 
   @Provides

@@ -7,20 +7,21 @@ import android.support.annotation.Nullable;
 import com.google.android.vending.licensing.PreferenceObfuscator;
 
 import org.totschnig.myexpenses.MyApplication;
+import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
 
 public class BlackberryLegacyLicenceHandler extends ContribStatusLicenceHandler {
   private boolean hasLegacyLicence = false;
 
-  public BlackberryLegacyLicenceHandler(MyApplication context, PreferenceObfuscator preferenceObfuscator) {
-    super(context, preferenceObfuscator);
+  public BlackberryLegacyLicenceHandler(MyApplication context, PreferenceObfuscator preferenceObfuscator, CrashHandler crashHandler) {
+    super(context, preferenceObfuscator, crashHandler);
   }
 
   @Override
   public void init() {
     super.init();
-    if (licenceStatus == null) {
+    if (getLicenceStatus() == null) {
       readContribStatusFromPrefs();
-      if (licenceStatus != null) {
+      if (getLicenceStatus() != null) {
         hasLegacyLicence = true;
       }
     }
@@ -47,7 +48,7 @@ public class BlackberryLegacyLicenceHandler extends ContribStatusLicenceHandler 
    * @return true if licenceStatus has been upEd
    */
   public boolean registerBlackberryProfessional() {
-    if (LicenceStatus.PROFESSIONAL.equals(licenceStatus)) {
+    if (LicenceStatus.PROFESSIONAL.equals(getLicenceStatus())) {
       return false;
     } else {
       updateContribStatus(STATUS_PROFESSIONAL);
@@ -76,7 +77,7 @@ public class BlackberryLegacyLicenceHandler extends ContribStatusLicenceHandler 
 
   @Override
   public boolean needsKeyEntry() {
-    return !(hasLegacyLicence && LicenceStatus.PROFESSIONAL.equals(licenceStatus));
+    return !(hasLegacyLicence && LicenceStatus.PROFESSIONAL.equals(getLicenceStatus()));
   }
 
   @Nullable
