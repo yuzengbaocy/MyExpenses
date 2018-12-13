@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
@@ -104,7 +105,8 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     long currentBackOff = sharedPreferences.getLong(KEY_SYNC_BACKOFF, 0);
     long now = System.currentTimeMillis();
     if (lastFailedSync != 0 && lastFailedSync + currentBackOff > now) {
-      SyncAdapter.log().e("Not syncing, waiting for another %d milliseconds", lastFailedSync + currentBackOff - now);
+      CrashHandler.report(String.format(Locale.ROOT, "Not syncing, waiting for another %d milliseconds",
+          lastFailedSync + currentBackOff - now), SyncAdapter.TAG);
       return SUCCESS;
     }
     if (googleApiClient.isConnected()) {
@@ -134,9 +136,9 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   private Exceptional<Void> setUpInternal(long now) {
     Status status = Drive.DriveApi.requestSync(googleApiClient).await();
     if (!status.isSuccess()) {
-      SyncAdapter.log().e("Sync failed with code %d", status.getStatusCode());
+      CrashHandler.report(String.format(Locale.ROOT, "Sync failed with code %d", status.getStatusCode()), SyncAdapter.TAG);
       long newBackOff = Math.min(sharedPreferences.getLong(KEY_SYNC_BACKOFF, 5000) * 2, 3600000);
-      SyncAdapter.log().e("Backing off for %d milliseconds ", newBackOff);
+      CrashHandler.report(String.format(Locale.ROOT, "Backing off for %d milliseconds ", newBackOff), SyncAdapter.TAG);
       sharedPreferences.edit().putLong(KEY_LAST_FAILED_SYNC, now).putLong(KEY_SYNC_BACKOFF, newBackOff).commit();
       return SUCCESS;
     } else {
@@ -416,7 +418,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     DriveApi.DriveContentsResult driveContentsResult =
         driveId.asDriveFile().open(googleApiClient, DriveFile.MODE_READ_ONLY, null).await();
     if (!driveContentsResult.getStatus().isSuccess()) {
-      SyncAdapter.log().e("Unable to open %s", driveId.getResourceId());
+      CrashHandler.report(String.format("Unable to open %s", driveId.getResourceId()), SyncAdapter.TAG);
       return null;
     }
     SyncAdapter.log().i("Getting data from file %s", metadata.getTitle());
