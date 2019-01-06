@@ -405,6 +405,7 @@
         <item>help_ManageSyncBackends_intro</item>
         <item>help_ManageSyncBackends_webdav</item>
         <item>help_ManageSyncBackends_drive</item>
+        <item>help_ManageSyncBackends_encryption</item>
     </string-array>
 
     <string-array name="ManageSyncBackends_cabitems" tools:ignore="UnusedResources">
@@ -439,7 +440,7 @@
     </string-array>
 
     <string-array name="versions">
-        <item>358;2.9.8.1</item>
+        <item>359;2.9.9</item>
         <item>357;2.9.8</item>
         <item>351;2.9.7</item>
         <item>346;2.9.6</item>
