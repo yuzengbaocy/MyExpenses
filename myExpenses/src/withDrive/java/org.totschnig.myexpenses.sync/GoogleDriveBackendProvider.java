@@ -23,6 +23,7 @@ import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.DriveId;
 import com.google.android.gms.drive.DriveResource;
+import com.google.android.gms.drive.DriveStatusCodes;
 import com.google.android.gms.drive.Metadata;
 import com.google.android.gms.drive.MetadataBuffer;
 import com.google.android.gms.drive.MetadataChangeSet;
@@ -31,7 +32,6 @@ import com.google.android.gms.drive.query.Filters;
 import com.google.android.gms.drive.query.Query;
 import com.google.android.gms.drive.query.SearchableField;
 
-import org.apache.commons.lang3.StringUtils;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.model.Account;
@@ -41,14 +41,14 @@ import org.totschnig.myexpenses.sync.json.ChangeSet;
 import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
 import org.totschnig.myexpenses.util.io.FileCopyUtils;
+import org.totschnig.myexpenses.util.io.StreamReader;
 
-import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -73,7 +73,6 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
       new CustomPropertyKey(KEY_LOCK_TOKEN, CustomPropertyKey.PRIVATE);
   private static final CustomPropertyKey IS_BACKUP_FOLDER =
       new CustomPropertyKey("isBackupFolder", CustomPropertyKey.PRIVATE);
-  private static final Exceptional<Void> SUCCESS = Exceptional.of(() -> null);
   private String folderId;
   private DriveFolder baseFolder, accountFolder;
 
@@ -98,56 +97,62 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     return "google_drive_backend";
   }
 
-  private boolean requireSetup() {
-    return setUp(null).isPresent();
+  @Override
+  protected String readEncryptionToken() throws IOException {
+    requireBaseFolder();
+    try {
+      return new StreamReader(getInputStream(baseFolder, ENCRYPTION_TOKEN_FILE_NAME)).read();
+    } catch (FileNotFoundException e) {
+      return null;
+    }
   }
 
   @Override
-  public Exceptional<Void> setUp(String authToken) {
+  public Exceptional<Void> setUp(String authToken, String encryptionPassword) {
     long lastFailedSync = sharedPreferences.getLong(KEY_LAST_FAILED_SYNC, 0);
     long currentBackOff = sharedPreferences.getLong(KEY_SYNC_BACKOFF, 0);
     long now = System.currentTimeMillis();
-    if (lastFailedSync != 0 && lastFailedSync + currentBackOff > now) {
-      CrashHandler.report(String.format(Locale.ROOT, "Not syncing, waiting for another %d milliseconds",
-          lastFailedSync + currentBackOff - now), SyncAdapter.TAG);
-      return SUCCESS;
-    }
-    if (googleApiClient.isConnected()) {
-      return setUpInternal(now);
-    } else {
-      ConnectionResult connectionResult = googleApiClient.blockingConnect();
-      if (connectionResult.isSuccess()) {
-        return setUpInternal(now);
-      } else {
-        final PendingIntent resolution = connectionResult.getResolution();
-        if (resolution != null) {
-          return Exceptional.of(new ResolvableSetupException(resolution, connectionResult.getErrorMessage()));
-        }
-        if (GoogleApiAvailability.getInstance().isUserResolvableError(connectionResult.getErrorCode())) {
-          GoogleApiAvailability.getInstance().showErrorNotification(getContext(), connectionResult);
-          //we return ResolvableSetupException to indicate that there is a resolution, but with null
-          //resolution since GoogleApiAvailability is taking care of generating notification
-          return Exceptional.of(new ResolvableSetupException(null, null));
-        } else {
-          return Exceptional.of(new Throwable(getContext().getString(R.string.sync_io_error_cannot_connect)));
+    if (lastFailedSync == 0 || lastFailedSync + currentBackOff <= now) {
+      if (!googleApiClient.isConnected()) {
+        ConnectionResult connectionResult = googleApiClient.blockingConnect();
+        if (!connectionResult.isSuccess()) {
+          final PendingIntent resolution = connectionResult.getResolution();
+          if (resolution != null) {
+            return Exceptional.of(new ResolvableSetupException(resolution, connectionResult.getErrorMessage()));
+          }
+          if (GoogleApiAvailability.getInstance().isUserResolvableError(connectionResult.getErrorCode())) {
+            GoogleApiAvailability.getInstance().showErrorNotification(getContext(), connectionResult);
+            //we return ResolvableSetupException to indicate that there is a resolution, but with null
+            //resolution since GoogleApiAvailability is taking care of generating notification
+            return Exceptional.of(new ResolvableSetupException(null, null));
+          } else {
+            return Exceptional.of(new Throwable(getContext().getString(R.string.sync_io_error_cannot_connect)));
+          }
         }
       }
+      setUpInternal(now);
+    } else {
+      log().i("Not syncing, waiting for another %d milliseconds",
+          lastFailedSync + currentBackOff - now);
     }
+    return super.setUp(authToken, encryptionPassword);
   }
 
   @SuppressLint("ApplySharedPref")
-  private Exceptional<Void> setUpInternal(long now) {
+  private void setUpInternal(long now) {
     Status status = Drive.DriveApi.requestSync(googleApiClient).await();
     if (!status.isSuccess()) {
-      CrashHandler.report(String.format(Locale.ROOT, "Sync failed with code %d", status.getStatusCode()), SyncAdapter.TAG);
+      final int statusCode = status.getStatusCode();
+      if (statusCode != DriveStatusCodes.DRIVE_RATE_LIMIT_EXCEEDED) {
+        CrashHandler.report(String.format(Locale.ROOT, "Sync failed with code %d", statusCode), SyncAdapter.TAG);
+      } else {
+        log().i("DRIVE_RATE_LIMIT_EXCEEDED");
+      }
       long newBackOff = Math.min(sharedPreferences.getLong(KEY_SYNC_BACKOFF, 5000) * 2, 3600000);
-      CrashHandler.report(String.format(Locale.ROOT, "Backing off for %d milliseconds ", newBackOff), SyncAdapter.TAG);
       sharedPreferences.edit().putLong(KEY_LAST_FAILED_SYNC, now).putLong(KEY_SYNC_BACKOFF, newBackOff).commit();
-      return SUCCESS;
     } else {
-      SyncAdapter.log().i("Sync succeeded");
+      log().i("Sync succeeded");
       sharedPreferences.edit().remove(KEY_LAST_FAILED_SYNC).remove(KEY_SYNC_BACKOFF).apply();
-      return SUCCESS;
     }
   }
 
@@ -164,16 +169,11 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
 
   @Override
   public InputStream getInputStreamForBackup(android.accounts.Account account, String backupFile) throws IOException {
-    if (requireSetup()) {
-      final DriveFolder backupFolder = getBackupFolder(false);
-      if (backupFolder != null) {
-        return getInputStream(backupFolder, backupFile);
-      } else {
-        throw new IOException("No backup folder found");
-      }
-    }
-    else {
-      throw new IOException(getContext().getString(R.string.sync_io_error_cannot_connect));
+    final DriveFolder backupFolder = getBackupFolder(false);
+    if (backupFolder != null) {
+      return getInputStream(backupFolder, backupFile);
+    } else {
+      throw new IOException("No backup folder found");
     }
   }
 
@@ -184,12 +184,12 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     DriveApi.MetadataBufferResult metadataBufferResult =
         folder.queryChildren(googleApiClient, query).await();
     if (!metadataBufferResult.getStatus().isSuccess()) {
-      throw new IOException("Unable to find file " + title);
+      throw new IOException("Unable to query for file " + title);
     }
     MetadataBuffer metadataBuffer = metadataBufferResult.getMetadataBuffer();
     if (metadataBuffer.getCount() != 1) {
       metadataBuffer.release();
-      throw new IOException("Unable to find file " + title);
+      throw new FileNotFoundException("Unable to find file " + title);
     }
     final Metadata metadata = metadataBuffer.get(0);
     if (metadata.isFolder()) {
@@ -206,44 +206,39 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
 
   @Override
   protected void saveUriToAccountDir(String fileName, Uri uri) throws IOException {
-    saveUriToFolder(fileName, uri, accountFolder);
+    saveUriToFolder(fileName, uri, accountFolder, true);
   }
 
-  private void saveUriToFolder(String fileName, Uri uri, DriveFolder driveFolder) throws IOException {
-    InputStream in = MyApplication.getInstance().getContentResolver()
-        .openInputStream(uri);
+  private void saveUriToFolder(String fileName, Uri uri, DriveFolder driveFolder, boolean maybeEncrypt) throws IOException {
+    InputStream in = MyApplication.getInstance().getContentResolver().openInputStream(uri);
     if (in == null) {
       throw new IOException("Could not read " + uri.toString());
     }
-    saveInputStream(fileName, in,
-        getMimeType(fileName), driveFolder);
+    saveInputStream(fileName, maybeEncrypt ? maybeEncrypt(in) : in, getMimeType(fileName), driveFolder);
     in.close();
   }
 
   @Override
   public void storeBackup(Uri uri, String fileName) throws IOException {
-    saveUriToFolder(fileName, uri, getBackupFolder(true));
+    saveUriToFolder(fileName, uri, getBackupFolder(true), false);
   }
 
   @NonNull
   @Override
   public List<String> getStoredBackups(android.accounts.Account account) throws IOException {
     List<String> result = new ArrayList<>();
-    if (requireSetup()) {
-      final DriveFolder backupFolder = getBackupFolder(false);
-      if (backupFolder != null) {
-        DriveApi.MetadataBufferResult metadataBufferResult = backupFolder.listChildren(googleApiClient).await();
-        if (!metadataBufferResult.getStatus().isSuccess()) {
-          throw new IOException("Error while trying to get backup list");
-        }
-        MetadataBuffer metadataBuffer = metadataBufferResult.getMetadataBuffer();
-        result = Stream.of(metadataBuffer)
-            .map(Metadata::getTitle)
-            .toList();
-        metadataBuffer.release();
+    final DriveFolder backupFolder = getBackupFolder(false);
+    if (backupFolder != null) {
+      DriveApi.MetadataBufferResult metadataBufferResult = backupFolder.listChildren(googleApiClient).await();
+      if (!metadataBufferResult.getStatus().isSuccess()) {
+        throw new IOException("Error while trying to get backup list");
       }
+      MetadataBuffer metadataBuffer = metadataBufferResult.getMetadataBuffer();
+      result = Stream.of(metadataBuffer)
+          .map(Metadata::getTitle)
+          .toList();
+      metadataBuffer.release();
     }
-    tearDown();
     return result;
   }
 
@@ -285,7 +280,12 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   }
 
   @Override
-  void saveFileContents(String folder, String fileName, String fileContents, String mimeType) throws IOException {
+  void saveFileContentsToBase(String fileName, String fileContents, String mimeType, boolean maybeEncrypt) throws IOException {
+    saveFileContents(baseFolder, fileName, fileContents, mimeType, maybeEncrypt);
+  }
+
+  @Override
+  void saveFileContentsToAccountDir(String folder, String fileName, String fileContents, String mimeType, boolean maybeEncrypt) throws IOException {
     DriveFolder driveFolder;
     if (folder == null) {
       driveFolder = accountFolder;
@@ -294,8 +294,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
       if (driveFolderOptional.isPresent()) {
         driveFolder = driveFolderOptional.get();
       } else {
-        MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-            .setTitle(folder).build();
+        MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setTitle(folder).build();
         DriveFolder.DriveFolderResult driveFolderResult = accountFolder.createFolder(googleApiClient, changeSet).await();
         if (!driveFolderResult.getStatus().isSuccess()) {
           throw new IOException("Unable to create folder");
@@ -303,7 +302,11 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
         driveFolder = driveFolderResult.getDriveFolder();
       }
     }
-    ByteArrayInputStream contents = new ByteArrayInputStream(fileContents.getBytes());
+    saveFileContents(driveFolder, fileName, fileContents, mimeType, maybeEncrypt);
+  }
+
+  private void saveFileContents(DriveFolder driveFolder, String fileName, String fileContents, String mimeType, boolean maybeEncrypt) throws IOException {
+    InputStream contents = toInputStream(fileContents, maybeEncrypt);
     saveInputStream(fileName, contents, mimeType, driveFolder);
     contents.close();
   }
@@ -346,7 +349,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     if (!driveFileResult.getStatus().isSuccess()) {
       throw new IOException("Error while trying to create file");
     }
-    SyncAdapter.log().i(driveFileResult.getStatus().toString());
+    log().i(driveFileResult.getStatus().toString());
   }
 
   @Override
@@ -381,7 +384,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
       throw new IOException("Error while trying to get change set");
     }
     MetadataBuffer metadataBuffer = metadataBufferResult.getMetadataBuffer();
-    SyncAdapter.log().i("Getting data from shard %d", sequenceNumber.shard);
+    log().i("Getting data from shard %d", sequenceNumber.shard);
     final List<ChangeSet> entries = Stream.of(metadataBuffer)
         .filter(metadata -> isNewerJsonFile(sequenceNumber.number, metadata.getTitle()))
         .map(metadata -> getChangeSetFromMetadata(sequenceNumber.shard, metadata))
@@ -396,7 +399,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
           throw new IOException("Error while trying to get change set");
         }
         metadataBuffer = metadataBufferResult.getMetadataBuffer();
-        SyncAdapter.log().i("Getting data from shard %d", nextShard);
+        log().i("Getting data from shard %d", nextShard);
         int finalNextShard = nextShard;
         Stream.of(metadataBuffer)
             .filter(metadata -> isNewerJsonFile(0, metadata.getTitle()))
@@ -434,13 +437,13 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
       CrashHandler.report(String.format("Unable to open %s", driveId.getResourceId()), SyncAdapter.TAG);
       return null;
     }
-    SyncAdapter.log().i("Getting data from file %s", metadata.getTitle());
+    log().i("Getting data from file %s", metadata.getTitle());
     DriveContents driveContents = driveContentsResult.getDriveContents();
     try {
       return getChangeSetFromInputStream(new SequenceNumber(shard, getSequenceFromFileName(metadata.getTitle())),
           driveContents.getInputStream());
     } catch (IOException e) {
-      SyncAdapter.log().w(e);
+      log().w(e);
       return null;
     } finally {
       driveContents.discard(googleApiClient);
@@ -461,33 +464,59 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   @NonNull
   @Override
   public Stream<AccountMetaData> getRemoteAccountList(android.accounts.Account account) throws IOException {
-    Stream<AccountMetaData> result = Stream.empty();
-    if (requireSetup()) {
-      if (requireBaseFolder()) {
-        DriveApi.MetadataBufferResult metadataBufferResult = baseFolder.listChildren(googleApiClient).await();
-        if (!metadataBufferResult.getStatus().isSuccess()) {
-          throw new IOException("Error while trying to get account list");
-        }
-        MetadataBuffer metadataBuffer = metadataBufferResult.getMetadataBuffer();
-        List<AccountMetaData> accountMetaDataList = Stream.of(metadataBuffer)
-            .map(this::getAccountMetaDataFromDriveMetadata)
-            .filter(Optional::isPresent)
-            .map(Optional::get).toList();
-        result = Stream.of(accountMetaDataList);
-        metadataBuffer.release();
-      }
-      tearDown();
+    Stream<AccountMetaData> result;
+    requireBaseFolder();
+    DriveApi.MetadataBufferResult metadataBufferResult = baseFolder.listChildren(googleApiClient).await();
+    if (!metadataBufferResult.getStatus().isSuccess()) {
+      throw new IOException("Error while trying to get account list");
     }
+    MetadataBuffer metadataBuffer = metadataBufferResult.getMetadataBuffer();
+    List<AccountMetaData> accountMetaDataList = Stream.of(metadataBuffer)
+        .map(this::getAccountMetaDataFromDriveMetadata)
+        .filter(Optional::isPresent)
+        .map(Optional::get).toList();
+    result = Stream.of(accountMetaDataList);
+    metadataBuffer.release();
     return result;
   }
 
   private Optional<AccountMetaData> getAccountMetaDataFromDriveMetadata(Metadata metadata) {
+    if (!metadata.isFolder()) {
+      return Optional.empty();
+    }
+    Query query = new Query.Builder()
+        .addFilter(Filters.eq(SearchableField.TITLE, getAccountMetadataFilename()))
+        .build();
+    DriveApi.MetadataBufferResult metadataBufferResult =
+        metadata.getDriveId().asDriveFolder().queryChildren(googleApiClient, query).await();
+    if (!metadataBufferResult.getStatus().isSuccess()) {
+      log().e("Unable to query for metadata file");
+      return Optional.empty();
+    }
+    MetadataBuffer metadataBuffer = metadataBufferResult.getMetadataBuffer();
+    if (metadataBuffer.getCount() == 1) {
+      DriveApi.DriveContentsResult driveContentsResult = metadataBuffer.get(0).getDriveId()
+          .asDriveFile().open(googleApiClient, DriveFile.MODE_READ_ONLY, null).await();
+      if (!driveContentsResult.getStatus().isSuccess()) {
+        log().e("Unable to open metadata file");
+        metadataBuffer.release();
+        return Optional.empty();
+      }
+      final InputStream inputStream = driveContentsResult.getDriveContents().getInputStream();
+      final Optional<AccountMetaData> result = getAccountMetaDataFromInputStream(inputStream);
+      metadataBuffer.release();
+      return result;
+    }
+
+    //legacy
     Map<CustomPropertyKey, String> customProperties = metadata.getCustomProperties();
     if (metadata.isTrashed()) {
+      log().e("Folder is trashed");
       return Optional.empty();
     }
     String uuid = customProperties.get(ACCOUNT_METADATA_UUID_KEY);
     if (uuid == null) {
+      log().e("UUID property not set");
       return Optional.empty();
     }
     //TODO add default values
@@ -532,9 +561,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
 
   @Nullable
   private DriveFolder getBackupFolder(boolean require) throws IOException {
-    if (!requireBaseFolder()) {
-      throw new IOException("Base folder not available");
-    }
+    requireBaseFolder();
     Query query = new Query.Builder()
         .addFilter(Filters.eq(SearchableField.TITLE, BACKUP_FOLDER_NAME))
         .build();
@@ -570,16 +597,16 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   }
 
   private Optional<DriveFolder> getExistingAccountFolder(String uuid) throws IOException {
-    if (!requireBaseFolder()) {
-      throw new IOException("Base folder not available");
-    }
+    requireBaseFolder();
     DriveApi.MetadataBufferResult metadataBufferResult = baseFolder.listChildren(googleApiClient).await();
     if (!metadataBufferResult.getStatus().isSuccess()) {
       throw new IOException("Unable to list children of base folder");
     }
     MetadataBuffer metadataBuffer = metadataBufferResult.getMetadataBuffer();
     Optional<DriveFolder> result = Stream.of(metadataBuffer)
-        .filter(metadata -> uuid.equals(metadata.getCustomProperties().get(ACCOUNT_METADATA_UUID_KEY)) &&
+        .filter(metadata -> (uuid.equals(metadata.getTitle()) ||
+            //legacy:
+            uuid.equals(metadata.getCustomProperties().get(ACCOUNT_METADATA_UUID_KEY))) &&
             !metadata.isTrashed())
         .findFirst()
         .map(metadata -> metadata.getDriveId().asDriveFolder());
@@ -593,42 +620,27 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     if (driveFolderOptional.isPresent()) {
       accountFolder = driveFolderOptional.get();
     } else {
-      MetadataChangeSet.Builder builder = new MetadataChangeSet.Builder()
-          .setTitle(account.getLabel())
-          .setCustomProperty(ACCOUNT_METADATA_UUID_KEY, account.uuid)
-          .setCustomProperty(ACCOUNT_METADATA_COLOR_KEY, String.valueOf(account.color))
-          .setCustomProperty(ACCOUNT_METADATA_CURRENCY_KEY, account.getCurrencyUnit().code())
-          .setCustomProperty(ACCOUNT_METADATA_TYPE_KEY, account.getType().name())
-          .setCustomProperty(ACCOUNT_METADATA_OPENING_BALANCE_KEY, String.valueOf(account.openingBalance.getAmountMinor()));
-      try {
-        // The total size of key string and value string of a custom property must be no more than 124 bytes (124 - ACCOUNT_METADATA_DESCRIPTION_KEY.length = 98
-        builder.setCustomProperty(ACCOUNT_METADATA_DESCRIPTION_KEY, StringUtils.abbreviate(account.description, 98));
-      } catch (IllegalArgumentException e) {
-        HashMap<String, String> customData = new HashMap<>();
-        customData.put("accountDescription", account.description);
-        customData.put("accountDescriptionAbbreviated", StringUtils.abbreviate(account.description, 98));
-        CrashHandler.report(e, customData);
-      }
+      MetadataChangeSet.Builder builder = new MetadataChangeSet.Builder().setTitle(account.uuid);
       MetadataChangeSet changeSet = builder.build();
       DriveFolder.DriveFolderResult driveFolderResult = baseFolder.createFolder(googleApiClient, changeSet).await();
       if (driveFolderResult.getStatus().isSuccess()) {
         accountFolder = driveFolderResult.getDriveFolder();
         createWarningFile();
+        saveFileContentsToAccountDir(null, getAccountMetadataFilename(), buildMetadata(account), getMimetypeForData(), true);
       } else {
         throw new IOException("Error while creating account folder");
       }
     }
   }
 
-  private boolean requireBaseFolder() {
-    if (baseFolder != null) {
-      return true;
+  private void requireBaseFolder() throws IOException {
+    if (baseFolder == null) {
+      DriveApi.DriveIdResult driveIdResult = Drive.DriveApi.fetchDriveId(googleApiClient, folderId).await();
+      if (driveIdResult.getStatus().isSuccess()) {
+        baseFolder = driveIdResult.getDriveId().asDriveFolder();
+      } else {
+        throw new IOException("Base folder not available");
+      }
     }
-    DriveApi.DriveIdResult driveIdResult = Drive.DriveApi.fetchDriveId(googleApiClient, folderId).await();
-    if (driveIdResult.getStatus().isSuccess()) {
-      baseFolder = driveIdResult.getDriveId().asDriveFolder();
-      return true;
-    }
-    return false;
   }
 }
