@@ -19,26 +19,17 @@ import org.onepf.oms.appstore.googleUtils.SkuDetails;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.contrib.Config;
-import org.totschnig.myexpenses.model.CurrencyUnit;
-import org.totschnig.myexpenses.model.Money;
 import org.totschnig.myexpenses.preference.PrefKey;
-import org.totschnig.myexpenses.util.CurrencyFormatter;
 import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Currency;
 
 import timber.log.Timber;
 
 public class InappPurchaseLicenceHandler extends ContribStatusLicenceHandler {
 
   private static final String KEY_EXTENDED2PROFESSIONAL_12_INTRODUCTORY_PRICE = "e2p_12_introductory_price";
-  private static final String KEY_EXTENDED2PROFESSIONAL_12_CURRENCY_CODE = "e2p_12_currency_code";
-  private static final String KEY_EXTENDED2PROFESSIONAL_12_INTRODUCTORY_MONTHLY = "e2p_12_introductory_monthly";
-  private static final String KEY_PROFESSIONAL_12__MONTHLY = "p_12_monthly";
-  private static final String KEY_PROFESSIONAL_12_CURRENCY_CODE = "p_12_currency_code";
   private static final String KEY_CURRENT_SUBSCRIPTION = "current_subscription";
   private static final String KEY_ORDER_ID = "order_id";
 
@@ -140,11 +131,6 @@ public class InappPurchaseLicenceHandler extends ContribStatusLicenceHandler {
         Timber.d("Sku: %s, json: %s", skuDetails.toString(), skuDetails.getJson());
         if (sku.equals(Config.SKU_EXTENDED2PROFESSIONAL_12)) {
           editor.putString(KEY_EXTENDED2PROFESSIONAL_12_INTRODUCTORY_PRICE, skuDetails.getIntroductoryPrice());
-          editor.putLong(KEY_EXTENDED2PROFESSIONAL_12_INTRODUCTORY_MONTHLY, skuDetails.getIntroductoryPriceAmountMicros() / 12);
-          editor.putString(KEY_EXTENDED2PROFESSIONAL_12_CURRENCY_CODE, skuDetails.getPriceCurrencyCode());
-        } else if (sku.equals(Config.SKU_PROFESSIONAL_12)) {
-          editor.putLong(KEY_PROFESSIONAL_12__MONTHLY, skuDetails.getPriceAmountMicros() / 12);
-          editor.putString(KEY_PROFESSIONAL_12_CURRENCY_CODE, skuDetails.getPriceCurrencyCode());
         }
         editor.putString(sku, skuDetails.getPrice());
       } else {
@@ -215,23 +201,6 @@ public class InappPurchaseLicenceHandler extends ContribStatusLicenceHandler {
       }
     }
     return null;
-  }
-
-  @Override
-  protected String getMinimumProfessionalMonthlyPrice(boolean withExtra) {
-    long pricesPrefsLong;
-    String currencyCode;
-    if (getLicenceStatus() == LicenceStatus.EXTENDED) {
-      pricesPrefsLong = pricesPrefs.getLong(KEY_EXTENDED2PROFESSIONAL_12_INTRODUCTORY_MONTHLY, 0);
-      currencyCode = pricesPrefs.getString(KEY_EXTENDED2PROFESSIONAL_12_CURRENCY_CODE, null);
-    } else {
-      pricesPrefsLong = pricesPrefs.getLong(KEY_PROFESSIONAL_12__MONTHLY, 0);
-      currencyCode = pricesPrefs.getString(KEY_PROFESSIONAL_12_CURRENCY_CODE, null);
-    }
-    if (currencyCode == null || pricesPrefsLong == 0) return null;
-    return CurrencyFormatter.instance().formatCurrency(
-        new Money(CurrencyUnit.create(Currency.getInstance(currencyCode)),
-            new BigDecimal(pricesPrefsLong).divide(new BigDecimal(1000000))));
   }
 
   @NonNull
@@ -314,9 +283,9 @@ public class InappPurchaseLicenceHandler extends ContribStatusLicenceHandler {
   }
 
   @Override
-  protected String getProfessionalPriceFallBack() {
+  public String getProfessionalPriceShortInfo() {
     if (DistribHelper.isAmazon()) {
-      String priceInfo = Stream.of(Package.Professional_1, Package.Professional_12).map(this::getFormattedPrice).collect(Collectors.joining(", "));
+      String priceInfo = joinPriceInfos(Package.Professional_1, Package.Professional_12);
       if (getLicenceStatus() == LicenceStatus.EXTENDED) {
         String regularPrice = pricesPrefs.getString(Config.SKU_PROFESSIONAL_12, null);
         if (regularPrice != null) {
@@ -325,7 +294,7 @@ public class InappPurchaseLicenceHandler extends ContribStatusLicenceHandler {
       }
       return priceInfo;
     } else {
-      return null;
+      return super.getProfessionalPriceShortInfo();
     }
   }
 
