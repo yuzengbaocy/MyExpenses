@@ -151,7 +151,6 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
       long newBackOff = Math.min(sharedPreferences.getLong(KEY_SYNC_BACKOFF, 5000) * 2, 3600000);
       sharedPreferences.edit().putLong(KEY_LAST_FAILED_SYNC, now).putLong(KEY_SYNC_BACKOFF, newBackOff).commit();
     } else {
-      log().i("Sync succeeded");
       sharedPreferences.edit().remove(KEY_LAST_FAILED_SYNC).remove(KEY_SYNC_BACKOFF).apply();
     }
   }
