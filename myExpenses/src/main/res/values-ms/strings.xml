@@ -98,8 +98,6 @@
   <!--%1$s is replace with account label-->
   <string name="dialog_title_balance_account">Baki %1$s</string>
   <string name="dialog_title_contrib_feature">Fitur premium</string>
-  <!--the dialog where this title is displayed allows the user to customize the number of fraction digits for a currency
-    e.g. 3 instead of 2 for € if you want to calculate with 1/10s of a ¢-->
   <string name="dialog_title_template_title">Tetapkan tajuk</string>
   <string name="dialog_title_warning_delete_account">Padam akaun?</string>
   <string name="dialog_title_warning_delete_main_category">Padam kategori utama?</string>
@@ -115,6 +113,8 @@
   <string name="feedback">Maklumbalas</string>
   <string name="ftp_uri_malformed">URI %1$s cacat</string>
   <string name="grisbi_import_categories_loading">Memuatkan kategori dari %1$s</string>
+  <!--This is used as the title for the progress dialogue while importing the default categories, so
+     this should refer to each specific language, like e.g. Deutsche Standard-Kategorien for German etc.-->
   <string name="grisbi_import_default_source">Kategori lalai Inggeris</string>
   <string name="grisbi_import_parties_loading">Memuatkan pihak daripada %1$s</string>
   <string name="grouping_day">Hari</string>
@@ -416,7 +416,6 @@
   <string name="warning_widget_disabled">Anda perlu benarkan widjet ini di dalam tetapan apl.</string>
   <string name="warning_instantiate_template_from_widget_password_protected">Penyegeraan pantas templat dari widjet ini hanya berfungsi jika anda benarkan masukan data dari widjet tanpa kata laluan dalam tetapan apl.</string>
   <string name="warning_password_contrib">Menetapkan soalan keselamatan membolehkan anda buka apl, jika anda lupa kata laluan anda.</string>
-  <string name="warning_password_no_contrib">Jika anda tetapkan kata laluan, jangan lupakannya. Anda tidak boleh memulihkannya, melainkan anda tetapkan soalan keselamatan.</string>
   <string name="warning_reset_account">Jika anda teruskan, semua transaksi akaun ini dipadam dari pangkalan data dan tidak dapat dipulihkan.</string>
   <!--the placeholder %1$s will hold a currency code in paranthesis, if the user calls the reset command from an aggregate account list-->
   <string name="warning_reset_account_all">Jika anda teruskan, untuk semua akaun %1$s, transaksi akan dipadam dari pangkalan data dan tidak dapat dipulihkan.</string>

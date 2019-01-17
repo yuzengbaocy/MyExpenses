@@ -98,8 +98,6 @@
   <!--%1$s is replace with account label-->
   <string name="dialog_title_balance_account">Balancear %1$s</string>
   <string name="dialog_title_contrib_feature">Recurso premium</string>
-  <!--the dialog where this title is displayed allows the user to customize the number of fraction digits for a currency
-    e.g. 3 instead of 2 for € if you want to calculate with 1/10s of a ¢-->
   <string name="dialog_title_template_title">Defina o título</string>
   <string name="dialog_title_warning_delete_account">Excluir a conta?</string>
   <string name="dialog_title_warning_delete_main_category">Excluir a categoria principal?</string>
@@ -115,6 +113,8 @@
   <string name="feedback">Retorno</string>
   <string name="ftp_uri_malformed">URI inválida %1$s</string>
   <string name="grisbi_import_categories_loading">Carregando categorias de %1$s</string>
+  <!--This is used as the title for the progress dialogue while importing the default categories, so
+     this should refer to each specific language, like e.g. Deutsche Standard-Kategorien for German etc.-->
   <string name="grisbi_import_default_source">Categorias portuguesas padrão</string>
   <string name="grisbi_import_parties_loading">Carregando parceiros de %1$s</string>
   <string name="grouping_day">Dia</string>
@@ -133,7 +133,7 @@
   <string name="important_upgrade_information_heading">Informações importantes</string>
   <string name="import_select_transactions">Transações</string>
   <string name="income">Renda</string>
-  <string name="invalid_number_format">Esse formato decimal não reconhecido pela sua região. Por favor, use %1$s</string>
+  <string name="invalid_number_format">Formato decimal não reconhecido pela sua localidade. Por favor, use %1$s</string>
   <string name="label">Rótulo</string>
   <string name="licence_validation_failure">Não foi possível validar a chave da licença.</string>
   <string name="licence_validation_success">A chave da licença foi validada com sucesso:</string>
@@ -424,7 +424,6 @@
   <string name="warning_widget_disabled">Você precisa habilitar este widget nas configurações do app.</string>
   <string name="warning_instantiate_template_from_widget_password_protected">A instanciação rápida de modelos deste widget funciona somente se você permitir a entrada de dados de widgets sem senha nas configurações do app.</string>
   <string name="warning_password_contrib">Definir uma pergunta de segurança permite que você desbloqueie o app, caso você esqueça sua senha.</string>
-  <string name="warning_password_no_contrib">Caso você defina uma senha, tome cuidado para não esquecê-la. Você não será capaz de recuperá-la, a menos que tenha definido uma pergunta de segurança.</string>
   <string name="warning_reset_account">Caso você prossiga, todas as transações desta conta serão excluídas do banco de dados e não poderão ser restauradas.</string>
   <!--the placeholder %1$s will hold a currency code in paranthesis, if the user calls the reset command from an aggregate account list-->
   <string name="warning_reset_account_all">Caso você prossiga, as transações de todas as contas%1$s serão excluídas do banco de dados e não poderão ser restauradas.</string>

@@ -4,7 +4,6 @@ import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.SwitchCompat;
 import android.util.TypedValue;
@@ -39,6 +38,7 @@ import org.totschnig.myexpenses.model.Money;
 import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.provider.DatabaseConstants;
 import org.totschnig.myexpenses.provider.TransactionProvider;
+import org.totschnig.myexpenses.ui.SelectivePieChartRenderer;
 import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.viewmodel.data.Category;
 
@@ -72,6 +72,7 @@ public class DistributionFragment extends DistributionBaseFragment {
   View bottomLine;
   boolean showChart = false;
   boolean aggregateTypes;
+  private int textColorSecondary;
 
   public Grouping getGrouping() {
     return mGrouping;
@@ -99,25 +100,27 @@ public class DistributionFragment extends DistributionBaseFragment {
 
     v = inflater.inflate(R.layout.distribution_list, container, false);
     ButterKnife.bind(this, v);
+    textColorSecondary = ((ProtectedFragmentActivity) getActivity()).getTextColorSecondary().getDefaultColor();
+
     mChart.setVisibility(showChart ? View.VISIBLE : View.GONE);
     mChart.getDescription().setEnabled(false);
+    mChart.setExtraOffsets(20,0,20,0);
+    final SelectivePieChartRenderer renderer = new SelectivePieChartRenderer(mChart, new SelectivePieChartRenderer.Selector() {
+      boolean lastValueGreaterThanOne = true;
+      @Override
+      public boolean shouldDrawEntry(int index, PieEntry pieEntry, float value) {
+        final boolean greaterThanOne = value > 1f;
+        final boolean shouldDraw = greaterThanOne || lastValueGreaterThanOne;
+        lastValueGreaterThanOne = greaterThanOne;
+        return shouldDraw;
+      }
+    });
+    renderer.getPaintEntryLabels().setColor(textColorSecondary);
+    renderer.getPaintEntryLabels().setTextSize(getTextSizeForAppearance(android.R.attr.textAppearanceSmall));
+    mChart.setRenderer(renderer);
 
-    TypedValue typedValue = new TypedValue();
-    getActivity().getTheme().resolveAttribute(android.R.attr.textAppearanceMedium, typedValue, true);
-    int[] textSizeAttr = new int[]{android.R.attr.textSize};
-    int indexOfAttrTextSize = 0;
-    TypedArray a = getActivity().obtainStyledAttributes(typedValue.data, textSizeAttr);
-    int textSize = a.getDimensionPixelSize(indexOfAttrTextSize, -1);
-    a.recycle();
-    mChart.setCenterTextSizePixels(textSize);
+    mChart.setCenterTextSizePixels(getTextSizeForAppearance(android.R.attr.textAppearanceMedium));
 
-    // radius of the center hole in percent of maximum radius
-    //mChart.setHoleRadius(60f);
-    //mChart.setTransparentCircleRadius(0f);
-    mChart.setDrawEntryLabels(true);
-    mChart.setDrawHoleEnabled(true);
-    mChart.setDrawCenterText(true);
-    mChart.setRotationEnabled(false);
     mChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
 
       @Override
@@ -227,6 +230,17 @@ public class DistributionFragment extends DistributionBaseFragment {
     return v;
   }
 
+  private int getTextSizeForAppearance(int appearance) {
+    TypedValue typedValue = new TypedValue();
+    getActivity().getTheme().resolveAttribute(appearance, typedValue, true);
+    int[] textSizeAttr = new int[]{android.R.attr.textSize};
+    int indexOfAttrTextSize = 0;
+    TypedArray a = getActivity().obtainStyledAttributes(typedValue.data, textSizeAttr);
+    int textSize = a.getDimensionPixelSize(indexOfAttrTextSize, -1);
+    a.recycle();
+    return textSize;
+  }
+
   @Override
   protected QueryObservable createQuery() {
     String selection, accountSelector = null, sortOrder;
@@ -288,8 +302,7 @@ public class DistributionFragment extends DistributionBaseFragment {
     inflater.inflate(R.menu.distribution, menu);
     inflater.inflate(R.menu.grouping, menu);
 
-    SwitchCompat typeButton = MenuItemCompat.getActionView(menu.findItem(R.id.switchId))
-        .findViewById(R.id.TaType);
+    SwitchCompat typeButton = menu.findItem(R.id.switchId).getActionView().findViewById(R.id.TaType);
 
     typeButton.setOnCheckedChangeListener((buttonView, isChecked) -> setType(isChecked));
   }
@@ -309,7 +322,11 @@ public class DistributionFragment extends DistributionBaseFragment {
     m = menu.findItem(R.id.TOGGLE_AGGREGATE_TYPES);
     if (m != null) {
       m.setChecked(aggregateTypes);
-      Utils.menuItemSetEnabledAndVisible(menu.findItem(R.id.switchId), !aggregateTypes);
+      final MenuItem item = menu.findItem(R.id.switchId);
+      Utils.menuItemSetEnabledAndVisible(item, !aggregateTypes);
+      if (!aggregateTypes) {
+        ((SwitchCompat) item.getActionView().findViewById(R.id.TaType)).setChecked(isIncome);
+      }
     }
   }
 
@@ -426,6 +443,10 @@ public class DistributionFragment extends DistributionBaseFragment {
     ds1.setColors(colors);
     ds1.setSliceSpace(2f);
     ds1.setDrawValues(false);
+    ds1.setXValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
+    ds1.setValueLinePart2Length(0.1f);
+    ds1.setValueLineColor(textColorSecondary);
+
 
     PieData data = new PieData(ds1);
     data.setValueFormatter(new PercentFormatter());

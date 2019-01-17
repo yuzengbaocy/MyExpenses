@@ -151,6 +151,11 @@
             android:defaultValue="false"
             android:key="@string/pref_scroll_to_current_date_key"
             android:summary="@string/pref_scroll_to_current_date_summary"/>
+
+        <SwitchPreferenceCompat
+            android:defaultValue="false"
+            android:key="@string/pref_account_list_fast_scroll_key"
+            android:summary="@string/pref_account_list_fast_scroll_summary"/>
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -284,7 +289,9 @@
             <EditTextPreference
                 android:dialogLayout="@layout/security_question"
                 android:key="@string/pref_security_question_key"
-                android:title="@string/pref_security_question_title"/>
+                android:title="@string/pref_security_question_title"
+                android:summary="@string/pref_security_question_summary"
+                />
             <com.pavelsikun.seekbarpreference.SeekBarPreferenceCompat
                 android:defaultValue="15"
                 android:key="@string/pref_protection_delay_seconds_key"
@@ -295,19 +302,19 @@
                 my:msbp_measurementUnit=" &#8243;"
                 my:msbp_minValue="1"/>
             <PreferenceCategory android:title="Widgets">
-                <CheckBoxPreference
+                <SwitchPreferenceCompat
                     android:defaultValue="false"
                     android:key="@string/pref_protection_enable_account_widget_key"
                     android:summaryOff="@string/pref_checkbox_disabled"
                     android:summaryOn="@string/pref_checkbox_enabled"
                     android:title="@string/widget_title_accounts"/>
-                <CheckBoxPreference
+                <SwitchPreferenceCompat
                     android:defaultValue="false"
                     android:key="@string/pref_protection_enable_template_widget_key"
                     android:summaryOff="@string/pref_checkbox_disabled"
                     android:summaryOn="@string/pref_checkbox_enabled"
                     android:title="@string/widget_title_templates"/>
-                <CheckBoxPreference
+                <SwitchPreferenceCompat
                     android:defaultValue="false"
                     android:key="@string/pref_protection_enable_data_entry_from_widget_key"
                     android:summaryOff="@string/pref_protection_enable_data_entry_from_widget_summary_off"

@@ -96,8 +96,6 @@
   <!--%1$s is replace with account label-->
   <string name="dialog_title_balance_account">%1$s saldoa</string>
   <string name="dialog_title_contrib_feature">Premium ezaugarria</string>
-  <!--the dialog where this title is displayed allows the user to customize the number of fraction digits for a currency
-    e.g. 3 instead of 2 for € if you want to calculate with 1/10s of a ¢-->
   <string name="dialog_title_template_title">Ezarri izenburua</string>
   <string name="dialog_title_warning_delete_account">Ezabatu kontua?</string>
   <string name="dialog_title_warning_delete_main_category">Ezabatu kategoria nagusia?</string>
@@ -113,6 +111,8 @@
   <string name="feedback">Iruzkina</string>
   <string name="ftp_uri_malformed">Gaizki osatutako URIa %1$s</string>
   <string name="grisbi_import_categories_loading">Kategoriak kargatzen hemendik: %1$s</string>
+  <!--This is used as the title for the progress dialogue while importing the default categories, so
+     this should refer to each specific language, like e.g. Deutsche Standard-Kategorien for German etc.-->
   <string name="grisbi_import_default_source">Ingelesezko lehenetsitako kategoriak</string>
   <string name="grisbi_import_parties_loading">Onuradun/ordaintzaileak %1$s(e)tik kargatzen</string>
   <string name="grouping_day">Eguna</string>
@@ -421,7 +421,6 @@
   <string name="warning_widget_disabled">Trepeta hau aplikazioaren ezarpenetan gaitu behar duzu.</string>
   <string name="warning_instantiate_template_from_widget_password_protected">Trepeta honetatik txantiloien abiatze azkarra erabili ahal izateko baimendu pasahitzik gabeko datuen sarrera trepetetatik aplikazioaren ezarpenetan</string>
   <string name="warning_password_contrib">Segurtasun galdera bat ezartzeak, aplikazioa desblokeatzea ahalbidetzen dizu pasahitza ahaztu baduzu.</string>
-  <string name="warning_password_no_contrib">Pasahitza ezartzen baduzu, ez ahaztu gero. Ezin izango duzu berreskuratu segurtasun galdera bat ezarri ezean.</string>
   <string name="warning_reset_account">Jarraitzen baduzu, kontu honetako transakzio guztiak datu-basetik ezabatuko dira eta ezin izango dira berreskuratu.</string>
   <!--the placeholder %1$s will hold a currency code in paranthesis, if the user calls the reset command from an aggregate account list-->
   <string name="warning_reset_account_all">Jarraitzen baduzu, kontu guztietako %1$s transakzio  datu-basetik ezabatuko dira eta ezin izango dira berreskuratu.</string>

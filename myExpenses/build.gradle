@@ -56,8 +56,8 @@ android {
         applicationId "org.totschnig.myexpenses"
         minSdkVersion project.minSdkVersion
         targetSdkVersion project.targetSdkVersion
-        versionCode 360
-        versionName '2.9.9'
+        versionCode 361
+        versionName '3.0.0'
         multiDexEnabled true
 
         buildConfigField "String", "BUILD_DATE", "\"" + getDate() + "\""
@@ -67,7 +67,7 @@ android {
         testProguardFile "proguard-test.txt"
 
         vectorDrawables.useSupportLibrary = true
-        resConfigs "en", "ar", "bg", "ca", "cs", "da", "de", "el", "es", "eu", "fr", "hr", "hu", "it", "iw", "ja", "km", "ko", "ms", "pl", "pt", "ro", "ru", "si", "tr", "vi", "pt_PT", "zh_CN", "zh_TW"
+        resConfigs "en", "ar", "bg", "ca", "cs", "da", "de", "el", "es", "eu", "fr", "hr", "hu", "it", "iw", "ja", "km", "ko", "ms", "pl", "pt", "ro", "ru", "si", "tr", "uk", "vi", "pt_PT", "zh_CN", "zh_TW"
     }
 
     compileOptions {
@@ -178,6 +178,7 @@ android {
         exclude 'META-INF/license.txt'
         exclude 'META-INF/dependencies.txt'
         exclude 'META-INF/LGPL2.1'
+        exclude 'META-INF/proguard/androidx-annotations.pro'
     }
     testBuildType "forTest"
 
@@ -258,8 +259,8 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['in-app-purchasing-2.0.61.jar'])
     implementation 'org.apache.commons:commons-csv:1.5'
     implementation 'com.squareup.picasso:picasso:2.71828'
-    implementation 'com.github.mtotschnig:MPAndroidChart:StackedBarCharValueTextColor-SNAPSHOT'
-    //implementation 'com.github.PhilJay:MPAndroidChart:v3.0.3'
+    implementation 'com.github.mtotschnig:MPAndroidChart:8ebaf08edd'
+    //implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0-alpha'
     implementation 'com.github.mtotschnig:Caldroid:a86eb51428'
     implementation 'com.github.eltos:SimpleDialogFragments:3abe091998'
     implementation 'com.annimon:stream:1.1.9'

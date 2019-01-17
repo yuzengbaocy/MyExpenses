@@ -45,6 +45,7 @@ import org.totschnig.myexpenses.activity.MyPreferenceActivity;
 import org.totschnig.myexpenses.dialog.ConfirmationDialogFragment;
 import org.totschnig.myexpenses.dialog.MessageDialogFragment;
 import org.totschnig.myexpenses.model.ContribFeature;
+import org.totschnig.myexpenses.model.CurrencyContext;
 import org.totschnig.myexpenses.preference.CalendarListPreferenceDialogFragmentCompat;
 import org.totschnig.myexpenses.preference.FontSizeDialogFragmentCompat;
 import org.totschnig.myexpenses.preference.FontSizeDialogPreference;
@@ -380,16 +381,19 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
     //Password screen
     else if (rootKey.equals(PERFORM_PROTECTION_SCREEN.getKey())) {
       setProtectionDependentsState();
-      findPreference(SECURITY_QUESTION).setSummary(
-          getString(R.string.pref_security_question_summary) + " " +
-              ContribFeature.SECURITY_QUESTION.buildRequiresString(getActivity()));
-
-      Preference preference = findPreference(PROTECTION_DEVICE_LOCK_SCREEN);
+      Preference preferenceLockScreen = findPreference(PROTECTION_DEVICE_LOCK_SCREEN);
+      Preference preferenceLegacy = findPreference(PROTECTION_LEGACY);
+      Preference preferenceSecurityQuestion = findPreference(SECURITY_QUESTION);
       if (Utils.hasApiLevel(Build.VERSION_CODES.LOLLIPOP)) {
-        findPreference(PROTECTION_LEGACY)
-            .setTitle(String.format("%s (%s)", getString(R.string.pref_protection_password_title), getString(R.string.feature_deprecated)));
+        final PreferenceCategory preferenceCategory = new PreferenceCategory(getContext());
+        preferenceCategory.setTitle(R.string.feature_deprecated);
+        preferenceScreen.addPreference(preferenceCategory);
+        preferenceScreen.removePreference(preferenceLegacy);
+        preferenceScreen.removePreference(preferenceSecurityQuestion);
+        preferenceCategory.addPreference(preferenceLegacy);
+        preferenceCategory.addPreference(preferenceSecurityQuestion);
       } else {
-        preferenceScreen.removePreference(preference);
+        preferenceScreen.removePreference(preferenceLockScreen);
       }
     }
     //SHARE screen
@@ -619,7 +623,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
     boolean isProtected = isLegacy || PROTECTION_DEVICE_LOCK_SCREEN.getBoolean(false);
     PreferenceScreen screen = getPreferenceScreen();
     if (matches(screen, ROOT_SCREEN) || matches(screen, PERFORM_PROTECTION_SCREEN)) {
-      findPreference(SECURITY_QUESTION).setEnabled(licenceHandler.isContribEnabled() && isLegacy);
+      findPreference(SECURITY_QUESTION).setEnabled(isLegacy);
       findPreference(PROTECTION_DELAY_SECONDS).setEnabled(isProtected);
       findPreference(PROTECTION_ENABLE_ACCOUNT_WIDGET).setEnabled(isProtected);
       findPreference(PROTECTION_ENABLE_TEMPLATE_WIDGET).setEnabled(isProtected);
@@ -630,7 +634,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
   @Override
   public boolean onPreferenceChange(Preference pref, Object value) {
     if (matches(pref, HOME_CURRENCY)) {
-      if (!value.equals(HOME_CURRENCY.getString(null))) {
+      if (!value.equals(prefHandler.getString(HOME_CURRENCY,null))) {
         MessageDialogFragment.newInstance(R.string.dialog_title_information,
             concatResStrings(getContext(), " ", R.string.home_currency_change_warning, R.string.continue_confirmation),
             new MessageDialogFragment.Button(android.R.string.ok, R.id.CHANGE_COMMAND, ((String) value)),
@@ -998,6 +1002,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
       } else {
         prefHandler.putString(HOME_CURRENCY, currencyCode);
       }
+      activity.invalidateHomeCurrency();
       activity.startTaskExecution(TaskExecutionFragment.TASK_RESET_EQUIVALENT_AMOUNTS,
           null, null, R.string.progress_dialog_saving);
     }

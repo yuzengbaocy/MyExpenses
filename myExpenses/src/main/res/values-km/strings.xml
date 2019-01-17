@@ -65,8 +65,6 @@
   <!--%1$s is replace with account label-->
   <string name="dialog_title_balance_account">សមតុល្យ %1$s</string>
   <string name="dialog_title_contrib_feature">លក្ខណៈពិសេសល្អជាងគេ</string>
-  <!--the dialog where this title is displayed allows the user to customize the number of fraction digits for a currency
-    e.g. 3 instead of 2 for € if you want to calculate with 1/10s of a ¢-->
   <string name="dialog_title_template_title">កំណត់ចំណងជើង</string>
   <string name="dialog_title_warning_delete_account">លុបចោលគណនី ?</string>
   <string name="dialog_title_warning_delete_main_category">តើលុប​ចំណាត់​ថ្នាក់​ចម្បងទេ?</string>
@@ -82,6 +80,8 @@
   <string name="feedback">ផ្តល់មតិ</string>
   <string name="ftp_uri_malformed">URI មិនត្រឹមត្រូវ %1$s</string>
   <string name="grisbi_import_categories_loading">ផ្ទុកចំណាត់ថ្នាក់ពី %1$s</string>
+  <!--This is used as the title for the progress dialogue while importing the default categories, so
+     this should refer to each specific language, like e.g. Deutsche Standard-Kategorien for German etc.-->
   <string name="grisbi_import_default_source">ចំណាត់ថ្នាក់​លំនាំដើមជាភាសាអង់គ្លេស</string>
   <string name="grisbi_import_parties_loading">ផ្ទុកទិន្នន័យ​ភាគី​ពី %1$s បាន</string>
   <string name="grouping_day">ថ្ងៃ</string>
@@ -329,7 +329,6 @@
   </plurals>
   <string name="warning_password_protected">កម្មវិធីនេះ ការពារដោយ​ពាក្យសម្ងាត់</string>
   <string name="warning_password_contrib">ការកំណត់សំណួរសន្តិសុខអនុញ្ញាតឱ្យអ្នកដើម្បីដោះសោកម្មវិធីនេះក្នុងករណីដែលអ្នកភ្លេចពាក្យសម្ងាត់របស់អ្នក។</string>
-  <string name="warning_password_no_contrib">ប្រសិន​បើអ្នក​ដាក់​លេខ​សម្ងាត់​ សូម​ចាំថា​មិន​អាចភ្លេច​បានឡើយ។ អ្នក​នឹង​មិន​អាចយកវា​ត្រឡប់​មកវិញទេ រហូត​ទាល់​តែ​អ្នក​ដាក់​សំនួរ​សុវត្ថិភាព​មួយ (ត្រូវការកម្មវិធី My Expenses Contrib)។</string>
   <string name="warning_reset_account">ប្រសិនបើអ្នកបន្ត រាល់ប្រតិបត្តិការទាំងអស់របស់គណនីនេះ នឹងត្រូវបានលុបចេញពីមូលដ្ឋានទិន្នន័យ និងមិនអាចត្រូវបានស្ដារឡើងវិញឡើយ។</string>
   <!--the placeholder %1$s will hold a currency code in paranthesis, if the user calls the reset command from an aggregate account list-->
   <string name="warning_reset_account_all">បើ​អ្នក​បាន​ដំណើរការហើយ សម្រាប់​គណនី​ %1$s ប្រតិបត្តិការ​ទាំង​អស់ នឹង​ត្រូវបាន​លុប​ចេញពី​មូលដ្ឋាន​ទិន្នន័យ និង​មិន​អាច​យក​មកវិញ​បាន​ទេ។</string>

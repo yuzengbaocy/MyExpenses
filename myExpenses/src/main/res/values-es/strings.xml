@@ -98,8 +98,6 @@
   <!--%1$s is replace with account label-->
   <string name="dialog_title_balance_account">Balance %1$s</string>
   <string name="dialog_title_contrib_feature">Característica Contrib</string>
-  <!--the dialog where this title is displayed allows the user to customize the number of fraction digits for a currency
-    e.g. 3 instead of 2 for € if you want to calculate with 1/10s of a ¢-->
   <string name="dialog_title_template_title">Establecer título</string>
   <string name="dialog_title_warning_delete_account">¿Borrar cuenta?</string>
   <string name="dialog_title_warning_delete_main_category">¿Borrar categoría principal?</string>
@@ -115,6 +113,8 @@
   <string name="feedback">Comentarios</string>
   <string name="ftp_uri_malformed">URI %1$s inválido</string>
   <string name="grisbi_import_categories_loading">Cargando categorías desde %1$s</string>
+  <!--This is used as the title for the progress dialogue while importing the default categories, so
+     this should refer to each specific language, like e.g. Deutsche Standard-Kategorien for German etc.-->
   <string name="grisbi_import_default_source">Categorías predeterminadas en español</string>
   <string name="grisbi_import_parties_loading">Cargando grupos desde %1$s</string>
   <string name="grouping_day">Día</string>
@@ -424,7 +424,6 @@
   <string name="warning_widget_disabled">Necesitas habilitar este widget desde el menú configuración de la aplicación.</string>
   <string name="warning_instantiate_template_from_widget_password_protected">La creación rápida de plantillas desde este widget funciona sólo si permite la entrada de datos en widgets sin contraseña, desde el menú configuración de la aplicación.</string>
   <string name="warning_password_contrib">Establecer una pregunta de seguridad permitirá desbloquear la aplicación en caso de que olvide su contraseña.</string>
-  <string name="warning_password_no_contrib">Si establece una contraseña, tenga cuidado de no olvidarla. No será capaz de recuperarla, a menos que establezca una pregunta de seguridad.</string>
   <string name="warning_reset_account">Si continúa, todas las transacciones de esta cuenta se eliminarán de la base de datos y no se  podrán restaurar.</string>
   <!--the placeholder %1$s will hold a currency code in paranthesis, if the user calls the reset command from an aggregate account list-->
   <string name="warning_reset_account_all">Si continúa, en todas las cuentas%1$s las transacciones serán eliminadas de la base de datos y no podrán ser restauradas.</string>

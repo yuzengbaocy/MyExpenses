@@ -98,8 +98,6 @@
   <!--%1$s is replace with account label-->
   <string name="dialog_title_balance_account">%1$s abstimmen</string>
   <string name="dialog_title_contrib_feature">Premium-Funktion</string>
-  <!--the dialog where this title is displayed allows the user to customize the number of fraction digits for a currency
-    e.g. 3 instead of 2 for € if you want to calculate with 1/10s of a ¢-->
   <string name="dialog_title_template_title">Titel festlegen</string>
   <string name="dialog_title_warning_delete_account">Konto löschen?</string>
   <string name="dialog_title_warning_delete_main_category">Hauptkategorie löschen?</string>
@@ -115,6 +113,8 @@
   <string name="feedback">Feedback</string>
   <string name="ftp_uri_malformed">Ungültige URI %1$s</string>
   <string name="grisbi_import_categories_loading">Kategorien werden von %1$s geladen</string>
+  <!--This is used as the title for the progress dialogue while importing the default categories, so
+     this should refer to each specific language, like e.g. Deutsche Standard-Kategorien for German etc.-->
   <string name="grisbi_import_default_source">Deutsche Standard-Kategorien</string>
   <string name="grisbi_import_parties_loading">Parteien werden von %1$s geladen</string>
   <string name="grouping_day">Tag</string>
@@ -424,7 +424,6 @@
   <string name="warning_widget_disabled">Sie müssen dieses Widget in den App Einstellungen aktivieren.</string>
   <string name="warning_instantiate_template_from_widget_password_protected">Die schnelle Anwendung von Vorlagen über dieses Widget funktioniert nur, wenn Sie in den App-Einstellungen Dateneingabe über Widgets ohne Passwort erlauben.</string>
   <string name="warning_password_contrib">Durch das Setzen einer Sicherheitsfrage können Sie den Passwortschutz aufheben, sollten Sie das Passwort vergessen.</string>
-  <string name="warning_password_no_contrib">Wenn Sie ein Passwort setzen, passen Sie auf dieses nicht zu vergessen. Sie können dieses nur zurücksetzen, wenn Sie eine Sicherheitsfrage setzen.</string>
   <string name="warning_reset_account">Wenn Sie fortfahren, werden alle Transaktionen dieses Kontos von der Datenbank gelöscht.	Dies kann nicht rückgängig gemacht werden.</string>
   <!--the placeholder %1$s will hold a currency code in paranthesis, if the user calls the reset command from an aggregate account list-->
   <string name="warning_reset_account_all">Wenn Sie fortfahren, werden alle Buchungen aller Konten%1$s aus der Datenbank gelöscht. Dies kann nicht rückgängig gemacht werden.</string>

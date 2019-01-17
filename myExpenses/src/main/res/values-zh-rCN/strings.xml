@@ -84,8 +84,6 @@
   <!--%1$s is replace with account label-->
   <string name="dialog_title_balance_account">余额 %1$s</string>
   <string name="dialog_title_contrib_feature">高级功能</string>
-  <!--the dialog where this title is displayed allows the user to customize the number of fraction digits for a currency
-    e.g. 3 instead of 2 for € if you want to calculate with 1/10s of a ¢-->
   <string name="dialog_title_template_title">设置名称</string>
   <string name="dialog_title_warning_delete_account">删除帐户?</string>
   <string name="dialog_title_warning_delete_main_category">删除主类别</string>
@@ -101,6 +99,8 @@
   <string name="feedback">意见反馈</string>
   <string name="ftp_uri_malformed">异常URI %1$s</string>
   <string name="grisbi_import_categories_loading">从 %1$s 载入类别</string>
+  <!--This is used as the title for the progress dialogue while importing the default categories, so
+     this should refer to each specific language, like e.g. Deutsche Standard-Kategorien for German etc.-->
   <string name="grisbi_import_default_source">建议类别 (中文)</string>
   <string name="grisbi_import_parties_loading">由 %1$s 载入部分</string>
   <string name="grouping_day">日</string>
@@ -355,7 +355,6 @@
   <string name="warning_password_protected">应用被密码保护</string>
   <string name="warning_widget_disabled">你需要在应用设置里面启用这个挂件</string>
   <string name="warning_password_contrib">若果您忘记了密码,设置一个安全问题可让你再次解锁此应用.</string>
-  <string name="warning_password_no_contrib">如果你设置了密码,但又小心不要忘记了它.你将无法恢复它,除非你成功回答所设置的安全问题.</string>
   <string name="warning_reset_account">如果你继续,这个帐户的所有交易都从数据库中被删除且无法恢复.</string>
   <!--the placeholder %1$s will hold a currency code in paranthesis, if the user calls the reset command from an aggregate account list-->
   <string name="warning_reset_account_all">如果你继续,所有帐户%1$s和当中的所有交易都从数据库中被删除且无法恢复.</string>

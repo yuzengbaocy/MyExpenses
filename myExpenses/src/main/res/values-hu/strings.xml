@@ -63,8 +63,6 @@
   <string name="dialog_security_question">Kérdés</string>
   <!--%1$s is replace with account label-->
   <string name="dialog_title_contrib_feature">Prémium szolgáltatás</string>
-  <!--the dialog where this title is displayed allows the user to customize the number of fraction digits for a currency
-    e.g. 3 instead of 2 for € if you want to calculate with 1/10s of a ¢-->
   <string name="dialog_title_template_title">Elnevezés megadása</string>
   <string name="dialog_title_warning_delete_account">Számla törlése?</string>
   <string name="dialog_title_warning_delete_template">Sablon törlése?</string>
@@ -79,6 +77,8 @@
   <string name="feedback">Visszajelzés</string>
   <string name="ftp_uri_malformed">Helytelen URI %1$s</string>
   <string name="grisbi_import_categories_loading">Kategóriák betöltése innen: %1$s</string>
+  <!--This is used as the title for the progress dialogue while importing the default categories, so
+     this should refer to each specific language, like e.g. Deutsche Standard-Kategorien for German etc.-->
   <string name="grisbi_import_default_source">Magyar  alapértelmezett kategóriák</string>
   <string name="grisbi_import_parties_loading">Résztvevők betöltése innen: %1$s</string>
   <string name="grouping_day">Nap</string>
@@ -292,7 +292,6 @@
   <string name="continue_confirmation">Folytatja?</string>
   <string name="warning_delete_account">Ez a számla törlésre kerül minden tranzakcióval együtt (%1$s). Folytatja?</string>
   <string name="warning_password_contrib">Biztonsági kérdés és válasz megadásával a jelszó elvesztése/elfelejtése esetén is van lehetőség az alkalmazás megnyitására.</string>
-  <string name="warning_password_no_contrib">Jelszó választása esetén ügyeljen arra, hogy azt ne felejtse, vagy veszítse el. A jelszó visszaállítása csak biztonsági kérdés és válasz megadásával működik!</string>
   <string name="warning_reset_account">Ha folytatja minden ehhez a számlához tartozó tranzakció visszavonhatatlanul törlésre kerül az adatbázisból.</string>
   <!--the placeholder %1$s will hold a currency code in paranthesis, if the user calls the reset command from an aggregate account list-->
   <string name="warning_reset_account_all">Ha folytatja minden számla%1$s és tranzakció visszavonhatatlanul törlésre kerül az adatbázisból.</string>
