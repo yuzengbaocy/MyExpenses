@@ -441,7 +441,7 @@
     </string-array>
 
     <string-array name="versions">
-        <item>361;3.0.0</item>
+        <item>362;3.0.0</item>
         <item>360;2.9.9</item>
         <item>357;2.9.8</item>
         <item>351;2.9.7</item>
@@ -462,6 +462,10 @@
         <item>297;2.8.2</item>
         <item>294;2.8.1</item>
         <item>291;2.8.0</item>
+    </string-array>
+
+    <string-array name="contributors_300" tools:ignore="UnusedResources">
+        <item>volodymyr.gz et al.</item>
     </string-array>
 
     <string-array name="contributors_280" tools:ignore="UnusedResources">
@@ -526,6 +530,9 @@
     </string-array>
     <string-array name="version_more_info_299" tools:ignore="UnusedResources">
         <item>2230558760538923</item>
+    </string-array>
+    <string-array name="version_more_info_300" tools:ignore="UnusedResources">
+        <item>2235563440038455</item>
     </string-array>
 
     <string-array name="comparison_operator_entries">
