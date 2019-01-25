@@ -339,24 +339,13 @@ public class Utils {
   }
 
   /**
-   * Indicates whether the specified action can be used as an intent. This
-   * method queries the package manager for installed packages that can respond
-   * to an intent with the specified action. If no suitable package is found,
-   * this method returns false.
-   * <p>
-   * From
-   * http://android-developers.blogspot.fr/2009/01/can-i-use-this-intent.html
-   *
    * @param context The application's environment.
    * @param intent  The Intent action to check for availability.
    * @return True if an Intent with the specified action can be sent and
    * responded to, false otherwise.
    */
   public static boolean isIntentAvailable(Context context, Intent intent) {
-    final PackageManager packageManager = context.getPackageManager();
-    List<ResolveInfo> list = packageManager.queryIntentActivities(intent,
-        PackageManager.MATCH_DEFAULT_ONLY);
-    return !list.isEmpty();
+    return intent.resolveActivity(context.getPackageManager()) != null;
   }
 
   public static boolean isIntentReceiverAvailable(Context context, Intent intent) {
@@ -457,37 +446,6 @@ public class Utils {
       Timber.e(e);
     }
     return "";
-  }
-
-  public static class StringBuilderWrapper {
-    public StringBuilderWrapper() {
-      this.sb = new StringBuilder();
-    }
-
-    private StringBuilder sb;
-
-    public StringBuilderWrapper append(String s) {
-      sb.append(s);
-      return this;
-    }
-
-    public StringBuilderWrapper append(char c) {
-      sb.append(c);
-      return this;
-    }
-
-    public StringBuilderWrapper appendQ(String s) {
-      sb.append('"').append(s.replace("\"", "\"\"")).append('"');
-      return this;
-    }
-
-    public String toString() {
-      return sb.toString();
-    }
-
-    public void clear() {
-      sb = new StringBuilder();
-    }
   }
 
   /**

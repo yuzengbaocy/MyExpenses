@@ -7,16 +7,17 @@ import android.content.res.Configuration;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.Espresso;
 import android.support.test.espresso.contrib.DrawerActions;
+import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
 import android.support.test.runner.lifecycle.Stage;
+import android.support.v7.widget.RecyclerView;
 
 import com.jraska.falcon.FalconSpoonRule;
 
 import junit.framework.Assert;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.totschnig.myexpenses.BuildConfig;
@@ -34,15 +35,16 @@ import java.util.Locale;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.totschnig.myexpenses.testutils.Matchers.first;
 
 /**
  * These tests are meant to be run with Spoon (./gradlew spoon). Remove @Ignore first
  */
-@Ignore
 public class TestMain extends BaseUiTest {
   private MyApplication app;
   private Context instCtx;
@@ -61,7 +63,7 @@ public class TestMain extends BaseUiTest {
   @Test
   public void mkScreenShots() {
     defaultCurrency = Currency.getInstance(BuildConfig.TEST_CURRENCY);
-    loadFixture(BuildConfig.TEST_LANG, BuildConfig.TEST_COUNTRY);
+    loadFixture();
     scenario(BuildConfig.TEST_SCENARIO);
   }
 
@@ -70,25 +72,16 @@ public class TestMain extends BaseUiTest {
     switch(scenario) {
       case 1: {
         onView(withId(R.id.drawer_layout)).perform(DrawerActions.open());
-        takeScreenshot("manage_accounts");
+        takeScreenshot("summarize");
         onView(withId(R.id.drawer_layout)).perform(DrawerActions.close());
-        takeScreenshot("grouped_list");
-        onView(withId(R.id.MANAGE_PLANS_COMMAND)).perform(click());
-        clickOnFirstListEntry();
-        takeScreenshot("plans");
-        Espresso.pressBack();
-        Espresso.pressBack();
+        takeScreenshot("group");
         clickMenuItem(R.id.RESET_COMMAND, R.string.menu_reset);
+        Espresso.closeSoftKeyboard();
         takeScreenshot("export");
-        Espresso.pressBack();
-        onView(withId(R.id.CREATE_COMMAND)).perform(click());
-        onView(withId(R.id.Calculator)).perform(click());
-        takeScreenshot("calculator");
-        Espresso.pressBack();
         Espresso.pressBack();
         onView(withText(R.string.split_transaction)).perform(click());
         onView(withId(android.R.id.button1)).perform(click());
-        Espresso.pressBack();//close keyboard
+        Espresso.closeSoftKeyboard();
         takeScreenshot("split");
         Espresso.pressBack();
         clickMenuItem(R.id.DISTRIBUTION_COMMAND, R.string.menu_distribution);
@@ -99,9 +92,20 @@ public class TestMain extends BaseUiTest {
         onView(withText(R.string.grouping_month)).perform(click());
         clickMenuItem(R.id.TOGGLE_INCLUDE_TRANSFERS_COMMAND, R.string.menu_history_transfers);
         takeScreenshot("history");
+        Espresso.pressBack();
+        clickMenuItem(R.id.BUDGET_COMMAND, R.string.menu_budget);
+        takeScreenshot("budget");
+        Espresso.pressBack();
+        clickMenuItem(R.id.SETTINGS_COMMAND, R.string.menu_settings);
+        onView(instanceOf(RecyclerView.class))
+            .perform(RecyclerViewActions.actionOnItem(hasDescendant(withText(R.string.pref_manage_sync_backends_title)),
+                click()));
+        onView(withText(containsString("Dropbox"))).perform(click());
+        onView(withText(containsString("WebDAV"))).perform(click());
+        takeScreenshot("sync");
         break;
       }
-      case 2: {
+      case 2: {//tablet screenshots
         takeScreenshot("main");
         clickMenuItem(R.id.DISTRIBUTION_COMMAND, R.string.menu_distribution);
         takeScreenshot("distribution");
@@ -121,8 +125,8 @@ public class TestMain extends BaseUiTest {
 
   }
 
-  private void loadFixture(String lang, String country) {
-    this.locale = new Locale(lang, country);
+  private void loadFixture() {
+    this.locale = new Locale(BuildConfig.TEST_LANG, BuildConfig.TEST_COUNTRY);
     Locale.setDefault(locale);
     Configuration config = new Configuration();
     config.locale = locale;
@@ -133,7 +137,7 @@ public class TestMain extends BaseUiTest {
     android.content.SharedPreferences pref = app.getSettings();
     if (pref == null)
       Assert.fail("Could not find prefs");
-    pref.edit().putString(PrefKey.UI_LANGUAGE.getKey(), lang + "-" + country)
+    pref.edit().putString(PrefKey.UI_LANGUAGE.getKey(), BuildConfig.TEST_LANG + "-" + BuildConfig.TEST_COUNTRY)
         .putString(PrefKey.HOME_CURRENCY.getKey(), defaultCurrency.getCurrencyCode())
         .apply();
     app.getLicenceHandler().setLockState(false);
@@ -159,16 +163,20 @@ public class TestMain extends BaseUiTest {
   }
 
   private void takeScreenshot(String fileName) {
-    InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+    try {
+      Thread.sleep(250);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
     falconSpoonRule.screenshot(getCurrentActivity(), fileName);
   }
 
   private Activity getCurrentActivity() {
-    final Activity[] activites = new Activity[1];
+    final Activity[] activities = new Activity[1];
     InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
-      ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(Stage.RESUMED).toArray(activites);
+      ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(Stage.RESUMED).toArray(activities);
     });
-    return activites[0];
+    return activities[0];
   }
 
   @Override
