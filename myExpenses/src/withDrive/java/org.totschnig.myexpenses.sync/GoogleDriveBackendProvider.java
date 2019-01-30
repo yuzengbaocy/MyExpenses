@@ -432,14 +432,15 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     DriveId driveId = metadata.getDriveId();
     DriveApi.DriveContentsResult driveContentsResult =
         driveId.asDriveFile().open(googleApiClient, DriveFile.MODE_READ_ONLY, null).await();
+    final String title = metadata.getTitle();
     if (!driveContentsResult.getStatus().isSuccess()) {
-      CrashHandler.report(String.format("Unable to open %s", driveId.getResourceId()), SyncAdapter.TAG);
+      CrashHandler.report(String.format("Unable to open %s", title), SyncAdapter.TAG);
       return null;
     }
-    log().i("Getting data from file %s", metadata.getTitle());
+    log().i("Getting data from file %s", title);
     DriveContents driveContents = driveContentsResult.getDriveContents();
     try {
-      return getChangeSetFromInputStream(new SequenceNumber(shard, getSequenceFromFileName(metadata.getTitle())),
+      return getChangeSetFromInputStream(new SequenceNumber(shard, getSequenceFromFileName(title)),
           driveContents.getInputStream());
     } catch (IOException e) {
       log().w(e);
@@ -489,7 +490,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     DriveApi.MetadataBufferResult metadataBufferResult =
         metadata.getDriveId().asDriveFolder().queryChildren(googleApiClient, query).await();
     if (!metadataBufferResult.getStatus().isSuccess()) {
-      log().e("Unable to query for metadata file");
+      CrashHandler.report("Unable to query for metadata file");
       return Optional.empty();
     }
     MetadataBuffer metadataBuffer = metadataBufferResult.getMetadataBuffer();
@@ -497,7 +498,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
       DriveApi.DriveContentsResult driveContentsResult = metadataBuffer.get(0).getDriveId()
           .asDriveFile().open(googleApiClient, DriveFile.MODE_READ_ONLY, null).await();
       if (!driveContentsResult.getStatus().isSuccess()) {
-        log().e("Unable to open metadata file");
+        CrashHandler.report("Unable to open metadata file");
         metadataBuffer.release();
         return Optional.empty();
       }
@@ -510,12 +511,12 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     //legacy
     Map<CustomPropertyKey, String> customProperties = metadata.getCustomProperties();
     if (metadata.isTrashed()) {
-      log().e("Folder is trashed");
+      CrashHandler.report("Folder is trashed");
       return Optional.empty();
     }
     String uuid = customProperties.get(ACCOUNT_METADATA_UUID_KEY);
     if (uuid == null) {
-      log().e("UUID property not set");
+      CrashHandler.report("UUID property not set");
       return Optional.empty();
     }
     //TODO add default values
