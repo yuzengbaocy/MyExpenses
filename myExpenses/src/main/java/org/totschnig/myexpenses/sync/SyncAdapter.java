@@ -125,6 +125,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     return "last_synced_local_" + accountId;
   }
 
+  private static long getIoDefaultDelaySeconds() {
+    return  (System.currentTimeMillis() / 1000) + IO_DEFAULT_DELAY_SECONDS;
+  }
+
+  private static long getIoLockDelaySeconds() {
+    return  (System.currentTimeMillis() / 1000) + IO_LOCK_DELAY_SECONDS;
+  }
+
   private String getUserDataWithDefault(AccountManager accountManager, Account account,
                                         String key, String defaultValue) {
     String value = accountManager.getUserData(account, key);
@@ -185,9 +193,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
       } else if (throwable instanceof SyncBackendProvider.ResolvableSetupException) {
         notifyWithResolution((SyncBackendProvider.ResolvableSetupException) throwable);
       } else {
-        log().w(throwable, "Error setting up account.");
+        log().e(throwable, "Error setting up account.");
         syncResult.stats.numIoExceptions++;
-        syncResult.delayUntil = IO_DEFAULT_DELAY_SECONDS;
+        syncResult.delayUntil = getIoDefaultDelaySeconds();
         appendToNotification(TextUtils.concatResStrings(getContext(), " ",
             R.string.sync_io_error_cannot_connect, R.string.sync_error_will_try_again_later), account, true);
       }
@@ -276,7 +284,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 return;
               }
               syncResult.stats.numIoExceptions++;
-              syncResult.delayUntil = IO_DEFAULT_DELAY_SECONDS;
+              syncResult.delayUntil = getIoDefaultDelaySeconds();
               notifyIoException(R.string.sync_io_exception_reset_account_data, account);
             }
             break;
@@ -290,7 +298,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
               return;
             }
             syncResult.stats.numIoExceptions++;
-            syncResult.delayUntil = IO_DEFAULT_DELAY_SECONDS;
+            syncResult.delayUntil = getIoDefaultDelaySeconds();
             notifyIoException(R.string.sync_io_exception_setup_remote_account, account);
             continue;
           }
@@ -304,7 +312,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             }
             notifyIoException(R.string.sync_io_exception_locking, account);
             syncResult.stats.numIoExceptions++;
-            syncResult.delayUntil = IO_LOCK_DELAY_SECONDS;
+            syncResult.delayUntil = getIoLockDelaySeconds();
             continue;
           }
 
@@ -312,13 +320,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
           int successRemote2Local = 0, successLocal2Remote = 0;
           try {
             ChangeSet changeSetSince = backend.getChangeSetSince(lastSyncedRemote, getContext());
-
-            if (changeSetSince == null) {
-              syncResult.stats.numIoExceptions++;
-              syncResult.delayUntil = IO_DEFAULT_DELAY_SECONDS;
-              notifyIoException(R.string.sync_io_exception_reading_change_set, account);
-              continue;
-            }
 
             List<TransactionChange> remoteChanges;
             lastSyncedRemote = changeSetSince.sequenceNumber;
@@ -376,7 +377,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
               return;
             }
             syncResult.stats.numIoExceptions++;
-            syncResult.delayUntil = IO_DEFAULT_DELAY_SECONDS;
+            syncResult.delayUntil = getIoDefaultDelaySeconds();
             notifyIoException(R.string.sync_io_exception_syncing, account);
           } catch (RemoteException | OperationApplicationException | SQLiteException e) {
             syncResult.databaseError = true;
@@ -397,7 +398,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
               if (!handleAuthException(backend, e, account)) {
                 notifyIoException(R.string.sync_io_exception_unlocking, account);
                 syncResult.stats.numIoExceptions++;
-                syncResult.delayUntil = IO_LOCK_DELAY_SECONDS;
+                syncResult.delayUntil = getIoLockDelaySeconds();
               }
             }
           }
@@ -422,7 +423,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
           maybeNotifyUser(getContext().getString(R.string.pref_auto_backup_title),
               getContext().getString(R.string.auto_backup_cloud_success, fileName, account.name), null, null);
         } catch (Exception e) {
-          log().w(e);
+          log().e(e);
           if (!handleAuthException(backend, e, account)) {
             notifyUser(getContext().getString(R.string.pref_auto_backup_title),
                 getContext().getString(R.string.auto_backup_cloud_failure, fileName, account.name)
