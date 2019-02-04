@@ -8,7 +8,6 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.annimon.stream.Collectors;
 import com.annimon.stream.Exceptional;
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
@@ -369,9 +368,8 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   }
 
   @Override
-  public
   @NonNull
-  ChangeSet getChangeSetSince(SequenceNumber sequenceNumber, Context context) throws IOException {
+  public Optional<ChangeSet> getChangeSetSince(SequenceNumber sequenceNumber, Context context) throws IOException {
     DriveFolder shardFolder;
     if (sequenceNumber.shard == 0) {
       shardFolder = accountFolder;
@@ -384,11 +382,16 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     }
     MetadataBuffer metadataBuffer = metadataBufferResult.getMetadataBuffer();
     log().i("Getting data from shard %d", sequenceNumber.shard);
-    final List<ChangeSet> entries = Stream.of(metadataBuffer)
-        .filter(metadata -> isNewerJsonFile(sequenceNumber.number, metadata.getTitle()))
-        .map(metadata -> getChangeSetFromMetadata(sequenceNumber.shard, metadata))
-        .collect(Collectors.toList());
-    metadataBuffer.release();
+    List<ChangeSet> changeSetList = new ArrayList<>();
+    try {
+      for (Metadata metadata: metadataBuffer) {
+        if (isNewerJsonFile(sequenceNumber.number, metadata.getTitle())) {
+          changeSetList.add(getChangeSetFromMetadata(sequenceNumber.shard, metadata));
+        }
+      }
+    } finally {
+      metadataBuffer.release();
+    }
     int nextShard = sequenceNumber.shard + 1;
     while (true) {
       Optional<DriveFolder> nextShardFolder = getShardFolder("_" + nextShard);
@@ -399,19 +402,21 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
         }
         metadataBuffer = metadataBufferResult.getMetadataBuffer();
         log().i("Getting data from shard %d", nextShard);
-        int finalNextShard = nextShard;
-        Stream.of(metadataBuffer)
-            .filter(metadata -> isNewerJsonFile(0, metadata.getTitle()))
-            .map(metadata -> getChangeSetFromMetadata(finalNextShard, metadata))
-            .forEach(entries::add);
-        metadataBuffer.release();
+        try {
+          for (Metadata metadata: metadataBuffer) {
+            if (isNewerJsonFile(0, metadata.getTitle())) {
+              changeSetList.add(getChangeSetFromMetadata(nextShard, metadata));
+            }
+          }
+        } finally {
+          metadataBuffer.release();
+        }
         nextShard++;
       } else {
         break;
       }
     }
-
-    return merge(Stream.of(entries)).orElse(ChangeSet.empty(sequenceNumber));
+    return merge(changeSetList);
   }
 
   private Optional<DriveFolder> getShardFolder(String shard) throws IOException {
@@ -428,23 +433,19 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     return result;
   }
 
-  private ChangeSet getChangeSetFromMetadata(int shard, Metadata metadata) {
+  private ChangeSet getChangeSetFromMetadata(int shard, Metadata metadata) throws IOException {
     DriveId driveId = metadata.getDriveId();
     DriveApi.DriveContentsResult driveContentsResult =
         driveId.asDriveFile().open(googleApiClient, DriveFile.MODE_READ_ONLY, null).await();
     final String title = metadata.getTitle();
     if (!driveContentsResult.getStatus().isSuccess()) {
-      CrashHandler.report(String.format("Unable to open %s", title), SyncAdapter.TAG);
-      return null;
+      throw new IOException(String.format("Unable to open %s", title));
     }
     log().i("Getting data from file %s", title);
     DriveContents driveContents = driveContentsResult.getDriveContents();
     try {
       return getChangeSetFromInputStream(new SequenceNumber(shard, getSequenceFromFileName(title)),
           driveContents.getInputStream());
-    } catch (IOException e) {
-      log().w(e);
-      return null;
     } finally {
       driveContents.discard(googleApiClient);
     }
