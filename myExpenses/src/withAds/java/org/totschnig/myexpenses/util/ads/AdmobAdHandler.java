@@ -10,6 +10,7 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.InterstitialAd;
+import com.google.android.gms.ads.MobileAds;
 
 import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.R;
@@ -120,6 +121,7 @@ public class AdmobAdHandler extends AdHandler {
     if (mInterstitialShown) return false;
     if (admobInterstitialAd != null && admobInterstitialAd.isLoaded()) {
       trackInterstitialShown(PROVIDER_ADMOB);
+      MobileAds.setAppVolume(0);
       admobInterstitialAd.show();
       mInterstitialShown = true;
       return true;
