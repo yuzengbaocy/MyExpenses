@@ -143,7 +143,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     if (!status.isSuccess()) {
       final int statusCode = status.getStatusCode();
       if (statusCode != DriveStatusCodes.DRIVE_RATE_LIMIT_EXCEEDED) {
-        CrashHandler.report(String.format(Locale.ROOT, "Sync failed with code %d", statusCode), SyncAdapter.TAG);
+        CrashHandler.reportWithTag(String.format(Locale.ROOT, "Sync failed with code %d", statusCode), SyncAdapter.TAG);
       } else {
         log().i("DRIVE_RATE_LIMIT_EXCEEDED");
       }
