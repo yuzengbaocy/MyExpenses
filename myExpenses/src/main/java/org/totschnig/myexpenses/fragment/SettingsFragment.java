@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.icu.text.ListFormatter;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -146,6 +147,7 @@ import static org.totschnig.myexpenses.preference.PrefKey.SHORTCUT_CREATE_TRANSF
 import static org.totschnig.myexpenses.preference.PrefKey.SYNC_NOTIFICATION;
 import static org.totschnig.myexpenses.preference.PrefKey.SYNC_WIFI_ONLY;
 import static org.totschnig.myexpenses.preference.PrefKey.TRACKING;
+import static org.totschnig.myexpenses.preference.PrefKey.TRANSLATION;
 import static org.totschnig.myexpenses.preference.PrefKey.UI_HOME_SCREEN_SHORTCUTS;
 import static org.totschnig.myexpenses.preference.PrefKey.UI_LANGUAGE;
 import static org.totschnig.myexpenses.util.PermissionHelper.PermissionGroup.CALENDAR;
@@ -367,6 +369,18 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
 
       });
       currencyViewModel.loadCurrencies();
+
+      final int translatorsArrayResId = getTranslatorsArrayResId();
+      if (translatorsArrayResId != 0) {
+        String[] translatorsArray = getResources().getStringArray(translatorsArrayResId);
+        final String translators;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+          translators = ListFormatter.getInstance().format((Object[]) translatorsArray);
+        } else {
+          translators = TextUtils.join(", ", translatorsArray);
+        }
+        findPreference(TRANSLATION).setSummary(String.format("%s: %s", getString(R.string.translated_by), translators));
+      }
     }
     //SHORTCUTS screen
     else if (rootKey.equals(UI_HOME_SCREEN_SHORTCUTS.getKey())) {
@@ -448,6 +462,13 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
     } else if(rootKey.equals(getString(R.string.pref_crash_reports_key))) {
       findPreference(getString(R.string.pre_acra_info_key)).setSummary(Utils.getTextWithAppName(getContext(),R.string.crash_reports_user_info));
     }
+  }
+
+  private int getTranslatorsArrayResId() {
+    Locale locale = Locale.getDefault();
+    String language = locale.getLanguage().toLowerCase(Locale.US);
+    String country = locale.getCountry().toLowerCase(Locale.US);
+    return activity().getTranslatorsArrayResId(language, country);
   }
 
   public static String[] getLocaleArray(Context context) {
@@ -578,7 +599,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
     if (licenceHandler.needsKeyEntry()) {
       if (licenceHandler.hasValidKey()) {
         licenceKeyPref.setTitle(getKeyInfo());
-        licenceKeyPref.setSummary(concatResStrings(getActivity()," / ",
+        licenceKeyPref.setSummary(concatResStrings(getActivity(), " / ",
             R.string.button_validate, R.string.menu_remove));
       }
     } else {
@@ -633,7 +654,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
   @Override
   public boolean onPreferenceChange(Preference pref, Object value) {
     if (matches(pref, HOME_CURRENCY)) {
-      if (!value.equals(prefHandler.getString(HOME_CURRENCY,null))) {
+      if (!value.equals(prefHandler.getString(HOME_CURRENCY, null))) {
         MessageDialogFragment.newInstance(R.string.dialog_title_information,
             concatResStrings(getContext(), " ", R.string.home_currency_change_warning, R.string.continue_confirmation),
             new MessageDialogFragment.Button(android.R.string.ok, R.id.CHANGE_COMMAND, ((String) value)),
@@ -774,7 +795,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
 
       } else {
         String licenceKey = prefHandler.getString(NEW_LICENCE, "");
-        String licenceEmail = prefHandler.getString(LICENCE_EMAIL,"");
+        String licenceEmail = prefHandler.getString(LICENCE_EMAIL, "");
         SimpleFormDialog.build()
             .title(R.string.pref_enter_licence_title)
             .fields(
@@ -809,7 +830,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
   }
 
   private String getKeyInfo() {
-    return String.format("%s: %s", prefHandler.getString(LICENCE_EMAIL,""), prefHandler.getString(NEW_LICENCE, ""));
+    return String.format("%s: %s", prefHandler.getString(LICENCE_EMAIL, ""), prefHandler.getString(NEW_LICENCE, ""));
   }
 
   private void showOnlyOneProtectionWarning(boolean legacyProtectionByPasswordIsActive) {

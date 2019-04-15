@@ -96,7 +96,7 @@
     <string name="pref_date_screen_key">date_screen</string>
     <string name="pref_ad_consent_key">ad_consent</string>
     <string name="pref_sync_wifi_only_key">sync_wifi_only</string>
-    <string name="pref_translation_key">translation_key</string>
+    <string name="pref_translation_key">translation</string>
     <string name="pref_scroll_to_current_date_key">scroll_to_current_date</string>
     <string name="pref_security_export_password_key">security_export_password</string>
     <string name="pref_account_list_fast_scroll_key">account_list_fast_scroll</string>
@@ -105,7 +105,6 @@
     <string-array name="additional_credits">
         <item>App icon by Pierluigi Rufo.</item>
         <item>Dark theme design originally suggested by meinnoteblog.</item>
-        <item>Translations: Laurent Collombet (fr,it,es), Alexandre Beelen (fr), gudrunto (it), Silvia Delpero (it), Tulliver (es), christoft (es), Paco Rivière (ca), mauron (tr), Caner Başaran (tr), Phan Anh (vi), Abdulrahman Alothaim (ar), Roland Csipai (hu), Pongsametrey SOK (km), Enrico Nicoletto (pt_BR), Fabiano Oliveira (pt_BR), Maria Gabriel (pt_BR), Marcin Kralka (pl), Jan Splíchal (cs), Dmitrij Kurenkov (ru), isuru (si),  janith9590 (si), Dilruni (si), Abuyop (ms), Naofumi (ja), Diana Kara (bg), Ivan Dimitrov (bg), geoch (el), Michalis Ntovas (el), Mihovil Nakić-Vojnović (hr), DD (ro), CasperLi_HK (zh_TW), Osoitz (eu), halcyonest (ko), Khaled Saleem Baleesh (ar), Mohammed Al Blooshi (ar), wa3SdlmHXu (pt_PT), Sérgio Marques (pt_PT), fedett92 (it), Pierluigi Rufo (it), hhggit (zh_CN), jpgine (ca), tangodev (pl), visualfanatic (pl), Zvi  P. (he), Przemysław Kuciel (pl).</item>
         <item>Code contributions: Configuring and applying custom colors to accounts by khris78; Applying Sonar code quality checks by Ayman Abdelghany; Implementing Input Dialogs and Color Pickers by eltos.</item>
     </string-array>
 
@@ -150,7 +149,6 @@
     <string name="io_error_backupdir_null">Could not create folder for storing backup</string>
     <string name="io_error_cachedir_null">Cache directory not found</string>
     <string name="account_list_not_yet_loaded">Account list not yet loaded. Please try again</string>
-    <string name="warning_no_account">Please create account first</string>
 
     <string name="calculator_operator_plus">+</string>
     <string name="calculator_operator_minus">−</string>

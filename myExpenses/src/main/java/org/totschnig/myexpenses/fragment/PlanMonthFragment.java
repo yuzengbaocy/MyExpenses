@@ -4,7 +4,6 @@ import android.app.Dialog;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
@@ -160,16 +159,6 @@ public class PlanMonthFragment extends CaldroidFragment
     });
   }
 
-  @Override
-  public void onStart() {
-    super.onStart();
-
-    int dialogHeight = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT ?
-        (int) getResources().getDimension(R.dimen.plan_month_dialog_height) : ViewGroup.LayoutParams.MATCH_PARENT;
-
-    getDialog().getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, dialogHeight);
-  }
-
   @NonNull
   @Override
   public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -314,6 +303,9 @@ public class PlanMonthFragment extends CaldroidFragment
   public void dispatchCommandMultiple(int command, SparseBooleanArray positions) {
     ArrayList<Long[]> extra2dAL = new ArrayList<Long[]>();
     ArrayList<Long> objectIdsAL = new ArrayList<Long>();
+    final ProtectedFragmentActivity activity = (ProtectedFragmentActivity) getActivity();
+    final Bundle arguments = getArguments();
+    if (activity == null || arguments == null) return;
     switch (command) {
       case R.id.CREATE_PLAN_INSTANCE_SAVE_COMMAND:
         for (int i = 0; i < positions.size(); i++) {
@@ -325,12 +317,12 @@ public class PlanMonthFragment extends CaldroidFragment
               continue;
             //pass event instance id and date as extra
             extra2dAL.add(new Long[]{instanceId, getDateForPosition(position)});
-            objectIdsAL.add(getArguments().getLong(KEY_ROWID));
+            objectIdsAL.add(arguments.getLong(KEY_ROWID));
           }
         }
-        ((ProtectedFragmentActivity) getActivity()).startTaskExecution(
+        activity.startTaskExecution(
             TaskExecutionFragment.TASK_NEW_FROM_TEMPLATE,
-            objectIdsAL.toArray(new Long[objectIdsAL.size()]),
+            objectIdsAL.toArray(new Long[0]),
             extra2dAL.toArray(new Long[extra2dAL.size()][2]),
             0);
         break;
@@ -342,13 +334,13 @@ public class PlanMonthFragment extends CaldroidFragment
             if (instanceId == -1)
               continue;
             objectIdsAL.add(instanceId);
-            extra2dAL.add(new Long[]{getArguments().getLong(KEY_ROWID),
+            extra2dAL.add(new Long[]{arguments.getLong(KEY_ROWID),
                 instance2TransactionMap.get(instanceId)});
           }
         }
-        ((ProtectedFragmentActivity) getActivity()).startTaskExecution(
+        activity.startTaskExecution(
             TaskExecutionFragment.TASK_CANCEL_PLAN_INSTANCE,
-            objectIdsAL.toArray(new Long[objectIdsAL.size()]),
+            objectIdsAL.toArray(new Long[0]),
             extra2dAL.toArray(new Long[extra2dAL.size()][2]),
             0);
         break;
@@ -361,13 +353,13 @@ public class PlanMonthFragment extends CaldroidFragment
               continue;
             objectIdsAL.add(instanceId);
             //pass transactionId in extra
-            extra2dAL.add(new Long[]{getArguments().getLong(KEY_ROWID),
+            extra2dAL.add(new Long[]{arguments.getLong(KEY_ROWID),
                 instance2TransactionMap.get(instanceId)});
           }
         }
-        ((ProtectedFragmentActivity) getActivity()).startTaskExecution(
+        activity.startTaskExecution(
             TaskExecutionFragment.TASK_RESET_PLAN_INSTANCE,
-            objectIdsAL.toArray(new Long[objectIdsAL.size()]),
+            objectIdsAL.toArray(new Long[0]),
             extra2dAL.toArray(new Long[extra2dAL.size()][2]),
             0);
         break;
