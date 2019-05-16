@@ -58,6 +58,7 @@ import org.totschnig.myexpenses.util.NotificationBuilderWrapper;
 import org.totschnig.myexpenses.util.Result;
 import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
+import org.totschnig.myexpenses.util.crypt.PRNGFixes;
 import org.totschnig.myexpenses.util.io.StreamReader;
 import org.totschnig.myexpenses.util.licence.LicenceHandler;
 import org.totschnig.myexpenses.util.log.TagFilterFileLoggingTree;
@@ -166,6 +167,7 @@ public class MyApplication extends MultiDexApplication implements
     }
     licenceHandler.init();
     NotificationBuilderWrapper.createChannels(this);
+    PRNGFixes.apply();
     SecurityProvider.init(this);
   }
 
@@ -365,7 +367,8 @@ public class MyApplication extends MultiDexApplication implements
         String found = DbUtils.getString(c, 0);
         String expected = PrefKey.PLANNER_CALENDAR_PATH.getString("");
         if (!found.equals(expected)) {
-          Timber.w("found calendar, but path did not match; expected %s ; got %s", expected, found);
+          CrashHandler.report(String.format(
+              "found calendar, but path did not match; expected %s ; got %s", expected, found));
           result = false;
         } else {
           int syncEvents = c.getInt(1);

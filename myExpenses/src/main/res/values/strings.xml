@@ -131,9 +131,6 @@
     <string name="feedback">Feedback</string>
     <string name="ftp_uri_malformed">Malformed URI %1$s</string>
     <string name="grisbi_import_categories_loading">Loading categories from %1$s</string>
-    <!-- This is used as the title for the progress dialogue while importing the default categories, so
-     this should refer to each specific language, like e.g. Deutsche Standard-Kategorien for German etc.-->
-    <string name="grisbi_import_default_source">English default categories</string>
     <string name="grisbi_import_parties_loading">Loading parties from %1$s</string>
     <string name="grouping_day">Day</string>
     <string name="grouping_last_week">Last week</string>
@@ -650,7 +647,6 @@
     <string name="sync_io_exception_reset_account_data">Error while resetting remote account.</string>
     <string name="sync_success_reset_account_data">Remote data for account %s has been deleted.</string>
     <string name="sync_io_exception_setup_remote_account">Error while setting up remote account.</string>
-    <string name="sync_io_exception_reading_change_set">Error while reading changes from backend.</string>
     <string name="sync_io_exception_syncing">Error while syncing changes with server.</string>
     <string name="sync_io_exception_unlocking">Error while removing lock from remote backend.</string>
     <string name="sync_io_exception_locking">Remote backend is locked or cannot be locked.</string>
@@ -692,10 +688,10 @@
     <!-- %1$s date, %2$s price  -->
     <string name="extend_until">Extend until %1$s for %2$s</string>
     <string name="extended_upgrade_goodie_github">Additional %d months are granted once to users who already own the Extended Licence</string>
-    <string name="extended_upgrade_goodie_subscription">Users who already own the Extended Licence pay 50%% of the regular price (%s) in the first year.</string>
-    <string name="extended_upgrade_goodie_subscription_amazon">Users who already own the Extended Licence are entitled to a %1$d%% reduction from the regular price (%2$s) of the yearly subscription.</string>
-    <string name="switch_to_yearly">Switch to yearly subscription</string>
-    <string name="switch_to_monthly">Switch to monthly subscription</string>
+    <string name="extended_upgrade_goodie_subscription" tools:ignore="UnusedResources">Users who already own the Extended Licence pay 50%% of the regular price (%s) in the first year.</string>
+    <string name="extended_upgrade_goodie_subscription_amazon" tools:ignore="UnusedResources">Users who already own the Extended Licence are entitled to a %1$d%% reduction from the regular price (%2$s) of the yearly subscription.</string>
+    <string name="switch_to_yearly" tools:ignore="UnusedResources">Switch to yearly subscription</string>
+    <string name="switch_to_monthly" tools:ignore="UnusedResources">Switch to monthly subscription</string>
     <string name="extend_validity">Extend validity</string>
     <string name="progress_dialog_fetching_data_from_sync_backend">Fetching data from remote backend. This may take some time.</string>
     <string name="donate_button_invoice">Invoice</string>
@@ -761,7 +757,7 @@
     <string name="pref_ad_consent_title">Personalized ads</string>
     <string name="ad_consent_non_personalized">Non-personalized ads</string>
     <string name="gdpr_consent_message">We partner with {ad_provider} in order to sustain the support, maintenance and development of {app_name} by showing you ads. We would like to ask for your consent. If you prefer to not see any ads, please pay for the ad-free version.</string>
-    <string name="gdpr_consent_button_yes">Yes, continue to see ads</string>
+    <string name="gdpr_consent_button_yes" tools:ignore="UnusedResources">Yes, continue to see ads</string>
     <string name="gdpr_consent_button_no">Pay for the ad-free version</string>
     <string name="sort_order">Sort order</string>
     <string name="navigation_drawer_accounts_title">Manage accounts</string>
@@ -846,6 +842,7 @@
     <string name="translated_by">Translated by</string>
     <string name="warning_account_for_plan_is_closed">Plan %s can no longer be instantiated because account %s has been closed.</string>
     <string name="warning_no_account">At least one account must be visible and open in order to create new transactions.</string>
-    <string name="content_description_dates_are_linked">Booking date and value date are linked</string>
-    <string name="content_description_dates_are_not_linked">Booking date and value date are not linked</string>
+    <string name="content_description_dates_are_linked">Booking date and value date are updated together</string>
+    <string name="content_description_dates_are_not_linked">Booking date and value date are not updated together</string>
+    <string name="icon">Icon</string>
 </resources>

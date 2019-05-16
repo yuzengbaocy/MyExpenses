@@ -47,6 +47,9 @@ def getPropertyIfDefined(property, defaultValue) {
 }
 
 android {
+    sourceSets {
+        main.res.srcDirs += 'src/main/categoryIcons'
+    }
     compileSdkVersion project.compileSdkVersion
     useLibrary 'android.test.runner'
     useLibrary 'android.test.mock'
@@ -56,13 +59,14 @@ android {
         applicationId "org.totschnig.myexpenses"
         minSdkVersion project.minSdkVersion
         targetSdkVersion project.targetSdkVersion
-        versionCode 369
-        versionName '3.0.1.3'
+        versionCode 370
+        versionName '3.0.2'
         multiDexEnabled true
 
         buildConfigField "String", "BUILD_DATE", "\"" + getDate() + "\""
         buildConfigField "String", "DISTRIBUTION", "\"GITHUB\""
         buildConfigField "boolean", "UNLOCK_SWITCH", getPropertyIfDefined("UNLOCK", "false")
+        buildConfigField "String[]", "CATEGORY_ICONS", "{" + categoryIcons() + "}"
         testInstrumentationRunner "org.totschnig.myexpenses.MyTestRunner"
         testProguardFile "proguard-test.txt"
 
@@ -265,7 +269,7 @@ dependencies {
     implementation 'com.github.mtotschnig:MPAndroidChart:8ebaf08edd'
     //implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0-alpha'
     implementation 'com.github.mtotschnig:Caldroid:a86eb51428'
-    implementation 'com.github.eltos:SimpleDialogFragments:3abe091998'
+    implementation 'com.github.eltos:simpledialogfragment:3.1'
     implementation 'com.annimon:stream:1.1.9'
 
     // WebDAV
@@ -281,17 +285,17 @@ dependencies {
 
     implementation 'com.jakewharton.timber:timber:4.7.1'
 
-    withAdsImplementation 'com.google.android.gms:play-services-ads:17.1.3'
-    withDriveImplementation 'com.google.android.gms:play-services-drive:16.0.0'
+    withAdsImplementation 'com.google.android.gms:play-services-ads:17.2.0'
+    withDriveImplementation 'com.google.android.gms:play-services-drive:16.1.0'
     //noinspection GradleDynamicVersion
     withAdsImplementation 'com.amazon.android:mobile-ads:5.+'
 
     crashlyticsImplementation('com.crashlytics.sdk.android:crashlytics:2.9.8@aar') {
         transitive = true
     }
-    implementation 'com.google.firebase:firebase-core:16.0.7'
-    implementation 'com.google.firebase:firebase-config:16.3.0'
-    implementation 'com.google.firebase:firebase-ads:17.1.3'
+    implementation 'com.google.firebase:firebase-core:16.0.9'
+    implementation 'com.google.firebase:firebase-config:17.0.0'
+    implementation 'com.google.firebase:firebase-ads:17.2.0'
 
     implementation 'org.slf4j:slf4j-api:1.7.25'
     implementation 'com.github.tony19:logback-android-core:1.1.1-6'
@@ -301,7 +305,7 @@ dependencies {
     }
 
     implementation supportCompile
-    
+
     implementation project(path: ':setupwizard')
 
     //licence validation
@@ -366,3 +370,17 @@ task copyFileForFixture(type: com.novoda.gradle.command.Files) {
 }
 
 apply plugin: 'com.google.gms.google-services'
+
+configurations {
+    cleanedAnnotations
+    compile.exclude group: 'org.jetbrains', module: 'annotations'
+}
+
+def categoryIcons() {
+    return new File("${projectDir}/src/main/categoryIcons/drawable")
+            .listFiles()
+            .collect { it.name }
+            .collect { it.take(it.lastIndexOf('.')) }
+            .collect { "\"" + it + "\"" }
+            .join(", ")
+}
