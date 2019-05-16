@@ -101,7 +101,7 @@ android {
             manifestPlaceholders = [appName: "My Expenses Debug", debug: "true"]
         }
         forTest {
-            initWith release
+            initWith debug
             applicationIdSuffix ".fortest"
             manifestPlaceholders = [appName: "My Expenses Test", debug: "true"]
             matchingFallbacks = ['debug']
