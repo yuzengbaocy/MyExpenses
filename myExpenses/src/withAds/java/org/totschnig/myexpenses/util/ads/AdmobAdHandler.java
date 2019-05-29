@@ -31,6 +31,7 @@ public class AdmobAdHandler extends AdHandler {
   }
 
   public void init() {
+    MobileAds.initialize(context, "ca-app-pub-5381507717489755~8602009224");
     if (shouldHideAd()) {
       hide();
     } else {
@@ -60,8 +61,6 @@ public class AdmobAdHandler extends AdHandler {
     admobView.setAdUnitId(isTest() ? "ca-app-pub-3940256099942544/6300978111" :
         context.getString(bannerUnitId));
     adContainer.addView(admobView);
-    admobView.loadAd(buildAdmobRequest());
-    trackBannerRequest(PROVIDER_ADMOB);
     admobView.setAdListener(new AdListener() {
       @Override
       public void onAdLoaded() {
@@ -76,6 +75,8 @@ public class AdmobAdHandler extends AdHandler {
         hide();
       }
     });
+    admobView.loadAd(buildAdmobRequest());
+    trackBannerRequest(PROVIDER_ADMOB);
   }
 
   private AdRequest buildAdmobRequest() {
@@ -85,6 +86,7 @@ public class AdmobAdHandler extends AdHandler {
       extras.putString("npa", "1");
       builder.addNetworkExtrasBundle(AdMobAdapter.class, extras);
     }
+    //builder.addTestDevice(AdRequest.DEVICE_ID_EMULATOR);
     return builder.build();
   }
 
@@ -102,7 +104,6 @@ public class AdmobAdHandler extends AdHandler {
     admobInterstitialAd.setAdUnitId(isTest() ? "ca-app-pub-3940256099942544/1033173712" :
         context.getString(interstitialUnitId));
     trackInterstitialRequest(PROVIDER_ADMOB);
-    admobInterstitialAd.loadAd(buildAdmobRequest());
     admobInterstitialAd.setAdListener(new AdListener() {
       @Override
       public void onAdLoaded() {
@@ -115,6 +116,7 @@ public class AdmobAdHandler extends AdHandler {
         onInterstitialFailed();
       }
     });
+    admobInterstitialAd.loadAd(buildAdmobRequest());
   }
 
   protected boolean maybeShowInterstitialDo() {
