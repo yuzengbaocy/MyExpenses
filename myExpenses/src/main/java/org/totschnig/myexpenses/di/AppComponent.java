@@ -40,11 +40,20 @@ import org.totschnig.myexpenses.viewmodel.RoadmapViewModel;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import dagger.BindsInstance;
 import dagger.Component;
 
 @Singleton
-@Component(modules = {AppModule.class, UiModule.class, UtilsModule.class, NetworkModule.class})
+@Component(modules = {AppModule.class, UiModule.class, UtilsModule.class, NetworkModule.class, LicenceModule.class})
 public interface AppComponent {
+  @Component.Builder
+  interface Builder {
+    @BindsInstance
+    Builder applicationContext(MyApplication applicationContext);
+    Builder licenceModule(LicenceModule licenceModule);
+    AppComponent build();
+  }
+
   void inject(MyApplication application);
 
   void inject(ExpenseEdit expenseEdit);

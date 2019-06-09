@@ -17,13 +17,13 @@ import dagger.Provides;
 public class UiModule {
   @Provides
   @Singleton
-  ImageViewIntentProvider provideImageViewIntentProvider() {
+  static ImageViewIntentProvider provideImageViewIntentProvider() {
       return new SystemImageViewIntentProvider();
   }
 
   @Provides
   @Singleton
-  AdHandlerFactory provideAdHandlerFactory(MyApplication application, PrefHandler prefHandler, @Named("userCountry") String userCountry) {
+  static AdHandlerFactory provideAdHandlerFactory(MyApplication application, PrefHandler prefHandler, @Named("userCountry") String userCountry) {
     return new PlatformAdHandlerFactory(application, prefHandler, userCountry);
   }
 }
