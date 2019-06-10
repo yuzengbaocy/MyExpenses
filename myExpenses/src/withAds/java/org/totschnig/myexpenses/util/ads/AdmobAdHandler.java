@@ -16,7 +16,7 @@ import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.preference.PrefKey;
 
-public class AdmobAdHandler extends AdHandler {
+class AdmobAdHandler extends AdHandler {
   private static final String PROVIDER_ADMOB = "Admob";
   private AdView admobView;
   private InterstitialAd admobInterstitialAd;
@@ -30,13 +30,13 @@ public class AdmobAdHandler extends AdHandler {
     this.interstitialUnitId = interstitialUnitId;
   }
 
-  public void init() {
+  public void _init() {
     MobileAds.initialize(context, "ca-app-pub-5381507717489755~8602009224");
-    if (shouldHideAd()) {
-      hide();
-    } else {
-      showBannerAdmob();
-    }
+  }
+
+  @Override
+  protected void _startBanner() {
+    showBannerAdmob();
   }
 
   private void showBannerAdmob() {

@@ -20,16 +20,12 @@ public class AmaAdHandler extends AdHandler {
   private boolean mAmaInterstitialLoaded = false;
   private boolean mAmaBannerShown = false, mInterstitialShown = false;
 
-  public AmaAdHandler(AdHandlerFactory factory, ViewGroup adContainer) {
+  AmaAdHandler(AdHandlerFactory factory, ViewGroup adContainer) {
     super(factory, adContainer);
   }
 
-  public void init() {
-    if (shouldHideAd()) {
-      hide();
-    } else {
-      showBannerAma();
-    }
+  public void _startBanner() {
+    showBannerAma();
   }
 
   private void showBannerAma() {
