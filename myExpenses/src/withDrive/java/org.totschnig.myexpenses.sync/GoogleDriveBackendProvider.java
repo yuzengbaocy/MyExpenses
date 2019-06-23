@@ -125,7 +125,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
             //resolution since GoogleApiAvailability is taking care of generating notification
             return Exceptional.of(new ResolvableSetupException(null, null));
           } else {
-            return Exceptional.of(new Throwable(getContext().getString(R.string.sync_io_error_cannot_connect)));
+            return Exceptional.of(new IOException(getContext().getString(R.string.sync_io_error_cannot_connect)));
           }
         }
       }
