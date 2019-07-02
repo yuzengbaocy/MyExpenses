@@ -474,7 +474,6 @@
   <string name="comparison_operator_between">между</string>
   <string name="comparison_operator_date_before">преди</string>
   <string name="comparison_operator_date_after">след</string>
-  <string name="promotion_appgratis_welcome" tools:ignore="UnusedResources">Само днес специална оферта в безплатното приложение: премийните функции са отключени безплатно.</string>
   <string name="premium_failed_or_canceled" tools:ignore="UnusedResources">Закупуването е неуспешно или отменено.</string>
   <string name="hint_auto_fill">Да се попълват ли автоматично данните от последната транзакция за същия получател / платец? Винаги можете да промените това поведение от настройките.</string>
   <string name="yes">Да</string>
@@ -828,4 +827,6 @@
   <string name="icon">Икона</string>
   <string name="pref_debug_title">Отстраняване на програмни грешки</string>
   <string name="roadmap_vote">Гласуване в картата за развитие</string>
+  <string name="warning_account_for_transaction_is_closed">Поне една от избраните транзакции не може да се редактира:</string>
+  <string name="object_sealed">Обектът се отнася за затворена сметка.</string>
 </resources>
