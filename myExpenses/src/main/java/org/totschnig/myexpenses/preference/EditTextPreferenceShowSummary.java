@@ -16,10 +16,10 @@
 package org.totschnig.myexpenses.preference;
 
 import android.content.Context;
-import android.support.v7.preference.EditTextPreference;
-import android.support.v7.preference.Preference;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+
+import androidx.preference.EditTextPreference;
 
 public class EditTextPreferenceShowSummary extends EditTextPreference {
 
@@ -39,14 +39,10 @@ public class EditTextPreferenceShowSummary extends EditTextPreference {
 
     defaultSummary = super.getSummary();
 
-      setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-
-          @Override
-          public boolean onPreferenceChange(Preference arg0, Object arg1) {
-            CharSequence newValue = (CharSequence) arg1;
-            arg0.setSummary(TextUtils.isEmpty(newValue) ? defaultSummary : newValue);
-              return true;
-          }
+      setOnPreferenceChangeListener((arg0, arg1) -> {
+        CharSequence newValue = (CharSequence) arg1;
+        arg0.setSummary(TextUtils.isEmpty(newValue) ? defaultSummary : newValue);
+          return true;
       });
   }
 

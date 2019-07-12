@@ -3,11 +3,7 @@ package org.totschnig.myexpenses.util.licence;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
-import com.annimon.stream.Collectors;
-import com.annimon.stream.Stream;
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 import com.google.android.vending.licensing.PreferenceObfuscator;
 
@@ -25,6 +21,8 @@ import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
 
 import java.util.ArrayList;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import timber.log.Timber;
 
 public class InappPurchaseLicenceHandler extends ContribStatusLicenceHandler {

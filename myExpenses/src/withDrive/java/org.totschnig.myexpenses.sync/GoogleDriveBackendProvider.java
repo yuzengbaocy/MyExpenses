@@ -5,8 +5,6 @@ import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.net.Uri;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 import com.annimon.stream.Exceptional;
 import com.annimon.stream.Optional;
@@ -51,6 +49,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   private static final String KEY_LAST_FAILED_SYNC = "lastFailedSync";

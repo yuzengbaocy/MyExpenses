@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.app.NotificationCompat;
 
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
@@ -15,6 +14,7 @@ import org.totschnig.myexpenses.activity.MyExpenses;
 import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.licence.LicenceHandler;
 
+import androidx.core.app.NotificationCompat;
 import timber.log.Timber;
 
 import static org.totschnig.myexpenses.util.TextUtils.concatResStrings;

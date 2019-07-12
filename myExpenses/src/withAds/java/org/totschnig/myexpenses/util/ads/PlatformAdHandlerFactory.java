@@ -1,7 +1,6 @@
 package org.totschnig.myexpenses.util.ads;
 
 import android.content.Context;
-import android.support.annotation.VisibleForTesting;
 import android.view.ViewGroup;
 
 import com.annimon.stream.Stream;
@@ -12,6 +11,8 @@ import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.preference.PrefHandler;
+
+import androidx.annotation.VisibleForTesting;
 
 public class PlatformAdHandlerFactory extends DefaultAdHandlerFactory {
 

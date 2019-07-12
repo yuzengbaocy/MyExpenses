@@ -9,8 +9,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
@@ -20,6 +18,7 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveApi;
+import com.google.android.material.snackbar.Snackbar;
 
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
@@ -35,6 +34,8 @@ import org.totschnig.myexpenses.util.Utils;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Locale;
+
+import androidx.annotation.NonNull;
 
 import static org.totschnig.myexpenses.sync.GoogleDriveBackendProvider.KEY_GOOGLE_ACCOUNT_EMAIL;
 

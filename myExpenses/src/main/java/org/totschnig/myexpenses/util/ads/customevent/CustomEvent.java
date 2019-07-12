@@ -19,9 +19,6 @@ package org.totschnig.myexpenses.util.ads.customevent;
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.Bundle;
-import android.support.annotation.Keep;
-import android.support.annotation.VisibleForTesting;
-import android.support.v4.util.Pair;
 import android.util.DisplayMetrics;
 
 import com.google.android.gms.ads.AdSize;
@@ -36,6 +33,10 @@ import org.totschnig.myexpenses.di.AppComponent;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.annotation.Keep;
+import androidx.annotation.VisibleForTesting;
+import androidx.core.util.Pair;
 
 /**
  * A custom event for the Sample ad network. Custom events allow publishers to write their own

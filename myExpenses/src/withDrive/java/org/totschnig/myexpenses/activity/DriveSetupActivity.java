@@ -21,7 +21,6 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.content.IntentSender.SendIntentException;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.widget.Toast;
 
 import com.google.android.gms.common.AccountPicker;
@@ -38,6 +37,7 @@ import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.sync.GoogleDriveBackendProvider;
 import org.totschnig.myexpenses.sync.GoogleDriveBackendProviderFactory;
 
+import androidx.annotation.NonNull;
 import icepick.Icepick;
 import icepick.State;
 import timber.log.Timber;

@@ -416,7 +416,7 @@
                 android:summaryOff="@string/pref_acra_disabled"
                 android:summaryOn="@string/pref_acra_enabled"
                 android:title="@string/pref_enable_acra"/>
-            <EditTextPreference
+            <org.totschnig.myexpenses.preference.EditTextPreferenceShowSummary
                 android:dependency="@string/pref_crashreport_enabled_key"
                 android:inputType="textUri"
                 android:key="@string/pref_crashreport_useremail_key"
