@@ -27,9 +27,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
 
 import org.totschnig.myexpenses.BuildConfig;
@@ -66,6 +63,9 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import timber.log.Timber;
 
 import static org.totschnig.myexpenses.model.AggregateAccount.AGGREGATE_HOME_CURRENCY_CODE;
@@ -166,6 +166,8 @@ public class TransactionProvider extends ContentProvider {
   private static final String QUERY_PARAMETER_SYNC_BEGIN = "syncBegin";
   private static final String QUERY_PARAMETER_SYNC_END = "syncEnd";
   public static final String QUERY_PARAMETER_WITH_START = "withStart";
+  public static final String QUERY_PARAMETER_SECTIONS = "sections";
+
   /**
    * Transfers are included into in and out sums, instead of reported in extra field
    */
@@ -368,6 +370,7 @@ public class TransactionProvider extends ContentProvider {
         groupBy = KEY_YEAR + "," + KEY_SECOND_GROUP;
         String secondDef = "";
 
+        final boolean sectionsOnly = uri.getQueryParameter(QUERY_PARAMETER_SECTIONS) != null;
         switch (group) {
           case NONE:
             yearExpression = "1";
@@ -380,7 +383,7 @@ public class TransactionProvider extends ContentProvider {
             secondDef = getWeek();
             break;
           case MONTH:
-            secondDef = getMonth();
+            secondDef = sectionsOnly ? MONTH_PLAIN : getMonth();
             break;
           case YEAR:
             secondDef = "0";
@@ -388,28 +391,35 @@ public class TransactionProvider extends ContentProvider {
             break;
         }
         qb.setTables(VIEW_EXTENDED);
-        int projectionSize = 5;
-        if (withStart) {
-          projectionSize += 1;
-        }
-        if (!includeTransfers) {
-          projectionSize += 1;
+        int projectionSize;
+        if (sectionsOnly) {
+          projectionSize = 2;
+        } else {
+          projectionSize = 5;
+          if (withStart) {
+            projectionSize += 1;
+          }
+          if (!includeTransfers) {
+            projectionSize += 1;
+          }
         }
         projection = new String[projectionSize];
         int index = 0;
         projection[index++] = yearExpression + " AS " + KEY_YEAR;
         projection[index++] = secondDef + " AS " + KEY_SECOND_GROUP;
-        projection[index++] = includeTransfers ? getInSum(forHome) : getIncomeSum(forHome);
-        projection[index++] = includeTransfers ? getOutSum(forHome) : getExpenseSum(forHome);
-        if (!includeTransfers) {
-          //for the Grand total account transfer calculation is neither possible (adding amounts in
-          //different currencies) nor necessary (should result in 0)
-          projection[index++] = (forHome ? "0" : TRANSFER_SUM) + " AS " + KEY_SUM_TRANSFERS;
-        }
-        projection[index++] = MAPPED_CATEGORIES;
-        if (withStart) {
-          projection[index] = (group == Grouping.WEEK ? getWeekStartJulian() : DAY_START_JULIAN)
-              + " AS " + KEY_GROUP_START;
+        if (!sectionsOnly) {
+          projection[index++] = includeTransfers ? getInSum(forHome) : getIncomeSum(forHome);
+          projection[index++] = includeTransfers ? getOutSum(forHome) : getExpenseSum(forHome);
+          if (!includeTransfers) {
+            //for the Grand total account transfer calculation is neither possible (adding amounts in
+            //different currencies) nor necessary (should result in 0)
+            projection[index++] = (forHome ? "0" : TRANSFER_SUM) + " AS " + KEY_SUM_TRANSFERS;
+          }
+          projection[index++] = MAPPED_CATEGORIES;
+          if (withStart) {
+            projection[index] = (group == Grouping.WEEK ? getWeekStartJulian() : DAY_START_JULIAN)
+                + " AS " + KEY_GROUP_START;
+          }
         }
         if (accountSelector != null) {
           selection = accountSelectionQuery
@@ -418,7 +428,6 @@ public class TransactionProvider extends ContentProvider {
               new String[]{accountSelector},
               selectionArgs);
         }
-        sortOrder = KEY_YEAR + " ASC," + KEY_SECOND_GROUP + " ASC";
         break;
       }
       case CATEGORIES:

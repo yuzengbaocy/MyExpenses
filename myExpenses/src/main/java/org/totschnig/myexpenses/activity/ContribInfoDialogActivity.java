@@ -1,13 +1,13 @@
 package org.totschnig.myexpenses.activity;
 
+import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
@@ -29,6 +29,8 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import timber.log.Timber;
 
 import static org.onepf.oms.OpenIabHelper.ITEM_TYPE_INAPP;
@@ -219,7 +221,11 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.setData(Uri.parse(licenceHandler.getPaypalUri(aPackage)));
-        startActivityForResult(intent, 0);
+        try {
+          startActivityForResult(intent, 0);
+        } catch (ActivityNotFoundException e) {
+          complain("No activity found for opening Paypal");
+        }
         break;
       }
       case R.string.donate_button_invoice: {
