@@ -64,6 +64,7 @@
   <string name="dialog_command_disabled_reset_account">Няма транзакции за експорт.</string>
   <string name="dialog_command_disabled_distribution">В тази сметка няма транзакции, отнесени към категорията.</string>
   <!--Button for accessing trial of premium feature-->
+  <string name="dialog_contrib_no">Опитай</string>
   <string name="dialog_contrib_no_usages_left">Няма безплатни употреби.</string>
   <!--Placeholder: 1 is name of the feature. 2 is required key (Contrib or Extended)-->
   <string name="dialog_contrib_premium_feature">%1$s е функция от Премиум вариант  (%2$s).</string>
@@ -101,7 +102,7 @@
     <item quantity="one">Да се изтрие ли профилът?</item>
     <item quantity="other">Да се изтрият ли тези %1$d сметки?</item>
   </plurals>
-  <string name="dialog_title_warning_delete_main_category">Да изтрия ли основната категория?</string>
+  <string name="dialog_title_warning_delete_category">Да се изтрие ли категорията?</string>
   <string name="dialog_title_warning_delete_template">Да изтрия ли шаблона?</string>
   <string name="dialog_title_warning_delete_transaction">Да изтрия ли транзакцията?</string>
   <string name="expense">Разход</string>
@@ -402,6 +403,7 @@
     <item quantity="one">Избраната категория има подкатегории, които също ще бъдат изтрити.</item>
     <item quantity="other">%1$d избрани категории имат подкатегори, които също ще бъдат изтрити.</item>
   </plurals>
+  <string name="warning_delete_category_with_budget">Поне една избрана категория има бюджетно разпределение, което също ще бъдат изтрито.</string>
   <plurals name="warning_delete_template">
     <item quantity="one">Избрания шаблон ще бъде изтрит.</item>
     <item quantity="other">Избраните %1$d шаблона ще бъдат изтрити.</item>
@@ -612,6 +614,7 @@
   <string name="all_contrib_key_features">Всички възможности според лиценза</string>
   <string name="all_extended_key_features">Всички възможности на разширения ключ</string>
   <!--button leading user to purchase flow for licence keys-->
+  <string name="upgrade_now">Надстрой</string>
   <string name="pref_backup_cloud_title">Запазване в отдалечено хранилище</string>
   <string name="pref_backup_cloud_summary">Освен локално - в това устройство, архивният файл може да бъде запазен и в отдалечено хранилище.</string>
   <string name="auto_backup_cloud_create_backend">Задаване на отдалечено хранилище за синхронизация от основния екран на менюто Настройки</string>
@@ -831,4 +834,10 @@
   <string name="roadmap_vote">Гласуване в картата за развитие</string>
   <string name="warning_account_for_transaction_is_closed">Поне една от избраните транзакции не може да се редактира:</string>
   <string name="object_sealed">Обектът се отнася за затворена сметка.</string>
+  <string name="content_description_download_exchange_rate">Изтегляне на валутни курсове</string>
+  <string name="exchange_rate_not_supported">Зададеният доставчик на валутни курсове не предоставя курс %1$s: %2$s. Опитате с избор на различен в настройките.</string>
+  <string name="pref_category_exchange_rates">Валутни курсове</string>
+  <string name="pref_exchange_rate_provider_summary">Изберете доставчик, за да изтеглите валутни курсове</string>
+  <string name="pref_exchange_rate_provider_title">Доставчик на валутни курсове</string>
+  <string name="pref_openexchangerates_app_id_summary">Моля, регистрирайте безплатен акаунт в OpenExchangeRates и предоставете идентификационния номер на своето приложение</string>
 </resources>

@@ -15,9 +15,9 @@
   <string name="account_type_ccard">கடன் அட்டை</string>
   <!--Plural form to be used in account list where accounts are grouped by type-->
   <string name="account_type_ccard_plural">கடன் அட்டைகள்</string>
-  <string name="account_type_liability">பொறுப்புகள் கணக்கு</string>
+  <string name="account_type_liability">பொறுப்பு கணக்கு</string>
   <!--Plural form to be used in account list where accounts are grouped by type-->
-  <string name="account_type_liability_plural">பொறுப்புகள் கணக்குகள்</string>
+  <string name="account_type_liability_plural">பொறுப்பு கணக்குகள்</string>
   <string name="already_defined">%1$s ஏற்கனவே வரையறுக்கப்பட்டுள்ளது</string>
   <string name="amount">தொகை</string>
   <string name="app_name">எனது செலவுகள்</string>
@@ -64,6 +64,7 @@
   <string name="dialog_command_disabled_reset_account">ஏற்றுமதி செய்ய பரிவர்த்தனைகள் ஏதும் இல்லை.</string>
   <string name="dialog_command_disabled_distribution">இந்த கணக்கில் எந்தவொரு பரிவர்த்தனையும் வகைப்படுத்தப்படவில்லை.</string>
   <!--Button for accessing trial of premium feature-->
+  <string name="dialog_contrib_no">முயற்சி செய்</string>
   <string name="dialog_contrib_no_usages_left">இலவச பயன்பாடுகள் மீதம் இல்லை.</string>
   <!--Placeholder: 1 is name of the feature. 2 is required key (Contrib or Extended)-->
   <string name="dialog_contrib_premium_feature">%1$s ஒரு மதிப்பு அம்சம் (%2$s).</string>
@@ -86,7 +87,7 @@
   <string name="dialog_remind_no">இல்லை, நன்றி</string>
   <string name="dialog_remind_rate_how_many_stars">{app_name} செயலிக்கு நீங்கள் எத்தனை நட்சத்திரங்கள் கொடுப்பீற்கள்?</string>
   <string name="dialog_remind_rate_1">{app_name} மதிப்பிடவும், மதிப்பாய்வு செய்யவும் ஒரு கணம் எடுத்துக்கொள்ளவும்.</string>
-  <string name="dialog_remind_rate_2">உங்கள் கருத்துகள், எங்களை, தொடர்ந்து மேம்படுத்தல்களையும் விரிவாக்கங்களையும் சேர்க்க அனுமதிக்கிறது.</string>
+  <string name="dialog_remind_rate_2">உங்கள் கருத்துகள், தொடர்ந்து மேம்படுத்தல்களையும் விரிவாக்கங்களையும் சேர்க்க எங்களை அனுமதிக்கிறது.</string>
   <string name="dialog_remind_rate_1_suggest_improvement">முன்னேற்றங்களுக்கான உங்கள் பரிந்துரைகளை அனுப்ப தயவு செய்து ஒரு கணம் எடுத்துக்கொள்ளவும்.</string>
   <string name="dialog_remind_rate_yes">இப்போது மதிப்பிடு</string>
   <string name="dialog_security_answer">பதில்</string>
@@ -101,7 +102,7 @@
     <item quantity="one">கணக்கை நீக்கவா?</item>
     <item quantity="other">%1$d கணக்குகளை நீக்கவா?</item>
   </plurals>
-  <string name="dialog_title_warning_delete_main_category">முக்கிய வகையை நீக்கவா?</string>
+  <string name="dialog_title_warning_delete_category">வகையை நீக்கவா?</string>
   <string name="dialog_title_warning_delete_template">வார்ப்புருவை நீக்கவா?</string>
   <string name="dialog_title_warning_delete_transaction">பரிவர்த்தனையை நீக்கவா?</string>
   <string name="expense">செலவு</string>
@@ -203,7 +204,7 @@
   <string name="method">கட்டணம் செலுத்தும் முறை</string>
   <string name="no_amount_given">நீங்கள் எந்த தொகையும் பதிவு செய்யவில்லை.</string>
   <string name="no_app_handling_email_available">மின்னஞ்சல் கையாளும் செயலி ஏதும் இல்லை.</string>
-  <string name="no_app_handling_ftp_available">எப்.டி.பி (FTP) கையாளும் செயலி ஏதும் இல்லை. <i>Send with FTP</i> நிறுவலாமா?</string>
+  <string name="no_app_handling_ftp_available">FTP கையாளும் செயலி ஏதும் இல்லை. <i>Send with FTP</i> நிறுவலாமா?</string>
   <string name="no_app_handling_pdf_available">PDF கோப்புகள் கையாளும் செயலி ஏதும் இல்லை.</string>
   <string name="no_categories">வகைகள் ஏதுமில்லை.</string>
   <string name="no_expenses">இன்னும் செலவுகள் ஏதுமில்லை!</string>
@@ -211,24 +212,24 @@
   <string name="no_filemanager_installed">எந்த கோப்பு மேலாளரும் நிறுவப்படவில்லை</string>
   <string name="no_calendar_app_installed">நாட்காட்டி நிகழ்வைத் திருத்துவதற்கு எந்த செயலியும் இல்லை.</string>
   <string name="no_mapped_transactions">இந்த காலகட்டத்தில் எந்த பரிமாற்றங்களும் வகைப்படுத்தப்படவில்லை.</string>
-  <string name="no_methods">கட்டணம் முறைகள் இல்லை.</string>
-  <string name="no_parties">தரப்பு ஏதும் இல்லை.</string>
+  <string name="no_methods">கட்டண முறைகள் ஏதும் இல்லை.</string>
+  <string name="no_parties">தரப்புகள் ஏதும் இல்லை.</string>
   <string name="no_split_parts">பிரிவு பகுதிகள் ஏதும் இல்லை.</string>
   <string name="no_templates">வார்ப்புருக்கள் ஏதும் இல்லை.</string>
-  <string name="no_title_given">நீங்கள் எந்த தலைப்பையும்  பதிவு செய்யவில்லை.</string>
+  <string name="no_title_given">நீங்கள் எந்த தலைப்பையும் பதிவு செய்யவில்லை.</string>
   <plurals name="not_deletable_mapped_transactions">
     <item quantity="one">தேர்ந்தெடுக்கப்பட்ட பொருள் பரிவர்த்தனைக்கு மாப் செய்யப்பட்டது மற்றும் நீக்கப்பட முடியாது.</item>
-    <item quantity="other">%1$d பொருள்கள் பரிவர்த்தனையுடன் தொடர்புள்ளதால் அவைகளை நீக்க முடியாது.</item>
+    <item quantity="other">%1$d பொருட்கள் பரிவர்த்தனையுடன் தொடர்புள்ளதால் அவைகளை நீக்க முடியாது.</item>
   </plurals>
   <plurals name="not_deletable_mapped_templates">
     <item quantity="one">தேர்ந்தெடுத்த பொருள் ஒரு டெம்ப்ளேட்டிற்கு மாற்றப்பட்டது மற்றும் நீக்க முடியாது.</item>
-    <item quantity="other">%1$d பொருள்கள் வார்ப்புருக்களுடன் தொடர்புள்ளதால் அவைகளை நீக்க முடியாது.</item>
+    <item quantity="other">%1$d பொருட்கள் வார்ப்புருக்களுடன் தொடர்புள்ளதால் அவைகளை நீக்க முடியாது.</item>
   </plurals>
   <string name="numbered">எண்ணிடப்பட்ட</string>
   <string name="opening_balance">ஆரம்ப இருப்பு</string>
-  <string name="parse_error_file_not_found">கோப்பு %1$s கண்டுபிடிக்க முடியவில்லை</string>
-  <string name="parse_error_grisbi_version_not_supported">ஆதரிக்கப்படாத கிரிஸ்பி (Grisbi) கோப்பு பதிப்பு: %1$s</string>
-  <string name="parse_error_no_data_found">இறக்குமதி செய்யக்கூடிய தரவு ஏதும் கோப்பிள் இல்லை.</string>
+  <string name="parse_error_file_not_found">கோப்பு %1$s -ஐ கண்டுபிடிக்க முடியவில்லை</string>
+  <string name="parse_error_grisbi_version_not_supported">ஆதரிக்கப்படாத Grisbi கோப்பு பதிப்பு: %1$s</string>
+  <string name="parse_error_no_data_found">இறக்குமதி செய்யக்கூடிய தரவு ஏதும் கோப்பில் இல்லை.</string>
   <string name="parse_error_other_exception">ஒரு பிழை ஏற்பட்டது: %1$s</string>
   <string name="parse_error_parse_exception">கோப்பை அலச முடியவில்லை</string>
   <string name="password_disabled_reenable">கடவுச்சொல் பாதுகாப்பு முடக்கப்பட்டுள்ளது. நீங்கள் அமைப்புகளில் இதை மீண்டும் இயக்கலாம்.</string>
@@ -242,13 +243,13 @@
   <!--Plan for future and recurring transactions-->
   <string name="plan">திட்டம்</string>
   <!--Label on the switch, where user decides if a plan should be executed automatically, or manually (i.e. user gets notification where he can cancel the execution or edit the instance-->
-  <string name="plan_automatic">தானியங்கி</string>
+  <string name="plan_automatic">தன்னியக்கம்</string>
   <!--this is the label for the calendar where plans for future and recurrent transactions are stored-->
   <string name="plan_calendar_name">{app_name} இழைப்புளி</string>
   <string name="planner_notification_channel_name">இழைப்புளி</string>
   <string name="plan_event_deleted">இந்த வார்ப்புருவுடன் தொடர்புடைய திட்டம் நாட்காட்டியிலிருந்து நீக்கப்பட்டது.</string>
   <!--This message is shown, after a user decides to not apply a manual plan-->
-  <string name="plan_execution_canceled">திட்டம் ரத்து செய்யப்ப்பட்டது</string>
+  <string name="plan_execution_canceled">திட்ட செயல்பாடு ரத்து செய்யப்ப்பட்டது</string>
   <!--Label on the switch, where user decides if a plan should be executed automatically, or manually (i.e. user gets notification where he can cancel the execution or edit the instance)-->
   <string name="plan_manual">கைமுறையாக</string>
   <string name="planner_create_calendar_failure">உள்  திட்டக் நாட்காட்டியை உருவாக்க முடியவில்லை</string>
@@ -262,14 +263,14 @@
   <string name="pm_type_debit">செலவு</string>
   <string name="pm_type_neutral">நடுநிலை</string>
   <string name="pref_app_dir_title">காப்புப்பிரதி மற்றும் ஏற்றுமதிகளுக்கான கோப்புறை</string>
-  <string name="pref_auto_fill_title">தன்னிரப்பி பரிவர்த்தனைகள்</string>
-  <string name="pref_auto_fill_summary">அதே பணம் பெறுபவர்/செலுத்துபவர் எனும் பட்சத்தில் கடந்த பரிவர்த்தனையிலிருந்து தரவை பயன்படுத்தவும்</string>
-  <string name="pref_backup_summary">தரவுதளம் மற்றும் விருப்பத்தேர்வுகளின் காப்புப்பிரதி உருவாக்கவும்.</string>
+  <string name="pref_auto_fill_title">பரிவர்த்தனைகளை தன்னிரப்பு</string>
+  <string name="pref_auto_fill_summary">அதே பணம் பெறுபவர்/செலுத்துபவர் எனும் பட்சத்தில் கடந்த பரிவர்த்தனையிலிருந்து தரவை நிரப்பு</string>
+  <string name="pref_backup_summary">தரவுதளம் மற்றும் விருப்பத்தேர்வுகளின் காப்புப்பிரதி உருவாக்குதல்.</string>
   <string name="pref_sort_order_usages">பயன்பாடுகளின் எண்ணிக்கை</string>
   <string name="pref_category_title_advanced">மேம்பட்ட அமைப்புகள்</string>
   <string name="pref_category_title_export">ஏற்றுமதி</string>
   <string name="pref_category_title_import">இறக்குமதி</string>
-  <string name="pref_category_title_manage">நிர்வகிக்கவும்</string>
+  <string name="pref_category_title_manage">நிர்வகி</string>
   <string name="pref_category_title_more_information">மேலும் தகவல்</string>
   <string name="pref_category_title_security">பாதுகாப்பு</string>
   <string name="pref_category_title_ui">பயனர் இடைமுகம்</string>
@@ -285,8 +286,8 @@
   <string name="pref_enter_licence_summary" tools:ignore="UnusedResources">நீங்கள் ஒரு திறவுகோலைப் பெற்றிருந்தால் மதிப்பு அம்சங்களை அணுகலாம்.</string>
   <string name="pref_enter_licence_title" tools:ignore="UnusedResources">திறவுகோலை உள்ளிடவும்</string>
   <string name="pref_export_format_title">தரவு வடிவம்</string>
-  <string name="pref_import_from_grisbi_summary">கிரிஸ்பி XML கோப்பிலிருந்து வகைகள் மற்றும் தரப்புகளை இறக்குமதி செய்</string>
-  <string name="pref_import_from_grisbi_title">கிரிஸ்பியிலிருந்து இறக்குமதி செய்</string>
+  <string name="pref_import_from_grisbi_summary">Grisbi XML கோப்பிலிருந்து வகைகள் மற்றும் தரப்புகளை இறக்குமதி செய்</string>
+  <string name="pref_import_from_grisbi_title">Grisbi-யிலிருந்து இறக்குமதி செய்</string>
   <!--%s is replaced with QIF or CSV-->
   <string name="pref_import_summary">%s கோப்பில் இருந்து பரிவர்த்தனைகள், வகைகள் மற்றும் தரப்புகளை இறக்குமதி செய்</string>
   <!--%s is replaced with QIF or CSV-->
@@ -297,11 +298,11 @@
   <string name="pref_manage_categories_title">வகைகள்</string>
   <string name="pref_manage_methods_summary">கட்டண முறைகளை உருவாக்கி மற்றும் திருத்தி அவற்றை கணக்கு வகைகளுடன் இணைக்கவும்.</string>
   <string name="pref_manage_methods_title">கட்டணம் செலுத்தும் முறைகள்</string>
-  <string name="pref_manage_parties_summary">தரப்புகளை (பணம்  செலுத்துபவர் மற்றும் பெறுபவர்) சேர்க, நீக்க, திருத்த.</string>
+  <string name="pref_manage_parties_summary">தரப்புகளை (பணம்  செலுத்துபவர் மற்றும் பெறுபவர்) சேர், திருத்து, நீக்கு.</string>
   <string name="pref_manage_parties_title">தரப்புகள்</string>
-  <string name="pref_manage_sync_backends_title">ஒத்திசைவு பின்தளம்</string>
+  <string name="pref_manage_sync_backends_title">ஒத்திசைவு பின்தளங்கள்</string>
   <!--%s will be replaced with list of backends-->
-  <string name="pref_manage_sync_backends_summary">ஒத்திசைவு கணக்குகளுக்கான பின்தளங்களை (%s) சேர்க்கவும்.</string>
+  <string name="pref_manage_sync_backends_summary">கணக்குகளை (%s) ஒத்திசைக்க பின்தளங்களை சேர்க்கவும்.</string>
   <string name="pref_more_info_dialog_title">உரிமம் &amp; புகழாரம்</string>
   <string name="pref_password_not_equal">கடவுச்சொற்கள் பொருந்தவில்லை</string>
   <string name="pref_perform_protection_title">பாதுகாப்பு</string>
@@ -318,15 +319,15 @@
   <string name="pref_qif_export_file_encoding_title">எழுத்து குறியேற்றம்</string>
   <string name="pref_request_licence_title">திறவுகோல் கோரு</string>
   <!--Alternative is used as an adjective designing an alternative method for restoring backups-->
-  <string name="pref_restore_alternative">மாற்று</string>
+  <string name="pref_restore_alternative">மாற்று வழி</string>
   <string name="pref_restore_alternative_summary">கருவியில் கோப்பு நிர்வகிக்கும் செயலி நிறுவப்படவில்லை என்றால், இந்த மாற்று முறையைப் பயன்படுத்தவும்.</string>
-  <string name="pref_restore_summary">தரவுத்தளங்கள் மற்றும் விருப்பத்தேர்வுகளை மீட்டமைப்பதற்கு காப்புப் பிரதி ஒன்றைத் தேர்ந்தெடுக்கவும்.</string>
+  <string name="pref_restore_summary">தரவுத்தளங்கள் மற்றும் விருப்பத்தேர்வுகளை மீட்டமைப்பதற்கு காப்புப்பிரதி ஒன்றைத் தேர்ந்தெடுக்கவும்.</string>
   <string name="pref_restore_title">மீட்டமைப்பு</string>
   <string name="pref_security_question_summary">உங்கள் கடவுச்சொல்லை மறந்துவிட்டால், செயலியைத் திறக்க உங்களை அனுமதிக்கும்.</string>
   <string name="pref_security_question_title">பாதுகாப்பு கேள்வி</string>
   <string name="pref_send_feedback_title">கருத்தினை அனுப்பவும்</string>
-  <string name="pref_share_target_summary">உரிய செயலிகளின் (மின்னஞ்சல், டிராப்பாக்ஸ், கூகுள் டாக்ஸ், ...) இடையே தேர்வு செய்ய விரும்பினால் காலியாக விடவும் அல்லது ஆதரிக்கப்படும் திட்டத்தின்படி உரலி ஒன்றை வழங்கவும்</string>
-  <string name="pref_share_target_title">பதிவேற்று உரலி</string>
+  <string name="pref_share_target_summary">உரிய செயலிகளின் (மின்னஞ்சல், டிராப்பாக்ஸ், கூகுள் டாக்ஸ், ...) இடையே தேர்வு செய்ய விரும்பினால் காலியாக விடவும் அல்லது ஆதரிக்கப்படும் திட்டங்களில் ஒன்றின்படி உரலி வழங்கவும்</string>
+  <string name="pref_share_target_title">பதிவேற்ற உரலி</string>
   <string name="pref_shortcut_added">முகப்பு திரைக்கு குறுக்குவழி சேர்க்கப்பட்டது</string>
   <string name="pref_shortcut_not_added">குறுக்குவழிகளை ஏற்றுக்கொள்வதற்கான எந்த முகப்பு திரைகளும் கிடைக்கவில்லை.</string>
   <string name="pref_shortcut_summary">முகப்பு திரைக்கு குறுக்குவழியைச் சேர்க்கவும்.</string>
@@ -341,7 +342,7 @@
   <string name="pref_ui_theme_title">பின்புலத்தோற்றம்</string>
   <string name="pref_visit_website_summary">மாற்றக் குறிப்பு மற்றும் அடிக்கடி கேட்கப்படும் கேள்விகள்</string>
   <string name="pref_visit_website_title">வலைத்தளத்தைப் பார்க்கவும்</string>
-  <string name="progress_dialog_deleting">பொருட்களை நீக்குதல்</string>
+  <string name="progress_dialog_deleting">பொருட்கள் நீக்கப்படுகிறது</string>
   <string name="progress_dialog_loading">தரவுத்தளத்திலிருந்து பொருளை ஏற்றுகிறது</string>
   <string name="progress_dialog_printing">PDF உருவாக்கப்படுகிறது</string>
   <string name="progress_dialog_saving">தரவுத்தளத்திற்கு பொருளை சேமிக்கிறது</string>
@@ -354,7 +355,7 @@
   <string name="restore_no_backup_found">காப்புப்பிரதி ஏதும் கிடைக்கவில்லை.</string>
   <string name="restore_preferences_failure">விருப்பத்தேர்வுகளின் மீட்டமைப்பு தோல்வியடைந்தது.</string>
   <string name="restore_backup_archive_not_valid">ஆவணக்கிடங்கு %1$s செல்லுபடியாகாது</string>
-  <string name="restore_backup_file_not_found">\"%2$s\" ஆவணக்கிடங்கில் %1$s கோப்பு இல்லை</string>
+  <string name="restore_backup_file_not_found">\"%2$s\" ஆவணக்கிடங்கில் %1$s எனும் கோப்பு இல்லை</string>
   <string name="restore_preferences_success">காப்புப்பிரதியில் இருந்து விருப்பத்தேர்வுகள் மீட்டமைக்கப்பட்டன.</string>
   <string name="restore_calendar_success" tools:ignore="PluralsCandidate">%d திட்டங்கள் காப்புப்பிரதியில் இருந்து மீட்டமைக்கப்பட்டன.</string>
   <string name="save_transaction_and_new_success">வெற்றிகரமாக சேமிக்கப்பட்டது</string>
@@ -364,7 +365,7 @@
     <item quantity="other">%1$d புதிய பரிவர்த்தனைகள் வார்ப்புருவிலிருந்து வெற்றிகரமாக சேமிக்கப்பட்டன.</item>
   </plurals>
   <string name="save_transaction_template_deleted">வார்ப்புரு நீக்கப்பட்டது</string>
-  <string name="select">தேர்வு செய்</string>
+  <string name="select">தேர்வு செய்க</string>
   <string name="select_category">வகையைத் தேர்வு செய்க</string>
   <string name="menu_select_category">இந்த வகையைத் தேர்வு செய்க</string>
   <string name="menu_select_folder">இந்த கோப்புறையைத் தேர்வு செய்க</string>
@@ -389,7 +390,7 @@
   <string name="total_cleared">ஒப்புக்கொள்ளப்பட்ட மொத்தம்</string>
   <string name="total_reconciled">சரிசெய்யப்பட்ட மொத்தம்</string>
   <string name="transaction">பரிவர்த்தனை</string>
-  <string name="transfer">பரிமாற்றங்கள்</string>
+  <string name="transfer">பரிமாற்றம்</string>
   <string name="transfer_from_account">இதிலிருந்து</string>
   <string name="transfer_to_account">இதற்கு</string>
   <string name="type">வகை</string>
@@ -400,8 +401,9 @@
   <string name="warning_delete_account">\"%1$s\" கணக்கு அதன் அனைத்து பரிமாற்றங்களுடன் நீக்கப்படும்.</string>
   <plurals name="warning_delete_main_category">
     <item quantity="one">தேர்ந்தெடுக்கப்பட்ட வகைகள் ஒன்றில் துணை வகைகள் உள்ளன, அவை நீக்கப்படும்.</item>
-    <item quantity="other">%1$d தேர்ந்தெடுக்கப்பட்ட வகைகளில் துணை வகைகள் உள்ளன, அவையும் நீக்கப்படும்.</item>
+    <item quantity="other">தேர்ந்தெடுக்கப்பட்ட %1$d வகைகளில் துணை வகைகள் உள்ளன, அவையும் நீக்கப்படும்.</item>
   </plurals>
+  <string name="warning_delete_category_with_budget">தேர்ந்தெடுக்கப்பட்ட ஒரு வகையிலாவது, திட்டமிடப்பட்ட ஒதுக்கீடுகள் உள்ளன, அவையும் நீக்கப்படும்.</string>
   <plurals name="warning_delete_template">
     <item quantity="one">தேர்ந்தெடுக்கப்பட்ட வார்ப்புரு நீக்கப்படும்.</item>
     <item quantity="other">தேர்ந்தெடுக்கப்பட்ட %1$d வார்ப்புருக்கள் நீக்கப்படும்.</item>
@@ -440,7 +442,7 @@
   <string name="import_categories_success">%1$s வகைகள் வெற்றிகரமாக இறக்குமதி செய்யப்பட்டன</string>
   <string name="import_parties_success">%1$s தரப்புகள் வெற்றிகரமாக இறக்குமதி செய்யப்பட்டன</string>
   <string name="import_accounts_success">%1$s கணக்குகள் வெற்றிகரமாக இறக்குமதி செய்யப்பட்டன</string>
-  <string name="import_transactions_success" tools:ignore="PluralsCandidate">%1$d பரிவர்த்தனைகள் வெற்றிகரமாக %2$s கணக்கிற்கு இறக்குமதி செய்யப்பட்டது</string>
+  <string name="import_transactions_success" tools:ignore="PluralsCandidate">%1$d பரிவர்த்தனைகள் வெற்றிகரமாக %2$s கணக்கிற்கு இறக்குமதி செய்யப்பட்டன</string>
   <string name="import_accounts_none">எந்த கணக்குகளும் இறக்குமதி செய்யப்படவில்லை</string>
   <string name="import_categories_none">எந்த வகைகளும் இறக்குமதி செய்யப்படவில்லை</string>
   <string name="import_parties_none">எந்த தரப்புகளும் இறக்குமதி செய்யப்படவில்லை</string>
@@ -457,8 +459,8 @@
   <string name="create_new_folder_fail">கோப்புறையை உருவாக்க முடியவில்லை</string>
   <string name="widget_title_accounts">எனது கணக்குகள்</string>
   <string name="widget_title_templates">எனது வார்ப்புருக்கள்</string>
-  <string name="app_dir_not_accessible">காப்புப்பிரதிக்கள் மற்றும் ஏற்றுமதிகளுக்காக தற்போது தேர்ந்தெடுக்கப்பட்டுள்ள கோப்புறையை (%1$s) அணுக முடியாது. தயவு செய்து வேறொன்றைத் தேர்ந்தெடுக்கவும்.</string>
-  <string name="app_dir_not_compatible_with_nougat">காப்புப்பிரதிக்கள் மற்றும் ஏற்றுமதிகளுக்காக தற்போது விருப்பமைக்கப்பட்டURI (%1$s) ஆண்ட்ராய்டு நோகட்டில் ஆதரிக்கப்படவில்லை. மீண்டும் ஒரு கோப்புறையைத் தேர்ந்தெடுக்கவும்.</string>
+  <string name="app_dir_not_accessible">காப்புப்பிரதிக்கள் மற்றும் ஏற்றுமதிகளுக்காக தற்போது தேர்ந்தெடுக்கப்பட்டுள்ள கோப்புறையை (%1$s) அணுக முடியவில்லை. தயவு செய்து வேறொன்றைத் தேர்ந்தெடுக்கவும்.</string>
+  <string name="app_dir_not_compatible_with_nougat">காப்புப்பிரதிக்கள் மற்றும் ஏற்றுமதிகளுக்காக தற்போது விருப்பமைக்கப்பட்டURI (%1$s) ஆண்ட்ராய்டு நோகட்டில் ஆதரிக்கப்படவில்லை. தயவு செய்து மீண்டும் ஒரு கோப்புறையைத் தேர்ந்தெடுக்கவும்.</string>
   <string name="search_amount">தொகையைத் தேடவும்</string>
   <string name="search_category">வகையைத் தேடவும்</string>
   <string name="search_comment">குறிப்புக்களைத் தேடவும்</string>
@@ -471,8 +473,8 @@
   <string name="before">%s க்கு முன்</string>
   <string name="after">%s க்கு பின்</string>
   <string name="comparison_operator_equal">சமமாக</string>
-  <string name="comparison_operator_greater_than">விட அதிகமாக</string>
-  <string name="comparison_operator_lesser_than">விட குறைவாக</string>
+  <string name="comparison_operator_greater_than">அதிகமாக</string>
+  <string name="comparison_operator_lesser_than">குறைவாக</string>
   <string name="comparison_operator_between">இடையே</string>
   <string name="comparison_operator_date_before">முன்</string>
   <string name="comparison_operator_date_after">பின்</string>
@@ -605,13 +607,14 @@
   <string name="link_account_success" tools:ignore="PluralsCandidate">%d கணக்குகளை பின்தளத்துடன் ஒத்திசைக்கப்படுகிறது.</string>
   <string name="link_account_failure_1" tools:ignore="PluralsCandidate">%d கணக்குகளை பின்தளத்டுகிறது ஒத்திசைக்க முடியவில்லை.</string>
   <string name="link_account_failure_2">தொலைநிலை பின்தளத்தில் அதே uuid கொண்ட ஒரு கணக்கு ஏற்கனவே உள்ளது.</string>
-  <string name="link_account_failure_3">இந்த முரண்பாட்டை உள்ளீட்டின் சூழல் பட்டியலில் இருந்து கைமுறையாக தீர்க்கப்பட முடியும்.</string>
+  <string name="link_account_failure_3">இந்த முரண்பாட்டை உள்ளீட்டின் சூழல் பட்டியலில் இருந்து கைமுறையாக தீர்க்க முடியும்.</string>
   <string name="progress_dialog_checking_sync_backend">பின்தளத்தை உறுதிப்படுத்துகிறது</string>
   <string name="template">வார்ப்புரு</string>
   <string name="contrib_feature_synchronization_label" tools:ignore="UnusedResources">முகில் ஒத்திசைவு</string>
   <string name="all_contrib_key_features">பங்களிப்பு திறவுகோலின் அனைத்து அம்சங்கள்</string>
   <string name="all_extended_key_features">விரிவாக்கப்பட்ட திறவுகோல் அனைத்து அம்சங்கள்</string>
   <!--button leading user to purchase flow for licence keys-->
+  <string name="upgrade_now">மேம்படுத்து</string>
   <string name="pref_backup_cloud_title">ஒத்திசைவு பின்தளத்தில் சேமிக்கவும்</string>
   <string name="pref_backup_cloud_summary">காப்புப்பிரதி கோப்பை, கருவியில் உள்ள உள்சேமிப்புக்கு கூடுதலாக ஒரு தொலை பின்தளத்திற்கு நகலெடுத்துக் கொள்ளலாம்.</string>
   <string name="auto_backup_cloud_create_backend">பிரதான அமைப்புகள் திரையில் இருந்து ஒத்திசைவு பின்தளத்தை உருவாக்கவும்.</string>
@@ -632,7 +635,7 @@
   <string name="sync_io_exception_syncing">சேவையகத்துடன் மாற்றங்களை ஒத்திசைக்கும்போது பிழை ஏற்பட்டது.</string>
   <string name="sync_io_exception_unlocking">தொலை பின்தளத்தில் இருந்து பூட்டை அகற்றும்போது பிழை ஏற்பட்டது.</string>
   <string name="sync_io_exception_locking">தொலை பின்தளம் பூட்டப்பட்டது அல்லது அதை பூட்ட முடியவில்லை.</string>
-  <string name="synchronization_start">%s கணக்கிற்கான ஒத்திசைபு தொடங்குகிறது.</string>
+  <string name="synchronization_start">%s கணக்கிற்கான ஒத்திசைவு தொடங்குகிறது.</string>
   <string name="synchronization_end_success">%1$d தொலைநிலை மாற்றங்கள் உள் தரவுத்தளத்தில் எழுதப்பட்டன. %2$d உள் மாற்றங்கள் தொலைநிலை பின்தளத்தில் எழுதப்பட்டன.</string>
   <string name="synchronization_end_success_none">ஒத்திசைக்க மாற்றங்களும் ஏதும் இல்லை.</string>
   <string name="pref_webdav_timeout_title">WebDAV காலாவதி நேரம் (நொடிகளில்)</string>
@@ -831,4 +834,10 @@
   <string name="roadmap_vote">திட்ட வாக்களிப்பு</string>
   <string name="warning_account_for_transaction_is_closed">தேர்ந்தெடுக்கப்பட்ட பரிவர்த்தனைகளில் குறைந்தபட்சம் ஒன்றையாவது தொகுக்க முடியவில்லை:</string>
   <string name="object_sealed">பொருள் ஒரு மூடப்பட்ட கணக்கைக் குறிக்கிறது.</string>
+  <string name="content_description_download_exchange_rate">மாற்று விகிதத்தைப் பதிவிறக்குக</string>
+  <string name="exchange_rate_not_supported">கட்டமைக்கப்பட்ட மாற்று விகித வழங்குநர் \"%1$s: %2$s\" விகிதத்தை வழங்கவில்லை. அமைப்புகளில் வேறு ஒன்றைத் தேர்ந்தெடுத்து முயற்சி செய்யலாம்.</string>
+  <string name="pref_category_exchange_rates">மாற்று விகிதங்கள்</string>
+  <string name="pref_exchange_rate_provider_summary">மாற்று விகிதங்களைப் பதிவிறக்க வழங்குநரைத் தேர்ந்தெடுக்கவும்</string>
+  <string name="pref_exchange_rate_provider_title">மாற்று விகித வழங்குநர்</string>
+  <string name="pref_openexchangerates_app_id_summary">OpenExchangeRates இல் இலவச கணக்கைப் பதிவுசெய்து உங்களுடைய பயன்பாட்டு ஐடியை வழங்கவும்</string>
 </resources>

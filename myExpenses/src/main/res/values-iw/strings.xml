@@ -64,6 +64,7 @@
   <string name="dialog_command_disabled_reset_account">אין עסקאות לייצוא.</string>
   <string name="dialog_command_disabled_distribution">לא בוצעו עסקאות ממופות לקטגוריות בחשבון זה.</string>
   <!--Button for accessing trial of premium feature-->
+  <string name="dialog_contrib_no">נסה</string>
   <string name="dialog_contrib_no_usages_left">לא נשארו עוד שימושים בחינם.</string>
   <!--Placeholder: 1 is name of the feature. 2 is required key (Contrib or Extended)-->
   <string name="dialog_contrib_premium_feature">%1$s היא תכונת פרימיום (%2$s).</string>
@@ -103,7 +104,6 @@
     <item quantity="many">למחוק חשבונות %1$d?</item>
     <item quantity="other">האם מחוק חשבונות %1$d?</item>
   </plurals>
-  <string name="dialog_title_warning_delete_main_category">האם למחוק את קטגוריה הראשית?</string>
   <string name="dialog_title_warning_delete_template">האם למחוק תבנית?</string>
   <string name="dialog_title_warning_delete_transaction">האם למחוק את העסקה?</string>
   <string name="expense">הוצאה</string>
@@ -630,6 +630,7 @@
   <string name="all_contrib_key_features">כל התכונות של מפתח Contrib</string>
   <string name="all_extended_key_features">כל התכונות של מפתח מורחב</string>
   <!--button leading user to purchase flow for licence keys-->
+  <string name="upgrade_now">שדרג</string>
   <string name="pref_backup_cloud_title">אחסן על סנכרון backend</string>
   <string name="pref_backup_cloud_summary">בנוסף לאחסון מקומי בהתקן, ניתן להעתיק את קובץ הגיבוי אל ממשק מרוחק.</string>
   <string name="auto_backup_cloud_create_backend">יצירת backend סינכרון ממסך ההגדרות הראשי.</string>

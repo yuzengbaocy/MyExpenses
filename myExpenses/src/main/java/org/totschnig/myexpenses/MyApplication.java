@@ -151,7 +151,7 @@ public class MyApplication extends MultiDexApplication implements
   @Override
   public void onCreate() {
     if (BuildConfig.DEBUG && !instrumentationTest) {
-      //enableStrictMode();
+      enableStrictMode();
     }
     super.onCreate();
     checkAppReplacingState();
@@ -161,7 +161,7 @@ public class MyApplication extends MultiDexApplication implements
     if (!isSyncService()) {
       // sets up mSettings
       getSettings().registerOnSharedPreferenceChangeListener(this);
-      initPlannerInternal(60000);
+      initPlannerInternal(60000, false);
       registerWidgetObservers();
     }
     licenceHandler.init();
@@ -503,14 +503,15 @@ public class MyApplication extends MultiDexApplication implements
   /**
    * call PlanExecutor, which will 1) set up the planner calendar 2) execute
    * plans 3) reschedule execution through alarm
+   * @param force
    */
-  public void initPlanner() {
-    initPlannerInternal(0);
+  public void initPlanner(boolean force) {
+    initPlannerInternal(0, force);
   }
 
-  private void initPlannerInternal(long delay) {
+  private void initPlannerInternal(long delay, boolean force) {
     Timber.i("initPlanner called, setting plan executor to run with delay %d", delay);
-    PlanExecutor.setAlarm(this, System.currentTimeMillis() + delay);
+    PlanExecutor.setAlarm(this, System.currentTimeMillis() + delay, force);
   }
 
   public static String[] buildEventProjection() {
@@ -627,7 +628,7 @@ public class MyApplication extends MultiDexApplication implements
           return;
         }
         if (oldValue.equals(INVALID_CALENDAR_ID)) {
-          initPlanner();
+          initPlanner(false);
         } else if (safeToMovePlans) {
           ContentValues eventValues = new ContentValues();
           eventValues.put(Events.CALENDAR_ID, Long.parseLong(newValue));
