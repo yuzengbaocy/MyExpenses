@@ -802,7 +802,6 @@ public class MyApplication extends MultiDexApplication implements
     StrictMode.setThreadPolicy(threadPolicyBuilder.build());
     StrictMode.VmPolicy.Builder vmPolicyBuilder = new StrictMode.VmPolicy.Builder()
         .detectAll()
-        .penaltyDeath()
         .penaltyLog();
     StrictMode.setVmPolicy(vmPolicyBuilder.build());
   }
