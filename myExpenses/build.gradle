@@ -263,7 +263,7 @@ dependencies {
     //at the moment, we need to stick with the last version that supports java 6
     //noinspection GradleDependency
     implementation 'org.apache.commons:commons-lang3:3.5'
-    implementation 'com.github.mtotschnig:OpenIAB:3db5d014c3'
+    implementation 'com.github.mtotschnig:OpenIAB:85c68d7124'
     implementation fileTree(dir: 'libs', include: ['in-app-purchasing-2.0.61.jar'])
 
     implementation 'org.apache.commons:commons-csv:1.5'
