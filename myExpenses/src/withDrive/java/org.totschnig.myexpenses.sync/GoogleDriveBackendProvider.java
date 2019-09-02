@@ -52,6 +52,7 @@ import java.util.Map;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import timber.log.Timber;
 
 public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   private static final String KEY_LAST_FAILED_SYNC = "lastFailedSync";
@@ -513,12 +514,12 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     //legacy
     Map<CustomPropertyKey, String> customProperties = metadata.getCustomProperties();
     if (metadata.isTrashed()) {
-      CrashHandler.report("Folder is trashed");
+      Timber.d("Folder is trashed");
       return Optional.empty();
     }
     String uuid = customProperties.get(ACCOUNT_METADATA_UUID_KEY);
     if (uuid == null) {
-      CrashHandler.report("UUID property not set");
+      Timber.d("UUID property not set");
       return Optional.empty();
     }
     //TODO add default values
