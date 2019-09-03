@@ -292,6 +292,18 @@ dependencies {
     //noinspection GradleDynamicVersion
     withAdsImplementation 'com.amazon.android:mobile-ads:5.+'
 
+    withDriveImplementation 'com.google.android.gms:play-services-auth:17.0.0'
+    withDriveImplementation('com.google.http-client:google-http-client-gson:1.31.0')  {
+        exclude module: 'httpclient'
+        exclude module: 'commons-logging'
+    }
+    withDriveImplementation('com.google.api-client:google-api-client-android:1.30.2') {
+        exclude group: 'org.apache.httpcomponents'
+    }
+    withDriveImplementation('com.google.apis:google-api-services-drive:v3-rev173-1.25.0') {
+        exclude group: 'org.apache.httpcomponents'
+    }
+
     crashlyticsImplementation('com.crashlytics.sdk.android:crashlytics:2.9.8@aar') {
         transitive = true
     }
