@@ -1,80 +1,63 @@
 package org.totschnig.myexpenses.activity
 
+import android.accounts.AccountManager
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.api.Scope
-import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
+import com.google.android.gms.auth.UserRecoverableAuthException
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
-import com.google.api.client.http.javanet.NetHttpTransport
-import com.google.api.client.json.gson.GsonFactory
-import com.google.api.services.drive.Drive
-import com.google.api.services.drive.DriveScopes
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.totschnig.myexpenses.sync.DriveServiceHelper
-import timber.log.Timber
 
 class DriveSetup2 : ProtectedFragmentActivity() {
-    private val REQUEST_CODE_SIGN_IN = 1
-    private val REQUEST_AUTHORIZATION = 2
+    private val REQUEST_ACCOUNT_PICKER = 1
+    private val REQUEST_RESOLUTION = 2
+    private var accountName: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val signInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .requestScopes(Scope(DriveScopes.DRIVE_FILE))
-                .build()
-        val client = GoogleSignIn.getClient(this, signInOptions)
-
-        // The result of the sign-in Intent is handled in onActivityResult.
-        startActivityForResult(client.signInIntent, REQUEST_CODE_SIGN_IN)
+        startActivityForResult(AccountManager.newChooseAccountIntent(null, null, arrayOf("com.google"), true, null, null, null, null),
+                REQUEST_ACCOUNT_PICKER)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
-        when (requestCode) {
-            REQUEST_CODE_SIGN_IN -> if (resultCode == Activity.RESULT_OK && resultData != null) {
-                handleSignInResult(resultData)
+        if (resultCode == Activity.RESULT_OK)
+            when (requestCode) {
+                REQUEST_ACCOUNT_PICKER -> if (resultData != null) {
+                    handleSignInResult(resultData)
+                }
+                REQUEST_RESOLUTION -> query()
             }
-        }
 
         super.onActivityResult(requestCode, resultCode, resultData)
     }
 
     private fun handleSignInResult(result: Intent) {
-        GoogleSignIn.getSignedInAccountFromIntent(result)
-                .addOnSuccessListener { googleAccount ->
+        accountName = result.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)
+        query()
+    }
 
-                    // Use the authenticated account to sign in to the Drive service.
-                    val credential = GoogleAccountCredential.usingOAuth2(
-                            this, setOf(DriveScopes.DRIVE_FILE))
-                    credential.selectedAccount = googleAccount.account
-                    val googleDriveService = Drive.Builder(
-                            NetHttpTransport(),
-                            GsonFactory(),
-                            credential)
-                            .setApplicationName("Drive API Migration")
-                            .build()
-
-                    val driveServiceHelper = DriveServiceHelper(googleDriveService)
-                    driveServiceHelper.queryFiles()
-                            .addOnSuccessListener { fileList ->
-                                val builder = StringBuilder()
-                                for (file in fileList.getFiles()) {
-                                    builder.append(file.getName()).append("\n")
-                                }
-                                Toast.makeText(this, builder.toString(), Toast.LENGTH_LONG).show()
-                                finish()
-                            }
-                            .addOnFailureListener { exception ->
-                                if (exception is UserRecoverableAuthIOException) {
-                                    startActivityForResult(exception.getIntent(), REQUEST_AUTHORIZATION)
-                                } else {
-                                    Timber.e(exception)
-                                }
-                            }
+    private fun query() {
+        accountName?.also {
+            val helper = DriveServiceHelper(this, it)
+            CoroutineScope(Dispatchers.Default).launch {
+                try {
+                    val name = helper.listChildren("root").get(0).name
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@DriveSetup2, name, Toast.LENGTH_LONG).show()
+                    }
+                } catch (e: Exception) {
+                    ((if (e is UserRecoverableAuthIOException) e.cause else e) as? UserRecoverableAuthException)?.let {
+                        withContext(Dispatchers.Main) {
+                            startActivityForResult(it.intent, REQUEST_RESOLUTION);
+                        }
+                    } ?: throw e
                 }
-                .addOnFailureListener { exception -> Timber.e(exception, "Unable to sign in.") }
+            }
+        }
     }
 }
