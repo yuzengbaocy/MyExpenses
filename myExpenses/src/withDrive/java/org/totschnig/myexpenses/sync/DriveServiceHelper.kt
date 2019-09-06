@@ -26,6 +26,7 @@ import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import com.google.api.services.drive.model.File
+import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
 import java.util.*
@@ -87,25 +88,33 @@ class DriveServiceHelper(context: Context, accountName: String) {
     }
 
     @Throws(IOException::class)
-    fun setMetadataProperty(fileId: String, key: String, value: String) {
+    fun setMetadataProperty(fileId: String, key: String, value: String?) {
         val metadata = File().apply {
             appProperties = mapOf(Pair(key, value))
         }
-        mDriveService.files().update(fileId, metadata, null).execute()
+        mDriveService.files().update(fileId, metadata).execute()
     }
 
     @Throws(IOException::class)
-    fun listChildren(parent: File, query: String? = null) = listChildren(parent.id, query)
+    fun listFolders(parent: File? = null, vararg queries: String) = search(parent?.id,
+            *queries, "mimeType = 'application/vnd.google-apps.folder'")
 
     @Throws(IOException::class)
-    fun listChildren(parentId: String, query: String? = null): List<File> {
+    fun listChildren(parent: File) = search(parent.id)
+
+    @Throws(IOException::class)
+    private fun search(parentId: String?, vararg queries: String): List<File> {
         val result = mutableListOf<File>()
         var pageToken: String? = null
+        val queryList = queries.toMutableList()
+        parentId?.let {
+            queryList.add("'%s' in parents".format(Locale.ROOT, parentId))
+        }
         do {
             val fileList = mDriveService.files().list().apply {
-                q = "'%s' in parents%s".format(Locale.ROOT, parentId, query?.let { " and " + it } ?: "")
+                q = queryList.joinToString(" and ")
                 spaces = "drive"
-                fields = "nextPageToken, files(id, name, mimeType)"
+                fields = "nextPageToken, files(id, name, mimeType, appProperties)"
                 this.pageToken = pageToken
             }.execute()
             pageToken = fileList.nextPageToken
@@ -121,17 +130,15 @@ class DriveServiceHelper(context: Context, accountName: String) {
 
     @Throws(IOException::class)
     fun getFileByNameAndParent(parent: File, name: String): File? {
-        val result = mDriveService.files().list().setSpaces("drive")
-                .setQ("'%s' in parents and name = '%s".format(Locale.ROOT, parent.id, name))
-                .execute().files
-        return if (result != null && result.size > 0) result[0] else null
+        val result = search(parent.id, "name = '%s'".format(Locale.ROOT, name))
+        return if (result.size > 0) result[0] else null
     }
 
     @Throws(IOException::class)
     fun downloadFile(parent: File, name: String): InputStream {
         getFileByNameAndParent(parent, name)?.let {
             return read(it.id)
-        } ?: throw IOException("File not found")
+        } ?: throw FileNotFoundException()
     }
 
     @Throws(IOException::class)

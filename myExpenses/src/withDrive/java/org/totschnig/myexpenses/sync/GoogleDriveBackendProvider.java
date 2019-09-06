@@ -76,7 +76,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   }
 
   @Override
-  public InputStream getInputStreamForBackup(android.accounts.Account account, String backupFile) throws IOException {
+  public InputStream getInputStreamForBackup(String backupFile) throws IOException {
     final File backupFolder = getBackupFolder(false);
     if (backupFolder != null) {
       return getInputStream(backupFolder, backupFile);
@@ -110,11 +110,11 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
 
   @NonNull
   @Override
-  public List<String> getStoredBackups(android.accounts.Account account) throws IOException {
+  public List<String> getStoredBackups() throws IOException {
     List<String> result = new ArrayList<>();
     final File backupFolder = getBackupFolder(false);
     if (backupFolder != null) {
-      result = Stream.of(driveServiceHelper.listChildren(backupFolder, null))
+      result = Stream.of(driveServiceHelper.listChildren(backupFolder))
           .map(File::getName)
           .toList();
     }
@@ -126,19 +126,19 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     final Comparator<File> resourceComparator = (o1, o2) -> Utils.compare(getSequenceFromFileName(o1.getName()), getSequenceFromFileName(o2.getName()));
 
     Optional<File> lastShardOptional =
-        Stream.of(driveServiceHelper.listChildren(accountFolder, "mimeType = 'application/vnd.google-apps.folder'"))
+        Stream.of(driveServiceHelper.listFolders(accountFolder))
             .filter(file -> isAtLeastShardDir(start.shard, file.getName()))
             .max(resourceComparator);
 
     List<File> lastShard;
     int lastShardInt, reference;
     if (lastShardOptional.isPresent()) {
-      lastShard = driveServiceHelper.listChildren(lastShardOptional.get(), null);
+      lastShard = driveServiceHelper.listChildren(lastShardOptional.get());
       lastShardInt = getSequenceFromFileName(lastShardOptional.get().getName());
       reference = lastShardInt == start.shard ? start.number : 0;
     } else {
       if (start.shard > 0) return start;
-      lastShard = driveServiceHelper.listChildren(accountFolder, null);
+      lastShard = driveServiceHelper.listChildren(accountFolder);
       lastShardInt = 0;
       reference = start.number;
     }
@@ -177,7 +177,8 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
 
   @Override
   protected String getExistingLockToken() {
-    return accountFolder.getAppProperties().get(LOCK_TOKEN_KEY);
+    final Map<String, String> appProperties = accountFolder.getAppProperties();
+    return appProperties != null ? appProperties.get(LOCK_TOKEN_KEY) : null;
   }
 
   @Override
@@ -214,11 +215,12 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
       shardFolder = getSubFolder("_" + sequenceNumber.shard);
       if (shardFolder == null) throw new IOException("shard folder not found");
     }
-    List<File> fileList = driveServiceHelper.listChildren(shardFolder, null);
+    List<File> fileList = driveServiceHelper.listChildren(shardFolder);
 
     log().i("Getting data from shard %d", sequenceNumber.shard);
     List<ChangeSet> changeSetList = new ArrayList<>();
     for (File metadata : fileList) {
+      log().i("Getting data from file %s", metadata.getName());
       if (isNewerJsonFile(sequenceNumber.number, metadata.getName())) {
         changeSetList.add(getChangeSetFromMetadata(sequenceNumber.shard, metadata));
       }
@@ -227,9 +229,10 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     while (true) {
       File nextShardFolder = getSubFolder("_" + nextShard);
       if (nextShardFolder != null) {
-        fileList = driveServiceHelper.listChildren(nextShardFolder, null);
+        fileList = driveServiceHelper.listChildren(nextShardFolder);
         log().i("Getting data from shard %d", nextShard);
         for (File metadata : fileList) {
+          log().i("Getting data from file %s", metadata.getName());
           if (isNewerJsonFile(0, metadata.getName())) {
             changeSetList.add(getChangeSetFromMetadata(nextShard, metadata));
           }
@@ -259,10 +262,10 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
 
   @NonNull
   @Override
-  public Stream<AccountMetaData> getRemoteAccountList(android.accounts.Account account) throws IOException {
+  public Stream<AccountMetaData> getRemoteAccountList() throws IOException {
     Stream<AccountMetaData> result;
     requireBaseFolder();
-    List<File> fileList = driveServiceHelper.listChildren(baseFolder, null);
+    List<File> fileList = driveServiceHelper.listChildren(baseFolder);
     List<AccountMetaData> accountMetaDataList = Stream.of(fileList)
         .map(this::getAccountMetaDataFromDriveMetadata)
         .filter(Optional::isPresent)
@@ -272,10 +275,10 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   }
 
   private Optional<AccountMetaData> getAccountMetaDataFromDriveMetadata(File metadata) {
-    if (driveServiceHelper.isFolder(metadata)) {
+    if (!driveServiceHelper.isFolder(metadata)) {
       return Optional.empty();
     }
-    File accountMetadata = null;
+    File accountMetadata;
     try {
       accountMetadata = driveServiceHelper.getFileByNameAndParent(metadata, getAccountMetadataFilename());
     } catch (IOException e) {
@@ -290,47 +293,51 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     }
 
     //legacy
-    String uuid = metadata.getAppProperties().get(ACCOUNT_METADATA_UUID_KEY);
+    final Map<String, String> appProperties = metadata.getAppProperties();
+    if (appProperties == null) {
+      return Optional.empty();
+    }
+    String uuid = appProperties.get(ACCOUNT_METADATA_UUID_KEY);
     if (uuid == null) {
       Timber.d("UUID property not set");
       return Optional.empty();
     }
     return Optional.of(AccountMetaData.builder()
-        .setType(getPropertyWithDefault(metadata, ACCOUNT_METADATA_TYPE_KEY, AccountType.CASH.name()))
-        .setOpeningBalance(getPropertyWithDefault(metadata, ACCOUNT_METADATA_OPENING_BALANCE_KEY, 0L))
-        .setDescription(getPropertyWithDefault(metadata, ACCOUNT_METADATA_DESCRIPTION_KEY, ""))
-        .setColor(getPropertyWithDefault(metadata, ACCOUNT_METADATA_COLOR_KEY, Account.DEFAULT_COLOR))
-        .setCurrency(getPropertyWithDefault(metadata, ACCOUNT_METADATA_CURRENCY_KEY,
+        .setType(getPropertyWithDefault(appProperties, ACCOUNT_METADATA_TYPE_KEY, AccountType.CASH.name()))
+        .setOpeningBalance(getPropertyWithDefault(appProperties, ACCOUNT_METADATA_OPENING_BALANCE_KEY, 0L))
+        .setDescription(getPropertyWithDefault(appProperties, ACCOUNT_METADATA_DESCRIPTION_KEY, ""))
+        .setColor(getPropertyWithDefault(appProperties, ACCOUNT_METADATA_COLOR_KEY, Account.DEFAULT_COLOR))
+        .setCurrency(getPropertyWithDefault(appProperties, ACCOUNT_METADATA_CURRENCY_KEY,
             Utils.getHomeCurrency().code()))
         .setUuid(uuid)
         .setLabel(metadata.getName()).build());
   }
 
-  private String getPropertyWithDefault(File metadata,
+  private String getPropertyWithDefault(Map<String, String> metadata,
                                         String key,
                                         String defaultValue) {
-    String result = metadata.getAppProperties().get(key);
+    String result = metadata.get(key);
     return result != null ? result : defaultValue;
   }
 
-  private long getPropertyWithDefault(File metadata,
+  private long getPropertyWithDefault(Map<String, String> metadata,
                                       String key,
                                       long defaultValue) {
-    String result = metadata.getAppProperties().get(key);
+    String result = metadata.get(key);
     return result != null ? Long.parseLong(result) : defaultValue;
   }
 
-  private int getPropertyWithDefault(File metadata,
+  private int getPropertyWithDefault(Map<String, String> metadata,
                                      String key,
                                      int defaultValue) {
-    String result = metadata.getAppProperties().get(key);
+    String result = metadata.get(key);
     return result != null ? Integer.parseInt(result) : defaultValue;
   }
 
-  private boolean getPropertyWithDefault(File metadata,
+  private boolean getPropertyWithDefault(Map<String, String> metadata,
                                          String key,
                                          boolean defaultValue) {
-    String result = metadata.getAppProperties().get(key);
+    String result = metadata.get(key);
     return result != null ? Boolean.valueOf(result) : defaultValue;
   }
 
@@ -338,7 +345,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   private File getBackupFolder(boolean require) throws IOException {
     requireBaseFolder();
     File file = driveServiceHelper.getFileByNameAndParent(baseFolder, BACKUP_FOLDER_NAME);
-    if (file != null && getPropertyWithDefault(file, IS_BACKUP_FOLDER, false)) {
+    if (file != null && file.getAppProperties() != null && getPropertyWithDefault(file.getAppProperties(), IS_BACKUP_FOLDER, false)) {
       return file;
     }
     if (require) {

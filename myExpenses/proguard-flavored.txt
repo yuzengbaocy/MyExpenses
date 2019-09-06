@@ -85,3 +85,11 @@
 
 #needed for RecyclerViewActions, only for flavors we run tests on production
 -keep class android.support.v7.widget.RecyclerView { *; }
+
+# Needed by google-api-client to keep generic types and @Key annotations accessed via reflection
+
+-keepclassmembers class * {
+  @com.google.api.client.util.Key <fields>;
+}
+
+-keepattributes Signature,RuntimeVisibleAnnotations,AnnotationDefault
