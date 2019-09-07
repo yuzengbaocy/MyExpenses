@@ -33,12 +33,13 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   public static final String KEY_GOOGLE_ACCOUNT_EMAIL = "googleAccountEmail";
   private static final String ACCOUNT_METADATA_CURRENCY_KEY = "accountMetadataCurrency";
   private static final String ACCOUNT_METADATA_COLOR_KEY = "accountMetadataColor";
-  public static final String ACCOUNT_METADATA_UUID_KEY = "accountMetadataUuid";
+  private static final String ACCOUNT_METADATA_UUID_KEY = "accountMetadataUuid";
   private static final String ACCOUNT_METADATA_OPENING_BALANCE_KEY = "accountMetadataOpeningBalance";
   private static final String ACCOUNT_METADATA_DESCRIPTION_KEY = "accountMetadataDescription";
   private static final String ACCOUNT_METADATA_TYPE_KEY = "accountMetadataType";
   private static final String LOCK_TOKEN_KEY = KEY_LOCK_TOKEN;
   private static final String IS_BACKUP_FOLDER = "isBackupFolder";
+  public static final String IS_SYNC_FOLDER = "isSyncFolder";
   private String folderId;
   private File baseFolder, accountFolder;
 

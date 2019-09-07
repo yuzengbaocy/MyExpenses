@@ -5,9 +5,12 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import com.google.android.gms.auth.UserRecoverableAuthException
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import eltos.simpledialogfragment.SimpleDialog
+import eltos.simpledialogfragment.SimpleDialog.OnDialogResultListener.*
+import eltos.simpledialogfragment.input.SimpleInputDialog
 import eltos.simpledialogfragment.list.CustomListDialog
 import eltos.simpledialogfragment.list.CustomListDialog.SINGLE_CHOICE
 import eltos.simpledialogfragment.list.SimpleListDialog
@@ -17,20 +20,28 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.totschnig.myexpenses.R
 import org.totschnig.myexpenses.sync.DriveServiceHelper
-import org.totschnig.myexpenses.sync.GenericAccountService.KEY_SYNC_PROVIDER_URL
-import org.totschnig.myexpenses.sync.GoogleDriveBackendProvider.KEY_GOOGLE_ACCOUNT_EMAIL
+import org.totschnig.myexpenses.sync.GenericAccountService
+import org.totschnig.myexpenses.sync.GoogleDriveBackendProvider
+import org.totschnig.myexpenses.sync.GoogleDriveBackendProvider.IS_SYNC_FOLDER
 import org.totschnig.myexpenses.sync.GoogleDriveBackendProviderFactory
+import org.totschnig.myexpenses.util.crashreporting.CrashHandler
 
 const val DIALOG_TAG_FOLDER_SELECT = "FOLDER_SELECT"
+const val DIALOG_TAG_FOLDER_CREATE = "FOLDER_CREATE"
 
 class DriveSetup2 : ProtectedFragmentActivity(), SimpleDialog.OnDialogResultListener {
     private val REQUEST_ACCOUNT_PICKER = 1
     private val REQUEST_RESOLUTION = 2
-    @JvmField @State
+    @JvmField
+    @State
     var accountName: String? = null
-    @JvmField @State
+    @JvmField
+    @State
     var idList: ArrayList<String> = ArrayList()
+
+    private var helper: DriveServiceHelper? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,54 +75,120 @@ class DriveSetup2 : ProtectedFragmentActivity(), SimpleDialog.OnDialogResultList
         query()
     }
 
+    private fun requireHelper() = helper ?: accountName?.let { DriveServiceHelper(this, it) }
+
     @SuppressLint("BuildNotImplemented")
     private fun query() {
-        accountName?.also {
-            val helper = DriveServiceHelper(this, it)
+        requireHelper()?.let {
             CoroutineScope(Dispatchers.Default).launch {
                 try {
-                    val files = helper.listFolders()
-                            .filter { file -> file.name.endsWith(".mesync") }
-                    val names = files.map { file -> file.name }
-                    idList.clear()
-                    idList.addAll(files.map { file -> file.id })
-                    IntArray(11) { it }
+                    val files = it.listFolders()
+                            .filter { file -> file.name.endsWith(".mesync") ||
+                                    file.appProperties?.containsKey(IS_SYNC_FOLDER) == true }
                     withContext(Dispatchers.Main) {
-                        SimpleListDialog.build().choiceMode(SINGLE_CHOICE)
-                                .items(names.toTypedArray(), LongArray(idList.size) { it.toLong() })
-                                .neg()
-                                .show(this@DriveSetup2, DIALOG_TAG_FOLDER_SELECT)
+                        if (files.size > 0) {
+                            val names = files.map { file -> file.name }
+                            idList.clear()
+                            idList.addAll(files.map { file -> file.id })
+
+                            SimpleListDialog.build().choiceMode(SINGLE_CHOICE)
+                                    .title(R.string.synchronization_select_folder_dialog_title)
+                                    .items(names.toTypedArray(), LongArray(idList.size) { it.toLong() })
+                                    .neg()
+                                    .pos(R.string.select)
+                                    .neut(R.string.menu_create_folder)
+                                    .show(this@DriveSetup2, DIALOG_TAG_FOLDER_SELECT)
+                        } else {
+                            showCreateFolderDialog()
+                        }
                     }
                 } catch (e: Exception) {
-                    ((if (e is UserRecoverableAuthIOException) e.cause else e) as? UserRecoverableAuthException)?.let {
-                        withContext(Dispatchers.Main) {
-                            startActivityForResult(it.intent, REQUEST_RESOLUTION);
-                        }
-                    } ?: throw e
+                    withContext(Dispatchers.Main) {
+                        handleException(e)
+                    }
                 }
             }
         }
     }
 
+    private fun handleException(e: java.lang.Exception) {
+        ((if (e is UserRecoverableAuthIOException) e.cause else e) as? UserRecoverableAuthException)?.let {
+            startActivityForResult(it.intent, REQUEST_RESOLUTION);
+        } ?: kotlin.run {
+            CrashHandler.report(e)
+            e.message?.let {
+                Toast.makeText(this, it, Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    @SuppressLint("BuildNotImplemented")
+    fun showCreateFolderDialog() {
+        SimpleInputDialog.build()
+                .title(R.string.menu_create_folder)
+                .pos(android.R.string.ok)
+                .neut()
+                .show(this, DIALOG_TAG_FOLDER_CREATE)
+    }
 
     override fun onResult(dialogTag: String, which: Int, extras: Bundle): Boolean {
-        if (dialogTag.equals(DIALOG_TAG_FOLDER_SELECT)) {
-            if (which == SimpleDialog.OnDialogResultListener.BUTTON_POSITIVE) {
-                val intent = Intent()
-                val bundle = Bundle(2)
-                bundle.putString(KEY_SYNC_PROVIDER_URL, idList.get(extras.getLong(CustomListDialog.SELECTED_SINGLE_ID).toInt()));
-                bundle.putString(KEY_GOOGLE_ACCOUNT_EMAIL, accountName)
-                intent.putExtra(AccountManager.KEY_USERDATA, bundle)
-                intent.putExtra(AccountManager.KEY_ACCOUNT_NAME,
-                        GoogleDriveBackendProviderFactory.LABEL + " - " + extras.getString(SimpleListDialog.SELECTED_SINGLE_LABEL))
-                setResult(RESULT_OK, intent)
-            } else {
-                setResult(Activity.RESULT_CANCELED)
+        when {
+            dialogTag.equals(DIALOG_TAG_FOLDER_SELECT) -> {
+                when (which) {
+                    BUTTON_POSITIVE -> {
+                        success(idList.get(extras.getLong(CustomListDialog.SELECTED_SINGLE_ID).toInt()),
+                                extras.getString(SimpleListDialog.SELECTED_SINGLE_LABEL))
+                    }
+                    BUTTON_NEUTRAL -> showCreateFolderDialog()
+                    BUTTON_NEGATIVE -> abort()
+                }
+                return true
             }
-            finish();
-            return true
+            dialogTag.equals(DIALOG_TAG_FOLDER_CREATE) -> {
+                when (which) {
+                    BUTTON_POSITIVE -> {
+                        requireHelper()?.let {
+                            CoroutineScope(Dispatchers.Default).launch {
+                                try {
+                                    val properties = mutableMapOf<String, String>()
+                                    properties[IS_SYNC_FOLDER] = "true"
+                                    with(it.createFolder("root",
+                                            extras.getString(SimpleInputDialog.TEXT, "MyExpenses"),
+                                            properties)) {
+                                        success(id, name)
+                                    }
+                                } catch (e: Exception) {
+                                    withContext(Dispatchers.Main) {
+                                        handleException(e)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    BUTTON_NEGATIVE -> abort()
+                }
+                return true
+            }
         }
         return false
     }
 
+    private fun success(folderId: String, folderName: String?) {
+        folderName?.let {
+            val intent = Intent()
+            val bundle = Bundle(2)
+            bundle.putString(GenericAccountService.KEY_SYNC_PROVIDER_URL, folderId)
+            bundle.putString(GoogleDriveBackendProvider.KEY_GOOGLE_ACCOUNT_EMAIL, accountName)
+            intent.putExtra(AccountManager.KEY_USERDATA, bundle)
+            intent.putExtra(AccountManager.KEY_ACCOUNT_NAME,
+                    GoogleDriveBackendProviderFactory.LABEL + " - " + folderName)
+            setResult(RESULT_OK, intent)
+        } ?: CrashHandler.report("Success called, but no folderName provided")
+        finish()
+    }
+
+    private fun abort() {
+        setResult(Activity.RESULT_CANCELED)
+        finish();
+    }
 }
