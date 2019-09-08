@@ -54,7 +54,7 @@ class DriveServiceHelper(context: Context, accountName: String) {
     }
 
     @Throws(IOException::class)
-    fun createFolder(parent: String, name: String, properties: MutableMap<String, String>?): File {
+    fun createFolder(parent: String, name: String, properties: Map<String, String>?): File {
         return createFile(parent, name, MIME_TYPE_FOLDER, properties)
     }
 
@@ -64,7 +64,7 @@ class DriveServiceHelper(context: Context, accountName: String) {
      * Creates a text file in the user's My Drive folder and returns its file ID.
      */
     @Throws(IOException::class)
-    fun createFile(parent: String, name: String, mimeType: String, properties: MutableMap<String, String>?): File {
+    fun createFile(parent: String, name: String, mimeType: String, properties: Map<String, String>?): File {
         val metadata = File()
                 .setParents(listOf(parent))
                 .setMimeType(mimeType)
