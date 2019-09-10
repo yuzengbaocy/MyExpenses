@@ -4,51 +4,32 @@ import android.accounts.AccountManager
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
+import androidx.lifecycle.ViewModelProviders
 import com.google.android.gms.auth.UserRecoverableAuthException
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
-import eltos.simpledialogfragment.list.CustomListDialog
-import eltos.simpledialogfragment.list.SimpleListDialog
-import icepick.Icepick
 import icepick.State
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.totschnig.myexpenses.R
-import org.totschnig.myexpenses.sync.DriveServiceHelper
 import org.totschnig.myexpenses.sync.GenericAccountService
 import org.totschnig.myexpenses.sync.GoogleDriveBackendProvider
-import org.totschnig.myexpenses.sync.GoogleDriveBackendProvider.IS_SYNC_FOLDER
-import org.totschnig.myexpenses.util.crashreporting.CrashHandler
+import org.totschnig.myexpenses.viewmodel.DriveSetupViewModel
 
-class DriveSetup2 : AbstractSyncBackup() {
+class DriveSetup2 : AbstractSyncBackup<DriveSetupViewModel>() {
 
     private val REQUEST_ACCOUNT_PICKER = 1
     private val REQUEST_RESOLUTION = 2
     @JvmField
     @State
     var accountName: String? = null
-    @JvmField
-    @State
-    var idList: ArrayList<String> = ArrayList()
-
-    private var helper: DriveServiceHelper? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (savedInstanceState == null) {
             startActivityForResult(AccountManager.newChooseAccountIntent(null, null, arrayOf("com.google"), true, null, null, null, null),
                     REQUEST_ACCOUNT_PICKER)
-        } else {
-            Icepick.restoreInstanceState(this, savedInstanceState)
         }
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        Icepick.saveInstanceState(this, outState)
-    }
+    override fun instantiateViewModel(): DriveSetupViewModel = ViewModelProviders.of(this).get(DriveSetupViewModel::class.java)
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
         if (resultCode == Activity.RESULT_OK)
@@ -56,7 +37,7 @@ class DriveSetup2 : AbstractSyncBackup() {
                 REQUEST_ACCOUNT_PICKER -> if (resultData != null) {
                     handleSignInResult(resultData)
                 }
-                REQUEST_RESOLUTION -> query()
+                REQUEST_RESOLUTION -> viewModel.query()
             }
 
         super.onActivityResult(requestCode, resultCode, resultData)
@@ -64,81 +45,24 @@ class DriveSetup2 : AbstractSyncBackup() {
 
     private fun handleSignInResult(result: Intent) {
         accountName = result.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)
-        query()
-    }
-
-    private fun requireHelper() = helper ?: accountName?.let { DriveServiceHelper(this, it) }
-
-    private fun query() {
-        requireHelper()?.let {
-            CoroutineScope(Dispatchers.Default).launch {
-                try {
-                    val files = it.listFolders()
-                            .filter { file -> file.name.endsWith(".mesync") ||
-                                    file.appProperties?.containsKey(IS_SYNC_FOLDER) == true }
-                    withContext(Dispatchers.Main) {
-                        if (files.size > 0) {
-                            val names = files.map { file -> file.name }
-                            idList.clear()
-                            idList.addAll(files.map { file -> file.id })
-                            showSelectFolderDialog(names)
-                        } else {
-                            showCreateFolderDialog()
-                        }
-                    }
-                } catch (e: Exception) {
-                    withContext(Dispatchers.Main) {
-                        handleException(e)
-                    }
-                }
-            }
+        accountName?.let {
+            viewModel.initWithAccount(it)
+            viewModel.query()
         }
     }
 
-    private fun handleException(e: java.lang.Exception) {
-        ((if (e is UserRecoverableAuthIOException) e.cause else e) as? UserRecoverableAuthException)?.let {
-            startActivityForResult(it.intent, REQUEST_RESOLUTION);
-        } ?: kotlin.run {
-            CrashHandler.report(e)
-            e.message?.let {
-                Toast.makeText(this, it, Toast.LENGTH_LONG).show()
-                finish()
-            }
-        }
-    }
+    override fun handleException(exception: java.lang.Exception) : Boolean =
+        ((if (exception is UserRecoverableAuthIOException) exception.cause else exception) as? UserRecoverableAuthException)?.let {
+            startActivityForResult(it.intent, REQUEST_RESOLUTION)
+            true
+        } ?: false
 
-    override fun onFolderSelect(extras: Bundle) {
-        success(idList.get(extras.getLong(CustomListDialog.SELECTED_SINGLE_ID).toInt()),
-                extras.getString(SimpleListDialog.SELECTED_SINGLE_LABEL))
-    }
-
-    override fun onFolderCreate(label: String) {
-        requireHelper()?.let {
-            CoroutineScope(Dispatchers.Default).launch {
-                try {
-                    with(it.createFolder("root", label, mapOf(Pair(IS_SYNC_FOLDER, "true")))) {
-                        success(id, name)
-                    }
-                } catch (e: Exception) {
-                    withContext(Dispatchers.Main) {
-                        handleException(e)
-                    }
-                }
-            }
-        }
-    }
-
-    private fun success(folderId: String, folderName: String?) {
-        folderName?.let {
-            val intent = Intent()
-            val bundle = Bundle(2)
-            bundle.putString(GenericAccountService.KEY_SYNC_PROVIDER_URL, folderId)
-            bundle.putString(GoogleDriveBackendProvider.KEY_GOOGLE_ACCOUNT_EMAIL, accountName)
-            intent.putExtra(AccountManager.KEY_USERDATA, bundle)
-            intent.putExtra(SyncBackendSetupActivity.KEY_SYNC_PROVIDER_ID, R.id.SYNC_BACKEND_DRIVE)
-            intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, folderName)
-            setResult(RESULT_OK, intent)
-        } ?: CrashHandler.report("Success called, but no folderName provided")
-        finish()
+    override fun buildSuccessIntent(folder: Pair<String, String>) = Intent().apply {
+        putExtra(AccountManager.KEY_USERDATA, Bundle(2).apply {
+            putString(GenericAccountService.KEY_SYNC_PROVIDER_URL, folder.first)
+            putString(GoogleDriveBackendProvider.KEY_GOOGLE_ACCOUNT_EMAIL, accountName)
+        })
+        putExtra(SyncBackendSetupActivity.KEY_SYNC_PROVIDER_ID, R.id.SYNC_BACKEND_DRIVE)
+        putExtra(AccountManager.KEY_ACCOUNT_NAME, folder.second)
     }
 }
