@@ -266,6 +266,8 @@
 
         <activity android:name=".activity.HistoryActivity" />
 
+        <activity android:name=".activity.DropboxSetup"/>
+
         <service
             android:name=".service.MyService"
             android:permission="org.totschnig.myexpenses.UNLOCK_PREMIUM" >

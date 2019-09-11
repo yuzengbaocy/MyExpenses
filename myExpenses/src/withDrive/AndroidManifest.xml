@@ -3,6 +3,6 @@
           xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application tools:ignore="AllowBackup,GoogleAppIndexingWarning">
-        <activity android:name=".activity.DriveSetupActivity"/>
+        <activity android:name=".activity.DriveSetup2"/>
     </application>
 </manifest>

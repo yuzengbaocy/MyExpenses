@@ -615,7 +615,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
           opsSize, resultsSize));
     }
   }
-  
+
   @VisibleForTesting
   public void collectOperations(@NonNull TransactionChange change, long accountId, ArrayList<ContentProviderOperation> ops, int parentOffset) {
     Uri uri = Transaction.CALLER_IS_SYNC_ADAPTER_URI;
