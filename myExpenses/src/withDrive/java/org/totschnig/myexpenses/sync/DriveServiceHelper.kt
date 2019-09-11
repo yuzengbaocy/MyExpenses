@@ -19,13 +19,14 @@
 package org.totschnig.myexpenses.sync
 
 import android.content.Context
+import com.google.api.client.extensions.android.json.AndroidJsonFactory
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.http.InputStreamContent
 import com.google.api.client.http.javanet.NetHttpTransport
-import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import com.google.api.services.drive.model.File
+import org.totschnig.myexpenses.R
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
@@ -46,11 +47,10 @@ class DriveServiceHelper(context: Context, accountName: String) {
         credential.selectedAccountName = accountName
         mDriveService = Drive.Builder(
                 NetHttpTransport(),
-                GsonFactory(),
+                AndroidJsonFactory(),
                 credential)
-                .setApplicationName("Drive API Migration")
+                .setApplicationName(context.getString(R.string.app_name))
                 .build()
-
     }
 
     @Throws(IOException::class)
@@ -90,7 +90,7 @@ class DriveServiceHelper(context: Context, accountName: String) {
     @Throws(IOException::class)
     fun setMetadataProperty(fileId: String, key: String, value: String?) {
         val metadata = File().apply {
-            appProperties = mapOf(Pair(key, value))
+            appProperties = mapOf(Pair(key, value ?: ""))
         }
         mDriveService.files().update(fileId, metadata).execute()
     }

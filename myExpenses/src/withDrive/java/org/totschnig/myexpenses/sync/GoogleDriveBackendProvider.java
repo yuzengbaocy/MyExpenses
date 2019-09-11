@@ -221,8 +221,8 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     log().i("Getting data from shard %d", sequenceNumber.shard);
     List<ChangeSet> changeSetList = new ArrayList<>();
     for (File metadata : fileList) {
-      log().i("Getting data from file %s", metadata.getName());
       if (isNewerJsonFile(sequenceNumber.number, metadata.getName())) {
+        log().i("Getting data from file %s", metadata.getName());
         changeSetList.add(getChangeSetFromMetadata(sequenceNumber.shard, metadata));
       }
     }
@@ -233,8 +233,8 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
         fileList = driveServiceHelper.listChildren(nextShardFolder);
         log().i("Getting data from shard %d", nextShard);
         for (File metadata : fileList) {
-          log().i("Getting data from file %s", metadata.getName());
           if (isNewerJsonFile(0, metadata.getName())) {
+            log().i("Getting data from file %s", metadata.getName());
             changeSetList.add(getChangeSetFromMetadata(nextShard, metadata));
           }
         }
