@@ -243,7 +243,7 @@
             android:exported="false"
             android:theme="@style/Theme.AppCompat.Light.DialogWhenLarge">
         </activity>
-        
+
         <activity
             android:name="com.dropbox.core.android.AuthActivity"
             android:configChanges="orientation|keyboard"
@@ -273,7 +273,9 @@
                 <action android:name="org.totschnig.myexpenses.service.MyService" />
             </intent-filter>
         </service>
-        
+
+        <activity android:name=".activity.DropboxSetup"/>
+
         <provider
             android:name=".provider.TransactionProvider"
             android:authorities="${applicationId}"
