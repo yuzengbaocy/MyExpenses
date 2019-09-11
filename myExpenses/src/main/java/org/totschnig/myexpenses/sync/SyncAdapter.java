@@ -127,11 +127,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
   }
 
   private static long getIoDefaultDelaySeconds() {
-    return  (System.currentTimeMillis() / 1000) + IO_DEFAULT_DELAY_SECONDS;
+    return (System.currentTimeMillis() / 1000) + IO_DEFAULT_DELAY_SECONDS;
   }
 
   private static long getIoLockDelaySeconds() {
-    return  (System.currentTimeMillis() / 1000) + IO_LOCK_DELAY_SECONDS;
+    return (System.currentTimeMillis() / 1000) + IO_LOCK_DELAY_SECONDS;
   }
 
   private String getUserDataWithDefault(AccountManager accountManager, Account account,
@@ -615,7 +615,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
           opsSize, resultsSize));
     }
   }
-  
+
   @VisibleForTesting
   public void collectOperations(@NonNull TransactionChange change, long accountId, ArrayList<ContentProviderOperation> ops, int parentOffset) {
     Uri uri = Transaction.CALLER_IS_SYNC_ADAPTER_URI;
