@@ -45,6 +45,9 @@ class DriveServiceHelper(context: Context, accountName: String) {
         val credential = GoogleAccountCredential.usingOAuth2(
                 context, setOf(DriveScopes.DRIVE_FILE))
         credential.selectedAccountName = accountName
+        if (credential.selectedAccount == null) {
+            throw IllegalStateException("Google account no longer valid")
+        }
         mDriveService = Drive.Builder(
                 NetHttpTransport(),
                 AndroidJsonFactory(),

@@ -51,7 +51,11 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     if (folderId == null) {
       throw new SyncParseException("Drive folder not set");
     }
-    driveServiceHelper = new DriveServiceHelper(context, accountManager.getUserData(account, KEY_GOOGLE_ACCOUNT_EMAIL));
+    try {
+      driveServiceHelper = new DriveServiceHelper(context, accountManager.getUserData(account, KEY_GOOGLE_ACCOUNT_EMAIL));
+    } catch (Exception e) {
+      throw new SyncParseException(e);
+    }
   }
 
   @NonNull
