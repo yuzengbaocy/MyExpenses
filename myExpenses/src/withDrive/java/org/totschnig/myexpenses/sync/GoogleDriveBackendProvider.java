@@ -4,8 +4,10 @@ import android.accounts.AccountManager;
 import android.content.Context;
 import android.net.Uri;
 
+import com.annimon.stream.Exceptional;
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
+import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
 import com.google.api.services.drive.model.File;
 
 import org.totschnig.myexpenses.MyApplication;
@@ -72,6 +74,19 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     } catch (FileNotFoundException e) {
       return null;
     }
+  }
+
+  @Override
+  public Exceptional<Void> setUp(String authToken, String encryptionPassword) {
+    final Exceptional<Void> result = super.setUp(authToken, encryptionPassword);
+    final Throwable exception = result.getException();
+    if (exception instanceof UserRecoverableAuthIOException) {
+      //User has been signed out from Google account, he needs to log in again
+      //Simply launching the intent provided by UserRecoverableAuthException,
+      //prompts user to sign in, but not to recreate the account
+      return Exceptional.of(new SyncParseException(((UserRecoverableAuthIOException) exception).getCause()));
+    }
+    return result;
   }
 
   @NonNull
