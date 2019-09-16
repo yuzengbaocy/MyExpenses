@@ -93,3 +93,21 @@
 }
 
 -keepattributes Signature,RuntimeVisibleAnnotations,AnnotationDefault
+
+## Coroutines
+# ServiceLoader support
+-keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
+-keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
+-keepnames class kotlinx.coroutines.android.AndroidExceptionPreHandler {}
+-keepnames class kotlinx.coroutines.android.AndroidDispatcherFactory {}
+
+# Most of volatile fields are updated with AFU and should not be mangled
+-keepclassmembernames class kotlinx.** {
+    volatile <fields>;
+}
+# https://github.com/Kotlin/kotlinx.coroutines/issues/1270
+-dontwarn kotlinx.coroutines.flow.**inlined**
+
+#Guava included by ?
+-dontwarn java.lang.ClassValue
+-dontwarn com.google.auto.common.MoreTypes$1
