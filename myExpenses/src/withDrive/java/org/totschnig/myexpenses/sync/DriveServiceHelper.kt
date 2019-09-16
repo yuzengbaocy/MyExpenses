@@ -18,6 +18,7 @@
  */
 package org.totschnig.myexpenses.sync
 
+import android.accounts.Account
 import android.content.Context
 import com.google.api.client.extensions.android.json.AndroidJsonFactory
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
@@ -44,10 +45,7 @@ class DriveServiceHelper(context: Context, accountName: String) {
     init {
         val credential = GoogleAccountCredential.usingOAuth2(
                 context, setOf(DriveScopes.DRIVE_FILE))
-        credential.selectedAccountName = accountName
-        if (credential.selectedAccount == null) {
-            throw IllegalStateException("Google account no longer valid")
-        }
+        credential.selectedAccount = Account(accountName, "com.google")
         mDriveService = Drive.Builder(
                 NetHttpTransport(),
                 AndroidJsonFactory(),
