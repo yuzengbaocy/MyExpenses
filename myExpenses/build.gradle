@@ -292,7 +292,7 @@ dependencies {
 
     implementation 'com.jakewharton.timber:timber:4.7.1'
 
-    withAdsImplementation 'com.google.android.gms:play-services-ads:18.1.1'
+    withAdsImplementation 'com.google.android.gms:play-services-ads:18.2.0'
     //noinspection GradleDynamicVersion
     withAdsImplementation 'com.amazon.android:mobile-ads:5.+'
 
@@ -312,8 +312,8 @@ dependencies {
         transitive = true
     }
     implementation 'com.google.firebase:firebase-core:17.2.0'
-    implementation 'com.google.firebase:firebase-config:19.0.0'
-    implementation 'com.google.firebase:firebase-ads:18.1.1'
+    implementation 'com.google.firebase:firebase-config:19.0.1'
+    implementation 'com.google.firebase:firebase-ads:18.2.0'
 
     implementation 'org.slf4j:slf4j-api:1.7.25'
     implementation 'com.github.tony19:logback-android-core:1.1.1-6'
