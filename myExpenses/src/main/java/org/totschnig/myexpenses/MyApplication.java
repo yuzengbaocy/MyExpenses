@@ -161,6 +161,7 @@ public class MyApplication extends MultiDexApplication implements
     if (!isSyncService()) {
       // sets up mSettings
       getSettings().registerOnSharedPreferenceChangeListener(this);
+      DailyScheduler.updatePlannerAlarms(this,false, false);
       registerWidgetObservers();
     }
     licenceHandler.init();
