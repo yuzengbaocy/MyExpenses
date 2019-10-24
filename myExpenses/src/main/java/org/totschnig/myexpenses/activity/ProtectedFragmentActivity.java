@@ -23,14 +23,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.res.ColorStateList;
-import android.content.res.Resources;
+import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.text.TextUtils;
-import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -65,6 +64,7 @@ import org.totschnig.myexpenses.provider.TransactionProvider;
 import org.totschnig.myexpenses.service.DailyScheduler;
 import org.totschnig.myexpenses.task.RestoreTask;
 import org.totschnig.myexpenses.task.TaskExecutionFragment;
+import org.totschnig.myexpenses.ui.AmountInput;
 import org.totschnig.myexpenses.ui.ContextHelper;
 import org.totschnig.myexpenses.ui.SnackbarAction;
 import org.totschnig.myexpenses.util.CurrencyFormatter;
@@ -82,6 +82,7 @@ import org.totschnig.myexpenses.util.tracking.Tracker;
 import org.totschnig.myexpenses.widget.AbstractWidget;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Locale;
 
 import javax.inject.Inject;
@@ -112,6 +113,7 @@ import static org.totschnig.myexpenses.preference.PrefKey.PROTECTION_LEGACY;
 import static org.totschnig.myexpenses.preference.PrefKey.UI_FONTSIZE;
 import static org.totschnig.myexpenses.preference.PrefKey.UI_LANGUAGE;
 import static org.totschnig.myexpenses.preference.PrefKey.UI_THEME_KEY;
+import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_AMOUNT;
 import static org.totschnig.myexpenses.task.TaskExecutionFragment.TASK_RESTORE;
 import static org.totschnig.myexpenses.util.DistribHelper.getMarketSelfUri;
 import static org.totschnig.myexpenses.util.DistribHelper.getVersionInfo;
@@ -121,9 +123,9 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
     implements MessageDialogListener, OnSharedPreferenceChangeListener,
     ConfirmationDialogFragment.ConfirmationDialogListener,
     TaskExecutionFragment.TaskCallbacks, DbWriteFragment.TaskCallbacks,
-    ProgressDialogFragment.ProgressDialogListener {
+    ProgressDialogFragment.ProgressDialogListener, AmountInput.Host {
   public static final int CALCULATOR_REQUEST = 0;
-  public static final int EDIT_TRANSACTION_REQUEST = 1;
+  public static final int EDIT_REQUEST = 1;
   public static final int EDIT_ACCOUNT_REQUEST = 2;
   public static final int PREFERENCES_REQUEST = 3;
   public static final int CREATE_ACCOUNT_REQUEST = 4;
@@ -198,15 +200,10 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
           WindowManager.LayoutParams.FLAG_SECURE);
     }
     MyApplication.getInstance().getSettings().registerOnSharedPreferenceChangeListener(this);
-    Resources.Theme theme = getTheme();
-    TypedValue color = new TypedValue();
-    theme.resolveAttribute(R.attr.colorExpense, color, true);
-    colorExpense = color.data;
-    theme.resolveAttribute(R.attr.colorIncome, color, true);
-    colorIncome = color.data;
-    theme.resolveAttribute(R.attr.colorAggregate, color, true);
-    colorAggregate = color.data;
-    TypedArray themeArray = theme.obtainStyledAttributes(new int[]{android.R.attr.textColorSecondary});
+    colorExpense = UiUtils.themeIntAttr(this, R.attr.colorExpense);
+    colorIncome = UiUtils.themeIntAttr(this, R.attr.colorIncome);
+    colorAggregate = UiUtils.themeIntAttr(this, R.attr.colorAggregate);
+    TypedArray themeArray = getTheme().obtainStyledAttributes(new int[]{android.R.attr.textColorSecondary});
     textColorSecondary = themeArray.getColorStateList(0);
 
     tracker.init(this);
@@ -217,10 +214,21 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
     super.attachBaseContext(ContextHelper.wrap(newBase, MyApplication.getUserPreferedLocale()));
   }
 
+
+  @Override
+  public void applyOverrideConfiguration(Configuration overrideConfiguration) {
+    if (overrideConfiguration != null && Build.VERSION.SDK_INT >= 21
+        && Build.VERSION.SDK_INT <= 25) {
+      int uiMode = overrideConfiguration.uiMode;
+      overrideConfiguration.setTo(getBaseContext().getResources().getConfiguration());
+      overrideConfiguration.uiMode = uiMode;
+    }
+    super.applyOverrideConfiguration(overrideConfiguration);
+  }
+
   protected void injectDependencies() {
     MyApplication.getInstance().getAppComponent().inject(this);
   }
-
 
   public ThemeType getThemeType() {
     try {
@@ -283,9 +291,7 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
 
   protected void configureFloatingActionButton(int fabDescription) {
     if (!requireFloatingActionButtonWithContentDescription(getString(fabDescription))) return;
-    TypedValue color = new TypedValue();
-    getTheme().resolveAttribute(R.attr.colorControlActivated, color, true);
-    UiUtils.setBackgroundTintListOnFab(floatingActionButton, color.data);
+    UiUtils.setBackgroundTintListOnFab(floatingActionButton, UiUtils.themeIntAttr(this, R.attr.colorControlActivated));
   }
 
   protected boolean requireFloatingActionButtonWithContentDescription(String fabDescription) {
@@ -767,6 +773,14 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
         confirmCredentialResult = Optional.of(false);
       }
     }
+    if (resultCode == RESULT_OK && requestCode == CALCULATOR_REQUEST && intent != null) {
+      View target = findViewById(intent.getIntExtra(CalculatorInput.EXTRA_KEY_INPUT_ID, 0));
+      if (target instanceof AmountInput) {
+        ((AmountInput) target).setAmount(new BigDecimal(intent.getStringExtra(KEY_AMOUNT)), false);
+      } else {
+        showSnackbar("CALCULATOR_REQUEST launched with incorrect EXTRA_KEY_INPUT_ID", Snackbar.LENGTH_LONG);
+      }
+    }
   }
 
   protected void restartAfterRestore() {
@@ -1003,6 +1017,21 @@ public abstract class ProtectedFragmentActivity extends AppCompatActivity
     Transaction.buildProjection();
     Account.buildProjection();
     getContentResolver().notifyChange(TransactionProvider.TRANSACTIONS_URI, null, false);
+  }
+
+  public void showCalculator(BigDecimal amount, int id) {
+    Intent intent = new Intent(this, CalculatorInput.class);
+    forwardDataEntryFromWidget(intent);
+    if (amount != null) {
+      intent.putExtra(KEY_AMOUNT, amount);
+    }
+    intent.putExtra(CalculatorInput.EXTRA_KEY_INPUT_ID, id);
+    startActivityForResult(intent, CALCULATOR_REQUEST);
+  }
+
+  protected void forwardDataEntryFromWidget(Intent intent) {
+    intent.putExtra(AbstractWidget.EXTRA_START_FROM_WIDGET_DATA_ENTRY,
+        getIntent().getBooleanExtra(AbstractWidget.EXTRA_START_FROM_WIDGET_DATA_ENTRY, false));
   }
 
   public enum ThemeType {

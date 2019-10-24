@@ -49,6 +49,8 @@ import org.totschnig.myexpenses.adapter.CategoryTreeAdapter;
 import org.totschnig.myexpenses.adapter.CategoryTreeBaseAdapter;
 import org.totschnig.myexpenses.dialog.MessageDialogFragment;
 import org.totschnig.myexpenses.dialog.SelectMainCategoryDialogFragment;
+import org.totschnig.myexpenses.model.CurrencyContext;
+import org.totschnig.myexpenses.model.Sort;
 import org.totschnig.myexpenses.preference.PrefHandler;
 import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.provider.DatabaseConstants;
@@ -92,7 +94,6 @@ import static org.totschnig.myexpenses.provider.DatabaseConstants.TABLE_TRANSACT
 public class CategoryList extends SortableListFragment {
 
   public static final String KEY_FILTER = "filter";
-  protected BriteContentResolver briteContentResolver;
   private Disposable categoryDisposable;
   protected static final String CATTREE_WHERE_CLAUSE = KEY_CATID + " IN (SELECT " +
       TABLE_CATEGORIES + "." + KEY_ROWID +
@@ -127,6 +128,10 @@ public class CategoryList extends SortableListFragment {
   CurrencyFormatter currencyFormatter;
   @Inject
   PrefHandler prefHandler;
+  @Inject
+  BriteContentResolver briteContentResolver;
+  @Inject
+  CurrencyContext currencyContext;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -217,7 +222,7 @@ public class CategoryList extends SortableListFragment {
   }
 
   protected Object getSecondarySort() {
-    return Utils.defaultOrderBy(KEY_LABEL, PrefKey.SORT_ORDER_CATEGORIES, prefHandler);
+    return Utils.preferredOrderBy(KEY_LABEL, getSortOrderPrefKey(), prefHandler, Sort.USAGES);
   }
 
   private void disposeCategory() {

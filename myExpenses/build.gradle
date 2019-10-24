@@ -63,8 +63,8 @@ android {
         applicationId "org.totschnig.myexpenses"
         minSdkVersion project.minSdkVersion
         targetSdkVersion project.targetSdkVersion
-        versionCode 384
-        versionName '3.0.5.1'
+        versionCode 385
+        versionName '3.0.6'
         multiDexEnabled true
 
         buildConfigField "String", "BUILD_DATE", "\"" + getDate() + "\""
@@ -278,6 +278,7 @@ dependencies {
     implementation 'com.github.mtotschnig:Caldroid:d217ebc306'
     implementation 'com.github.mtotschnig:SimpleDialogFragments:0e6ab5bc05'
     implementation 'com.annimon:stream:1.2.1'
+    implementation 'com.getkeepsafe.taptargetview:taptargetview:1.13.0'
 
     // WebDAV2
     implementation "com.squareup.okhttp3:okhttp:$rootProject.okHttpVersion"
@@ -326,7 +327,7 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
     implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'com.google.android.material:material:1.0.0'
+    implementation 'com.google.android.material:material:1.1.0-beta01'
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
     implementation 'androidx.preference:preference:1.0.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'

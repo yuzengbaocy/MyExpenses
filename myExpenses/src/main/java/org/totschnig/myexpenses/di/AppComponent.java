@@ -1,5 +1,6 @@
 package org.totschnig.myexpenses.di;
 
+import org.jetbrains.annotations.NotNull;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.activity.ExpenseEdit;
 import org.totschnig.myexpenses.activity.MyExpenses;
@@ -9,9 +10,11 @@ import org.totschnig.myexpenses.dialog.ContribDialogFragment;
 import org.totschnig.myexpenses.dialog.DonateDialogFragment;
 import org.totschnig.myexpenses.dialog.EditCurrencyDialog;
 import org.totschnig.myexpenses.dialog.ExportDialogFragment;
+import org.totschnig.myexpenses.dialog.SelectFromTableDialogFragment;
 import org.totschnig.myexpenses.dialog.TransactionDetailFragment;
 import org.totschnig.myexpenses.dialog.TransactionListDialogFragment;
 import org.totschnig.myexpenses.export.pdf.PdfPrinter;
+import org.totschnig.myexpenses.fragment.BudgetList;
 import org.totschnig.myexpenses.fragment.CategoryList;
 import org.totschnig.myexpenses.fragment.CurrencyList;
 import org.totschnig.myexpenses.fragment.HistoryChart;
@@ -30,10 +33,14 @@ import org.totschnig.myexpenses.service.AutoBackupService;
 import org.totschnig.myexpenses.service.PlanExecutor;
 import org.totschnig.myexpenses.sync.webdav.WebDavClient;
 import org.totschnig.myexpenses.task.LicenceApiTask;
+import org.totschnig.myexpenses.ui.DiscoveryHelper;
 import org.totschnig.myexpenses.util.ads.AdHandler;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
 import org.totschnig.myexpenses.util.licence.LicenceHandler;
 import org.totschnig.myexpenses.util.tracking.Tracker;
+import org.totschnig.myexpenses.viewmodel.BudgetEditViewModel;
+import org.totschnig.myexpenses.viewmodel.BudgetViewModel;
+import org.totschnig.myexpenses.viewmodel.ContentResolvingAndroidViewModel;
 import org.totschnig.myexpenses.viewmodel.EditCurrencyViewModel;
 import org.totschnig.myexpenses.viewmodel.RoadmapViewModel;
 
@@ -45,10 +52,11 @@ import dagger.BindsInstance;
 import dagger.Component;
 
 @Singleton
-@Component(modules = {AppModule.class, UiModule.class, UtilsModule.class, NetworkModule.class, LicenceModule.class})
+@Component(modules = {AppModule.class, UiModule.class, UtilsModule.class, NetworkModule.class, LicenceModule.class, DbModule.class})
 public interface AppComponent {
+  @Singleton DiscoveryHelper discoveryHelper();
 
-  public String USER_COUNTRY = "userCountry";
+  String USER_COUNTRY = "userCountry";
 
   @Component.Builder
   interface Builder {
@@ -132,5 +140,15 @@ public interface AppComponent {
   void inject(ExportDialogFragment exportDialogFragment);
 
   void inject(PlanExecutor planExecutor);
+
+  void inject(BudgetViewModel budgetViewModel);
+
+  void inject(BudgetEditViewModel budgetEditViewModel);
+
+  void inject(ContentResolvingAndroidViewModel myExpensesViewModel);
+
+  void inject(SelectFromTableDialogFragment selectFromTableDialogFragment);
+
+  void inject(@NotNull BudgetList budgetList);
 
 }

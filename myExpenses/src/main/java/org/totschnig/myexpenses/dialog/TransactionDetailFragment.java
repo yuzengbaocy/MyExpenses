@@ -70,7 +70,6 @@ import javax.inject.Inject;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.fragment.app.FragmentActivity;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.CursorLoader;
 import androidx.loader.content.Loader;
@@ -261,7 +260,7 @@ public class TransactionDetailFragment extends CommitSafeDialogFragment implemen
         Intent i = new Intent(ctx, ExpenseEdit.class);
         i.putExtra(KEY_ROWID, mTransaction.getId());
         //i.putExtra("operationType", operationType);
-        ctx.startActivityForResult(i, ProtectedFragmentActivity.EDIT_TRANSACTION_REQUEST);
+        ctx.startActivityForResult(i, ProtectedFragmentActivity.EDIT_REQUEST);
         break;
       case AlertDialog.BUTTON_NEUTRAL:
         if (mTransaction.getPictureUri() != null) {
@@ -277,7 +276,7 @@ public class TransactionDetailFragment extends CommitSafeDialogFragment implemen
       errorView.setText(R.string.transaction_deleted);
       return;
     }
-    final FragmentActivity ctx = getActivity();
+    final ProtectedFragmentActivity ctx = (ProtectedFragmentActivity) getActivity();
     progressView.setVisibility(View.GONE);
     mTransaction = o;
     final Account account = Account.getInstanceFromDb(mTransaction.getAccountId());
