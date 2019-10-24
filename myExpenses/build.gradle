@@ -313,7 +313,7 @@ dependencies {
         transitive = true
     }
     implementation 'com.google.firebase:firebase-core:17.2.0'
-    implementation 'com.google.firebase:firebase-config:19.0.1'
+    implementation 'com.google.firebase:firebase-config:19.0.3'
     implementation 'com.google.firebase:firebase-ads:18.2.0'
 
     implementation 'org.slf4j:slf4j-api:1.7.25'
