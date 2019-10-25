@@ -303,7 +303,7 @@ public class ExpenseEdit extends AmountActivity implements
   boolean originalAmountVisible;
   @State
   boolean equivalentAmountVisible;
-
+  @State
   String originalCurrencyCode;
 
   private Account[] mAccounts;
@@ -1593,6 +1593,10 @@ public class ExpenseEdit extends AmountActivity implements
       if (transferAccountId != android.widget.AdapterView.INVALID_ROW_ID) {
         mTransferAccountId = transferAccountId;
       }
+    }
+    final Currency originalInputSelectedCurrency = originalInput.getSelectedCurrency();
+    if (originalInputSelectedCurrency != null) {
+      originalCurrencyCode = originalInputSelectedCurrency.code();
     }
     Icepick.saveInstanceState(this, outState);
   }
