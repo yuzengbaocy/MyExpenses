@@ -283,15 +283,12 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   @NonNull
   @Override
   public Stream<AccountMetaData> getRemoteAccountList() throws IOException {
-    Stream<AccountMetaData> result;
     requireBaseFolder();
     List<File> fileList = driveServiceHelper.listChildren(baseFolder);
-    List<AccountMetaData> accountMetaDataList = Stream.of(fileList)
+    return Stream.of(fileList)
         .map(this::getAccountMetaDataFromDriveMetadata)
         .filter(Optional::isPresent)
-        .map(Optional::get).toList();
-    result = Stream.of(accountMetaDataList);
-    return result;
+        .map(Optional::get);
   }
 
   private Optional<AccountMetaData> getAccountMetaDataFromDriveMetadata(File metadata) {
