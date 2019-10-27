@@ -121,10 +121,8 @@ class BudgetEdit : EditActivity(), AdapterView.OnItemSelectedListener, DatePicke
         })
         viewModel.budget.observe(this, Observer { populateData(it) })
         mNewInstance = budgetId == 0L
-        if (savedInstanceState == null) {
-            pendingBudgetLoad = budgetId
-            viewModel.loadData(pendingBudgetLoad)
-        }
+        pendingBudgetLoad = if (savedInstanceState == null) budgetId else 0L
+        viewModel.loadData(pendingBudgetLoad)
         viewModel.databaseResult.observe(this, Observer {
             if (it > -1) {
                 finish()
@@ -232,7 +230,7 @@ class BudgetEdit : EditActivity(), AdapterView.OnItemSelectedListener, DatePicke
         //noop
     }
 
-    override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
+    override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
         setDirty()
         when (parent.id) {
             R.id.Type -> {
