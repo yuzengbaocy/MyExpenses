@@ -77,8 +77,8 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   }
 
   @Override
-  public Exceptional<Void> setUp(String authToken, String encryptionPassword) {
-    final Exceptional<Void> result = super.setUp(authToken, encryptionPassword);
+  public Exceptional<Void> setUp(String authToken, String encryptionPassword, boolean create) {
+    final Exceptional<Void> result = super.setUp(authToken, encryptionPassword, create);
     final Throwable exception = result.getException();
     if (exception instanceof UserRecoverableAuthIOException) {
       //User has been signed out from Google account, he needs to log in again
@@ -87,6 +87,11 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
       return Exceptional.of(new SyncParseException(((UserRecoverableAuthIOException) exception).getCause()));
     }
     return result;
+  }
+
+  @Override
+  protected boolean isEmpty() throws IOException {
+    return driveServiceHelper.listChildren(baseFolder).isEmpty();
   }
 
   @NonNull
