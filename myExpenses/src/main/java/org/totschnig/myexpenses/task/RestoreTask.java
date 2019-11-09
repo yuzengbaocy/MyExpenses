@@ -8,7 +8,6 @@ import android.content.OperationApplicationException;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -53,6 +52,7 @@ import java.util.Map;
 
 import androidx.annotation.Nullable;
 import androidx.core.content.FileProvider;
+import io.requery.android.database.sqlite.SQLiteDatabase;
 import timber.log.Timber;
 
 import static org.totschnig.myexpenses.MyApplication.INVALID_CALENDAR_ID;
