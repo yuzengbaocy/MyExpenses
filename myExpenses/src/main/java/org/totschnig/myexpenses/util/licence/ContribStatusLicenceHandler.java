@@ -8,7 +8,6 @@ import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
 
 import androidx.annotation.NonNull;
-import timber.log.Timber;
 
 /**
  * Common functionality for {@link BlackberryLegacyLicenceHandler} and {@link InappPurchaseLicenceHandler}
@@ -103,6 +102,6 @@ public abstract class ContribStatusLicenceHandler extends LicenceHandler {
   }
 
   protected void d(String event) {
-    Timber.tag(TAG).i("%s: %s-%s, contrib status %s", event, this, Thread.currentThread(), contribStatus);
+    log().i("%s: %s-%s, contrib status %s", event, this, Thread.currentThread(), contribStatus);
   }
 }

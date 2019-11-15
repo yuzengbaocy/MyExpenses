@@ -1,37 +1,40 @@
 package org.totschnig.myexpenses.util.licence;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Build;
+import android.text.TextUtils;
 
+import com.android.billingclient.api.BillingClient;
+import com.android.billingclient.api.Purchase;
+import com.android.billingclient.api.SkuDetails;
+import com.android.billingclient.api.SkuDetailsResponseListener;
+import com.annimon.stream.Stream;
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 import com.google.android.vending.licensing.PreferenceObfuscator;
 
-import org.onepf.oms.Appstore;
-import org.onepf.oms.OpenIabHelper;
-import org.onepf.oms.appstore.AmazonAppstore;
-import org.onepf.oms.appstore.googleUtils.Inventory;
-import org.onepf.oms.appstore.googleUtils.SkuDetails;
+import org.json.JSONException;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
+import org.totschnig.myexpenses.activity.ContribInfoDialogActivity;
 import org.totschnig.myexpenses.contrib.Config;
 import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.util.DistribHelper;
+import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
+import org.totschnig.myexpenses.util.licence.play.BillingManagerPlay;
+import org.totschnig.myexpenses.util.licence.play.BillingUpdatesListener;
 
-import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import timber.log.Timber;
+import androidx.annotation.VisibleForTesting;
 
 public class InappPurchaseLicenceHandler extends ContribStatusLicenceHandler {
-
-  private static final String KEY_EXTENDED2PROFESSIONAL_12_INTRODUCTORY_PRICE = "e2p_12_introductory_price";
   private static final String KEY_CURRENT_SUBSCRIPTION = "current_subscription";
   private static final String KEY_ORDER_ID = "order_id";
-
-  public final static boolean IS_CHROMIUM = Build.BRAND.equals("chromium");
 
   private static final long REFUND_WINDOW = 172800000L;
   private static final int STATUS_DISABLED = 0;
@@ -68,7 +71,7 @@ public class InappPurchaseLicenceHandler extends ContribStatusLicenceHandler {
           String.valueOf(now));
     } else {
       long timeSincePurchase = now - timestamp;
-      Timber.d("time since initial check : %d", timeSincePurchase);
+      log().d("time since initial check : %d", timeSincePurchase);
       //give user 2 days to request refund
       if (timeSincePurchase > REFUND_WINDOW) {
         status = extended ? STATUS_EXTENDED_PERMANENT : STATUS_ENABLED_PERMANENT;
@@ -97,45 +100,17 @@ public class InappPurchaseLicenceHandler extends ContribStatusLicenceHandler {
     }
   }
 
-  public OpenIabHelper getIabHelper(Context ctx) {
-    OpenIabHelper.Options.Builder builder =
-        new OpenIabHelper.Options.Builder()
-            .setVerifyMode(OpenIabHelper.Options.VERIFY_EVERYTHING)
-            .addStoreKeys(Config.STORE_KEYS_MAP);
-
-
-    builder.setStoreSearchStrategy(OpenIabHelper.Options.SEARCH_STRATEGY_INSTALLER_THEN_BEST_FIT);
-    if (!IS_CHROMIUM) {
-      if (DistribHelper.isPlay()) {
-        builder.addAvailableStoreNames("com.google.play");
-      } else if (DistribHelper.isAmazon()) {
-        ArrayList<Appstore> stores = new ArrayList<>();
-        stores.add(new AmazonAppstore(ctx) {
-          public boolean isBillingAvailable(String packageName) {
-            return true;
-          }
-        });
-        builder.addAvailableStores(stores);
-      }
-    }
-    return new OpenIabHelper(ctx, builder.build());
-  }
-
-  public void storeSkuDetails(Inventory inventory) {
+  private void storeSkuDetails(List<SkuDetails> inventory) {
     SharedPreferences.Editor editor = pricesPrefs.edit();
-    for (String sku : Config.allSkus) {
-      SkuDetails skuDetails = inventory.getSkuDetails(sku);
-      if (skuDetails != null) {
-        Timber.d("Sku: %s, json: %s", skuDetails.toString(), skuDetails.getJson());
-        if (sku.equals(Config.SKU_EXTENDED2PROFESSIONAL_12)) {
-          editor.putString(KEY_EXTENDED2PROFESSIONAL_12_INTRODUCTORY_PRICE, skuDetails.getIntroductoryPrice());
-        }
-        editor.putString(sku, skuDetails.getPrice());
-      } else {
-        Timber.d("Did not find details for " + sku);
-      }
+    for (SkuDetails skuDetails: inventory) {
+      log().d("Sku: %s, json: %s", skuDetails.toString(), skuDetails.getOriginalJson());
+      editor.putString(prefKeyForSkuJson(skuDetails.getSku()), skuDetails.getOriginalJson());
     }
     editor.apply();
+  }
+
+  private String prefKeyForSkuJson(String sku) {
+    return String.format(Locale.ROOT, "%s_json", sku);
   }
 
   public String getSkuForPackage(Package aPackage) {
@@ -169,16 +144,33 @@ public class InappPurchaseLicenceHandler extends ContribStatusLicenceHandler {
     return sku;
   }
 
+  @Nullable
   private String getDisplayPriceForPackage(Package aPackage) {
     String sku = getSkuForPackage(aPackage);
+    SkuDetails skuDetails = getSkuDetailsFromPrefs(sku);
     String result = null;
-    if (sku.equals(Config.SKU_EXTENDED2PROFESSIONAL_12)) {
-      result = pricesPrefs.getString(KEY_EXTENDED2PROFESSIONAL_12_INTRODUCTORY_PRICE, null);
-    }
-    if (result == null) {
-      result = pricesPrefs.getString(sku, null);
+    if (skuDetails != null) {
+      result = skuDetails.getIntroductoryPrice();
+      if (TextUtils.isEmpty(result)) {
+        result = skuDetails.getPrice();
+      }
     }
     return result;
+  }
+
+  @Nullable
+  private SkuDetails getSkuDetailsFromPrefs(String sku) {
+    String originalJson = pricesPrefs.getString(prefKeyForSkuJson(sku), null);
+    if (originalJson != null) {
+      try {
+        return new SkuDetails(originalJson);
+      } catch (JSONException e) {
+        CrashHandler.report(e, String.format("unable to parse %s", originalJson));
+      }
+    } else {
+      CrashHandler.report(String.format("originalJson not found for %s", sku));
+    }
+    return null;
   }
 
   @Override
@@ -303,10 +295,23 @@ public class InappPurchaseLicenceHandler extends ContribStatusLicenceHandler {
   }
 
   @Nullable
-  @Override
   public LicenceStatus handlePurchase(@Nullable String sku, String orderId) {
     licenseStatusPrefs.putString(KEY_ORDER_ID, orderId);
-    return super.handlePurchase(sku, orderId);
+    LicenceStatus licenceStatus = sku != null ? extractLicenceStatusFromSku(sku) : null;
+    if (licenceStatus != null) {
+      switch (licenceStatus) {
+        case CONTRIB:
+          registerPurchase(false);
+          break;
+        case EXTENDED:
+          registerPurchase(true);
+          break;
+        case PROFESSIONAL:
+          registerSubscription(sku);
+          break;
+      }
+    }
+    return licenceStatus;
   }
 
   /**
@@ -318,8 +323,7 @@ public class InappPurchaseLicenceHandler extends ContribStatusLicenceHandler {
       return getPurchaseExtraInfo();
     } else {
       try {
-        String id = AdvertisingIdClient.getAdvertisingIdInfo(context).getId();
-        return id;
+        return AdvertisingIdClient.getAdvertisingIdInfo(context).getId();
       } catch (Exception e) {
         return super.buildRoadmapVoteKey();
       }
@@ -334,5 +338,107 @@ public class InappPurchaseLicenceHandler extends ContribStatusLicenceHandler {
   @Override
   public boolean needsKeyEntry() {
     return false;
+  }
+
+  @Override
+  public BillingManagerPlay initBillingManager(Activity activity, boolean query) {
+    BillingUpdatesListener billingUpdatesListener = new BillingUpdatesListener() {
+
+      @Override
+      public boolean onPurchasesUpdated(@Nullable List<Purchase> inventory) {
+        if (inventory != null) {
+          LicenceStatus result = registerInventory(inventory);
+          if (result != null) {
+            if (activity instanceof ContribInfoDialogActivity) {
+              ((ContribInfoDialogActivity) activity).onPurchaseSuccess(result);
+            }
+            return true;
+          }
+        }
+        return false;
+      }
+
+      @Override
+      public void onPurchaseCanceled() {
+        log().i("onPurchasesUpdated() - user cancelled the purchase flow - skipping");
+        if (activity instanceof ContribInfoDialogActivity) {
+          ((ContribInfoDialogActivity) activity).onPurchaseCancelled();
+        }
+      }
+
+      @Override
+      public void onPurchaseFailed(int resultcode) {
+        log().w("onPurchasesUpdated() got unknown resultCode: %s", resultcode);
+        if (activity instanceof ContribInfoDialogActivity) {
+          ((ContribInfoDialogActivity) activity).onPurchaseFailed(resultcode);
+        }
+      }
+    };
+    final SkuDetailsResponseListener skuDetailsResponseListener = query ? (result, skuDetailsList) -> {
+      if (result.getResponseCode() == BillingClient.BillingResponseCode.OK && skuDetailsList != null) {
+        storeSkuDetails(skuDetailsList);
+      } else {
+        log().d("skuDetails response %d", result.getResponseCode());
+      }
+    } : null;
+    return new BillingManagerPlay(activity, billingUpdatesListener, skuDetailsResponseListener);
+  }
+
+  @VisibleForTesting
+  public @Nullable
+  Purchase findHighestValidPurchase(List<Purchase> inventory) {
+    return Stream.of(inventory)
+        .filter(purchase -> extractLicenceStatusFromSku(purchase.getSku()) != null)
+        .max((o, o2) -> Utils.compare(extractLicenceStatusFromSku(o.getSku()), extractLicenceStatusFromSku(o2.getSku()), Enum::compareTo))
+        .orElse(null);
+  }
+
+  /**
+   * @param sku
+   * @return which LicenceStatus an sku gives access to
+   */
+  @VisibleForTesting
+  @Nullable
+  private LicenceStatus extractLicenceStatusFromSku(@NonNull String sku) {
+    if (sku.contains(LicenceStatus.PROFESSIONAL.toSkuType())) return LicenceStatus.PROFESSIONAL;
+    if (sku.contains(LicenceStatus.EXTENDED.toSkuType())) return LicenceStatus.EXTENDED;
+    if (sku.contains(LicenceStatus.CONTRIB.toSkuType())) return LicenceStatus.CONTRIB;
+    return null;
+  }
+
+  private LicenceStatus registerInventory(@NonNull List<Purchase> inventory) {
+    Stream.of(inventory).forEach(purchase -> {
+      log().i("%s (acknowledged %b", purchase.getSku(), purchase.isAcknowledged());
+    });
+    Purchase purchase = findHighestValidPurchase(inventory);
+    if (purchase != null) {
+      if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
+        return handlePurchase(purchase.getSku(), purchase.getOrderId());
+      } else {
+        CrashHandler.reportWithTag(String.format("Found purchase in state %s", purchase.getPurchaseState()), TAG);
+      }
+    } else {
+      maybeCancel();
+    }
+    return null;
+  }
+
+  @Override
+  public void launchPurchase(Package aPackage, boolean shouldReplaceExisting, BillingManager billingManager) {
+    String sku = getSkuForPackage(aPackage);
+    SkuDetails skuDetails = getSkuDetailsFromPrefs(sku);
+    if (skuDetails == null) {
+      throw new IllegalStateException("Could not determine sku details");
+    }
+    String oldSku;
+    if (shouldReplaceExisting) {
+      oldSku = getCurrentSubscription();
+      if (oldSku == null) {
+        throw new IllegalStateException("Could not determine current subscription");
+      }
+    } else {
+      oldSku = null;
+    }
+    ((BillingManagerPlay) billingManager).initiatePurchaseFlow(skuDetails, oldSku);
   }
 }
