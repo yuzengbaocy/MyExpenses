@@ -250,4 +250,9 @@ public class ContribInfoDialogActivity extends ProtectedFragmentActivity
       contribBuyDo(Package.valueOf(packageFromExtra));
     }
   }
+
+  @Override
+  public void onBillingSetupFailed() {
+
+  }
 }
