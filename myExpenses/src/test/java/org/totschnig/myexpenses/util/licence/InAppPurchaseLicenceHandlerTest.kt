@@ -16,12 +16,12 @@ import org.totschnig.myexpenses.util.crashreporting.CrashHandler
 @RunWith(JUnitParamsRunner::class)
 class InAppPurchaseLicenceHandlerTest {
 
-    private lateinit var licenceHandler: InappPurchaseLicenceHandler
+    private lateinit var licenceHandler: InAppPurchaseLicenceHandler
 
     @Before
     @Throws(Exception::class)
     fun setUp() {
-        licenceHandler = InappPurchaseLicenceHandler(mock(MyApplication::class.java), mock(PreferenceObfuscator::class.java), mock(CrashHandler::class.java))
+        licenceHandler = InAppPurchaseLicenceHandler(mock(MyApplication::class.java), mock(PreferenceObfuscator::class.java), mock(CrashHandler::class.java))
     }
 
     private fun m(sku: String) = mock(Purchase::class.java).also {

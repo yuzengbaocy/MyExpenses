@@ -13,7 +13,7 @@ import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
 import org.totschnig.myexpenses.util.licence.BlackberryLegacyLicenceHandler;
 import org.totschnig.myexpenses.util.licence.HashLicenceHandler;
-import org.totschnig.myexpenses.util.licence.InappPurchaseLicenceHandler;
+import org.totschnig.myexpenses.util.licence.InAppPurchaseLicenceHandler;
 import org.totschnig.myexpenses.util.licence.LicenceHandler;
 
 import javax.inject.Named;
@@ -34,7 +34,7 @@ public class LicenceModule {
         return new LicenceHandler(application, preferenceObfuscator, crashHandler);
       case PLAY:
       case AMAZON:
-        return new InappPurchaseLicenceHandler(application, preferenceObfuscator, crashHandler);
+        return new InAppPurchaseLicenceHandler(application, preferenceObfuscator, crashHandler);
     }
     return new HashLicenceHandler(application, preferenceObfuscator, crashHandler);
   }

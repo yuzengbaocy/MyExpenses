@@ -10,7 +10,7 @@ import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
 import androidx.annotation.NonNull;
 
 /**
- * Common functionality for {@link BlackberryLegacyLicenceHandler} and {@link InappPurchaseLicenceHandler}
+ * Common functionality for {@link BlackberryLegacyLicenceHandler} and {@link InAppPurchaseLicenceHandler}
  */
 public abstract class ContribStatusLicenceHandler extends LicenceHandler {
   /**
