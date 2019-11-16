@@ -63,10 +63,7 @@ class BillingManagerAmazon(val activity: Activity, private val mBillingUpdatesLi
                             }
                         }
                     }
-                    PurchaseResponse.RequestStatus.FAILED -> TODO()
-                    PurchaseResponse.RequestStatus.INVALID_SKU -> TODO()
-                    PurchaseResponse.RequestStatus.ALREADY_PURCHASED -> TODO()
-                    PurchaseResponse.RequestStatus.NOT_SUPPORTED -> TODO()
+                    else -> mBillingUpdatesListener.onPurchaseFailed(status)
                 }
             }
 
@@ -125,6 +122,5 @@ interface BillingUpdatesListener {
     fun onPurchasesUpdated(purchases: MutableList<Receipt>)
     fun onProductDataResponse(productData: MutableMap<String, Product>)
     fun onPurchase(receipt: Receipt) : Boolean
-    fun onPurchaseCanceled()
-    fun onPurchaseFailed(resultCode: Int)
+    fun onPurchaseFailed(resultCode: PurchaseResponse.RequestStatus)
 }

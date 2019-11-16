@@ -3,10 +3,12 @@ package org.totschnig.myexpenses.util.licence
 import android.app.Activity
 import android.content.Context
 import com.amazon.device.iap.model.Product
+import com.amazon.device.iap.model.PurchaseResponse
 import com.amazon.device.iap.model.Receipt
 import com.google.android.vending.licensing.PreferenceObfuscator
 import org.totschnig.myexpenses.MyApplication
 import org.totschnig.myexpenses.R
+import org.totschnig.myexpenses.activity.ContribInfoDialogActivity
 import org.totschnig.myexpenses.contrib.Config
 import org.totschnig.myexpenses.contrib.Config.allSkus
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler
@@ -17,7 +19,11 @@ class InAppPurchaseLicenceHandler(context: MyApplication, preferenceObfuscator: 
 
     override fun initBillingManager(activity: Activity, query: Boolean): BillingManager {
         val billingUpdatesListener: BillingUpdatesListener = object : BillingUpdatesListener {
-            override fun onPurchase(receipt: Receipt) = handlePurchase(receipt.sku, receipt.receiptId) != null
+            override fun onPurchase(receipt: Receipt) =
+                    handlePurchase(receipt.sku, receipt.receiptId)?.let {
+                        (activity as? ContribInfoDialogActivity)?.onPurchaseSuccess(it)
+                        true
+                    } ?: false
 
             override fun onPurchasesUpdated(purchases: MutableList<Receipt>) {
                 registerInventory(purchases)
@@ -27,12 +33,9 @@ class InAppPurchaseLicenceHandler(context: MyApplication, preferenceObfuscator: 
                 storeSkuDetails(productData)
             }
 
-            override fun onPurchaseCanceled() {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            }
-
-            override fun onPurchaseFailed(resultCode: Int) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            override fun onPurchaseFailed(resultCode: PurchaseResponse.RequestStatus) {
+                LicenceHandler.log().w("onPurchaseFailed() resultCode: %s", resultCode)
+                (activity as? ContribInfoDialogActivity)?.onPurchaseFailed(resultCode.ordinal)
             }
         }
         return BillingManagerAmazon(activity, billingUpdatesListener, query)
