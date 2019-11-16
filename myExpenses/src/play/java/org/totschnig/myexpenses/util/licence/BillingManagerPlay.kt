@@ -14,16 +14,14 @@
  * limitations under the License.
  * Converted to Kotlin and adapted
  */
-package org.totschnig.myexpenses.util.licence.play
+package org.totschnig.myexpenses.util.licence
 
 import android.app.Activity
 import com.android.billingclient.api.*
 import com.android.billingclient.api.BillingClient.*
 import com.android.billingclient.api.Purchase.PurchasesResult
 import org.totschnig.myexpenses.contrib.Config
-import org.totschnig.myexpenses.util.licence.BillingManager
 import org.totschnig.myexpenses.util.licence.LicenceHandler.log
-import org.totschnig.myexpenses.util.licence.SetupFinishedListener
 
 private const val BILLING_MANAGER_NOT_INITIALIZED = -1
 /**
@@ -253,3 +251,10 @@ class BillingManagerPlay(val activity: Activity, private val mBillingUpdatesList
     }
 }
 
+interface BillingUpdatesListener {
+    //return true if purchases should be acknowledged
+    fun onPurchasesUpdated(purchases: MutableList<Purchase>?): Boolean
+
+    fun onPurchaseCanceled()
+    fun onPurchaseFailed(resultCode: Int)
+}

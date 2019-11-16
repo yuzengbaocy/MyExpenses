@@ -268,8 +268,8 @@ dependencies {
     //at the moment, we need to stick with the last version that supports java 6
     //noinspection GradleDependency
     implementation 'org.apache.commons:commons-lang3:3.5'
-    implementation 'com.android.billingclient:billing:2.0.3'
-    implementation fileTree(dir: 'libs', include: ['in-app-purchasing-2.0.61.jar'])
+    playImplementation 'com.android.billingclient:billing:2.0.3'
+    amazonImplementation fileTree(dir: 'libs', include: ['in-app-purchasing-2.0.76.jar'])
 
     implementation 'org.apache.commons:commons-csv:1.5'
     implementation 'com.squareup.picasso:picasso:2.71828'

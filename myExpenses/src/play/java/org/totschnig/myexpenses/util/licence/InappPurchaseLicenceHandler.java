@@ -22,8 +22,6 @@ import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
-import org.totschnig.myexpenses.util.licence.play.BillingManagerPlay;
-import org.totschnig.myexpenses.util.licence.play.BillingUpdatesListener;
 
 import java.util.List;
 import java.util.Locale;
@@ -399,7 +397,7 @@ public class InappPurchaseLicenceHandler extends ContribStatusLicenceHandler {
    */
   @VisibleForTesting
   @Nullable
-  private LicenceStatus extractLicenceStatusFromSku(@NonNull String sku) {
+  public LicenceStatus extractLicenceStatusFromSku(@NonNull String sku) {
     if (sku.contains(LicenceStatus.PROFESSIONAL.toSkuType())) return LicenceStatus.PROFESSIONAL;
     if (sku.contains(LicenceStatus.EXTENDED.toSkuType())) return LicenceStatus.EXTENDED;
     if (sku.contains(LicenceStatus.CONTRIB.toSkuType())) return LicenceStatus.CONTRIB;
