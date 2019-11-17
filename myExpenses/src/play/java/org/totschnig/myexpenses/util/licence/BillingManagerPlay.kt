@@ -22,6 +22,7 @@ import com.android.billingclient.api.BillingClient.*
 import com.android.billingclient.api.Purchase.PurchasesResult
 import org.totschnig.myexpenses.contrib.Config
 import org.totschnig.myexpenses.util.licence.LicenceHandler.log
+import java.util.Locale
 
 private const val BILLING_MANAGER_NOT_INITIALIZED = -1
 /**
@@ -63,7 +64,7 @@ class BillingManagerPlay(val activity: Activity, private val mBillingUpdatesList
                 querySkuDetailsAsync(SkuType.INAPP, Config.itemSkus, it)
                 querySkuDetailsAsync(SkuType.SUBS, Config.subsSkus, it)
             }
-            (activity as? SetupFinishedListener)?.onBillingSetupFinished()
+            (this.activity as? SetupFinishedListener)?.onBillingSetupFinished()
         })
 
     }
@@ -226,6 +227,9 @@ class BillingManagerPlay(val activity: Activity, private val mBillingUpdatesList
                 if (billingResponseCode == BillingResponseCode.OK) {
                     mIsServiceConnected = true
                     executeOnSuccess.run()
+                } else {
+                    (activity as? SetupFinishedListener)?.onBillingSetupFailed(String.format(
+                            Locale.ROOT, "%d (%s)", billingResponseCode, billingResult.debugMessage))
                 }
             }
 

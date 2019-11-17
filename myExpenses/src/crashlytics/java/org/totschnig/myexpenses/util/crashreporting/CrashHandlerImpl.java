@@ -70,7 +70,6 @@ public class CrashHandlerImpl extends CrashHandler {
     @Override
     protected void log(int priority, @Nullable String tag, @NotNull String message, @Nullable Throwable t) {
       if (priority == Log.ERROR) {
-        Crashlytics.log(message);
         Crashlytics.logException(t == null ? new Exception(message) : t);
       } else {
         Crashlytics.log(message);

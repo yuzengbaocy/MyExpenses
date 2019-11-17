@@ -91,7 +91,7 @@ class BillingManagerAmazon(val activity: Activity, private val mBillingUpdatesLi
                         }
                     }
                     else -> {
-                        (activity as? SetupFinishedListener)?.onBillingSetupFailed()
+                        (activity as? SetupFinishedListener)?.onBillingSetupFailed(userDataResponse.getRequestStatus().name)
                     }
                 }
 

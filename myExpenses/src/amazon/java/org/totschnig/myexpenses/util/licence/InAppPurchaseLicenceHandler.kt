@@ -44,16 +44,12 @@ class InAppPurchaseLicenceHandler(context: MyApplication, preferenceObfuscator: 
     private fun registerInventory(purchases: MutableList<Receipt>) {
         val receipt = findHighestValidPurchase(purchases)
         receipt?.let {
-            if (it.isCanceled) {
-                CrashHandler.reportWithTag("Found canceled receipt", LicenceHandler.TAG)
-            } else {
-                handlePurchase(it.sku, it.receiptId)
-            }
+            handlePurchase(it.sku, it.receiptId)
         } ?: kotlin.run { maybeCancel() }
     }
 
     private fun findHighestValidPurchase(purchases: List<Receipt>) =
-            purchases.filter { extractLicenceStatusFromSku(it.sku) != null }
+            purchases.filter { !it.isCanceled && extractLicenceStatusFromSku(it.sku) != null }
                     .maxBy { extractLicenceStatusFromSku(it.sku)?.ordinal ?: 0}
 
     private fun storeSkuDetails(productData: MutableMap<String, Product>) {

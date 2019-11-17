@@ -59,9 +59,13 @@ abstract class AbstractInAppPurchaseLicenceHandler(context: MyApplication, prefe
             val now = System.currentTimeMillis()
             val timeSincePurchase = now - timestamp
             if (timeSincePurchase > REFUND_WINDOW) {
-                updateContribStatus(STATUS_DISABLED)
+                cancel()
             }
         }
+    }
+
+    fun cancel() {
+        updateContribStatus(STATUS_DISABLED)
     }
 
     fun handlePurchase(sku: String, orderId: String): LicenceStatus? {
