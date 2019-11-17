@@ -12,11 +12,10 @@ import org.totschnig.myexpenses.util.crashreporting.CrashHandler
 
 
 abstract class AbstractInAppPurchaseLicenceHandler(context: MyApplication, preferenceObfuscator: PreferenceObfuscator, crashHandler: CrashHandler) : ContribStatusLicenceHandler(context, preferenceObfuscator, crashHandler) {
-    private val KEY_CURRENT_SUBSCRIPTION = "current_subscription"
     private val KEY_ORDER_ID = "order_id"
     private val REFUND_WINDOW = 172800000L
     private val STATUS_DISABLED = 0
-    var PRICES_PREFS_FILE = "license_prices"
+    private val PRICES_PREFS_FILE = "license_prices"
     val pricesPrefs: SharedPreferences
 
     init {
@@ -37,7 +36,7 @@ abstract class AbstractInAppPurchaseLicenceHandler(context: MyApplication, prefe
             null
     }
 
-    abstract fun getDisplayPriceForPackage(aPackage: Package): String?
+    abstract protected fun getDisplayPriceForPackage(aPackage: Package): String?
 
     /**
      * @param sku
@@ -150,4 +149,8 @@ abstract class AbstractInAppPurchaseLicenceHandler(context: MyApplication, prefe
     override fun doesUseIAP() = true
 
     override fun needsKeyEntry() = false
+
+    companion object {
+        const val KEY_CURRENT_SUBSCRIPTION = "current_subscription"
+    }
 }

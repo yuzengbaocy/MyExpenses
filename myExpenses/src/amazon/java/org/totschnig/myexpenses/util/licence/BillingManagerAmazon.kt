@@ -84,14 +84,14 @@ class BillingManagerAmazon(val activity: Activity, private val mBillingUpdatesLi
             override fun onUserDataResponse(userDataResponse: UserDataResponse) {
                 when (userDataResponse.getRequestStatus()) {
                     UserDataResponse.RequestStatus.SUCCESSFUL -> {
-                        (activity as? SetupFinishedListener)?.onBillingSetupFinished()
+                        (activity as? BillingListener)?.onBillingSetupFinished()
                         if (query) {
                             PurchasingService.getPurchaseUpdates(true)
                             PurchasingService.getProductData(Config.allSkus.toSet())
                         }
                     }
                     else -> {
-                        (activity as? SetupFinishedListener)?.onBillingSetupFailed(userDataResponse.getRequestStatus().name)
+                        (activity as? BillingListener)?.onBillingSetupFailed(userDataResponse.getRequestStatus().name)
                     }
                 }
 

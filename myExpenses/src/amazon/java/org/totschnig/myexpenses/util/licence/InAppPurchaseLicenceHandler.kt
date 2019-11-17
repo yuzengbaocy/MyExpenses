@@ -19,11 +19,13 @@ class InAppPurchaseLicenceHandler(context: MyApplication, preferenceObfuscator: 
 
     override fun initBillingManager(activity: Activity, query: Boolean): BillingManager {
         val billingUpdatesListener: BillingUpdatesListener = object : BillingUpdatesListener {
-            override fun onPurchase(receipt: Receipt) =
-                    handlePurchase(receipt.sku, receipt.receiptId)?.let {
-                        (activity as? ContribInfoDialogActivity)?.onPurchaseSuccess(it)
-                        true
-                    } ?: false
+            override fun onPurchase(receipt: Receipt): Boolean {
+                val oldStatus = licenceStatus
+                return handlePurchase(receipt.sku, receipt.receiptId)?.let {
+                    (activity as? BillingListener)?.onLicenceStatusSet(it, oldStatus)
+                    true
+                } ?: false
+            }
 
             override fun onPurchasesUpdated(purchases: MutableList<Receipt>) {
                 registerInventory(purchases)
@@ -84,7 +86,7 @@ class InAppPurchaseLicenceHandler(context: MyApplication, preferenceObfuscator: 
         return priceInfo
     }
 
-    override fun getDisplayPriceForPackage(aPackage: Package) = pricesPrefs.getString(getSkuForPackage(aPackage), null)
+    override protected fun getDisplayPriceForPackage(aPackage: Package) = pricesPrefs.getString(getSkuForPackage(aPackage), null)
 
     override fun getProPackagesForExtendOrSwitch() = null
 

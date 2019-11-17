@@ -64,7 +64,7 @@ class BillingManagerPlay(val activity: Activity, private val mBillingUpdatesList
                 querySkuDetailsAsync(SkuType.INAPP, Config.itemSkus, it)
                 querySkuDetailsAsync(SkuType.SUBS, Config.subsSkus, it)
             }
-            (this.activity as? SetupFinishedListener)?.onBillingSetupFinished()
+            (this.activity as? BillingListener)?.onBillingSetupFinished()
         })
 
     }
@@ -228,7 +228,7 @@ class BillingManagerPlay(val activity: Activity, private val mBillingUpdatesList
                     mIsServiceConnected = true
                     executeOnSuccess.run()
                 } else {
-                    (activity as? SetupFinishedListener)?.onBillingSetupFailed(String.format(
+                    (activity as? BillingListener)?.onBillingSetupFailed(String.format(
                             Locale.ROOT, "%d (%s)", billingResponseCode, billingResult.debugMessage))
                 }
             }

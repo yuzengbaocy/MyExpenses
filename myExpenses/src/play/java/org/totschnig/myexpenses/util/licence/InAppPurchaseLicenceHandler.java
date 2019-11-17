@@ -10,7 +10,6 @@ import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.SkuDetails;
 import com.android.billingclient.api.SkuDetailsResponseListener;
 import com.annimon.stream.Stream;
-import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 import com.google.android.vending.licensing.PreferenceObfuscator;
 
 import org.json.JSONException;
@@ -18,7 +17,6 @@ import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.activity.ContribInfoDialogActivity;
 import org.totschnig.myexpenses.contrib.Config;
-import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
 
@@ -35,7 +33,7 @@ public class InAppPurchaseLicenceHandler extends AbstractInAppPurchaseLicenceHan
   }
 
   private void storeSkuDetails(List<SkuDetails> inventory) {
-    SharedPreferences.Editor editor = pricesPrefs.edit();
+    SharedPreferences.Editor editor = getPricesPrefs().edit();
     for (SkuDetails skuDetails : inventory) {
       log().d("Sku: %s, json: %s", skuDetails.toString(), skuDetails.getOriginalJson());
       editor.putString(prefKeyForSkuJson(skuDetails.getSku()), skuDetails.getOriginalJson());
@@ -48,7 +46,7 @@ public class InAppPurchaseLicenceHandler extends AbstractInAppPurchaseLicenceHan
   }
 
   @Nullable
-  private String getDisplayPriceForPackage(Package aPackage) {
+  protected String getDisplayPriceForPackage(@NonNull Package aPackage) {
     String sku = getSkuForPackage(aPackage);
     SkuDetails skuDetails = getSkuDetailsFromPrefs(sku);
     String result = null;
@@ -63,7 +61,7 @@ public class InAppPurchaseLicenceHandler extends AbstractInAppPurchaseLicenceHan
 
   @Nullable
   private SkuDetails getSkuDetailsFromPrefs(String sku) {
-    String originalJson = pricesPrefs.getString(prefKeyForSkuJson(sku), null);
+    String originalJson = getPricesPrefs().getString(prefKeyForSkuJson(sku), null);
     if (originalJson != null) {
       try {
         return new SkuDetails(originalJson);
@@ -80,7 +78,7 @@ public class InAppPurchaseLicenceHandler extends AbstractInAppPurchaseLicenceHan
   @Nullable
   public String getExtendedUpgradeGoodieMessage(Package selectedPackage) {
     if (selectedPackage == Package.Professional_12) {
-      String pricesPrefsString = pricesPrefs.getString(Config.SKU_EXTENDED2PROFESSIONAL_12, null);
+      String pricesPrefsString = getPricesPrefs().getString(Config.SKU_EXTENDED2PROFESSIONAL_12, null);
       if (pricesPrefsString != null) {
         return context.getString(R.string.extended_upgrade_goodie_subscription, pricesPrefsString);
       }
@@ -147,16 +145,15 @@ public class InAppPurchaseLicenceHandler extends AbstractInAppPurchaseLicenceHan
 
       @Override
       public boolean onPurchasesUpdated(@Nullable List<Purchase> inventory) {
+        boolean result = false;
         if (inventory != null) {
-          LicenceStatus result = registerInventory(inventory);
-          if (result != null) {
-            if (activity instanceof ContribInfoDialogActivity) {
-              ((ContribInfoDialogActivity) activity).onPurchaseSuccess(result);
-            }
-            return true;
+          LicenceStatus oldStatus = getLicenceStatus();
+          result = registerInventory(inventory) != null;
+          if (activity instanceof BillingListener) {
+            ((BillingListener) activity).onLicenceStatusSet(getLicenceStatus(), oldStatus);
           }
         }
-        return false;
+        return result;
       }
 
       @Override
