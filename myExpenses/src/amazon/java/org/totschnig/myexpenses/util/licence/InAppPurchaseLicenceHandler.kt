@@ -21,14 +21,15 @@ class InAppPurchaseLicenceHandler(context: MyApplication, preferenceObfuscator: 
         val billingUpdatesListener: BillingUpdatesListener = object : BillingUpdatesListener {
             override fun onPurchase(receipt: Receipt): Boolean {
                 val oldStatus = licenceStatus
-                return handlePurchase(receipt.sku, receipt.receiptId)?.let {
-                    (activity as? BillingListener)?.onLicenceStatusSet(it, oldStatus)
-                    true
-                } ?: false
+                val result = handlePurchase(receipt.sku, receipt.receiptId) != null
+                (activity as? BillingListener)?.onLicenceStatusSet(licenceStatus, oldStatus)
+                return result
             }
 
             override fun onPurchasesUpdated(purchases: MutableList<Receipt>) {
+                val oldStatus = licenceStatus
                 registerInventory(purchases)
+                (activity as? BillingListener)?.onLicenceStatusSet(licenceStatus, oldStatus)
             }
 
             override fun onProductDataResponse(productData: MutableMap<String, Product>) {

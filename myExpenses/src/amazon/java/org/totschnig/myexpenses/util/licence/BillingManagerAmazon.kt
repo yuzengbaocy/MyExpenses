@@ -91,7 +91,9 @@ class BillingManagerAmazon(val activity: Activity, private val mBillingUpdatesLi
                         }
                     }
                     else -> {
-                        (activity as? BillingListener)?.onBillingSetupFailed(userDataResponse.getRequestStatus().name)
+                        (activity as? BillingListener)?.onBillingSetupFailed(
+                                "Please make sure you are logged into Amazon AppStore (%s)"
+                                        .format(userDataResponse.getRequestStatus().name))
                     }
                 }
 
