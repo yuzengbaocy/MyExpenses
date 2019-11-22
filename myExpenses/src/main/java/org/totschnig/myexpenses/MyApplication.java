@@ -95,7 +95,6 @@ public class MyApplication extends MultiDexApplication implements
   public static final String INVALID_CALENDAR_ID = "-1";
   private SharedPreferences mSettings;
   private static MyApplication mSelf;
-  //private Tracker mTracker;
 
   public static final String KEY_NOTIFICATION_ID = "notification_id";
 
@@ -568,7 +567,6 @@ public class MyApplication extends MultiDexApplication implements
     if (!key.equals(PrefKey.AUTO_BACKUP_DIRTY.getKey())) {
       markDataDirty();
     }
-
     if (key.equals(DEBUG_LOGGING.getKey())) {
       setupLogging();
     }
@@ -793,4 +791,3 @@ public class MyApplication extends MultiDexApplication implements
     StrictMode.setVmPolicy(vmPolicyBuilder.build());
   }
 }
-
