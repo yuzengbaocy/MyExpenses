@@ -569,8 +569,7 @@ public class MyApplication extends MultiDexApplication implements
       markDataDirty();
     }
 
-    // TODO: inform user that app needs to be restarted
-    if (key.equals(DEBUG_LOGGING.getKey()) || key.equals(CRASHREPORT_ENABLED.getKey()) || key.equals(CRASHREPORT_USEREMAIL.getKey())) {
+    if (key.equals(DEBUG_LOGGING.getKey())) {
       setupLogging();
     }
     // TODO: move to TaskExecutionFragment
