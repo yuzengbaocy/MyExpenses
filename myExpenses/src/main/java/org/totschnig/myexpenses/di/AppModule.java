@@ -9,9 +9,11 @@ import org.totschnig.myexpenses.model.CurrencyContext;
 import org.totschnig.myexpenses.model.PreferencesCurrencyContext;
 import org.totschnig.myexpenses.preference.PrefHandler;
 import org.totschnig.myexpenses.preference.PrefHandlerImpl;
+import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
-import org.totschnig.myexpenses.util.crashreporting.CrashHandlerImpl;
+import org.totschnig.myexpenses.util.crashreporting.AcraCrashHandler;
+import org.totschnig.myexpenses.util.crashreporting.CrashlyticsHandler;
 import org.totschnig.myexpenses.util.tracking.Tracker;
 
 import javax.inject.Named;
@@ -28,8 +30,10 @@ public class AppModule {
 
   @Provides
   @Singleton
-  static CrashHandler providesCrashHandler() {
-    return (MyApplication.isInstrumentationTest()) ? CrashHandler.NO_OP : new CrashHandlerImpl();
+  static CrashHandler providesCrashHandler(PrefHandler prefHandler) {
+    return (MyApplication.isInstrumentationTest()) ? CrashHandler.NO_OP :
+        prefHandler.getBoolean(PrefKey.CRASHREPORT_ENABLED, true) ?
+            new CrashlyticsHandler() : new AcraCrashHandler();
   }
 
   @Provides

@@ -18,7 +18,7 @@ import java.util.Map;
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
-public class CrashHandlerImpl extends CrashHandler {
+public class CrashlyticsHandler extends CrashHandler {
   private CrashReportingTree crashReportingTree;
   private Map<String, String> delayedKeys = new HashMap<>();
 
@@ -53,7 +53,7 @@ public class CrashHandlerImpl extends CrashHandler {
   @Override
   protected void setKeys(Context context) {
     super.setKeys(context);
-    putCustomData("UserEmail", PrefKey.CRASHREPORT_USEREMAIL.getString(null));
+    setUserEmail(PrefKey.CRASHREPORT_USEREMAIL.getString(null));
   }
 
 
