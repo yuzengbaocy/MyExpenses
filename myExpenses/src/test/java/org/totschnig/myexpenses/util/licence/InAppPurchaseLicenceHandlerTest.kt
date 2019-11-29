@@ -1,5 +1,6 @@
 package org.totschnig.myexpenses.util.licence
 
+import android.content.SharedPreferences
 import com.android.billingclient.api.Purchase
 import com.google.android.vending.licensing.PreferenceObfuscator
 import junitparams.JUnitParamsRunner
@@ -8,6 +9,7 @@ import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
 import org.totschnig.myexpenses.MyApplication
@@ -21,7 +23,9 @@ class InAppPurchaseLicenceHandlerTest {
     @Before
     @Throws(Exception::class)
     fun setUp() {
-        licenceHandler = InAppPurchaseLicenceHandler(mock(MyApplication::class.java), mock(PreferenceObfuscator::class.java), mock(CrashHandler::class.java))
+        val context = mock(MyApplication::class.java)
+        `when`(context.getSharedPreferences(ArgumentMatchers.any(), ArgumentMatchers.anyInt())).thenReturn(mock(SharedPreferences::class.java))
+        licenceHandler = InAppPurchaseLicenceHandler(context, mock(PreferenceObfuscator::class.java), mock(CrashHandler::class.java))
     }
 
     private fun m(sku: String) = mock(Purchase::class.java).also {
