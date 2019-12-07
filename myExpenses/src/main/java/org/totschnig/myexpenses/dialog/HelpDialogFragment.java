@@ -123,6 +123,7 @@ public class HelpDialogFragment extends CommitSafeDialogFragment implements Imag
     iconMap.put("hidden_accounts", R.drawable.design_ic_visibility_off);
     iconMap.put("hide", R.drawable.design_ic_visibility_off);
     iconMap.put("close.reopen", R.drawable.ic_lock);
+    iconMap.put("remap", null);
   }
 
   private LayoutInflater layoutInflater;
@@ -177,11 +178,11 @@ public class HelpDialogFragment extends CommitSafeDialogFragment implements Imag
       }
 
       // Form entries
-      int resId = variant != null ? resolveArray(context + "_" + variant + "_formfields") :
+      final int formResId = variant != null ? resolveArray(context + "_" + variant + "_formfields") :
           resolveArray(context + "_formfields");
       ArrayList<String> menuItems = new ArrayList<>();
-      if (resId != 0) {
-        menuItems.addAll(Arrays.asList(res.getStringArray(resId)));
+      if (formResId != 0) {
+        menuItems.addAll(Arrays.asList(res.getStringArray(formResId)));
       }
       if (menuItems.isEmpty()) {
         view.findViewById(R.id.form_fields_heading).setVisibility(View.GONE);
@@ -190,11 +191,11 @@ public class HelpDialogFragment extends CommitSafeDialogFragment implements Imag
       }
 
       // Menu items
-      resId = variant != null ? resolveArray(context + "_" + variant + "_menuitems") :
+      final int menuResId = variant != null ? resolveArray(context + "_" + variant + "_menuitems") :
           resolveArray(context + "_menuitems");
       menuItems.clear();
-      if (resId != 0)
-        menuItems.addAll(Arrays.asList(res.getStringArray(resId)));
+      if (menuResId != 0)
+        menuItems.addAll(Arrays.asList(res.getStringArray(menuResId)));
       if (menuItems.isEmpty())
         view.findViewById(R.id.menu_commands_heading).setVisibility(View.GONE);
       else {
@@ -202,11 +203,11 @@ public class HelpDialogFragment extends CommitSafeDialogFragment implements Imag
       }
 
       // Contextual action bar
-      resId = variant != null ? resolveArray(context + "_" + variant + "_cabitems") :
+      final int cabResId = variant != null ? resolveArray(context + "_" + variant + "_cabitems") :
           resolveArray(context + "_cabitems");
       menuItems.clear();
-      if (resId != 0)
-        menuItems.addAll(Arrays.asList(res.getStringArray(resId)));
+      if (cabResId != 0)
+        menuItems.addAll(Arrays.asList(res.getStringArray(cabResId)));
       if (menuItems.isEmpty()) {
         view.findViewById(R.id.cab_commands_heading).setVisibility(View.GONE);
         view.findViewById(R.id.cab_commands_help).setVisibility(View.GONE);
@@ -214,11 +215,11 @@ public class HelpDialogFragment extends CommitSafeDialogFragment implements Imag
         handleMenuItems(menuItems, "cab", view.findViewById(R.id.cab_commands_container));
       }
 
-      resId = variant != null ? resolveString("help_" + context + "_" + variant + "_title") : 0;
-      if (resId == 0) {
+      final int titleResId = variant != null ? resolveString("help_" + context + "_" + variant + "_title") : 0;
+      if (titleResId == 0) {
         title = resolveStringOrThrowIf0("help_" + context + "_title");
       } else {
-        title = getString(resId);
+        title = getString(titleResId);
       }
     } catch (NotFoundException e) {
       CrashHandler.report(e);

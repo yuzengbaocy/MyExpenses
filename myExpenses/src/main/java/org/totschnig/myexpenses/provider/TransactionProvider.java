@@ -33,7 +33,6 @@ import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.model.Account;
 import org.totschnig.myexpenses.model.AccountGrouping;
-import org.totschnig.myexpenses.model.AccountType;
 import org.totschnig.myexpenses.model.AggregateAccount;
 import org.totschnig.myexpenses.model.Category;
 import org.totschnig.myexpenses.model.CurrencyContext;
@@ -46,6 +45,7 @@ import org.totschnig.myexpenses.model.Template;
 import org.totschnig.myexpenses.model.Transaction;
 import org.totschnig.myexpenses.preference.PrefHandler;
 import org.totschnig.myexpenses.preference.PrefKey;
+import org.totschnig.myexpenses.provider.filter.WhereFilter;
 import org.totschnig.myexpenses.sync.json.TransactionChange;
 import org.totschnig.myexpenses.util.BackupUtils;
 import org.totschnig.myexpenses.util.PlanInfoCursorWrapper;
@@ -179,6 +179,11 @@ public class TransactionProvider extends ContentProvider {
    * Transfers are included into in and out sums, instead of reported in extra field
    */
   public static final String QUERY_PARAMETER_INCLUDE_TRANSFERS = "includeTransfers";
+
+  /**
+   * Colon separated list of account types
+   */
+  public static final String QUERY_PARAMETER_ACCOUNTY_TYPE_LIST = "accountTypeList";
   public static final String METHOD_INIT = "init";
   public static final String METHOD_BULK_START = "bulkStart";
   public static final String METHOD_BULK_END = "bulkEnd";
@@ -186,9 +191,6 @@ public class TransactionProvider extends ContentProvider {
   public static final String METHOD_SETUP_CATEGORIES = "setup_categories";
 
   public static final String KEY_RESULT = "result";
-
-  public static final String TRANSACTION_SUMS_TABLE_NAME = VIEW_COMMITTED;
-  public static final String TRANSACTION_SUMS_TABLE_NAME_HOMME_ACCOUNT = VIEW_EXTENDED;
 
   private static final UriMatcher URI_MATCHER;
   //Basic tables
@@ -335,18 +337,17 @@ public class TransactionProvider extends ContentProvider {
 
         if (groupByType) {
           groupBy = KEY_TYPE;
-        } else  if (!aggregateTypes) {
+        } else if (!aggregateTypes) {
           //expenses only
           qb.appendWhere(" AND " + KEY_AMOUNT + " < 0");
         }
         String amountCalculation;
+        qb.setTables(VIEW_EXTENDED);
         if (accountSelector != null) {
-          qb.setTables(TRANSACTION_SUMS_TABLE_NAME);
           selectionArgs = Utils.joinArrays(new String[]{accountSelector}, selectionArgs);
           qb.appendWhere(" AND " + KEY_ACCOUNTID + accountSelectionQuery);
           amountCalculation = KEY_AMOUNT;
         } else {
-          qb.setTables(TRANSACTION_SUMS_TABLE_NAME_HOMME_ACCOUNT);
           amountCalculation = DatabaseConstants.getAmountHomeEquivalent();
         }
         final String sumColumn = "abs(sum(" + amountCalculation + ")) as  " + KEY_SUM;
@@ -790,24 +791,28 @@ public class TransactionProvider extends ContentProvider {
         qb.setTables(TABLE_METHODS + " JOIN " + TABLE_ACCOUNTTYES_METHODS + " ON (" + KEY_ROWID + " = " + KEY_METHODID + ")");
         projection = new String[]{KEY_ROWID, localizedLabel + " AS " + KEY_LABEL, KEY_IS_NUMBERED};
         String paymentType = uri.getPathSegments().get(2);
-        if (paymentType.equals("1")) {
-          selection = TABLE_METHODS + ".type > -1";
-        } else if (paymentType.equals("-1")) {
-          selection = TABLE_METHODS + ".type < 1";
-        } else {
-          throw new IllegalArgumentException("Unknown paymentType " + paymentType);
+        String typeSelect;
+        switch (paymentType) {
+          case "1": {
+            typeSelect = "> -1";
+            break;
+          }
+          case "-1": {
+            typeSelect = "< 1";
+            break;
+          }
+          default: typeSelect = "= 0";
         }
-        String accountType = uri.getPathSegments().get(3);
-        try {
-          AccountType.valueOf(accountType);
-        } catch (IllegalArgumentException e) {
-          throw new IllegalArgumentException("Unknown accountType " + accountType);
-        }
-        selection += " and " + TABLE_ACCOUNTTYES_METHODS + ".type = ?";
-        selectionArgs = new String[]{accountType};
+        selection = String.format("%s.%s %s", TABLE_METHODS, KEY_TYPE, typeSelect);
+        String[] accountTypes = uri.getQueryParameter(QUERY_PARAMETER_ACCOUNTY_TYPE_LIST).split(";");
+
+        selection += " and " + TABLE_ACCOUNTTYES_METHODS + ".type " + WhereFilter.Operation.IN.getOp(accountTypes.length);
+        selectionArgs = accountTypes;
         if (sortOrder == null) {
           sortOrder = localizedLabel + " COLLATE LOCALIZED";
         }
+        groupBy = KEY_ROWID;
+        having = "count(*) = " +accountTypes.length;
         break;
       case ACCOUNTTYPES_METHODS:
         qb.setTables(TABLE_ACCOUNTTYES_METHODS);
@@ -1623,14 +1628,13 @@ public class TransactionProvider extends ContentProvider {
       final int numOperations = operations.size();
       final ContentProviderResult[] results = new ContentProviderResult[numOperations];
       for (int i = 0; i < numOperations; i++) {
+        final ContentProviderOperation contentProviderOperation = operations.get(i);
         try {
-          results[i] = operations.get(i).apply(this, results, i);
+          results[i] = contentProviderOperation.apply(this, results, i);
         } catch (Exception e) {
           Map<String, String> customData = new HashMap<>();
           customData.put("i", String.valueOf(i));
-          for (int j = 0; j < numOperations; j++) {
-            customData.put("operation" + j, operations.get(j).toString());
-          }
+          customData.put("operation", contentProviderOperation.toString());
           CrashHandler.report(e, customData);
           throw e;
         }
@@ -1715,7 +1719,7 @@ public class TransactionProvider extends ContentProvider {
     //methods/typeFilter/{TransactionType}/{AccountType}
     //TransactionType: 1 Income, -1 Expense
     //AccountType: CASH BANK CCARD ASSET LIABILITY
-    URI_MATCHER.addURI(AUTHORITY, "methods/" + URI_SEGMENT_TYPE_FILTER + "/*/*", METHODS_FILTERED);
+    URI_MATCHER.addURI(AUTHORITY, "methods/" + URI_SEGMENT_TYPE_FILTER + "/*", METHODS_FILTERED);
     URI_MATCHER.addURI(AUTHORITY, "accounts/aggregatesCount", AGGREGATES_COUNT);
     URI_MATCHER.addURI(AUTHORITY, "accounttypes_methods", ACCOUNTTYPES_METHODS);
     URI_MATCHER.addURI(AUTHORITY, "templates", TEMPLATES);
