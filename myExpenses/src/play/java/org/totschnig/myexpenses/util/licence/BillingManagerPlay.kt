@@ -22,9 +22,11 @@ import com.android.billingclient.api.BillingClient.*
 import com.android.billingclient.api.Purchase.PurchasesResult
 import org.totschnig.myexpenses.contrib.Config
 import org.totschnig.myexpenses.util.licence.LicenceHandler.log
-import java.util.Locale
+import java.util.*
+import kotlin.collections.HashSet
 
 private const val BILLING_MANAGER_NOT_INITIALIZED = -1
+
 /**
  * Handles all the interactions with Play Store (via Billing library), maintains connection to
  * it through BillingClient and caches temporary states/data if needed
@@ -85,7 +87,8 @@ class BillingManagerPlay(val activity: Activity, private val mBillingUpdatesList
             purchases?.forEach { purchase ->
                 if (!purchase.isAcknowledged && purchase.purchaseState == Purchase.PurchaseState.PURCHASED) {
                     acknowledgePurchase(purchase.purchaseToken)
-                } }
+                }
+            }
         }
     }
 
@@ -98,7 +101,7 @@ class BillingManagerPlay(val activity: Activity, private val mBillingUpdatesList
             log().d("Launching in-app purchase flow. Replace old SKU? %s", oldSku != null)
             val purchaseParams = BillingFlowParams.newBuilder()
                     .setSkuDetails(skuDetails).setOldSku(oldSku).build()
-            requireClient().launchBillingFlow(activity, purchaseParams)
+            mBillingClient?.launchBillingFlow(activity, purchaseParams)
         }
 
         executeServiceRequest(purchaseFlowRequest)
@@ -125,7 +128,7 @@ class BillingManagerPlay(val activity: Activity, private val mBillingUpdatesList
             // Query the purchase async
             val params = SkuDetailsParams.newBuilder()
             params.setSkusList(skuList).setType(itemType)
-            requireClient().querySkuDetailsAsync(params.build(), listener)
+            mBillingClient?.querySkuDetailsAsync(params.build(), listener)
         }
 
         executeServiceRequest(queryRequest)
@@ -146,7 +149,7 @@ class BillingManagerPlay(val activity: Activity, private val mBillingUpdatesList
         // Creating a runnable from the request to use it inside our connection retry policy below
         val consumeRequest = Runnable {
             // Consume the purchase async
-            requireClient().acknowledgePurchase(AcknowledgePurchaseParams.newBuilder().setPurchaseToken(purchaseToken).build())
+            mBillingClient?.acknowledgePurchase(AcknowledgePurchaseParams.newBuilder().setPurchaseToken(purchaseToken).build())
             { billingResult -> d("acknowledgePurchase", billingResult) }
         }
 
@@ -178,11 +181,13 @@ class BillingManagerPlay(val activity: Activity, private val mBillingUpdatesList
      *
      */
     private fun areSubscriptionsSupported(): Boolean {
-        val responseCode = requireClient().isFeatureSupported(FeatureType.SUBSCRIPTIONS).responseCode
-        if (responseCode != BillingResponseCode.OK) {
-            log().w("areSubscriptionsSupported() got an error response: %s", responseCode)
-        }
-        return responseCode == BillingResponseCode.OK
+        return mBillingClient?.let {
+            val responseCode = it.isFeatureSupported(FeatureType.SUBSCRIPTIONS).responseCode
+            if (responseCode != BillingResponseCode.OK) {
+                log().w("areSubscriptionsSupported() got an error response: %s", responseCode)
+            }
+            responseCode == BillingResponseCode.OK
+        } == true
     }
 
     /**
@@ -192,34 +197,36 @@ class BillingManagerPlay(val activity: Activity, private val mBillingUpdatesList
     private fun queryPurchases() {
         val queryToExecute = Runnable {
             val time = System.currentTimeMillis()
-            val purchasesResult = requireClient().queryPurchases(SkuType.INAPP)
-            log().i("Querying purchases elapsed time: %d ms", (System.currentTimeMillis() - time))
-            // If there are subscriptions supported, we add subscription rows as well
-            if (areSubscriptionsSupported()) {
-                val subscriptionResult = requireClient().queryPurchases(SkuType.SUBS)
-                log().i("Querying purchases and subscriptions elapsed time: %d ms", (System.currentTimeMillis() - time))
-                log().i("Querying subscriptions result code: %d, res: %d",
-                        subscriptionResult.responseCode, subscriptionResult.purchasesList.size)
+            mBillingClient?.let {
+                val purchasesResult = it.queryPurchases(SkuType.INAPP)
+                log().i("Querying purchases elapsed time: %d ms", (System.currentTimeMillis() - time))
+                // If there are subscriptions supported, we add subscription rows as well
+                if (areSubscriptionsSupported()) {
+                    val subscriptionResult = it.queryPurchases(SkuType.SUBS)
+                    log().i("Querying purchases and subscriptions elapsed time: %d ms", (System.currentTimeMillis() - time))
+                    log().i("Querying subscriptions result code: %d, res: %d",
+                            subscriptionResult.responseCode, subscriptionResult.purchasesList.size)
 
-                if (subscriptionResult.responseCode == BillingResponseCode.OK) {
-                    purchasesResult.purchasesList.addAll(
-                            subscriptionResult.purchasesList)
+                    if (subscriptionResult.responseCode == BillingResponseCode.OK) {
+                        purchasesResult.purchasesList.addAll(
+                                subscriptionResult.purchasesList)
+                    } else {
+                        log().i("Got an error response trying to query subscription purchases")
+                    }
+                } else if (purchasesResult.responseCode == BillingResponseCode.OK) {
+                    log().i("Skipped subscription purchases query since they are not supported")
                 } else {
-                    log().i("Got an error response trying to query subscription purchases")
+                    log().i("queryPurchases() got an error response code: %s", purchasesResult.responseCode)
                 }
-            } else if (purchasesResult.responseCode == BillingResponseCode.OK) {
-                log().i("Skipped subscription purchases query since they are not supported")
-            } else {
-                log().i("queryPurchases() got an error response code: %s", purchasesResult.responseCode)
+                onQueryPurchasesFinished(purchasesResult)
             }
-            onQueryPurchasesFinished(purchasesResult)
         }
 
         executeServiceRequest(queryToExecute)
     }
 
     private fun startServiceConnection(executeOnSuccess: Runnable) {
-        requireClient().startConnection(object : BillingClientStateListener {
+        mBillingClient?.startConnection(object : BillingClientStateListener {
             override fun onBillingSetupFinished(billingResult: BillingResult) {
                 val billingResponseCode = billingResult.responseCode
                 d("Setup finished", billingResult)
@@ -238,8 +245,6 @@ class BillingManagerPlay(val activity: Activity, private val mBillingUpdatesList
             }
         })
     }
-
-    private fun requireClient() = mBillingClient ?: throw IllegalStateException("Billing client has been disposed!")
 
     private fun executeServiceRequest(runnable: Runnable) {
         if (mIsServiceConnected) {

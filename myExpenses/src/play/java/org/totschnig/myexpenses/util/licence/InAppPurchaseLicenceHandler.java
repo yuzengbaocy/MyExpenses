@@ -194,7 +194,7 @@ public class InAppPurchaseLicenceHandler extends AbstractInAppPurchaseLicenceHan
 
   private LicenceStatus registerInventory(@NonNull List<Purchase> inventory) {
     Stream.of(inventory).forEach(purchase -> {
-      log().i("%s (acknowledged %b", purchase.getSku(), purchase.isAcknowledged());
+      log().i("%s (acknowledged %b)", purchase.getSku(), purchase.isAcknowledged());
     });
     Purchase purchase = findHighestValidPurchase(inventory);
     if (purchase != null) {
