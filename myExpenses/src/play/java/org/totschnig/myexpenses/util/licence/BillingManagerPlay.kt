@@ -19,7 +19,6 @@ package org.totschnig.myexpenses.util.licence
 import android.app.Activity
 import com.android.billingclient.api.*
 import com.android.billingclient.api.BillingClient.*
-import com.android.billingclient.api.Purchase.PurchasesResult
 import org.totschnig.myexpenses.contrib.Config
 import org.totschnig.myexpenses.util.licence.LicenceHandler.log
 import java.util.*
@@ -82,7 +81,7 @@ class BillingManagerPlay(val activity: Activity, private val mBillingUpdatesList
         }
     }
 
-    private fun onPurchasesUpdated(purchases: MutableList<Purchase>?) {
+    private fun onPurchasesUpdated(purchases: List<Purchase>?) {
         if (mBillingUpdatesListener.onPurchasesUpdated(purchases)) {
             purchases?.forEach { purchase ->
                 if (!purchase.isAcknowledged && purchase.purchaseState == Purchase.PurchaseState.PURCHASED) {
@@ -159,17 +158,17 @@ class BillingManagerPlay(val activity: Activity, private val mBillingUpdatesList
     /**
      * Handle a result from querying of purchases and report an updated list to the listener
      */
-    private fun onQueryPurchasesFinished(result: PurchasesResult) {
+    private fun onQueryPurchasesFinished(purchases: List<Purchase>?) {
         // Have we been disposed of in the meantime? If so, or bad result code, then quit
-        if (mBillingClient == null || result.responseCode != BillingResponseCode.OK) {
-            log().w("Billing client was null or result code (%d) was bad - quitting", result.responseCode)
+        if (mBillingClient == null) {
+            log().w("Billing client was null  - quitting")
             return
         }
 
         log().d("Query inventory was successful.")
 
         // Update the UI and purchases inventory with new list of purchases
-        onPurchasesUpdated(result.purchasesList)
+        onPurchasesUpdated(purchases)
     }
 
     /**
@@ -196,32 +195,28 @@ class BillingManagerPlay(val activity: Activity, private val mBillingUpdatesList
      */
     private fun queryPurchases() {
         val queryToExecute = Runnable {
-            val time = System.currentTimeMillis()
             mBillingClient?.let {
+                val resultList = mutableListOf<Purchase>()
                 val purchasesResult = it.queryPurchases(SkuType.INAPP)
-                log().i("Querying purchases elapsed time: %d ms", (System.currentTimeMillis() - time))
-                // If there are subscriptions supported, we add subscription rows as well
-                if (areSubscriptionsSupported()) {
-                    val subscriptionResult = it.queryPurchases(SkuType.SUBS)
-                    log().i("Querying purchases and subscriptions elapsed time: %d ms", (System.currentTimeMillis() - time))
-                    log().i("Querying subscriptions result code: %d, res: %d",
-                            subscriptionResult.responseCode, subscriptionResult.purchasesList.size)
-
-                    if (subscriptionResult.responseCode == BillingResponseCode.OK) {
-                        purchasesResult.purchasesList.addAll(
-                                subscriptionResult.purchasesList)
+                log().i("Querying subscriptions result code: %d, res: %d",
+                        purchasesResult.responseCode, purchasesResult.purchasesList?.size ?: 0)
+                purchasesResult.purchasesList?.let { resultList.addAll(it) }
+                if (purchasesResult.responseCode == BillingResponseCode.OK) {
+                    // If there are subscriptions supported, we add subscription rows as well
+                    if (areSubscriptionsSupported()) {
+                        val subscriptionResult = it.queryPurchases(SkuType.SUBS)
+                        log().i("Querying subscriptions result code: %d, res: %d",
+                                subscriptionResult.responseCode, subscriptionResult.purchasesList?.size ?: 0)
+                        if (subscriptionResult.responseCode == BillingResponseCode.OK) {
+                            subscriptionResult.purchasesList?.let { resultList.addAll(it) }
+                        }
                     } else {
-                        log().i("Got an error response trying to query subscription purchases")
+                        log().i("Skipped subscription purchases query since they are not supported")
                     }
-                } else if (purchasesResult.responseCode == BillingResponseCode.OK) {
-                    log().i("Skipped subscription purchases query since they are not supported")
-                } else {
-                    log().i("queryPurchases() got an error response code: %s", purchasesResult.responseCode)
                 }
-                onQueryPurchasesFinished(purchasesResult)
+                onQueryPurchasesFinished(resultList)
             }
         }
-
         executeServiceRequest(queryToExecute)
     }
 
@@ -262,7 +257,7 @@ class BillingManagerPlay(val activity: Activity, private val mBillingUpdatesList
 
 interface BillingUpdatesListener {
     //return true if purchases should be acknowledged
-    fun onPurchasesUpdated(purchases: MutableList<Purchase>?): Boolean
+    fun onPurchasesUpdated(purchases: List<Purchase>?): Boolean
 
     fun onPurchaseCanceled()
     fun onPurchaseFailed(resultCode: Int)
