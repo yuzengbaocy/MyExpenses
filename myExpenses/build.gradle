@@ -237,7 +237,7 @@ dependencies {
     implementation 'frankiesardo:icepick:3.2.0'
     compileOnly 'frankiesardo:icepick-processor:3.2.0'
     kapt 'frankiesardo:icepick-processor:3.2.0'
-    implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'com.google.code.gson:gson:2.8.6'
 
     api 'com.google.auto.value:auto-value-annotations:1.6.6'
     kapt 'com.google.auto.value:auto-value:1.6.6'
@@ -287,7 +287,7 @@ dependencies {
 
     implementation 'com.jakewharton.timber:timber:4.7.1'
 
-    withAdsImplementation 'com.google.android.gms:play-services-ads:18.2.0'
+    withAdsImplementation 'com.google.android.gms:play-services-ads:18.3.0'
     //noinspection GradleDynamicVersion
     withAdsImplementation 'com.amazon.android:mobile-ads:5.+'
 
@@ -306,9 +306,9 @@ dependencies {
     implementation('com.crashlytics.sdk.android:crashlytics:2.9.8@aar') {
         transitive = true
     }
-    implementation 'com.google.firebase:firebase-core:17.2.0'
+    implementation 'com.google.firebase:firebase-core:17.2.1'
     implementation 'com.google.firebase:firebase-config:19.0.3'
-    implementation 'com.google.firebase:firebase-ads:18.2.0'
+    implementation 'com.google.firebase:firebase-ads:18.3.0'
 
     implementation 'org.slf4j:slf4j-api:1.7.25'
     implementation 'com.github.tony19:logback-android-core:1.1.1-6'
