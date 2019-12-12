@@ -35,7 +35,7 @@ public class InAppPurchaseLicenceHandler extends AbstractInAppPurchaseLicenceHan
   private void storeSkuDetails(List<SkuDetails> inventory) {
     SharedPreferences.Editor editor = getPricesPrefs().edit();
     for (SkuDetails skuDetails : inventory) {
-      log().d("Sku: %s, json: %s", skuDetails.toString(), skuDetails.getOriginalJson());
+      log().d("Sku: %s", skuDetails.toString());
       editor.putString(prefKeyForSkuJson(skuDetails.getSku()), skuDetails.getOriginalJson());
     }
     editor.apply();
@@ -140,7 +140,7 @@ public class InAppPurchaseLicenceHandler extends AbstractInAppPurchaseLicenceHan
   }
 
   @Override
-  public BillingManagerPlay initBillingManager(Activity activity, boolean query) {
+  public BillingManagerPlay initBillingManager(@NonNull Activity activity, boolean query) {
     BillingUpdatesListener billingUpdatesListener = new BillingUpdatesListener() {
 
       @Override

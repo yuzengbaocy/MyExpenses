@@ -257,7 +257,7 @@ class BillingManagerPlay(val activity: Activity, private val mBillingUpdatesList
 
 interface BillingUpdatesListener {
     //return true if purchases should be acknowledged
-    fun onPurchasesUpdated(purchases: List<Purchase>?): Boolean
+    fun onPurchasesUpdated(purchases: List<@JvmSuppressWildcards Purchase>?): Boolean
 
     fun onPurchaseCanceled()
     fun onPurchaseFailed(resultCode: Int)
