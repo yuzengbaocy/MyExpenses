@@ -27,8 +27,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-public class InAppPurchaseLicenceHandler extends AbstractInAppPurchaseLicenceHandler {
-  public InAppPurchaseLicenceHandler(MyApplication context, PreferenceObfuscator preferenceObfuscator, CrashHandler crashHandler) {
+public class StoreLicenceHandler extends AbstractInAppPurchaseLicenceHandler {
+  public StoreLicenceHandler(MyApplication context, PreferenceObfuscator preferenceObfuscator, CrashHandler crashHandler) {
     super(context, preferenceObfuscator, crashHandler);
   }
 

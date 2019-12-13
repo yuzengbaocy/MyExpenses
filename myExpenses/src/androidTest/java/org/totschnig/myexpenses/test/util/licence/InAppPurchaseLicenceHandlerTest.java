@@ -3,17 +3,17 @@ package org.totschnig.myexpenses.test.util.licence;
 import org.junit.Before;
 import org.junit.Test;
 import org.totschnig.myexpenses.MyApplication;
-import org.totschnig.myexpenses.util.licence.InAppPurchaseLicenceHandler;
+import org.totschnig.myexpenses.util.licence.StoreLicenceHandler;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class InAppPurchaseLicenceHandlerTest {
-  private InAppPurchaseLicenceHandler licenceHandler;
+public class StoreLicenceHandlerTest {
+  private StoreLicenceHandler licenceHandler;
 
   @Before
   public void setUp() {
-    licenceHandler = ((InAppPurchaseLicenceHandler) MyApplication.getInstance().getLicenceHandler());
+    licenceHandler = ((StoreLicenceHandler) MyApplication.getInstance().getLicenceHandler());
     licenceHandler.setLockState(true);
   }
 

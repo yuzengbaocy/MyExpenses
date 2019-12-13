@@ -13,7 +13,7 @@ import org.totschnig.myexpenses.contrib.Config
 import org.totschnig.myexpenses.contrib.Config.allSkus
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler
 
-class InAppPurchaseLicenceHandler(context: MyApplication, preferenceObfuscator: PreferenceObfuscator, crashHandler: CrashHandler) :
+class StoreLicenceHandler(context: MyApplication, preferenceObfuscator: PreferenceObfuscator, crashHandler: CrashHandler) :
         AbstractInAppPurchaseLicenceHandler(context, preferenceObfuscator, crashHandler) {
 
 
