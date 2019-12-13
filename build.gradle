@@ -40,7 +40,7 @@ allprojects {
 }
 
 ext {
-    compileSdkVersion = 28
+    compileSdkVersion = 29
     minSdkVersion = 16
     targetSdkVersion = 28
     espressoVersion = "3.2.0"
