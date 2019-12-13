@@ -7,9 +7,9 @@ buildscript {
         maven {
             url 'https://maven.fabric.io/public'
         }
-        maven {
+       /* maven {
             url 'http://storage.googleapis.com/r8-releases/raw'
-        }
+        }*/
     }
     dependencies {
         //classpath 'com.android.tools:r8:1.6.42'  //Must be before the Gradle Plugin for Android. - Or any other version
@@ -20,7 +20,7 @@ buildscript {
     }
     configurations.all {
         resolutionStrategy {
-            force 'net.sf.proguard:proguard-gradle:6.1.1'
+            force 'net.sf.proguard:proguard-gradle:6.2.2'
         }
     }
 }
