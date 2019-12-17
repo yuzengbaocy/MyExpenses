@@ -27,21 +27,19 @@ public final class Config {
    */
     public static final String SKU_EXTENDED2PROFESSIONAL_1 = "sku_extended2professional_monthly";
     public static final String SKU_EXTENDED2PROFESSIONAL_12 = "sku_extended2professional_yearly";
-
-    public static final List<String> itemSkus = new ArrayList<>();
-    public static final List<String> subsSkus = new ArrayList<>();
+  /**
+   * only used on Amazon
+   */
     public static final List<String> allSkus = new ArrayList<>();
 
     static {
-      itemSkus.add(SKU_PREMIUM);
-      itemSkus.add(SKU_EXTENDED);
-      itemSkus.add(SKU_PREMIUM2EXTENDED);
-      subsSkus.add(SKU_PROFESSIONAL_1);
-      subsSkus.add(SKU_PROFESSIONAL_12);
-      subsSkus.add(SKU_EXTENDED2PROFESSIONAL_1);
-      subsSkus.add(SKU_EXTENDED2PROFESSIONAL_12);
-      allSkus.addAll(itemSkus);
-      allSkus.addAll(subsSkus);
+      allSkus.add(SKU_PREMIUM);
+      allSkus.add(SKU_EXTENDED);
+      allSkus.add(SKU_PREMIUM2EXTENDED);
+      allSkus.add(SKU_PROFESSIONAL_1);
+      allSkus.add(SKU_PROFESSIONAL_12);
+      allSkus.add(SKU_EXTENDED2PROFESSIONAL_1);
+      allSkus.add(SKU_EXTENDED2PROFESSIONAL_12);
     }
 
     private Config() {

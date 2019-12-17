@@ -62,8 +62,8 @@ class BillingManagerPlay(val activity: Activity, private val mBillingUpdatesList
             log().d("Setup successful.")
             listener?.let {
                 queryPurchases()
-                querySkuDetailsAsync(SkuType.INAPP, Config.itemSkus, it)
-                querySkuDetailsAsync(SkuType.SUBS, Config.subsSkus, it)
+                querySkuDetailsAsync(SkuType.INAPP, listOf(Config.SKU_PREMIUM, Config.SKU_EXTENDED, Config.SKU_PREMIUM2EXTENDED), it)
+                querySkuDetailsAsync(SkuType.SUBS, listOf(Config.SKU_PROFESSIONAL_1, Config.SKU_PROFESSIONAL_12, Config.SKU_EXTENDED2PROFESSIONAL_12), it)
             }
             (this.activity as? BillingListener)?.onBillingSetupFinished()
         })
@@ -198,7 +198,7 @@ class BillingManagerPlay(val activity: Activity, private val mBillingUpdatesList
             mBillingClient?.let {
                 val resultList = mutableListOf<Purchase>()
                 val purchasesResult = it.queryPurchases(SkuType.INAPP)
-                log().i("Querying subscriptions result code: %d, res: %d",
+                log().i("Querying purchases result code: %d, res: %d",
                         purchasesResult.responseCode, purchasesResult.purchasesList?.size ?: 0)
                 purchasesResult.purchasesList?.let { resultList.addAll(it) }
                 if (purchasesResult.responseCode == BillingResponseCode.OK) {

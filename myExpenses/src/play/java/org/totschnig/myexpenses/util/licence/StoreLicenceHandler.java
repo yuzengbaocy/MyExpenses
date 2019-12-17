@@ -35,7 +35,7 @@ public class StoreLicenceHandler extends AbstractInAppPurchaseLicenceHandler {
   private void storeSkuDetails(List<SkuDetails> inventory) {
     SharedPreferences.Editor editor = getPricesPrefs().edit();
     for (SkuDetails skuDetails : inventory) {
-      log().d("Sku: %s", skuDetails.toString());
+      log().w("Sku %s, json: %s", skuDetails.getSku(), skuDetails.toString());
       editor.putString(prefKeyForSkuJson(skuDetails.getSku()), skuDetails.getOriginalJson());
     }
     editor.apply();

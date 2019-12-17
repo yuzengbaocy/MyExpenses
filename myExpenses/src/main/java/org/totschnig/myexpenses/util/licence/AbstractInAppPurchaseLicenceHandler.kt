@@ -106,19 +106,16 @@ abstract class AbstractInAppPurchaseLicenceHandler(context: MyApplication, prefe
     }
 
     fun getSkuForPackage(aPackage: Package): String {
-        val sku: String
-        val licenceStatus = licenceStatus
         val hasExtended = licenceStatus != null && licenceStatus == LicenceStatus.EXTENDED
-        when (aPackage) {
-            Package.Contrib -> sku = Config.SKU_PREMIUM
-            Package.Upgrade -> sku = Config.SKU_PREMIUM2EXTENDED
-            Package.Extended -> sku = Config.SKU_EXTENDED
-            Package.Professional_1 -> sku = Config.SKU_PROFESSIONAL_1
-            Package.Professional_12 -> sku = if (hasExtended) Config.SKU_EXTENDED2PROFESSIONAL_12 else Config.SKU_PROFESSIONAL_12
-            Package.Professional_Amazon -> sku = if (hasExtended) Config.SKU_EXTENDED2PROFESSIONAL_PARENT else Config.SKU_PROFESSIONAL_PARENT
+        return when (aPackage) {
+            Package.Contrib -> Config.SKU_PREMIUM
+            Package.Upgrade -> Config.SKU_PREMIUM2EXTENDED
+            Package.Extended -> Config.SKU_EXTENDED
+            Package.Professional_1 -> Config.SKU_PROFESSIONAL_1
+            Package.Professional_12 -> if (hasExtended) Config.SKU_EXTENDED2PROFESSIONAL_12 else Config.SKU_PROFESSIONAL_12
+            Package.Professional_Amazon -> if (hasExtended) Config.SKU_EXTENDED2PROFESSIONAL_PARENT else Config.SKU_PROFESSIONAL_PARENT
             else -> throw IllegalStateException()
         }
-        return sku
     }
 
     override fun getProLicenceStatus(context: Context) =
