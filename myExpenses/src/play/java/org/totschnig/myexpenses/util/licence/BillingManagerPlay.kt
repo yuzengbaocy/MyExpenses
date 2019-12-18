@@ -62,8 +62,26 @@ class BillingManagerPlay(val activity: Activity, private val mBillingUpdatesList
             log().d("Setup successful.")
             listener?.let {
                 queryPurchases()
-                querySkuDetailsAsync(SkuType.INAPP, listOf(Config.SKU_PREMIUM, Config.SKU_EXTENDED, Config.SKU_PREMIUM2EXTENDED), it)
-                querySkuDetailsAsync(SkuType.SUBS, listOf(Config.SKU_PROFESSIONAL_1, Config.SKU_PROFESSIONAL_12, Config.SKU_EXTENDED2PROFESSIONAL_12), it)
+                querySkuDetailsAsync(SkuType.INAPP, listOf(Config.SKU_PREMIUM, Config.SKU_EXTENDED, Config.SKU_PREMIUM2EXTENDED), object: SkuDetailsResponseListener {
+                    override fun onSkuDetailsResponse(billingResult: BillingResult, inAppSkuDetailsList: MutableList<SkuDetails>?) {
+                        if (billingResult.getResponseCode() == BillingResponseCode.OK && inAppSkuDetailsList != null) {
+                            querySkuDetailsAsync(SkuType.SUBS, listOf(Config.SKU_PROFESSIONAL_1, Config.SKU_PROFESSIONAL_12, Config.SKU_EXTENDED2PROFESSIONAL_12), object: SkuDetailsResponseListener {
+                                override fun onSkuDetailsResponse(billingResult: BillingResult, subsSkuDetailsList: MutableList<SkuDetails>?) {
+                                    if (billingResult.getResponseCode() == BillingResponseCode.OK && subsSkuDetailsList != null) {
+                                        it.onSkuDetailsResponse(
+                                                BillingResult.newBuilder().setResponseCode(BillingResponseCode.OK).build(),
+                                                inAppSkuDetailsList + subsSkuDetailsList
+                                                )
+                                    } else {
+                                        it.onSkuDetailsResponse(billingResult, null)
+                                    }
+                                }
+                            })
+                        } else {
+                            it.onSkuDetailsResponse(billingResult, null)
+                        }
+                    }
+                })
             }
             (this.activity as? BillingListener)?.onBillingSetupFinished()
         })
