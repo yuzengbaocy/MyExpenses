@@ -15,7 +15,6 @@
 package org.totschnig.myexpenses.activity
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.Dialog
 import android.app.NotificationManager
 import android.content.ContentUris
@@ -447,6 +446,7 @@ class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?>, Co
             intent.getParcelableExtra<Uri>(KEY_CACHED_PICTURE_URI).let {
                 transaction.pictureUri = it
             }
+            setDirty()
         } else {
             getIntent().getLongExtra(KEY_DATE, 0).takeIf { it != 0L }?.let {
                 transaction.date = it / 1000
@@ -609,7 +609,7 @@ class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?>, Co
         i.putExtra(DatabaseConstants.KEY_ACCOUNTID, account.id)
         i.putExtra(DatabaseConstants.KEY_PARENTID, mRowId)
         i.putExtra(KEY_NEW_TEMPLATE, isMainTemplate)
-        startActivityForResult(i, ProtectedFragmentActivity.EDIT_SPLIT_REQUEST)
+        startActivityForResult(i, ProtectedFragmentActivity.EDIT_REQUEST)
     }
 
     /**
@@ -671,7 +671,7 @@ class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?>, Co
                     intent.getLongExtra(DatabaseConstants.KEY_CATID, 0))
             setDirty()
         }
-        if (requestCode == ProtectedFragmentActivity.PICTURE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+        if (requestCode == ProtectedFragmentActivity.PICTURE_REQUEST_CODE && resultCode == RESULT_OK) {
             val uri: Uri?
             val errorMsg: String
             when {
@@ -706,10 +706,13 @@ class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?>, Co
         if (requestCode == ProtectedFragmentActivity.PLAN_REQUEST) {
             finish()
         }
+        if (requestCode == ProtectedFragmentActivity.EDIT_REQUEST && resultCode == RESULT_OK) {
+            setDirty()
+        }
     }
 
-    override fun onBackPressed() {
-        cleanup({ super.onBackPressed() })
+    override fun dispatchOnBackPressed() {
+        cleanup({ super.dispatchOnBackPressed() })
     }
 
     private fun cleanup(onComplete: () -> Unit) {
@@ -799,13 +802,15 @@ class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?>, Co
         cleanup({
             val restartIntent = intent
             restartIntent.putExtra(Transactions.OPERATION_TYPE, newType)
-            delegate.syncStateAndValidate(false, currencyContext)?.let {
-                restartIntent.putExtra(KEY_CACHED_DATA, it)
-                if (it.pictureUri != null) {
-                    restartIntent.putExtra(KEY_CACHED_PICTURE_URI, it.pictureUri)
+            if (isDirty) {
+                delegate.syncStateAndValidate(false, currencyContext)?.let {
+                    restartIntent.putExtra(KEY_CACHED_DATA, it)
+                    if (it.pictureUri != null) {
+                        restartIntent.putExtra(KEY_CACHED_PICTURE_URI, it.pictureUri)
+                    }
                 }
+                restartIntent.putExtra(KEY_CACHED_RECURRENCE, delegate.recurrenceSpinner.selectedItem as? Recurrence)
             }
-            restartIntent.putExtra(KEY_CACHED_RECURRENCE, delegate.recurrenceSpinner.selectedItem as? Recurrence)
             finish()
             startActivity(restartIntent)
         })
@@ -855,7 +860,7 @@ class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?>, Co
                 } else { //make sure soft keyboard is closed
                     hideKeyboard()
                     val intent = Intent()
-                    setResult(Activity.RESULT_OK, intent)
+                    setResult(RESULT_OK, intent)
                     finish()
                     //no need to call super after finish
                     return

@@ -159,8 +159,12 @@ public abstract class EditActivity extends ProtectedFragmentActivity implements 
     if (isDirty()) {
       showDiscardDialog();
     } else {
-      super.onBackPressed();
+      dispatchOnBackPressed();
     }
+  }
+
+  protected void dispatchOnBackPressed() {
+    super.onBackPressed();
   }
 
   public void linkInputWithLabel(final View input, final View label) {
@@ -195,10 +199,6 @@ public abstract class EditActivity extends ProtectedFragmentActivity implements 
 
   public void setDirty() {
     setDirty(true);
-  }
-
-  public void clearDirty() {
-    setDirty(false);
   }
 
   @Override

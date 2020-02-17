@@ -47,6 +47,7 @@ import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import static org.totschnig.myexpenses.provider.DatabaseConstants.HAS_CLEARED;
@@ -970,6 +971,11 @@ public class Account extends Model {
     }
   }
 
+  public void setCriterion(Money criterion) {
+    this.criterion = criterion;
+  }
+
+  @Nullable
   public Money getCriterion() {
     return criterion;
   }
