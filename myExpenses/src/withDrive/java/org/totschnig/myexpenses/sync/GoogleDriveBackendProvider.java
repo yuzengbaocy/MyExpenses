@@ -219,7 +219,24 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   @Override
   public void withAccount(Account account) throws IOException {
     setAccountUuid(account);
-    requireAccountFolder(account);
+    writeAccount(account, false);
+  }
+
+  @Override
+  protected void writeAccount(Account account, boolean update) throws IOException {
+    accountFolder = getExistingAccountFolder(account.uuid);
+    if (update || accountFolder == null ) {
+      if (accountFolder == null) {
+        accountFolder = driveServiceHelper.createFolder(baseFolder.getId(), accountUuid, null);
+        createWarningFile();
+      }
+      saveFileContentsToAccountDir(null, getAccountMetadataFilename(), buildMetadata(account), getMimetypeForData(), true);
+    }
+  }
+
+  @Override
+  public Optional<AccountMetaData> readAccountMetaData() {
+    return getAccountMetaDataFromDriveMetadata(accountFolder);
   }
 
   @Override
@@ -382,15 +399,6 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     requireBaseFolder();
     return driveServiceHelper.getFileByNameAndParent(baseFolder, uuid);
 
-  }
-
-  private void requireAccountFolder(Account account) throws IOException {
-    accountFolder = getExistingAccountFolder(account.uuid);
-    if (accountFolder == null) {
-      accountFolder = driveServiceHelper.createFolder(baseFolder.getId(), accountUuid, null);
-      createWarningFile();
-      saveFileContentsToAccountDir(null, getAccountMetadataFilename(), buildMetadata(account), getMimetypeForData(), true);
-    }
   }
 
   private void requireBaseFolder() throws IOException {
