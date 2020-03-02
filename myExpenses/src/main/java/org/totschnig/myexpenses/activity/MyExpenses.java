@@ -27,6 +27,7 @@ import android.os.Bundle;
 import android.text.ClipboardManager;
 import android.util.TypedValue;
 import android.view.ContextMenu;
+import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -844,6 +845,14 @@ public class MyExpenses extends LaunchActivity implements
     }
   }
 
+  @Override
+  public boolean onCreateOptionsMenu(Menu menu) {
+    super.onCreateOptionsMenu(menu);
+    MenuInflater inflater = getMenuInflater();
+    inflater.inflate(R.menu.main, menu);
+    return true;
+  }
+
   @NonNull
   @Override
   public Loader<Cursor> onCreateLoader(int id, Bundle bundle) {
@@ -1063,9 +1072,11 @@ public class MyExpenses extends LaunchActivity implements
 
   private void setBalance() {
     long balance = mAccountsCursor.getLong(mAccountsCursor.getColumnIndex(KEY_CURRENT_BALANCE));
+    String label = mAccountsCursor.getString(mAccountsCursor.getColumnIndex(KEY_LABEL));
     boolean isHome  = mAccountsCursor.getInt(mAccountsCursor.getColumnIndex(KEY_IS_AGGREGATE)) == AggregateAccount.AGGREGATE_HOME;
     mCurrentBalance = String.format(Locale.getDefault(), "%s%s", isHome ? " ≈ " : "",
         currencyFormatter.formatCurrency(new Money(currencyContext.get(currentCurrency), balance)));
+    mToolbar.setTitle(isHome ? getString(R.string.grand_total) : label);
     mToolbar.setSubtitle(mCurrentBalance);
     mToolbar.setSubtitleTextColor(balance < 0 ? colorExpense : colorIncome);
   }

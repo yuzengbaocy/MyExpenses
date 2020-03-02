@@ -14,11 +14,12 @@ import org.totschnig.myexpenses.activity.ContribInfoDialogActivity;
 import org.totschnig.myexpenses.activity.ExpenseEdit;
 import org.totschnig.myexpenses.activity.SimpleToastActivity;
 import org.totschnig.myexpenses.model.ContribFeature;
-import org.totschnig.myexpenses.widget.AbstractWidget;
+import org.totschnig.myexpenses.widget.AbstractWidgetKt;
 
 import java.util.Collections;
 
 import androidx.annotation.RequiresApi;
+import timber.log.Timber;
 
 import static org.totschnig.myexpenses.contract.TransactionsContract.Transactions.OPERATION_TYPE;
 import static org.totschnig.myexpenses.contract.TransactionsContract.Transactions.TYPE_SPLIT;
@@ -43,8 +44,8 @@ public class ShortcutHelper {
     intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
 
     Bundle extras = new Bundle();
-    extras.putBoolean(AbstractWidget.EXTRA_START_FROM_WIDGET, true);
-    extras.putBoolean(AbstractWidget.EXTRA_START_FROM_WIDGET_DATA_ENTRY, true);
+    extras.putBoolean(AbstractWidgetKt.EXTRA_START_FROM_WIDGET, true);
+    extras.putBoolean(AbstractWidgetKt.EXTRA_START_FROM_WIDGET_DATA_ENTRY, true);
     extras.putInt(OPERATION_TYPE, operationType);
     extras.putBoolean(ExpenseEdit.KEY_AUTOFILL_MAY_SET_ACCOUNT, true);
     intent.putExtras(extras);
@@ -66,7 +67,13 @@ public class ShortcutHelper {
         .setIcon(Icon.createWithResource(context, R.drawable.ic_menu_split_shortcut))
         .setIntent(intent)
         .build();
-    shortcutManager.addDynamicShortcuts(Collections.singletonList(shortcut));
+    if (shortcutManager != null) {
+      try {
+        shortcutManager.addDynamicShortcuts(Collections.singletonList(shortcut));
+      } catch (Exception e) {
+        Timber.e(e);
+      }
+    }
   }
 
   @RequiresApi(api = Build.VERSION_CODES.N_MR1)
@@ -86,7 +93,13 @@ public class ShortcutHelper {
         .setIcon(Icon.createWithResource(context, R.drawable.ic_menu_forward_shortcut))
         .setIntent(intent)
         .build();
-    shortcutManager.addDynamicShortcuts(Collections.singletonList(shortcut));
+    if (shortcutManager != null) {
+      try {
+        shortcutManager.addDynamicShortcuts(Collections.singletonList(shortcut));
+      } catch (Exception e) {
+        Timber.e(e);
+      }
+    }
 
   }
 }

@@ -14,9 +14,18 @@
   You should have received a copy of the GNU General Public License
   along with My Expenses.  If not, see <http://www.gnu.org/licenses/>.
  -->
-<resources>
-    <string-array name="whats_new_288">
-        <item>Graf historie (Hotovost)</item>
-    </string-array>
-    <string name="bug_fixes">Opravy chyb</string>
-    </resources>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@id/SHARE_COMMAND"
+        android:orderInCategory="40"
+        android:title="@string/menu_share"
+        app:showAsAction="never">
+    </item>
+    <item
+        android:id="@id/SETTINGS_COMMAND"
+        android:orderInCategory="40"
+        app:showAsAction="never"
+        android:title="@string/menu_settings">
+    </item>
+</menu>
