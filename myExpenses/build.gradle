@@ -27,14 +27,6 @@ apply plugin: 'io.fabric'
 apply plugin: "com.jaredsburrows.spoon"
 apply plugin: 'com.novoda.android-command'
 
-def buildVersionNumberBlackBerry() {
-    def result = android.defaultConfig.versionName
-    if (result.split('\\.').length == 4)
-        return result
-    else
-        return result + ".0"
-}
-
 def quote(String input) {
     return "\"" + input + "\""
 }
@@ -142,11 +134,6 @@ android {
             dimension "distribution"
             buildConfigField "String", "DISTRIBUTION", "\"AMAZON\""
         }
-        blackberry {
-            dimension "distribution"
-            versionName buildVersionNumberBlackBerry()
-            buildConfigField "String", "DISTRIBUTION", "\"BLACKBERRY\""
-        }
         huawei {
             dimension "distribution"
             buildConfigField "String", "DISTRIBUTION", "\"HUAWEI\""
@@ -209,14 +196,9 @@ android {
         if (names.contains("withoutAds")) {
             setIgnore(true)
         }
-        if (name.contains("blackberry")) {
-            if (names.contains("withDrive")) {
-                setIgnore(true)
-            }
-        } else {
-            if (names.contains("withoutDrive")) {
-                setIgnore(true)
-            }
+
+        if (names.contains("withoutDrive")) {
+            setIgnore(true)
         }
     }
 

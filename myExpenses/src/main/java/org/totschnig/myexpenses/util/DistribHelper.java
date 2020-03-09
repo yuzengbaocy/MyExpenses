@@ -16,17 +16,6 @@ public class DistribHelper {
         return "amzn://apps/android?p=";
       }
     },
-    BLACKBERRY {
-      @Override
-      public String getPlattform() {
-        return "Blackberry";
-      }
-
-      @Override
-      public String getMarketSelfUri() {
-        return "appworld://content/54472888";
-      }
-    },
     GITHUB {
       @Override
       public boolean supportsTrackingAndCrashReporting() {
@@ -70,7 +59,7 @@ public class DistribHelper {
    * in the platform calendar
    */
   public static boolean shouldUseAndroidPlatformCalendar() {
-    return !isBlackberry();
+    return true;
   }
 
   public static Distribution getDistribution() {
@@ -79,10 +68,6 @@ public class DistribHelper {
 
   public static String getDistributionAsString() {
     return getDistribution().toString();
-  }
-
-  public static boolean isBlackberry() {
-    return getDistribution().equals(Distribution.BLACKBERRY);
   }
 
   public static boolean isPlay() {

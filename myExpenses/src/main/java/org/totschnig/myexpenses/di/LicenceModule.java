@@ -11,10 +11,9 @@ import com.google.android.vending.licensing.PreferenceObfuscator;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.util.DistribHelper;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
-import org.totschnig.myexpenses.util.licence.BlackberryLegacyLicenceHandler;
 import org.totschnig.myexpenses.util.licence.HashLicenceHandler;
-import org.totschnig.myexpenses.util.licence.StoreLicenceHandler;
 import org.totschnig.myexpenses.util.licence.LicenceHandler;
+import org.totschnig.myexpenses.util.licence.StoreLicenceHandler;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -28,8 +27,6 @@ public class LicenceModule {
   @Singleton
   LicenceHandler providesLicenceHandler(PreferenceObfuscator preferenceObfuscator, CrashHandler crashHandler, MyApplication application) {
     switch (DistribHelper.getDistribution()) {
-      case BLACKBERRY:
-        return new BlackberryLegacyLicenceHandler(application, preferenceObfuscator, crashHandler);
       case HUAWEI:
       case PLAY:
       case AMAZON:
