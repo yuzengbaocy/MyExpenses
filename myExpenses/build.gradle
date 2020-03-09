@@ -251,7 +251,7 @@ dependencies {
     //at the moment, we need to stick with the last version that supports java 6
     //noinspection GradleDependency
     implementation 'org.apache.commons:commons-lang3:3.5'
-    playImplementation 'com.android.billingclient:billing:2.0.3'
+    playImplementation 'com.android.billingclient:billing:2.1.0'
     amazonImplementation fileTree(dir: 'libs', include: ['in-app-purchasing-2.0.76.jar'])
 
     implementation 'org.apache.commons:commons-csv:1.5'
@@ -292,11 +292,11 @@ dependencies {
         exclude group: 'org.apache.httpcomponents'
     }
 
-    implementation('com.crashlytics.sdk.android:crashlytics:2.9.8@aar') {
+    implementation('com.crashlytics.sdk.android:crashlytics:2.10.1@aar') {
         transitive = true
     }
-    implementation 'com.google.firebase:firebase-core:17.2.1'
-    implementation 'com.google.firebase:firebase-config:19.0.3'
+    implementation 'com.google.firebase:firebase-core:17.2.3'
+    implementation 'com.google.firebase:firebase-config:19.1.2'
     implementation 'com.google.firebase:firebase-ads:18.3.0'
 
     implementation 'org.slf4j:slf4j-api:1.7.25'
