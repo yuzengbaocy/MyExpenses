@@ -17,6 +17,7 @@ package org.totschnig.myexpenses.fragment;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
@@ -70,6 +71,7 @@ import org.totschnig.myexpenses.adapter.TransactionAdapter;
 import org.totschnig.myexpenses.dialog.AmountFilterDialog;
 import org.totschnig.myexpenses.dialog.ConfirmationDialogFragment;
 import org.totschnig.myexpenses.dialog.DateFilterDialog;
+import org.totschnig.myexpenses.dialog.ProgressDialogFragment;
 import org.totschnig.myexpenses.dialog.TransactionDetailFragment;
 import org.totschnig.myexpenses.dialog.select.SelectCrStatusDialogFragment;
 import org.totschnig.myexpenses.dialog.select.SelectMethodDialogFragment;
@@ -109,7 +111,6 @@ import org.totschnig.myexpenses.util.UiUtils;
 import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
 import org.totschnig.myexpenses.viewmodel.TransactionListViewModel;
-import org.totschnig.myexpenses.viewmodel.data.EventObserver;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -137,7 +138,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import eltos.simpledialogfragment.SimpleDialog;
 import eltos.simpledialogfragment.input.SimpleInputDialog;
-import kotlin.Unit;
+import icepick.Icepick;
+import icepick.State;
 import se.emilsjolander.stickylistheaders.ExpandableStickyListHeadersListView;
 import se.emilsjolander.stickylistheaders.SectionIndexingStickyListHeadersAdapter;
 import se.emilsjolander.stickylistheaders.StickyListHeadersListView;
@@ -148,6 +150,9 @@ import static org.totschnig.myexpenses.activity.ProtectedFragmentActivity.MAP_AC
 import static org.totschnig.myexpenses.activity.ProtectedFragmentActivity.MAP_CATEGORY_RQEUST;
 import static org.totschnig.myexpenses.activity.ProtectedFragmentActivity.MAP_METHOD_RQEUST;
 import static org.totschnig.myexpenses.activity.ProtectedFragmentActivity.MAP_PAYEE_RQEUST;
+import static org.totschnig.myexpenses.activity.ProtectedFragmentActivity.PROGRESS_TAG;
+import static org.totschnig.myexpenses.dialog.ConfirmationDialogFragment.KEY_TITLE;
+import static org.totschnig.myexpenses.dialog.ConfirmationDialogFragment.KEY_TITLE_STRING;
 import static org.totschnig.myexpenses.preference.PrefKey.NEW_SPLIT_TEMPLATE_ENABLED;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.HAS_TRANSFERS;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_ACCOUNTID;
@@ -273,6 +278,9 @@ public class TransactionList extends ContextualActionBarFragment implements
   CurrencyContext currencyContext;
   FilterPersistence filterPersistence;
 
+  @State
+  boolean shouldStartActionMode;
+
   public static Fragment newInstance(long accountId) {
     TransactionList pageFragment = new TransactionList();
     Bundle bundle = new Bundle();
@@ -284,10 +292,12 @@ public class TransactionList extends ContextualActionBarFragment implements
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+    Icepick.restoreInstanceState(this, savedInstanceState);
     setHasOptionsMenu(true);
     viewModel = new ViewModelProvider(this).get(TransactionListViewModel.class);
     viewModel.account(getArguments().getLong(KEY_ACCOUNTID)).observe(this, account -> {
       mAccount = account;
+      shouldStartActionMode = mAccount != null && (mAccount.isAggregate() || !mAccount.isSealed());
       mAdapter.setAccount(mAccount);
       setGrouping();
       Utils.requireLoader(mManager, TRANSACTION_CURSOR, null, TransactionList.this);
@@ -300,16 +310,24 @@ public class TransactionList extends ContextualActionBarFragment implements
         refresh(false);
       }
     });
-    viewModel.getUpdateComplete().observe(this, new EventObserver<>(result -> {
-          switch (result.getFirst()) {
-            case TransactionListViewModel.TOKEN_REMAP_CATEGORY: {
-              final String message = result.getSecond() > 0 ? getString(R.string.remapping_result) : "No transactions were mapped";
-              ((ProtectedFragmentActivity) TransactionList.this.getActivity()).showSnackbar(message, Snackbar.LENGTH_LONG);
-            }
+    viewModel.getCloneAndRemapProgress().observe(this, result -> {
+      ProtectedFragmentActivity context = (ProtectedFragmentActivity) getActivity();
+      if (context == null) return;
+      ProgressDialogFragment progressDialog = ((ProgressDialogFragment) getParentFragmentManager().findFragmentByTag(PROGRESS_TAG));
+      int totalProcessed = result.getFirst() + result.getSecond();
+      if (progressDialog != null) {
+        if (totalProcessed < progressDialog.getMax()) {
+          progressDialog.setProgress(totalProcessed);
+        } else {
+          if (result.getSecond() == 0) {
+            context.showSnackbar(R.string.clone_and_remap_result, Snackbar.LENGTH_LONG);
+          } else {
+            context.showSnackbar(String.format(Locale.ROOT, "%d out of %d failed", result.getSecond(), totalProcessed), Snackbar.LENGTH_LONG);
           }
-          return Unit.INSTANCE;
-        })
-    );
+          getParentFragmentManager().beginTransaction().remove(progressDialog).commit();
+        }
+      }
+    });
     MyApplication.getInstance().getAppComponent().inject(this);
     firstLoadCompleted = (savedInstanceState != null);
     budgetsObserver = new BudgetObserver();
@@ -369,7 +387,7 @@ public class TransactionList extends ContextualActionBarFragment implements
 
   @Override
   protected boolean shouldStartActionMode() {
-    return mAccount != null && (mAccount.isAggregate() || !mAccount.isSealed());
+    return shouldStartActionMode;
   }
 
   private void configureListView() {
@@ -467,14 +485,10 @@ public class TransactionList extends ContextualActionBarFragment implements
             message += " " + getString(R.string.warning_delete_reconciled);
           }
           Bundle b = new Bundle();
-          b.putInt(ConfirmationDialogFragment.KEY_TITLE,
-              R.string.dialog_title_warning_delete_transaction);
-          b.putString(
-              ConfirmationDialogFragment.KEY_MESSAGE, message);
-          b.putInt(ConfirmationDialogFragment.KEY_COMMAND_POSITIVE,
-              R.id.DELETE_COMMAND_DO);
-          b.putInt(ConfirmationDialogFragment.KEY_COMMAND_NEGATIVE,
-              R.id.CANCEL_CALLBACK_COMMAND);
+          b.putInt(KEY_TITLE, R.string.dialog_title_warning_delete_transaction);
+          b.putString(ConfirmationDialogFragment.KEY_MESSAGE, message);
+          b.putInt(ConfirmationDialogFragment.KEY_COMMAND_POSITIVE, R.id.DELETE_COMMAND_DO);
+          b.putInt(ConfirmationDialogFragment.KEY_COMMAND_NEGATIVE, R.id.CANCEL_CALLBACK_COMMAND);
           b.putInt(ConfirmationDialogFragment.KEY_POSITIVE_BUTTON_LABEL, R.string.menu_delete);
           if (finalHasNotVoid) {
             b.putInt(ConfirmationDialogFragment.KEY_CHECKBOX_LABEL,
@@ -1385,10 +1399,14 @@ public class TransactionList extends ContextualActionBarFragment implements
     if (filterPersistence != null) {
       filterPersistence.onSaveInstanceState(outState);
     }
+    Icepick.saveInstanceState(this, outState);
   }
 
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
+    if (mAccount == null || getActivity() == null) {
+      return false;
+    }
     int command = item.getItemId();
     switch (command) {
       case R.id.FILTER_CATEGORY_COMMAND:
@@ -1407,7 +1425,7 @@ public class TransactionList extends ContextualActionBarFragment implements
       case R.id.FILTER_DATE_COMMAND:
         if (!removeFilter(command)) {
           DateFilterDialog.newInstance()
-              .show(getActivity().getSupportFragmentManager(), "AMOUNT_FILTER");
+              .show(getActivity().getSupportFragmentManager(), "DATE_FILTER");
         }
         return true;
       case R.id.FILTER_COMMENT_COMMAND:
@@ -1521,23 +1539,20 @@ public class TransactionList extends ContextualActionBarFragment implements
       }
       b.putString(KEY_COLUMN, column);
       b.putLong(KEY_ROWID, intent.getLongExtra(intentKey, 0));
-
-      SimpleDialog.build()
-          .title(getString(R.string.dialog_title_confirm_remap, getString(columnStringResId)))
-          .pos(R.string.menu_remap)
-          .neg(android.R.string.cancel)
-          .msg(getString(confirmationStringResId, intent.getStringExtra(KEY_LABEL)) + " " + getString(R.string.continue_confirmation))
-          .extra(b)
-          .show(this, REMAP_DIALOG);
+      b.putString(KEY_TITLE_STRING, getString(R.string.dialog_title_confirm_remap, getString(columnStringResId)));
+      b.putInt(ConfirmationDialogFragment.KEY_POSITIVE_BUTTON_LABEL, R.string.menu_remap);
+      b.putInt(ConfirmationDialogFragment.KEY_POSITIVE_BUTTON_CHECKED_LABEL, R.string.button_label_clone_and_remap);
+      b.putInt(ConfirmationDialogFragment.KEY_NEGATIVE_BUTTON_LABEL, android.R.string.cancel);
+      b.putString(ConfirmationDialogFragment.KEY_MESSAGE, getString(confirmationStringResId, intent.getStringExtra(KEY_LABEL)) + " " + getString(R.string.continue_confirmation));
+      b.putInt(ConfirmationDialogFragment.KEY_CHECKBOX_LABEL, R.string.menu_clone_transaction);
+      b.putInt(ConfirmationDialogFragment.KEY_COMMAND_POSITIVE, R.id.REMAP_COMMAND);
+      ConfirmationDialogFragment.newInstance(b).show(getParentFragmentManager(), REMAP_DIALOG);
     }
   }
 
   @Override
   public boolean onResult(@NonNull String dialogTag, int which, @NonNull Bundle extras) {
     if (which == BUTTON_POSITIVE) {
-      if (dialogTag.equals(REMAP_DIALOG)) {
-        viewModel.remap(mListView.getCheckedItemIds(), extras.getString(KEY_COLUMN), extras.getLong(KEY_ROWID));
-      }
       if (NEW_TEMPLATE_DIALOG.equals(dialogTag)) {
         MyExpenses ctx = (MyExpenses) getActivity();
         String label = extras.getString(SimpleInputDialog.TEXT);
@@ -1564,6 +1579,26 @@ public class TransactionList extends ContextualActionBarFragment implements
       return true;
     }
     return false;
+  }
+
+  public void remap(@NonNull Bundle extras, boolean shouldClone) {
+    final long[] checkedItemIds = mListView.getCheckedItemIds();
+    if (shouldClone) {
+      final ProgressDialogFragment progressDialog = ProgressDialogFragment.newInstance(
+          R.string.progress_dialog_saving, 0, ProgressDialog.STYLE_HORIZONTAL, false);
+      progressDialog.setMax(checkedItemIds.length);
+      getParentFragmentManager()
+          .beginTransaction()
+          .add(progressDialog, PROGRESS_TAG)
+          .commit();
+      viewModel.cloneAndRemap(checkedItemIds, extras.getString(KEY_COLUMN), extras.getLong(KEY_ROWID));
+    } else {
+      viewModel.remap(checkedItemIds, extras.getString(KEY_COLUMN), extras.getLong(KEY_ROWID))
+          .observe(this, result -> {
+            final String message = result > 0 ? getString(R.string.remapping_result) : "No transactions were mapped";
+            ((ProtectedFragmentActivity) TransactionList.this.getActivity()).showSnackbar(message, Snackbar.LENGTH_LONG);
+          });
+    }
   }
 
   private void addCategoryFilter(String label, long... catIds) {

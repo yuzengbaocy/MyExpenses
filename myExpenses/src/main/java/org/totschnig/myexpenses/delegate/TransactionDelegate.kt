@@ -81,11 +81,14 @@ abstract class TransactionDelegate<T : ITransaction>(val viewBinding: OneExpense
         get() = with(context) {
             when {
                 isTemplate -> getString(R.string.menu_edit_template) + " (" + getString(typeResId) + ")"
-                isSplitPart -> getString(R.string.menu_edit_split_part_category)
-                else -> getString(R.string.menu_edit_transaction)
+                isSplitPart -> getString(editPartResId)
+                else -> getString(editResId)
             }
         }
     open val typeResId = R.string.transaction
+    open val editResId = R.string.menu_edit_transaction
+    open val editPartResId = R.string.menu_edit_split_part_category
+
     val isMainTransaction: Boolean
         get() = !isSplitPart && !isTemplate
     open val shouldAutoFill
@@ -740,6 +743,7 @@ abstract class TransactionDelegate<T : ITransaction>(val viewBinding: OneExpense
                     currencyExtra == null && account.id == accountId) {
                 accountSpinner.setSelection(item)
                 configureAccountDependent(account)
+                break
             }
         }
         //if the accountId we have been passed does not exist, we select the first entry

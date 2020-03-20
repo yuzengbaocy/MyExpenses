@@ -2,10 +2,7 @@ package org.totschnig.myexpenses.test.espresso
 
 import android.content.Intent
 import android.content.OperationApplicationException
-import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 import android.os.RemoteException
-import android.widget.TextView
 import androidx.test.InstrumentationRegistry
 import androidx.test.espresso.Espresso
 import androidx.test.espresso.Espresso.onData
@@ -15,12 +12,10 @@ import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.withId
-import androidx.test.espresso.matcher.ViewMatchers.withParent
 import androidx.test.espresso.matcher.ViewMatchers.withSpinnerText
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.ActivityTestRule
-import org.assertj.core.api.Assertions.assertThat
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.CoreMatchers.allOf
 import org.hamcrest.CoreMatchers.containsString
@@ -41,8 +36,10 @@ import org.totschnig.myexpenses.model.Money
 import org.totschnig.myexpenses.model.PaymentMethod
 import org.totschnig.myexpenses.model.Transaction
 import org.totschnig.myexpenses.provider.DatabaseConstants
+import org.totschnig.myexpenses.testutils.BaseUiTest
 import org.totschnig.myexpenses.testutils.Espresso.checkEffectiveGone
 import org.totschnig.myexpenses.testutils.Espresso.checkEffectiveVisible
+import org.totschnig.myexpenses.testutils.toolbarTitle
 import org.totschnig.myexpenses.testutils.withAccount
 import org.totschnig.myexpenses.testutils.withMethod
 import org.totschnig.myexpenses.testutils.withStatus
@@ -50,13 +47,12 @@ import java.util.*
 
 
 @RunWith(AndroidJUnit4::class)
-class OrientationChangeTest {
+class OrientationChangeTest: BaseUiTest() {
     @get:Rule
     var mActivityRule = ActivityTestRule(ExpenseEdit::class.java, false, false)
     private val accountLabel1 = "Test label 1"
     private var account1: Account? = null
     private var currency1: CurrencyUnit? = null
-
     private val accountLabel2 = "Test label 2"
     private var account2: Account? = null
     private var currency2: CurrencyUnit? = null
@@ -96,11 +92,6 @@ class OrientationChangeTest {
         rotate()
     }
 
-    private fun rotate() {
-        mActivityRule.getActivity().requestedOrientation = if (mActivityRule.getActivity().requestedOrientation == SCREEN_ORIENTATION_LANDSCAPE)
-            SCREEN_ORIENTATION_PORTRAIT else SCREEN_ORIENTATION_LANDSCAPE
-    }
-
     @Test
     fun shouldKeepMethodAfterOrientationChange() {
         val transaction = Transaction.getNewInstance(account1!!.id)
@@ -120,7 +111,7 @@ class OrientationChangeTest {
         rotate()
     }
 
-    private fun getString(resid: Int) = mActivityRule.activity.getString(resid)
+
 
     @Test
     fun shouldKeepStatusAfterOrientationChange() {
@@ -150,7 +141,7 @@ class OrientationChangeTest {
         }
         rotate()
         Espresso.onIdle()
-        onView(allOf(instanceOf(TextView::class.java), withParent(withId(R.id.toolbar)))).check(doesNotExist())
+        toolbarTitle().check(doesNotExist())
         checkEffectiveVisible(R.id.OperationType)
     }
 
@@ -169,7 +160,8 @@ class OrientationChangeTest {
         rotate()
         Espresso.onIdle()
         checkEffectiveGone(R.id.OperationType)
-        onView(allOf(instanceOf(TextView::class.java), withParent(withId(R.id.toolbar))))
-                .check(matches(withText(R.string.menu_edit_transaction)))
+        toolbarTitle().check(matches(withText(R.string.menu_edit_transaction)))
     }
+
+    override fun getTestRule() = mActivityRule
 }

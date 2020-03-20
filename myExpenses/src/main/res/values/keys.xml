@@ -105,6 +105,7 @@
     <string name="pref_plan_executor_time_key">plan_executor_time</string>
     <string name="pref_webdav_key">webdav</string>
     <string name="pref_webdav_allow_unverified_host_key">webdav_allow_unverified_host</string>
+    <string name="pref_clone_with_current_date_key">clone_with_current_date</string>
 
     <string name="help_licence_gpl">GNU General Public License version 3\nhttp://www.gnu.org/licenses/gpl.html .</string>
     <string-array name="additional_credits">
@@ -212,6 +213,10 @@
     </string-array>
     <string-array name="whats_new_296" tools:ignore="UnusedResources">
         <item>@string/menu_budget</item>
+    </string-array>
+    <string-array name="whats_new_309" tools:ignore="UnusedResources">
+        <item>@android:string/selectAll</item>
+        <item>@string/button_label_clone_and_remap</item>
     </string-array>
     <string-array name="Sub_10" tools:ignore="InconsistentArrays">
     </string-array>

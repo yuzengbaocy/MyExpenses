@@ -408,18 +408,9 @@ class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?>, Co
 
     private fun populate(transaction: Transaction) {
         if (intent.getBooleanExtra(KEY_CLONE, false)) {
-            if (transaction is SplitTransaction) {
-                mRowId = transaction.id
-            } else {
-                transaction.id = 0L
-                mRowId = 0L
-            }
+            mRowId = if (transaction is SplitTransaction) transaction.id else 0L
             transaction.crStatus = Transaction.CrStatus.UNRECONCILED
             transaction.status = DatabaseConstants.STATUS_NONE
-            ZonedDateTime.now().let {
-                transaction.setDate(it)
-                transaction.setValueDate(it)
-            }
             transaction.uuid = Model.generateUuid()
             mNewInstance = true
         }
@@ -757,7 +748,9 @@ class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?>, Co
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         Icepick.saveInstanceState(this, outState)
-        delegate.onSaveInstanceState(outState)
+        if (::delegate.isInitialized) {
+            delegate.onSaveInstanceState(outState)
+        }
     }
 
     val amount: Money?
