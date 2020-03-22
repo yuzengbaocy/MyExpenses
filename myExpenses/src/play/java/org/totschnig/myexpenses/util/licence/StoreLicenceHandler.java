@@ -210,7 +210,7 @@ public class StoreLicenceHandler extends AbstractInAppPurchaseLicenceHandler {
   }
 
   @Override
-  public void launchPurchase(Package aPackage, boolean shouldReplaceExisting, BillingManager billingManager) {
+  public void launchPurchase(Package aPackage, boolean shouldReplaceExisting, @NonNull BillingManager billingManager) {
     String sku = getSkuForPackage(aPackage);
     SkuDetails skuDetails = getSkuDetailsFromPrefs(sku);
     if (skuDetails == null) {
