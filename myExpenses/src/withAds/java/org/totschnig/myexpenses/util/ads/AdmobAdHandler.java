@@ -1,6 +1,9 @@
 package org.totschnig.myexpenses.util.ads;
 
+import android.app.Activity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -13,7 +16,6 @@ import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.ads.MobileAds;
 
 import org.totschnig.myexpenses.BuildConfig;
-import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.preference.PrefKey;
 
 class AdmobAdHandler extends AdHandler {
@@ -32,6 +34,10 @@ class AdmobAdHandler extends AdHandler {
 
   public void _init() {
     MobileAds.initialize(context, "ca-app-pub-5381507717489755~8602009224");
+/*    List<String> testDeviceIds = Collections.singletonList("837D45A603F3C5E72CECC450C2CE4A63");
+    RequestConfiguration configuration =
+        new RequestConfiguration.Builder().setTestDeviceIds(testDeviceIds).build();
+    MobileAds.setRequestConfiguration(configuration);*/
   }
 
   @Override
@@ -45,19 +51,7 @@ class AdmobAdHandler extends AdHandler {
       return;
     }
     admobView = new AdView(context);
-    String sizeSpec = context.getString(R.string.admob_banner_size);
-    AdSize adSize;
-    switch (sizeSpec) {
-      case "SMART_BANNER":
-        adSize = AdSize.SMART_BANNER;
-        break;
-      case "FULL_BANNER":
-        adSize = AdSize.FULL_BANNER;
-        break;
-      default:
-        adSize = AdSize.BANNER;
-    }
-    admobView.setAdSize(adSize);
+    admobView.setAdSize(getAdSize());
     admobView.setAdUnitId(isTest() ? "ca-app-pub-3940256099942544/6300978111" :
         context.getString(bannerUnitId));
     adContainer.addView(admobView);
@@ -79,6 +73,16 @@ class AdmobAdHandler extends AdHandler {
     trackBannerRequest(PROVIDER_ADMOB);
   }
 
+  private AdSize getAdSize() {
+    Display display = ((Activity) context).getWindowManager().getDefaultDisplay();
+    DisplayMetrics outMetrics = new DisplayMetrics();
+    display.getMetrics(outMetrics);
+    float density = outMetrics.density;
+    int adWidth = (int) (adContainer.getWidth() / density);
+
+    return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(context, adWidth);
+  }
+
   private AdRequest buildAdmobRequest() {
     final AdRequest.Builder builder = new AdRequest.Builder();
     if (!prefHandler.getBoolean(PrefKey.PERSONALIZED_AD_CONSENT, true)) {
@@ -86,7 +90,6 @@ class AdmobAdHandler extends AdHandler {
       extras.putString("npa", "1");
       builder.addNetworkExtrasBundle(AdMobAdapter.class, extras);
     }
-    //builder.addTestDevice(AdRequest.DEVICE_ID_EMULATOR);
     return builder.build();
   }
 

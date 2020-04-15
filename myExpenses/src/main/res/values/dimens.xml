@@ -50,8 +50,6 @@
     <dimen name="AccountColorDiameterS3">54sp</dimen>
     <dimen name="CategoryColorDiameterS3">24sp</dimen>
 
-    <string name="admob_banner_size">SMART_BANNER</string>
-    
     <dimen name="accessibility_clickable_minimum">48dp</dimen>
     <dimen name="vertical_padding_paragraph">8dp</dimen>
     <dimen name="drawer_padding">16dp</dimen>
