@@ -31,7 +31,6 @@ import android.os.RemoteException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.totschnig.myexpenses.MyApplication;
-import org.totschnig.myexpenses.model.Transaction.CrStatus;
 import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.provider.DatabaseConstants;
 import org.totschnig.myexpenses.provider.DbUtils;
@@ -271,10 +270,7 @@ public class Account extends Model {
   }
 
   private double adjustExchangeRate(double raw) {
-    final int thisFractionDigits = currencyUnit.fractionDigits();
-    final int homeFractionDigits = Utils.getHomeCurrency().fractionDigits();
-    int minorUnitDelta = thisFractionDigits - homeFractionDigits;
-    return raw * Math.pow(10, minorUnitDelta);
+    return Utils.adjustExchangeRate(raw, currencyUnit);
   }
 
   private void storeExchangeRate() {
