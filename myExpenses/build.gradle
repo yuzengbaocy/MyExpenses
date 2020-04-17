@@ -203,6 +203,7 @@ android {
     }
 
     testOptions {
+        execution 'ANDROIDX_TEST_ORCHESTRATOR'
         unitTests {
             includeAndroidResources = true
             all {
@@ -338,6 +339,7 @@ dependencies {
     androidTestImplementation "androidx.test.espresso:espresso-core:$rootProject.espressoVersion"
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation "androidx.test:runner:$rootProject.androidSupportTestVersion"
+    androidTestUtil "androidx.test:orchestrator:$rootProject.androidSupportTestVersion"
     androidTestImplementation "androidx.test:rules:$rootProject.androidSupportTestVersion"
     androidTestImplementation "androidx.test.espresso:espresso-intents:$rootProject.espressoVersion"
     androidTestImplementation("androidx.test.espresso:espresso-contrib:$rootProject.espressoVersion") {
