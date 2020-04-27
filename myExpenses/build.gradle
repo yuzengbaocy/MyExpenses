@@ -50,7 +50,7 @@ android {
         minSdkVersion project.minSdkVersion
         targetSdkVersion project.targetSdkVersion
         versionCode 405
-        versionName '3.1.0.1'
+        versionName '3.1.0.2'
         multiDexEnabled true
 
         buildConfigField "String", "BUILD_DATE", "\"" + getDate() + "\""
@@ -103,7 +103,6 @@ android {
         forTest {
             initWith debug
             applicationIdSuffix ".fortest"
-            defaultConfig.minSdkVersion 18
             manifestPlaceholders = [appName: "My Expenses Test", debug: "true"]
             matchingFallbacks = ['debug']
             buildConfigField "int", "TEST_SCENARIO", getPropertyIfDefined('testScenario', "1")
