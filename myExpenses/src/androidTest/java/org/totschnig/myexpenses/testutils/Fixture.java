@@ -10,11 +10,13 @@ import android.net.Uri;
 import junit.framework.Assert;
 
 import org.threeten.bp.LocalDate;
+import org.threeten.bp.format.DateTimeFormatter;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.fortest.test.R;
 import org.totschnig.myexpenses.model.Account;
 import org.totschnig.myexpenses.model.AccountType;
 import org.totschnig.myexpenses.model.Category;
+import org.totschnig.myexpenses.model.CrStatus;
 import org.totschnig.myexpenses.model.CurrencyUnit;
 import org.totschnig.myexpenses.model.Grouping;
 import org.totschnig.myexpenses.model.Money;
@@ -22,16 +24,17 @@ import org.totschnig.myexpenses.model.Plan;
 import org.totschnig.myexpenses.model.SplitTransaction;
 import org.totschnig.myexpenses.model.Template;
 import org.totschnig.myexpenses.model.Transaction;
-import org.totschnig.myexpenses.model.CrStatus;
 import org.totschnig.myexpenses.model.Transfer;
 import org.totschnig.myexpenses.provider.TransactionProvider;
 import org.totschnig.myexpenses.util.CurrencyFormatter;
 import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.viewmodel.data.Budget;
+import org.totschnig.myexpenses.viewmodel.data.Tag;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.Date;
-import java.util.Locale;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import timber.log.Timber;
@@ -43,22 +46,20 @@ import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_BUDGET;
 public class Fixture {
   private final Context testContext;
   private final MyApplication appContext;
-  private final Locale locale;
-  private  Account account1, account2, account3, account4;
+  private Account account1, account2, account3, account4;
 
-  public Fixture(Instrumentation inst, Locale locale) {
+  public Fixture(Instrumentation inst) {
     testContext = inst.getContext();
     appContext = (MyApplication) inst.getTargetContext().getApplicationContext();
-    this.locale = locale;
   }
 
   public Account getInitialAccount() {
     return account1;
   }
 
-  public void setup() {
-    CurrencyUnit foreignCurrency = appContext.getAppComponent().currencyContext().get(testContext.getString(R.string.testData_account2Currency));
+  public void setup(boolean withPicture) {
     CurrencyUnit defaultCurrency = Utils.getHomeCurrency();
+    CurrencyUnit foreignCurrency = appContext.getAppComponent().currencyContext().get(defaultCurrency.code().equals("EUR") ? "GBP" : "EUR");
 
     account1 = new Account(
         testContext.getString(R.string.testData_account1Label),
@@ -67,11 +68,12 @@ public class Fixture {
     account1.setGrouping(Grouping.WEEK);
     account1.save();
 
-   account2 = new Account(
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM yyyy");
+    account2 = new Account(
         testContext.getString(R.string.testData_account2Label),
         foreignCurrency,
         50000,
-        testContext.getString(R.string.testData_account2Description), AccountType.CASH,
+        formatter.format(LocalDate.now()), AccountType.CASH,
         testContext.getResources().getColor(R.color.material_red));
     account2.save();
 
@@ -106,13 +108,15 @@ public class Fixture {
     for (int i = 0; i < 15; i++) {
       //Transaction 1
       final File file = new File(appContext.getExternalFilesDir(null), "screenshot.jpg");
-      Transaction op1 = new TransactionBuilder(testContext)
+      final TransactionBuilder builder = new TransactionBuilder(testContext)
           .accountId(account1.getId())
           .amount(defaultCurrency, -random(12000))
           .catId(R.string.testData_transaction1SubCat, mainCat1)
-          .date(offset - 300000)
-          .pictureUri(Uri.fromFile(file))
-          .persist();
+          .date(offset - 300000);
+      if (withPicture) {
+        builder.pictureUri(Uri.fromFile(new File(appContext.getExternalFilesDir(null), "screenshot.jpg")));
+      }
+      Transaction op1 = builder.persist();
 
       //Transaction 2
       Transaction op2 = new TransactionBuilder(testContext)
@@ -186,6 +190,8 @@ public class Fixture {
     Transaction split = SplitTransaction.getNewInstance(account1.getId());
     split.setAmount(new Money(defaultCurrency, -8967L));
     split.save(true);
+    List<Tag> tagList = Collections.singletonList(new Tag(-1, testContext.getString(R.string.testData_tag_project), false, 0));
+    split.saveTags(tagList, MyApplication.getInstance().getContentResolver());
 
     new TransactionBuilder(testContext)
         .accountId(account1.getId()).parentId(split.getId())
@@ -226,7 +232,7 @@ public class Fixture {
     if (templateuri == null)
       throw new RuntimeException("Could not save template");
 
-    Budget budget = new Budget(0L, account1.getId(), "TITLE", "DESCRIPTION", defaultCurrency, new Money(defaultCurrency, 200000L), Grouping.MONTH, -1, (LocalDate) null, (LocalDate) null, account1.getLabel(), true);
+    Budget budget = new Budget(0L, account1.getId(), testContext.getString(R.string.testData_account1Description), "DESCRIPTION", defaultCurrency, new Money(defaultCurrency, 200000L), Grouping.MONTH, -1, (LocalDate) null, (LocalDate) null, account1.getLabel(), true);
     long budgetId = ContentUris.parseId(appContext.getContentResolver().insert(TransactionProvider.BUDGETS_URI, budget.toContentValues()));
     setCategoryBudget(budgetId, mainCat1, 50000);
     setCategoryBudget(budgetId, mainCat2, 40000);

@@ -5,9 +5,6 @@
   <!--Account 2 is used as an example for a short term budget used for a travel to a country with
     a different currency-->
   <string name="testData_account2Label">weekend w Paryżu</string>
-  <string name="testData_account2Description">Sierpień 2012</string>
-  <!--the ISO 4217 currency code-->
-  <string name="testData_account2Currency">EUR</string>
   <!--Account 3 is a bank account at an institution well known in the locale region-->
   <string name="testData_account3Label">Konto bankowe</string>
   <string name="testData_account3Description">Bank Ameryki</string>
@@ -18,4 +15,5 @@
   <string name="testData_transaction4Payee">Pizzeria Antonella</string>
   <!--a name typically used as example name-->
   <string name="testData_templatePayee">Jan Kowalski</string>
+  <string name="testData_tag_project">Projekt bez tytułu</string>
 </resources>
