@@ -130,7 +130,7 @@ abstract class AbstractInAppPurchaseLicenceHandler(context: MyApplication, prefe
      */
     override fun buildRoadmapVoteKey(): String {
         return if (isProfessionalEnabled) {
-            purchaseExtraInfo
+            purchaseExtraInfo ?: super.buildRoadmapVoteKey()
         } else {
             try {
                 AdvertisingIdClient.getAdvertisingIdInfo(context).id
@@ -140,9 +140,10 @@ abstract class AbstractInAppPurchaseLicenceHandler(context: MyApplication, prefe
         }
     }
 
-    override fun getPurchaseExtraInfo(): String {
+    override fun getPurchaseExtraInfo(): String? {
         return licenseStatusPrefs.getString(KEY_ORDER_ID, null)
     }
+
     override fun doesUseIAP() = true
 
     override fun needsKeyEntry() = false
