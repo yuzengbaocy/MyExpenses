@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.core.util.Pair;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -245,6 +246,11 @@ public abstract class DistributionBaseFragment extends CategoryList {
   abstract void updateIncomeAndExpense(long income, long expense);
 
   @Override
+  protected boolean hasSelectSingle() {
+    return true;
+  }
+
+  @Override
   protected void configureMenuInternal(Menu menu, boolean hasChildren) {
     menu.findItem(R.id.EDIT_COMMAND).setVisible(false);
     menu.findItem(R.id.DELETE_COMMAND).setVisible(false);
@@ -256,14 +262,14 @@ public abstract class DistributionBaseFragment extends CategoryList {
   }
 
   @Override
-  protected void doSelection(long cat_id, String label, String icon, boolean isMain) {
+  protected void doSingleSelection(long cat_id, String label, String icon, boolean isMain) {
     TransactionListDialogFragment.newInstance(
         accountInfo.getId(), cat_id, isMain, mGrouping, buildFilterClause(VIEW_EXTENDED), filterSelectionArgs(), label, 0, true)
         .show(getFragmentManager(), TransactionListDialogFragment.class.getName());
   }
 
   @Override
-  public boolean onOptionsItemSelected(MenuItem item) {
+  public boolean onOptionsItemSelected(@NonNull MenuItem item) {
     switch (item.getItemId()) {
       case R.id.BACK_COMMAND:
         back();
@@ -376,7 +382,7 @@ public abstract class DistributionBaseFragment extends CategoryList {
   protected abstract boolean showAllCategories();
 
   @Override
-  public void onPrepareOptionsMenu(Menu menu) {
+  public void onPrepareOptionsMenu(@NonNull Menu menu) {
     super.onPrepareOptionsMenu(menu);
     MenuItem m = menu.findItem(R.id.TOGGLE_AGGREGATE_TYPES);
     if (m != null) {
