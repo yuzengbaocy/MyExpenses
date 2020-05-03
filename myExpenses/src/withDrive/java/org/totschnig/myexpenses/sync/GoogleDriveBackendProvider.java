@@ -235,7 +235,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   }
 
   @Override
-  public Optional<AccountMetaData> readAccountMetaData() {
+  public Exceptional<AccountMetaData> readAccountMetaData() {
     return getAccountMetaDataFromDriveMetadata(accountFolder);
   }
 
@@ -304,44 +304,41 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
 
   @NonNull
   @Override
-  public Stream<AccountMetaData> getRemoteAccountList() throws IOException {
+  public Stream<Exceptional<AccountMetaData>> getRemoteAccountList() throws IOException {
     requireBaseFolder();
     List<File> fileList = driveServiceHelper.listChildren(baseFolder);
     return Stream.of(fileList)
-        .map(this::getAccountMetaDataFromDriveMetadata)
-        .filter(Optional::isPresent)
-        .map(Optional::get);
+        .filter(metadata -> driveServiceHelper.isFolder(metadata))
+        .filter(metadata -> !metadata.getName().equals(BACKUP_FOLDER_NAME))
+        .map(this::getAccountMetaDataFromDriveMetadata);
   }
 
-  private Optional<AccountMetaData> getAccountMetaDataFromDriveMetadata(File metadata) {
-    if (!driveServiceHelper.isFolder(metadata)) {
-      return Optional.empty();
-    }
+  private Exceptional<AccountMetaData> getAccountMetaDataFromDriveMetadata(File metadata) {
     File accountMetadata;
     try {
       accountMetadata = driveServiceHelper.getFileByNameAndParent(metadata, getAccountMetadataFilename());
     } catch (IOException e) {
-      return Optional.empty();
+      return Exceptional.of(e);
     }
     if (accountMetadata != null) {
       try (InputStream inputStream = driveServiceHelper.read(accountMetadata.getId())) {
         return getAccountMetaDataFromInputStream(inputStream);
       } catch (IOException e) {
-        return Optional.empty();
+        return Exceptional.of(e);
       }
     }
 
     //legacy
     final Map<String, String> appProperties = metadata.getAppProperties();
     if (appProperties == null) {
-      return Optional.empty();
+      return Exceptional.of(new Exception("appProperties are null"));
     }
     String uuid = appProperties.get(ACCOUNT_METADATA_UUID_KEY);
     if (uuid == null) {
       Timber.d("UUID property not set");
-      return Optional.empty();
+      return Exceptional.of(new Exception("UUID property not set"));
     }
-    return Optional.of(AccountMetaData.builder()
+    return Exceptional.of(() -> AccountMetaData.builder()
         .setType(getPropertyWithDefault(appProperties, ACCOUNT_METADATA_TYPE_KEY, AccountType.CASH.name()))
         .setOpeningBalance(getPropertyWithDefault(appProperties, ACCOUNT_METADATA_OPENING_BALANCE_KEY, 0L))
         .setDescription(getPropertyWithDefault(appProperties, ACCOUNT_METADATA_DESCRIPTION_KEY, ""))
