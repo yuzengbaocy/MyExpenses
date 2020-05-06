@@ -38,6 +38,7 @@ import android.widget.Toast
 import androidx.annotation.Nullable
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.widget.PopupMenu
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.loader.app.LoaderManager
@@ -119,7 +120,7 @@ import javax.inject.Inject
  *
  * @author Michael Totschnig
  */
-class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?>, ContribIFace, ConfirmationDialogListener, ButtonWithDialog.Host, ExchangeRateEdit.Host {
+open class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?>, ContribIFace, ConfirmationDialogListener, ButtonWithDialog.Host, ExchangeRateEdit.Host {
     private lateinit var rootBinding: OneExpenseBinding
     private lateinit var dateEditBinding: DateEditBinding
     override val amountLabel: TextView
@@ -1043,6 +1044,8 @@ class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?>, Co
     fun findSplitPartList() =
             supportFragmentManager.findFragmentByTag(SPLIT_PART_LIST) as SplitPartList?
 
+    override fun getCurrentFragment() = findSplitPartList()
+
     @SuppressLint("NewApi")
     fun showPicturePopupMenu(v: View?) {
         val popup = PopupMenu(this, v!!)
@@ -1150,7 +1153,7 @@ class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?>, Co
         }
     }
 
-    fun updateSplitPartList(account: Account) {
+    open fun updateSplitPartList(account: Account) {
         findSplitPartList()?.let {
             it.updateAccount(account)
             if (it.splitCount > 0) { //call background task for moving parts to new account
