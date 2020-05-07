@@ -7,11 +7,11 @@ import org.totschnig.myexpenses.activity.ImageViewIntentProvider
 import org.totschnig.myexpenses.activity.SystemImageViewIntentProvider
 import org.totschnig.myexpenses.preference.PrefHandler
 import org.totschnig.myexpenses.util.ads.AdHandlerFactory
-import org.totschnig.myexpenses.util.ads.DefaultAdHandlerFactory
+import org.totschnig.myexpenses.util.ads.PlatformAdHandlerFactory
 import org.totschnig.myexpenses.util.bundle.LocaleManager
+import java.util.*
 import javax.inject.Named
 import javax.inject.Singleton
-import org.totschnig.myexpenses.util.ads.PlatformAdHandlerFactory
 
 
 @Module
@@ -28,6 +28,10 @@ class UiModule {
     @Provides
     @Singleton
     fun provideLanguageManager(): LocaleManager {
-        return object : LocaleManager {}
+        return object : LocaleManager {
+            override fun requestLocale(locale: Locale, onAvailable: () -> Unit) {
+                onAvailable()
+            }
+        }
     }
 }
