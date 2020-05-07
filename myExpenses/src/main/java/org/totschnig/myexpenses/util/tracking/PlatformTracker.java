@@ -5,7 +5,7 @@ import android.os.Bundle;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 
-import org.totschnig.myexpenses.util.DistribHelper;
+import org.totschnig.myexpenses.util.DistributionHelper;
 import org.totschnig.myexpenses.util.Preconditions;
 
 public class PlatformTracker implements Tracker {
@@ -13,7 +13,7 @@ public class PlatformTracker implements Tracker {
   @Override
   public void init(Context context) {
     firebaseAnalytics = FirebaseAnalytics.getInstance(context);
-    firebaseAnalytics.setUserProperty("Distribution", DistribHelper.getDistribution().name());
+    firebaseAnalytics.setUserProperty("Distribution", DistributionHelper.getDistribution().name());
   }
 
   @Override

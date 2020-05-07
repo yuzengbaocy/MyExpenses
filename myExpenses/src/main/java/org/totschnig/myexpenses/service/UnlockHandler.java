@@ -11,7 +11,7 @@ import android.os.Message;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.activity.MyExpenses;
-import org.totschnig.myexpenses.util.DistribHelper;
+import org.totschnig.myexpenses.util.DistributionHelper;
 import org.totschnig.myexpenses.util.licence.LicenceHandler;
 
 import androidx.core.app.NotificationCompat;
@@ -42,7 +42,7 @@ public class UnlockHandler extends Handler {
         break;
       case STATUS_TEMPORARY:
       case STATUS_PERMANENT:
-        if (!DistribHelper.isPlay()) {
+        if (!DistributionHelper.isPlay()) {
           doUnlock(msg.what);
         } else {
           showNotif(concatResStrings(app, " ", R.string.licence_validation_failure,

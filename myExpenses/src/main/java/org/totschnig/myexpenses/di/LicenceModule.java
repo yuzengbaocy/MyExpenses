@@ -9,7 +9,7 @@ import com.google.android.vending.licensing.Obfuscator;
 import com.google.android.vending.licensing.PreferenceObfuscator;
 
 import org.totschnig.myexpenses.MyApplication;
-import org.totschnig.myexpenses.util.DistribHelper;
+import org.totschnig.myexpenses.util.DistributionHelper;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
 import org.totschnig.myexpenses.util.licence.HashLicenceHandler;
 import org.totschnig.myexpenses.util.licence.LicenceHandler;
@@ -26,7 +26,7 @@ public class LicenceModule {
   @Provides
   @Singleton
   LicenceHandler providesLicenceHandler(PreferenceObfuscator preferenceObfuscator, CrashHandler crashHandler, MyApplication application) {
-    switch (DistribHelper.getDistribution()) {
+    switch (DistributionHelper.getDistribution()) {
       case HUAWEI:
       case PLAY:
       case AMAZON:

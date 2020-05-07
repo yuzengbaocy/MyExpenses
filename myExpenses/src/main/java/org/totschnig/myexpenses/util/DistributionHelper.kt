@@ -70,7 +70,8 @@ object DistributionHelper {
         },
         GITHUB {
             override val supportsTrackingAndCrashReporting = BuildConfig.DEBUG
-        };
+        },
+        HUAWEI;
 
         open val platform = "Android"
 
