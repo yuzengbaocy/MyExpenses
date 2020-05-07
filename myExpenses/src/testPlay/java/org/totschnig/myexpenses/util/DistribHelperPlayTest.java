@@ -8,6 +8,6 @@ public class DistribHelperPlayTest {
 
   @Test
   public void distributionShouldBePlay() {
-    assertTrue(DistribHelper.isPlay());
+    assertTrue(DistributionHelper.isPlay());
   }
 }

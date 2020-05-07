@@ -8,6 +8,6 @@ public class DistribHelperAmazonTest {
 
   @Test
   public void distributionShouldBeAmazon() {
-    assertTrue(DistribHelper.isAmazon());
+    assertTrue(DistributionHelper.isAmazon());
   }
 }
