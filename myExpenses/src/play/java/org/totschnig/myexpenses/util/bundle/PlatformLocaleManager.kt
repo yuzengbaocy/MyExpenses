@@ -10,6 +10,7 @@ import com.google.android.play.core.splitinstall.SplitInstallRequest
 import com.google.android.play.core.splitinstall.SplitInstallStateUpdatedListener
 import com.google.android.play.core.splitinstall.model.SplitInstallSessionStatus
 import org.totschnig.myexpenses.MyApplication
+import org.totschnig.myexpenses.MyApplication.DEFAULT_LANGUAGE
 import timber.log.Timber
 
 
@@ -28,19 +29,24 @@ class PlatformLocaleManager : LocaleManager {
 
     override fun requestLocale(context: Context) {
         val application = context.applicationContext as MyApplication
-        val installedLanguages = manager.installedLanguages
-        Timber.d("Downloaded languages: %s", installedLanguages.joinToString())
-        val userPreferedLocale = application.userPreferedLocale
-        if (installedLanguages.contains(userPreferedLocale.language)) {
-            Timber.d("Already installed")
+        val userLanguage = application.defaultLanguage
+        if (userLanguage.equals(DEFAULT_LANGUAGE)) {
             callback?.invoke()
         } else {
-            val request = SplitInstallRequest.newBuilder()
-                    .addLanguage(userPreferedLocale)
-                    .build()
-            manager.startInstall(request)
-                    .addOnFailureListener { exception -> Timber.e(exception) }
+            val installedLanguages = manager.installedLanguages
+            Timber.d("Downloaded languages: %s", installedLanguages.joinToString())
+            val userPreferedLocale = application.resolveLocale(userLanguage)
+            if (installedLanguages.contains(userPreferedLocale.language)) {
+                Timber.d("Already installed")
+                callback?.invoke()
+            } else {
+                val request = SplitInstallRequest.newBuilder()
+                        .addLanguage(userPreferedLocale)
+                        .build()
+                manager.startInstall(request)
+                        .addOnFailureListener { exception -> Timber.e(exception) }
 
+            }
         }
     }
 
