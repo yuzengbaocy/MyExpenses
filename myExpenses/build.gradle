@@ -245,6 +245,7 @@ dependencies {
     //noinspection GradleDependency
     implementation 'org.apache.commons:commons-lang3:3.5'
     playImplementation 'com.android.billingclient:billing:2.2.0'
+    playImplementation 'com.google.android.play:core:1.7.2'
     amazonImplementation fileTree(dir: 'libs', include: ['in-app-purchasing-2.0.76.jar'])
 
     implementation 'org.apache.commons:commons-csv:1.5'
