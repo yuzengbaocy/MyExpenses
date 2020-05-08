@@ -11,9 +11,11 @@ import org.totschnig.myexpenses.preference.PrefHandler;
 import org.totschnig.myexpenses.preference.PrefHandlerImpl;
 import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.util.Utils;
-import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
 import org.totschnig.myexpenses.util.crashreporting.AcraCrashHandler;
 import org.totschnig.myexpenses.util.crashreporting.CrashlyticsHandler;
+import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
+import org.totschnig.myexpenses.util.locale.UserLocalProviderImpl;
+import org.totschnig.myexpenses.util.locale.UserLocaleProvider;
 import org.totschnig.myexpenses.util.tracking.Tracker;
 
 import javax.inject.Named;
@@ -85,5 +87,11 @@ public class AppModule {
   @Singleton
   static CurrencyContext provideCurrencyContext(PrefHandler prefHandler) {
     return new PreferencesCurrencyContext(prefHandler);
+  }
+
+  @Provides
+  @Singleton
+  static UserLocaleProvider provideUserLocaleProvider(PrefHandler prefHandler) {
+    return new UserLocalProviderImpl(prefHandler);
   }
 }

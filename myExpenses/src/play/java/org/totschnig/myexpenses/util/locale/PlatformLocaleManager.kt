@@ -1,4 +1,4 @@
-package org.totschnig.myexpenses.util.bundle
+package org.totschnig.myexpenses.util.locale
 
 import android.app.Activity
 import android.app.Application
@@ -14,7 +14,7 @@ import org.totschnig.myexpenses.MyApplication.DEFAULT_LANGUAGE
 import timber.log.Timber
 
 
-class PlatformLocaleManager : LocaleManager {
+class PlatformLocaleManager(private var userLocaleProvider: UserLocaleProvider) : LocaleManager {
     private lateinit var manager: SplitInstallManager
     var listener: SplitInstallStateUpdatedListener? = null
     var callback: (() -> Unit)? = null
@@ -29,13 +29,13 @@ class PlatformLocaleManager : LocaleManager {
 
     override fun requestLocale(context: Context) {
         val application = context.applicationContext as MyApplication
-        val userLanguage = application.defaultLanguage
+        val userLanguage = userLocaleProvider.getDefaultLanguage()
         if (userLanguage.equals(DEFAULT_LANGUAGE)) {
             callback?.invoke()
         } else {
             val installedLanguages = manager.installedLanguages
             Timber.d("Downloaded languages: %s", installedLanguages.joinToString())
-            val userPreferedLocale = application.resolveLocale(userLanguage)
+            val userPreferedLocale = userLocaleProvider.getUserPreferredLocale()
             if (installedLanguages.contains(userPreferedLocale.language)) {
                 Timber.d("Already installed")
                 callback?.invoke()
