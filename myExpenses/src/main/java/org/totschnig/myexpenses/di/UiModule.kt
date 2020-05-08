@@ -50,7 +50,7 @@ class UiModule {
             }
 
             override fun onResume(onAvailable: () -> Unit) {
-               this.callback = onAvailable
+                this.callback = onAvailable
             }
 
             override fun onPause() {
