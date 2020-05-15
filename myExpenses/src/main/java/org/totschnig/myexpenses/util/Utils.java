@@ -238,6 +238,7 @@ public class Utils {
    * currency, and with the given separator, but without the currency
    * symbol appropriate for CSV and QIF export
    */
+  @NonNull
   public static DecimalFormat getDecimalFormat(CurrencyUnit currency, char separator) {
     DecimalFormat nf = new DecimalFormat();
     DecimalFormatSymbols symbols = new DecimalFormatSymbols();
@@ -415,7 +416,16 @@ public class Utils {
     return true;
   }
 
+  @SuppressLint("SimpleDateFormat")
   public static DateFormat getDateFormatSafe(Context context) {
+    String custom = ((MyApplication) context.getApplicationContext()).getAppComponent().prefHandler().getString(PrefKey.CUSTOM_DATE_FORMAT,"");
+    if (!"".equals(custom)) {
+      try {
+        return new SimpleDateFormat(custom);
+      } catch (Exception e) {
+        Timber.e(e);
+      }
+    }
     try {
       return android.text.format.DateFormat.getDateFormat(context);
     } catch (Exception e) {

@@ -40,6 +40,7 @@ import org.totschnig.myexpenses.di.AppComponent;
 import org.totschnig.myexpenses.di.DaggerAppComponent;
 import org.totschnig.myexpenses.di.SecurityProvider;
 import org.totschnig.myexpenses.model.Template;
+import org.totschnig.myexpenses.model.Transaction;
 import org.totschnig.myexpenses.preference.PrefHandler;
 import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.provider.DatabaseConstants;
@@ -206,13 +207,15 @@ public class MyApplication extends MultiDexApplication implements
     mSelf = this;
     //we cannot use the standard way of reading preferences, since this works only after base context
     //has been attached
-    super.attachBaseContext(ContextHelper.wrap(base, UserLocaleProvider.Companion.resolveLocale(
-        PreferenceManager.getDefaultSharedPreferences(base).getString("ui_language", DEFAULT_LANGUAGE), Locale.getDefault())));
+    final Context wrapped = ContextHelper.wrap(base, UserLocaleProvider.Companion.resolveLocale(
+        PreferenceManager.getDefaultSharedPreferences(base).getString("ui_language", DEFAULT_LANGUAGE), Locale.getDefault()));
+    super.attachBaseContext(wrapped);
     appComponent = buildAppComponent();
     appComponent.inject(this);
     localeManager.initApplication(this);
     crashHandler.onAttachBaseContext(this);
     DatabaseConstants.buildLocalized(userLocaleProvider.getUserPreferredLocale());
+    Transaction.buildProjection(wrapped);
   }
 
   @NonNull
@@ -229,6 +232,7 @@ public class MyApplication extends MultiDexApplication implements
       Timber.plant(new TagFilterFileLoggingTree(this, PlanExecutor.TAG));
       Timber.plant(new TagFilterFileLoggingTree(this, SyncAdapter.TAG));
       Timber.plant(new TagFilterFileLoggingTree(this, LicenceHandler.TAG));
+      Timber.plant(new TagFilterFileLoggingTree(this, TransactionProvider.TAG));
     }
     crashHandler.setupLogging(this);
   }

@@ -15,7 +15,6 @@
 
 package org.totschnig.myexpenses.provider;
 
-import android.content.ContentProvider;
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
 import android.content.ContentValues;
@@ -75,9 +74,10 @@ import static org.totschnig.myexpenses.model.AggregateAccount.GROUPING_AGGREGATE
 import static org.totschnig.myexpenses.provider.DatabaseConstants.*;
 import static org.totschnig.myexpenses.provider.DbUtils.suggestNewCategoryColor;
 
-public class TransactionProvider extends ContentProvider {
+public class TransactionProvider extends BaseTransactionProvider {
 
   private TransactionDatabase mOpenHelper;
+  public static final String TAG = "TransactionProvider";
   public static final String AUTHORITY = BuildConfig.APPLICATION_ID;
   public static final Uri ACCOUNTS_URI =
       Uri.parse("content://" + AUTHORITY + "/accounts");
@@ -259,7 +259,6 @@ public class TransactionProvider extends ContentProvider {
   private static final int TAG_ID = 57;
   private static final int TEMPLATES_TAGS = 58;
 
-  private boolean mDirty = false;
   private boolean bulkInProgress = false;
 
   @Inject
@@ -279,13 +278,6 @@ public class TransactionProvider extends ContentProvider {
     mOpenHelper = new TransactionDatabase(getContext());
   }
 
-  private void setDirty() {
-    if (!mDirty) {
-      mDirty = true;
-      ((MyApplication) getContext().getApplicationContext()).markDataDirty();
-    }
-  }
-
   @Override
   public Cursor query(@NonNull Uri uri, String[] projection, String selection,
                       String[] selectionArgs, String sortOrder) {
@@ -295,7 +287,7 @@ public class TransactionProvider extends ContentProvider {
 
     Cursor c;
 
-    Timber.d("Query for URL: %s", uri);
+    log("Query for URL: %s", uri);
     String groupBy = uri.getQueryParameter(QUERY_PARAMETER_GROUP_BY);
     String having = null;
     String limit = null;
@@ -689,7 +681,7 @@ public class TransactionProvider extends ContentProvider {
               subQueries,
               grouping + "," + sortOrder,
               null);
-          Timber.d("Query : %s", sql);
+          log("Query : %s", sql);
           c = db.rawQuery(sql, null);
 
           c.setNotificationUri(getContext().getContentResolver(), uri);
@@ -782,11 +774,11 @@ public class TransactionProvider extends ContentProvider {
           projection = PaymentMethod.PROJECTION(getContext());
         }
         if (sortOrder == null) {
-          sortOrder = PaymentMethod.localizedLabelSqlColumn(getContext()) + " COLLATE LOCALIZED";
+          sortOrder = PaymentMethod.localizedLabelSqlColumn(getContext(), KEY_LABEL) + " COLLATE LOCALIZED";
         }
         break;
       case MAPPED_METHODS:
-        String localizedLabel = PaymentMethod.localizedLabelSqlColumn(getContext());
+        String localizedLabel = PaymentMethod.localizedLabelSqlColumn(getContext(), KEY_LABEL);
         qb.setTables(TABLE_METHODS + " JOIN " + TABLE_TRANSACTIONS + " ON (" + KEY_METHODID + " = " + TABLE_METHODS + "." + KEY_ROWID + ")");
         projection = new String[]{"DISTINCT " + TABLE_METHODS + "." + KEY_ROWID, localizedLabel + " AS " + KEY_LABEL};
         if (sortOrder == null) {
@@ -800,7 +792,7 @@ public class TransactionProvider extends ContentProvider {
         qb.appendWhere(KEY_ROWID + "=" + uri.getPathSegments().get(1));
         break;
       case METHODS_FILTERED:
-        localizedLabel = PaymentMethod.localizedLabelSqlColumn(getContext());
+        localizedLabel = PaymentMethod.localizedLabelSqlColumn(getContext(), KEY_LABEL);
         qb.setTables(TABLE_METHODS + " JOIN " + TABLE_ACCOUNTTYES_METHODS + " ON (" + KEY_ROWID + " = " + KEY_METHODID + ")");
         projection = new String[]{KEY_ROWID, localizedLabel + " AS " + KEY_LABEL, KEY_IS_NUMBERED};
         String paymentType = uri.getPathSegments().get(2);
@@ -953,8 +945,8 @@ public class TransactionProvider extends ContentProvider {
 
     if (BuildConfig.DEBUG) {
       String qs = qb.buildQuery(projection, selection, groupBy, null, sortOrder, limit);
-      Timber.d("Query : %s", qs);
-      Timber.d("SelectionArgs : %s", Arrays.toString(selectionArgs));
+      log("Query : %s", qs);
+      log("SelectionArgs : %s", Arrays.toString(selectionArgs));
     }
     //long startTime = System.nanoTime();
     c = qb.query(db, projection, selection, selectionArgs, groupBy, having, sortOrder, limit);
@@ -979,9 +971,9 @@ public class TransactionProvider extends ContentProvider {
 
   @Override
   public Uri insert(@NonNull Uri uri, @Nullable ContentValues values) {
-    setDirty();
+    setDirty(true);
     if (values != null && BuildConfig.DEBUG) {
-      Timber.d("INSERT Uri: %s, values: %s", uri, values);
+      log("INSERT Uri: %s, values: %s", uri, values);
     }
     SQLiteDatabase db = mOpenHelper.getWritableDatabase();
     long id;
@@ -1122,8 +1114,8 @@ public class TransactionProvider extends ContentProvider {
 
   @Override
   public int delete(@NonNull Uri uri, String where, String[] whereArgs) {
-    setDirty();
-    Timber.d("Delete for URL: %s", uri);
+    setDirty(true);
+    log("Delete for URL: %s", uri);
     SQLiteDatabase db = mOpenHelper.getWritableDatabase();
     int count;
     String segment;
@@ -1282,14 +1274,14 @@ public class TransactionProvider extends ContentProvider {
   @Override
   public int update(@NonNull Uri uri, ContentValues values, String where,
                     String[] whereArgs) {
-    setDirty();
+    setDirty(true);
     SQLiteDatabase db = mOpenHelper.getWritableDatabase();
     String segment; // contains rowId
     int count;
     int uriMatch = URI_MATCHER.match(uri);
     Cursor c;
     if (values != null && BuildConfig.DEBUG) {
-      Timber.d("UPDATE Uri: %s, values: %s", uri, values);
+      log("UPDATE Uri: %s, values: %s", uri, values);
     }
     switch (uriMatch) {
       case TRANSACTIONS:
@@ -1657,7 +1649,7 @@ public class TransactionProvider extends ContentProvider {
 
   private void notifyChange(Uri uri, boolean syncToNetwork) {
     if (!bulkInProgress) {
-      Timber.i("Notifying %s  syncToNetwork %s", uri.toString(), syncToNetwork ? "true" : "false");
+      log("Notifying %s  syncToNetwork %s", uri.toString(), syncToNetwork ? "true" : "false");
       getContext().getContentResolver().notifyChange(uri, null,
           syncToNetwork && prefHandler.getBoolean(PrefKey.SYNC_CHANGES_IMMEDIATELY, true));
     }
@@ -1837,7 +1829,7 @@ public class TransactionProvider extends ContentProvider {
         sharedPrefFile = new File("/dbdata/databases/" + application.getPackageName() + sharedPrefPath);
         if (!sharedPrefFile.exists()) {
           sharedPrefFile = new File(getInternalAppDir().getPath() + sharedPrefPath);
-          Timber.d(sharedPrefFile.getPath());
+          log(sharedPrefFile.getPath());
           if (!sharedPrefFile.exists()) {
             final String message = "Unable to find shared preference file at " +
                 sharedPrefFile.getPath();
@@ -1847,7 +1839,7 @@ public class TransactionProvider extends ContentProvider {
         }
         if (FileCopyUtils.copy(sharedPrefFile, backupPrefFile)) {
           prefHandler.putBoolean(PrefKey.AUTO_BACKUP_DIRTY, false);
-          mDirty = false;
+          setDirty(false);
         }
       }
       return result;
@@ -1917,5 +1909,9 @@ public class TransactionProvider extends ContentProvider {
     System.arraycopy(baseProjection, 0, projection, 0, baseLength);
     projection[baseLength] = CHECK_SEALED_WITH_ALIAS(baseTable, TABLE_TEMPLATES);
     return projection;
+  }
+
+  private void log(String message, Object... args) {
+    Timber.tag(TAG).i(message, args);
   }
 }
