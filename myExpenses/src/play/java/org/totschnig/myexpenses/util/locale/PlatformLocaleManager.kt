@@ -9,11 +9,11 @@ import com.google.android.play.core.splitinstall.SplitInstallManagerFactory
 import com.google.android.play.core.splitinstall.SplitInstallRequest
 import com.google.android.play.core.splitinstall.SplitInstallStateUpdatedListener
 import com.google.android.play.core.splitinstall.model.SplitInstallSessionStatus
-import org.totschnig.myexpenses.MyApplication
 import org.totschnig.myexpenses.MyApplication.DEFAULT_LANGUAGE
 import timber.log.Timber
 
 
+@Suppress("unused")
 class PlatformLocaleManager(private var userLocaleProvider: UserLocaleProvider) : LocaleManager {
     private lateinit var manager: SplitInstallManager
     var listener: SplitInstallStateUpdatedListener? = null
@@ -28,9 +28,8 @@ class PlatformLocaleManager(private var userLocaleProvider: UserLocaleProvider) 
     }
 
     override fun requestLocale(context: Context) {
-        val application = context.applicationContext as MyApplication
-        val userLanguage = userLocaleProvider.getDefaultLanguage()
-        if (userLanguage.equals(DEFAULT_LANGUAGE)) {
+        val userLanguage = userLocaleProvider.getPreferredLanguage()
+        if (userLanguage == DEFAULT_LANGUAGE) {
             callback?.invoke()
         } else {
             val installedLanguages = manager.installedLanguages
