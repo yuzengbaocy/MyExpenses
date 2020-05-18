@@ -144,7 +144,7 @@ class DriveServiceHelper(context: Context, accountName: String) {
 
     @Throws(IOException::class)
     fun delete(fileId: String) {
-        mDriveService.files().delete(fileId)
+        mDriveService.files().delete(fileId).execute()
     }
 
     @Throws(IOException::class)
