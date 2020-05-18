@@ -3,6 +3,7 @@ package org.totschnig.myexpenses.preference;
 import org.totschnig.myexpenses.MyApplication;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class PrefHandlerImpl implements PrefHandler {
   private MyApplication context;
@@ -11,17 +12,20 @@ public class PrefHandlerImpl implements PrefHandler {
     this.context = context;
   }
 
+  @NonNull
   @Override
   public String getKey(PrefKey key) {
     return key.resId == 0 ? key.key : context.getString(key.resId);
   }
 
   @Override
+  @Nullable
   public String getString(PrefKey key, String defValue) {
     return getString(getKey(key), defValue);
   }
 
   @Override
+  @Nullable
   public String getString(String key, String defValue) {
     return context.getSettings().getString(key, defValue);
   }
