@@ -8,7 +8,7 @@
   * ./gradlew lintPlayWithDriveWithAdsGmsRelease
   * ./gradlew testPlayWithDriveWithAdsGmsReleaseUnitTest
   * ./gradlew clean connectedPlayWithDriveWithAdsGmsForTestAndroidTest
-  * ./gradlew clean assemblePlayWithDriveWithAdsGmsRelease
+  * ./gradlew clean bundlePlayWithDriveWithAdsGmsRelease
 * test upgrade mechanism
 * Create release tag in GIT (git tag r39gp; git push gitlab r39gp)
 * mv APK and mapping.txt into a new folder in releases
