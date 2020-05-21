@@ -111,3 +111,8 @@
 #Guava included by ?
 -dontwarn java.lang.ClassValue
 -dontwarn com.google.auto.common.MoreTypes$1
+
+-keep class org.totschnig.myexpenses.util.locale.PlatformLocaleManager
+-keepclassmembers class org.totschnig.myexpenses.util.locale.PlatformLocaleManager{
+ public <init>(org.totschnig.myexpenses.util.locale.UserLocaleProvider);
+}

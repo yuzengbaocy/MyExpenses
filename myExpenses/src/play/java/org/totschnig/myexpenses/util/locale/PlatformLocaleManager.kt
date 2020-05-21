@@ -17,7 +17,7 @@ import timber.log.Timber
 class PlatformLocaleManager(private var userLocaleProvider: UserLocaleProvider) : LocaleManager {
     private lateinit var manager: SplitInstallManager
     var listener: SplitInstallStateUpdatedListener? = null
-    var callback: (() -> Unit)? = null
+    var callback: Callback? = null
     override fun initApplication(application: Application) {
         SplitCompat.install(application)
         manager = SplitInstallManagerFactory.create(application)
@@ -28,32 +28,35 @@ class PlatformLocaleManager(private var userLocaleProvider: UserLocaleProvider) 
     }
 
     override fun requestLocale(context: Context) {
+        Timber.e("we should  execute here")
         val userLanguage = userLocaleProvider.getPreferredLanguage()
         if (userLanguage == DEFAULT_LANGUAGE) {
-            callback?.invoke()
+            Timber.i("userLanguage == DEFAULT_LANGUAGE")
+            callback?.onAvailable()
         } else {
             val installedLanguages = manager.installedLanguages
             Timber.d("Downloaded languages: %s", installedLanguages.joinToString())
             val userPreferedLocale = userLocaleProvider.getUserPreferredLocale()
             if (installedLanguages.contains(userPreferedLocale.language)) {
-                Timber.d("Already installed")
-                callback?.invoke()
+                Timber.i("Already installed")
+                callback?.onAvailable()
             } else {
+                callback?.onAsyncStarted(userPreferedLocale.displayLanguage)
                 val request = SplitInstallRequest.newBuilder()
                         .addLanguage(userPreferedLocale)
                         .build()
                 manager.startInstall(request)
-                        .addOnFailureListener { exception -> Timber.e(exception) }
+                        .addOnFailureListener { exception -> callback?.onError(exception) }
 
             }
         }
     }
 
-    override fun onResume(onAvailable: () -> Unit) {
-        callback = onAvailable
+    override fun onResume(callback: Callback) {
+        this.callback = callback
         listener = SplitInstallStateUpdatedListener { state ->
             if (state.status() == SplitInstallSessionStatus.INSTALLED) {
-                callback?.invoke()
+                this.callback?.onAvailable()
             }
         }
         manager.registerListener(listener)
