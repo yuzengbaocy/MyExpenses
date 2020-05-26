@@ -8,6 +8,7 @@
   * ./gradlew lintPlayWithDriveWithAdsGmsRelease
   * ./gradlew testPlayWithDriveWithAdsGmsReleaseUnitTest
   * ./gradlew clean connectedPlayWithDriveWithAdsGmsForTestAndroidTest
+  * (eventually) adb shell settings put secure show_ime_with_hard_keyboard 0
   * ./gradlew clean bundlePlayWithDriveWithAdsGmsRelease
 * test upgrade mechanism
 * Create release tag in GIT (git tag r39gp; git push gitlab r39gp)
