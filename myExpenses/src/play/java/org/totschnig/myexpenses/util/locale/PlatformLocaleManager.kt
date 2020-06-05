@@ -28,7 +28,6 @@ class PlatformLocaleManager(private var userLocaleProvider: UserLocaleProvider) 
     }
 
     override fun requestLocale(context: Context) {
-        Timber.e("we should  execute here")
         val userLanguage = userLocaleProvider.getPreferredLanguage()
         if (userLanguage == DEFAULT_LANGUAGE) {
             Timber.i("userLanguage == DEFAULT_LANGUAGE")
