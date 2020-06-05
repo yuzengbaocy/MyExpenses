@@ -37,6 +37,7 @@ import androidx.annotation.VisibleForTesting;
 import timber.log.Timber;
 
 public class LicenceHandler {
+  private boolean hasOurLicence = false;
   protected static final String LICENSE_STATUS_KEY = "licence_status";
   private static final String LICENSE_VALID_SINCE_KEY = "licence_valid_since";
   private static final String LICENSE_VALID_UNTIL_KEY = "licence_valid_until";
@@ -87,9 +88,13 @@ public class LicenceHandler {
   public void init() {
     String licenseStatusPrefsString = licenseStatusPrefs.getString(LICENSE_STATUS_KEY, null);
     try {
-      setLicenceStatus(licenseStatusPrefsString != null ? LicenceStatus.valueOf(licenseStatusPrefsString) : null);
+      final LicenceStatus licenceStatus = licenseStatusPrefsString != null ? LicenceStatus.valueOf(licenseStatusPrefsString) : null;
+      if (licenceStatus != null) {
+        hasOurLicence = true;
+      }
+      setLicenceStatusInternal(licenceStatus);
     } catch (IllegalArgumentException e) {
-      setLicenceStatus(null);
+      setLicenceStatusInternal(null);
     }
   }
 
@@ -104,12 +109,13 @@ public class LicenceHandler {
 
   public void updateLicenceStatus(Licence licence) {
     if (licence == null || licence.getType() == null) {
-      setLicenceStatus(null);
+      setLicenceStatusInternal(null);
       licenseStatusPrefs.remove(LICENSE_STATUS_KEY);
       licenseStatusPrefs.remove(LICENSE_VALID_SINCE_KEY);
       licenseStatusPrefs.remove(LICENSE_VALID_UNTIL_KEY);
     } else {
-      setLicenceStatus(licence.getType());
+      hasOurLicence = true;
+      setLicenceStatusInternal(licence.getType());
       licenseStatusPrefs.putString(LICENSE_STATUS_KEY, licenceStatus.name());
       if (licence.getValidSince() != null) {
         ZonedDateTime validSince = licence.getValidSince().atTime(LocalTime.MAX).atZone(ZoneId.of("Etc/GMT-14"));
@@ -138,7 +144,7 @@ public class LicenceHandler {
   @VisibleForTesting
   public void setLockState(boolean locked) {
     if (MyApplication.isInstrumentationTest()) {
-      setLicenceStatus(locked ? null : LicenceStatus.PROFESSIONAL);
+      setLicenceStatusInternal(locked ? null : LicenceStatus.PROFESSIONAL);
       update();
     } else {
       throw new UnsupportedOperationException();
@@ -336,7 +342,7 @@ public class LicenceHandler {
   public void handleExpiration() {
     long licenceDuration = getValidUntilMillis() - getValidSinceMillis();
     if (TimeUnit.MILLISECONDS.toDays(licenceDuration) > 240) { // roughly eight months
-      setLicenceStatus(LicenceStatus.EXTENDED);
+      setLicenceStatusInternal(LicenceStatus.EXTENDED);
       licenseStatusPrefs.putString(LICENSE_STATUS_KEY, licenceStatus.name());
       licenseStatusPrefs.remove(LICENSE_VALID_UNTIL_KEY);
       licenseStatusPrefs.commit();
@@ -363,7 +369,13 @@ public class LicenceHandler {
     return String.format("%s (%s)", context.getString(resId), getFormattedPriceWithExtra(aPackage, licenceStatus == LicenceStatus.EXTENDED));
   }
 
-  protected void setLicenceStatus(@Nullable LicenceStatus licenceStatus) {
+  void setLicenceStatus(@Nullable LicenceStatus licenceStatus) {
+    if (!hasOurLicence || !this.licenceStatus.greaterOrEqual(licenceStatus)) {
+      setLicenceStatusInternal(licenceStatus);
+    }
+  }
+
+  private void setLicenceStatusInternal(@Nullable LicenceStatus licenceStatus) {
     this.licenceStatus = licenceStatus;
     crashHandler.putCustomData("Licence", licenceStatus != null ? licenceStatus.name() : "null");
   }

@@ -25,6 +25,7 @@ abstract class AbstractInAppPurchaseLicenceHandler(context: MyApplication, prefe
     override fun getLegacyStatus() = STATUS_ENABLED_LEGACY_SECOND
 
     override fun init() {
+        super.init()
         d("init")
         readContribStatusFromPrefs()
     }
