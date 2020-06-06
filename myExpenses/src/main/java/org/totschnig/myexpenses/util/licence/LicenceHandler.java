@@ -157,7 +157,7 @@ public class LicenceHandler {
   }
 
   @Nullable
-  private String getFormattedPriceWithExtra(Package aPackage, boolean withExtra) {
+  String getFormattedPriceWithExtra(Package aPackage, boolean withExtra) {
     return aPackage.getFormattedPrice(context, currencyUnit, withExtra);
   }
 
@@ -183,6 +183,10 @@ public class LicenceHandler {
 
   @NonNull
   public String getProLicenceStatus(Context context) {
+    return getProValidUntil(context);
+  }
+
+  String getProValidUntil(Context context) {
     return context.getString(R.string.valid_until, Utils.getDateFormatSafe(this.context).format(getValidUntilDate()));
   }
 

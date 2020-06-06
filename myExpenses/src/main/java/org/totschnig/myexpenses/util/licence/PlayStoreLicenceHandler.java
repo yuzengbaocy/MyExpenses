@@ -1,7 +1,6 @@
 package org.totschnig.myexpenses.util.licence;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.TextUtils;
 
@@ -14,9 +13,7 @@ import com.google.android.vending.licensing.PreferenceObfuscator;
 
 import org.json.JSONException;
 import org.totschnig.myexpenses.MyApplication;
-import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.activity.ContribInfoDialogActivity;
-import org.totschnig.myexpenses.contrib.Config;
 import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
 
@@ -27,8 +24,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-public class StoreLicenceHandler extends AbstractInAppPurchaseLicenceHandler {
-  public StoreLicenceHandler(MyApplication context, PreferenceObfuscator preferenceObfuscator, CrashHandler crashHandler) {
+public class PlayStoreLicenceHandler extends AbstractInAppPurchaseLicenceHandler {
+  public PlayStoreLicenceHandler(MyApplication context, PreferenceObfuscator preferenceObfuscator, CrashHandler crashHandler) {
     super(context, preferenceObfuscator, crashHandler);
   }
 
@@ -74,69 +71,8 @@ public class StoreLicenceHandler extends AbstractInAppPurchaseLicenceHandler {
     return null;
   }
 
-  @Override
-  @Nullable
-  public String getExtendedUpgradeGoodieMessage(Package selectedPackage) {
-    if (selectedPackage == Package.Professional_12) {
-      String pricesPrefsString = getPricesPrefs().getString(Config.SKU_EXTENDED2PROFESSIONAL_12, null);
-      if (pricesPrefsString != null) {
-        return context.getString(R.string.extended_upgrade_goodie_subscription, pricesPrefsString);
-      }
-    }
-    return null;
-  }
-
-  @Override
-  @Nullable
-  public Package[] getProPackagesForExtendOrSwitch() {
-    Package switchPackage = getPackageForSwitch();
-    return switchPackage == null ? null : new Package[]{switchPackage};
-  }
-
-  private Package getPackageForSwitch() {
-    String currentSubscription = licenseStatusPrefs.getString(KEY_CURRENT_SUBSCRIPTION, null);
-    if (currentSubscription == null) return null;
-    switch (currentSubscription) {
-      case Config.SKU_PROFESSIONAL_1:
-        return Package.Professional_12;
-      case Config.SKU_PROFESSIONAL_12:
-      case Config.SKU_EXTENDED2PROFESSIONAL_12:
-        return Package.Professional_1;
-      default:
-        return null;
-    }
-  }
-
-  @Override
-  public String getExtendOrSwitchMessage(Package aPackage) {
-    int recurrenceResId;
-    switch (aPackage) {
-      case Professional_12:
-        recurrenceResId = R.string.switch_to_yearly;
-        break;
-      case Professional_1:
-        recurrenceResId = R.string.switch_to_monthly;
-        break;
-      default:
-        return "";
-    }
-    return context.getString(recurrenceResId);
-  }
-
-  @Override
-  @NonNull
-  public String getProLicenceAction(Context context) {
-    Package switchPackage = getPackageForSwitch();
-    return switchPackage == null ? "" : getExtendOrSwitchMessage(switchPackage);
-  }
-
-  public String getCurrentSubscription() {
+  private String getCurrentSubscription() {
     return licenseStatusPrefs.getString(KEY_CURRENT_SUBSCRIPTION, null);
-  }
-
-  @Override
-  public Package[] getProPackages() {
-    return new Package[]{Package.Professional_1, Package.Professional_12};
   }
 
   @Override
