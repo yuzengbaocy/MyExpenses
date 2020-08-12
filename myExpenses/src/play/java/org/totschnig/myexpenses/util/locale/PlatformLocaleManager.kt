@@ -57,12 +57,11 @@ class PlatformLocaleManager(private var userLocaleProvider: UserLocaleProvider) 
             if (state.status() == SplitInstallSessionStatus.INSTALLED) {
                 this.callback?.onAvailable()
             }
-        }
-        manager.registerListener(listener)
+        }.also { manager.registerListener(it) }
     }
 
     override fun onPause() {
         callback = null
-        manager.unregisterListener(listener)
+        listener?.let { manager.unregisterListener(it) }
     }
 }

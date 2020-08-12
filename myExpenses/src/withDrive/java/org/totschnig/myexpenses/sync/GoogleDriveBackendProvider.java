@@ -224,7 +224,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
 
   @Override
   protected void writeAccount(Account account, boolean update) throws IOException {
-    accountFolder = getExistingAccountFolder(account.uuid);
+    accountFolder = getExistingAccountFolder(account.getUuid());
     if (update || accountFolder == null ) {
       if (accountFolder == null) {
         accountFolder = driveServiceHelper.createFolder(baseFolder.getId(), accountUuid, null);
