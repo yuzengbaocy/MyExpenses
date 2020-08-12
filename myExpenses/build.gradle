@@ -1,3 +1,5 @@
+import com.novoda.gradle.command.Files
+
 buildscript {
     repositories {
 //        mavenLocal()
@@ -13,7 +15,6 @@ buildscript {
 repositories {
 //    mavenLocal()
     mavenCentral()
-    maven { url "https://dl.bintray.com/mockito/maven/" }
 }
 
 apply plugin: 'com.android.application'
@@ -24,13 +25,6 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'io.fabric'
 apply plugin: 'com.novoda.android-command'
 
-def quote(String input) {
-    return "\"" + input + "\""
-}
-
-def getPropertyIfDefined(property) {
-    return getPropertyIfDefined(property, "")
-}
 
 def getPropertyIfDefined(property, defaultValue) {
     if (project.hasProperty(property)) {
@@ -52,8 +46,8 @@ android {
         applicationId "org.totschnig.myexpenses"
         minSdkVersion project.minSdkVersion
         targetSdkVersion project.targetSdkVersion
-        versionCode 416
-        versionName '3.1.2.2'
+        versionCode 417
+        versionName '3.1.3'
         multiDexEnabled true
 
         buildConfigField "String", "BUILD_DATE", "\"" + getDate() + "\""
@@ -183,7 +177,7 @@ android {
             setIgnore(true)
         }
 
-        if (project.hasProperty("buildType") && !variant.buildType.name.equals(project.ext.buildType)) {
+        if (project.hasProperty("buildType") && variant.buildType.name != project.ext.buildType) {
             setIgnore(true)
         }
 
@@ -260,6 +254,7 @@ dependencies {
     implementation 'com.getkeepsafe.taptargetview:taptargetview:1.13.0'
 
     // WebDAV2
+    //noinspection GradleDependency
     implementation "com.squareup.okhttp3:okhttp:$rootProject.okHttpVersion"
 
     // Dropbox
@@ -302,11 +297,11 @@ dependencies {
         exclude group: 'com.google.android', module: 'android'
     }
 
-    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'com.google.android.material:material:1.1.0'
+    implementation 'com.google.android.material:material:1.2.0'
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
     implementation 'androidx.preference:preference:1.1.1'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
@@ -316,8 +311,9 @@ dependencies {
     implementation project(path: ':setupwizard')
 
     //licence validation
-    implementation 'com.squareup.retrofit2:retrofit:2.3.0'
-    implementation 'com.squareup.retrofit2:converter-gson:2.3.0'
+    implementation "com.squareup.retrofit2:retrofit:$rootProject.retrofitVersion"
+    implementation "com.squareup.retrofit2:converter-gson:$rootProject.retrofitVersion"
+    //noinspection GradleDependency
     implementation "com.squareup.okhttp3:logging-interceptor:$rootProject.okHttpVersion"
 
     implementation 'com.jakewharton.threetenabp:threetenabp:1.2.2'
@@ -354,7 +350,7 @@ dependencies {
     testImplementation "androidx.test:core:$rootProject.androidSupportTestVersion"
     testImplementation 'org.assertj:assertj-core:3.8.0'
     androidTestImplementation 'org.assertj:assertj-core:3.8.0'
-    implementation "androidx.core:core-ktx:1.3.0"
+    implementation "androidx.core:core-ktx:1.3.1"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     androidTestImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     androidTestImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
@@ -379,15 +375,18 @@ dependencies {
     api "org.jetbrains.kotlinx:kotlinx-coroutines-core:$rootProject.coroutines"
     api "org.jetbrains.kotlinx:kotlinx-coroutines-android:$rootProject.coroutines"
 
+    //implementation "androidx.activity:activity-ktx:$rootProject.activity_version"
+    implementation "androidx.fragment:fragment-ktx:$rootProject.fragment_version"
+
 }
 
-def getDate() {
+static def getDate() {
     def date = new Date()
     def formattedDate = date.format('yyyyMMdd-HHmm')
     return formattedDate
 }
 
-task copyFileForFixture(type: com.novoda.gradle.command.Files) {
+task copyFileForFixture(type: Files) {
     script {
         push "tests/script/screenshot.jpg", "/sdcard/Android/data/org.totschnig.myexpenses.fortest/files/screenshot.jpg"
     }

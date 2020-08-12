@@ -131,7 +131,7 @@ public class GenericTask<T> extends AsyncTask<T, Void, Object> {
             if (mExtra != null) {
               extraInfo2d = (Long[][]) mExtra;
               t.setDate(new Date(extraInfo2d[i][1]));
-              t.originPlanInstanceId = extraInfo2d[i][0];
+              t.setOriginPlanInstanceId(extraInfo2d[i][0]);
             }
             t.setStatus(STATUS_NONE);
             if (t.save(true) != null && t.saveTags(pair.second, cr)) {
@@ -296,9 +296,7 @@ public class GenericTask<T> extends AsyncTask<T, Void, Object> {
           if (transactionId != null && transactionId > 0L) {
             Transaction.delete(transactionId, false);
           } else {
-            cr.delete(TransactionProvider.PLAN_INSTANCE_STATUS_URI,
-                KEY_INSTANCEID + " = ? AND " + KEY_TEMPLATEID + " = ?",
-                new String[]{String.valueOf(ids[i]), String.valueOf(templateId)});
+            cr.delete(TransactionProvider.PLAN_INSTANCE_SINGLE_URI(templateId, (Long) ids[i]), null, null);
           }
           values = new ContentValues();
           values.putNull(KEY_TRANSACTIONID);
@@ -315,9 +313,7 @@ public class GenericTask<T> extends AsyncTask<T, Void, Object> {
           if (transactionId != null && transactionId > 0L) {
             Transaction.delete(transactionId, false);
           }
-          cr.delete(TransactionProvider.PLAN_INSTANCE_STATUS_URI,
-              KEY_INSTANCEID + " = ? AND " + KEY_TEMPLATEID + " = ?",
-              new String[]{String.valueOf(ids[i]), String.valueOf(templateId)});
+          cr.delete(TransactionProvider.PLAN_INSTANCE_SINGLE_URI(templateId, (Long) ids[i]), null, null);
         }
         return null;
       case TaskExecutionFragment.TASK_BACKUP:
@@ -553,7 +549,7 @@ public class GenericTask<T> extends AsyncTask<T, Void, Object> {
         Bundle bundle = new Bundle();
         bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
         bundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
-        bundle.putString(KEY_UUID, account.uuid);
+        bundle.putString(KEY_UUID, account.getUuid());
         bundle.putBoolean(SyncAdapter.KEY_RESET_REMOTE_ACCOUNT, true);
         ContentResolver.requestSync(GenericAccountService.GetAccount(syncAccountName),
             TransactionProvider.AUTHORITY, bundle);
@@ -562,7 +558,7 @@ public class GenericTask<T> extends AsyncTask<T, Void, Object> {
       }
       case TaskExecutionFragment.TASK_SYNC_LINK_REMOTE: {
         Account remoteAccount = (Account) this.mExtra;
-        if (!deleteAccount(Account.findByUuid(remoteAccount.uuid))) {
+        if (!deleteAccount(Account.findByUuid(remoteAccount.getUuid()))) {
           return Result.FAILURE;
         }
         remoteAccount.save();

@@ -32,6 +32,7 @@ import org.totschnig.myexpenses.provider.DatabaseConstants;
 import org.totschnig.myexpenses.provider.DbUtils;
 import org.totschnig.myexpenses.provider.TransactionProvider;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
+import org.totschnig.myexpenses.viewmodel.data.PlanInstance;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -114,10 +115,6 @@ public class Template extends Transaction implements ITransfer, ISplit {
   }
 
   public static final String[] PROJECTION_BASE, PROJECTION_EXTENDED;
-
-  public String getUuid() {
-    return uuid;
-  }
 
   static {
     PROJECTION_BASE = new String[]{
@@ -322,9 +319,9 @@ public class Template extends Transaction implements ITransfer, ISplit {
     planExecutionAdvance = c.getInt(c.getColumnIndex(KEY_PLAN_EXECUTION_ADVANCE));
     int uuidColumnIndex = c.getColumnIndexOrThrow(KEY_UUID);
     if (c.isNull(uuidColumnIndex)) {//while upgrade to DB schema 47, uuid is still null
-      uuid = generateUuid();
+      setUuid(generateUuid());
     } else {
-      uuid = DbUtils.getString(c, KEY_UUID);
+      setUuid(DbUtils.getString(c, KEY_UUID));
     }
     setSealed(c.getInt(c.getColumnIndexOrThrow(KEY_SEALED)) > 0);
   }
@@ -394,6 +391,32 @@ public class Template extends Transaction implements ITransfer, ISplit {
     Template t = new Template(c);
     c.close();
     return t;
+  }
+
+  @Nullable
+  public static PlanInstance getPlanInstance(long planId, long date) {
+    Cursor c = cr().query(
+        CONTENT_URI.buildUpon().appendQueryParameter(TransactionProvider.QUERY_PARAMETER_WITH_INSTANCE, String.valueOf(CalendarProviderProxy.calculateId(date))).build(),
+        null, KEY_PLANID + "= ?",
+        new String[]{String.valueOf(planId)},
+        null);
+    if (c == null) {
+      return null;
+    }
+    if (c.getCount() == 0) {
+      c.close();
+      return null;
+    }
+    c.moveToFirst();
+    final Long instanceId = getLongOrNull(c, 1);
+    final Long transactionId = getLongOrNull(c, 2);
+    final long templateId = c.getLong(6);
+    final CurrencyContext currencyContext = MyApplication.getInstance().getAppComponent().currencyContext();
+    CurrencyUnit currency = currencyContext.get(c.getString(4));
+    Money amount = new Money(currency, c.getLong(5));
+    PlanInstance planInstance = new PlanInstance(templateId, instanceId, transactionId, c.getString(0), date, c.getInt(3), amount);
+    c.close();
+    return planInstance;
   }
 
   @androidx.annotation.Nullable
@@ -566,12 +589,12 @@ public class Template extends Transaction implements ITransfer, ISplit {
       Timber.d("Template differs %d" , 7);
       return false;
     }
-    if (uuid == null) {
-      if (other.uuid != null) {
+    if (getUuid() == null) {
+      if (other.getUuid() != null) {
         Timber.d("Template differs %d" , 8);
         return false;
       }
-    } else if (!uuid.equals(other.uuid)) {
+    } else if (!getUuid().equals(other.getUuid())) {
       Timber.d("Template differs %d" , 9);
       return false;
     }
@@ -583,7 +606,7 @@ public class Template extends Transaction implements ITransfer, ISplit {
     int result = this.getTitle() != null ? this.getTitle().hashCode() : 0;
     result = 31 * result + (this.planId != null ? this.planId.hashCode() : 0);
     result = 31 * result + (this.isPlanExecutionAutomatic() ? 1 : 0);
-    result = 31 * result + (this.uuid != null ? this.uuid.hashCode() : 0);
+    result = 31 * result + (this.getUuid() != null ? this.getUuid().hashCode() : 0);
     return result;
   }
 
