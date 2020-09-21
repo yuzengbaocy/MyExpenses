@@ -16,7 +16,6 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
 import icepick.Icepick
 import icepick.State
-import org.threeten.bp.format.DateTimeFormatter
 import org.totschnig.myexpenses.MyApplication
 import org.totschnig.myexpenses.R
 import org.totschnig.myexpenses.activity.ManageTemplates
@@ -36,6 +35,7 @@ import org.totschnig.myexpenses.viewmodel.data.PlanInstance
 import org.totschnig.myexpenses.viewmodel.data.PlanInstanceState
 import org.totschnig.myexpenses.viewmodel.data.PlanInstanceUpdate
 import timber.log.Timber
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 fun configureMenuInternalPlanInstances(menu: Menu, state: PlanInstanceState) {
@@ -197,7 +197,7 @@ class PlannerFragment : CommitSafeDialogFragment() {
                         val amount = update.amount?.let { Money(oldInstance.amount.currencyUnit, it) }
                                 ?: oldInstance.amount
                         data[index] = PlanInstance(oldInstance.templateId, update.transactionId, oldInstance.title, oldInstance.date, oldInstance.color,
-                                amount, update.newState)
+                                amount, update.newState, oldInstance.sealed)
                         notifyItemChanged(index)
                     }
         }
@@ -226,10 +226,18 @@ class PlannerFragment : CommitSafeDialogFragment() {
                 amount.text = currencyFormatter.formatCurrency(planInstance.amount)
                 amount.setTextColor(UiUtils.themeIntAttr(root.context,
                         if (planInstance.amount.amountMinor < 0) R.attr.colorExpense else R.attr.colorIncome))
+                val templatesList = parentFragment as? TemplatesList
                 root.setOnLongClickListener {
-                    return@setOnLongClickListener onSelection(planInstance, position)
+                    return@setOnLongClickListener if (planInstance.sealed) {
+                        templatesList?.showSnackbar(this@PlannerFragment, getString(R.string.object_sealed))
+                        true
+                    } else onSelection(planInstance, position)
                 }
                 root.setOnClickListener {
+                    if (planInstance.sealed) {
+                        templatesList?.showSnackbar(this@PlannerFragment, getString(R.string.object_sealed))
+                        return@setOnClickListener
+                    }
                     if (selectedInstances.size > 0) {
                         if (onSelection(planInstance, position))
                             return@setOnClickListener
@@ -238,7 +246,6 @@ class PlannerFragment : CommitSafeDialogFragment() {
                     popup.inflate(R.menu.planlist_context)
                     configureMenuInternalPlanInstances(popup.menu, planInstance.state)
                     popup.setOnMenuItemClickListener { item ->
-                        val templatesList = parentFragment as? TemplatesList
                         val instanceId = planInstance.instanceId
                         when (item.itemId) {
                             R.id.CREATE_PLAN_INSTANCE_EDIT_COMMAND -> {

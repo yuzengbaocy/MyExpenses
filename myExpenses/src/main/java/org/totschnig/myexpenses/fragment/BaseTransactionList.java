@@ -57,8 +57,6 @@ import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.snackbar.Snackbar;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.threeten.bp.LocalDateTime;
-import org.threeten.bp.temporal.ChronoUnit;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.activity.ExpenseEdit;
@@ -117,6 +115,8 @@ import org.totschnig.myexpenses.viewmodel.data.DateInfo;
 import org.totschnig.myexpenses.viewmodel.data.Tag;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
@@ -163,6 +163,7 @@ import static org.totschnig.myexpenses.dialog.ConfirmationDialogFragment.KEY_TIT
 import static org.totschnig.myexpenses.dialog.ConfirmationDialogFragment.KEY_TITLE_STRING;
 import static org.totschnig.myexpenses.fragment.TagListKt.KEY_TAGLIST;
 import static org.totschnig.myexpenses.preference.PrefKey.NEW_SPLIT_TEMPLATE_ENABLED;
+import static org.totschnig.myexpenses.preference.PrefKey.OCR;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.HAS_TRANSFERS;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_ACCOUNTID;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_ACCOUNT_TYPE;
@@ -1434,6 +1435,10 @@ public abstract class BaseTransactionList extends ContextualActionBarFragment im
     if (syncItem != null) {
       Utils.menuItemSetEnabledAndVisible(syncItem, mAccount.getSyncAccountName() != null);
     }
+    MenuItem scanItem = menu.findItem(R.id.SCAN_MODE_COMMAND);
+    if (scanItem != null) {
+      scanItem.setChecked(prefHandler.getBoolean(OCR, false));
+    }
   }
 
   @Override
@@ -1530,6 +1535,9 @@ public abstract class BaseTransactionList extends ContextualActionBarFragment im
       case R.id.SYNC_COMMAND: {
         mAccount.requestSync();
         return true;
+      }
+      case R.id.SCAN_MODE_COMMAND: {
+        ((MyExpenses) getActivity()).toggleScanMode();
       }
       default:
         return super.onOptionsItemSelected(item);
