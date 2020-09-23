@@ -18,7 +18,7 @@ class StoreLicenceHandler(context: MyApplication, preferenceObfuscator: Preferen
 
 
     override fun initBillingManager(activity: Activity, query: Boolean): BillingManager {
-        val billingUpdatesListener: BillingUpdatesListener = object : BillingUpdatesListener {
+        val billingUpdatesListener = object : AmazonBillingUpdatesListener {
             override fun onPurchase(receipt: Receipt): Boolean {
                 val oldStatus = licenceStatus
                 val result = handlePurchase(receipt.sku, receipt.receiptId) != null
