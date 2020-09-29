@@ -29,7 +29,7 @@ private const val BILLING_MANAGER_NOT_INITIALIZED = -1
  * Handles all the interactions with Play Store (via Billing library), maintains connection to
  * it through BillingClient and caches temporary states/data if needed
  */
-class BillingManagerAmazon(val activity: Activity, private val mBillingUpdatesListener: BillingUpdatesListener, query: Boolean) : BillingManager {
+class BillingManagerAmazon(val activity: Activity, private val mBillingUpdatesListener: AmazonBillingUpdatesListener, query: Boolean) : BillingManager {
 
     init {
         log().d("Creating Billing client.")
@@ -119,7 +119,7 @@ class BillingManagerAmazon(val activity: Activity, private val mBillingUpdatesLi
 
 }
 
-interface BillingUpdatesListener {
+interface AmazonBillingUpdatesListener {
     //return true if purchases should be acknowledged
     fun onPurchasesUpdated(purchases: MutableList<Receipt>)
     fun onProductDataResponse(productData: MutableMap<String, Product>)

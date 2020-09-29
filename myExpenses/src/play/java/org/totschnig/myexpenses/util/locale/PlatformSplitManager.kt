@@ -10,12 +10,17 @@ import com.google.android.play.core.splitinstall.SplitInstallRequest
 import com.google.android.play.core.splitinstall.SplitInstallStateUpdatedListener
 import com.google.android.play.core.splitinstall.model.SplitInstallSessionStatus
 import org.totschnig.myexpenses.MyApplication.DEFAULT_LANGUAGE
+import org.totschnig.myexpenses.BuildConfig
+import org.totschnig.myexpenses.feature.Callback
+import org.totschnig.myexpenses.feature.FeatureManager
 import timber.log.Timber
 
+const val OCR_MODULE = "ocr"
 
 @Suppress("unused")
-class PlatformLocaleManager(private var userLocaleProvider: UserLocaleProvider) : LocaleManager {
+class PlatformSplitManager(private var userLocaleProvider: UserLocaleProvider) : FeatureManager {
     private lateinit var manager: SplitInstallManager
+    private var mySessionId = 0
     var listener: SplitInstallStateUpdatedListener? = null
     var callback: Callback? = null
     override fun initApplication(application: Application) {
@@ -45,23 +50,43 @@ class PlatformLocaleManager(private var userLocaleProvider: UserLocaleProvider) 
                         .addLanguage(userPreferedLocale)
                         .build()
                 manager.startInstall(request)
+                        .addOnSuccessListener { sessionId -> mySessionId = sessionId }
                         .addOnFailureListener { exception -> callback?.onError(exception) }
 
             }
         }
     }
 
-    override fun onResume(callback: Callback) {
+    override fun registerCallback(callback: Callback) {
         this.callback = callback
         listener = SplitInstallStateUpdatedListener { state ->
-            if (state.status() == SplitInstallSessionStatus.INSTALLED) {
-                this.callback?.onAvailable()
+            if (state.sessionId() == mySessionId) {
+                if (state.status() == SplitInstallSessionStatus.INSTALLED) {
+                    this.callback?.onAvailable()
+                }
             }
         }.also { manager.registerListener(it) }
     }
 
-    override fun onPause() {
+    override fun unregister() {
         callback = null
         listener?.let { manager.unregisterListener(it) }
+    }
+
+    override fun isFeatureInstalled(feature: FeatureManager.Feature) =
+            if (BuildConfig.DEBUG) true else manager.installedModules.contains(OCR_MODULE)
+
+    override fun requestFeature(feature: FeatureManager.Feature) {
+        callback?.onAsyncStarted(feature)
+        val request = SplitInstallRequest
+                        .newBuilder()
+                        .addModule(OCR_MODULE)
+                        .build()
+
+        manager.startInstall(request)
+                .addOnSuccessListener { sessionId -> mySessionId = sessionId }
+                .addOnFailureListener { exception ->
+                    callback?.onError(exception)
+                }
     }
 }

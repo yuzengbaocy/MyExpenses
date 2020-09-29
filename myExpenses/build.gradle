@@ -131,13 +131,7 @@ android {
         withDrive {
             dimension "drive"
         }
-        withoutDrive {
-            dimension "drive"
-        }
         withAds {
-            dimension "ads"
-        }
-        withoutAds {
             dimension "ads"
         }
         conscript {
