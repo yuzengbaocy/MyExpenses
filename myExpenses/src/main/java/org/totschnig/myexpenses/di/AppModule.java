@@ -18,6 +18,8 @@ import org.totschnig.myexpenses.util.locale.UserLocalProviderImpl;
 import org.totschnig.myexpenses.util.locale.UserLocaleProvider;
 import org.totschnig.myexpenses.util.tracking.Tracker;
 
+import java.util.Locale;
+
 import javax.inject.Named;
 import javax.inject.Singleton;
 
@@ -91,7 +93,7 @@ public class AppModule {
 
   @Provides
   @Singleton
-  static UserLocaleProvider provideUserLocaleProvider(PrefHandler prefHandler) {
-    return new UserLocalProviderImpl(prefHandler);
+  static UserLocaleProvider provideUserLocaleProvider(PrefHandler prefHandler, Locale locale) {
+    return new UserLocalProviderImpl(prefHandler, locale);
   }
 }
