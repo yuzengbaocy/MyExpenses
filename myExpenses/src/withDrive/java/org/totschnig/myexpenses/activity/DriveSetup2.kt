@@ -4,7 +4,7 @@ import android.accounts.AccountManager
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.auth.UserRecoverableAuthException
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import icepick.State
@@ -29,18 +29,20 @@ class DriveSetup2 : AbstractSyncBackup<DriveSetupViewModel>() {
         }
     }
 
-    override fun instantiateViewModel(): DriveSetupViewModel = ViewModelProviders.of(this).get(DriveSetupViewModel::class.java)
+    override fun instantiateViewModel(): DriveSetupViewModel = ViewModelProvider(this).get(DriveSetupViewModel::class.java)
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
-        if (resultCode == Activity.RESULT_OK)
+        if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {
                 REQUEST_ACCOUNT_PICKER -> if (resultData != null) {
                     handleSignInResult(resultData)
                 }
                 REQUEST_RESOLUTION -> viewModel.query()
+                else -> super.onActivityResult(requestCode, resultCode, resultData)
             }
-
-        super.onActivityResult(requestCode, resultCode, resultData)
+        } else {
+            abort()
+        }
     }
 
     private fun handleSignInResult(result: Intent) {
