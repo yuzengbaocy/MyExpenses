@@ -110,7 +110,6 @@
     <!-- %1$s is replace with account label -->
     <string name="dialog_title_balance_account">Balance %1$s</string>
     <string name="dialog_title_contrib_feature">Premium feature</string>
-    <string name="dialog_title_template_title">Set the title</string>
     <plurals name="dialog_title_warning_delete_account">
         <item quantity="one">Delete account?</item>
         <item quantity="other">Delete %1$d accounts?</item>
@@ -939,4 +938,9 @@
     <string name="pref_criterion_future_current">Current time</string>
     <!-- Title of a section on the Settings screen where each entry corresponds to a subsection dedicated to one feature (functionality)  -->
     <string name="pref_category_title_features">Features</string>
+    <string name="scan_result_no_data">No data</string>
+    <string name="scan_result_multiple_candidates_dialog_title">Multiple candidates found. Please select:</string>
+    <string name="scan_result_no_amount">No amount found</string>
+    <string name="scan_result_no_date">No date found</string>
+    <string name="scan_result_no_payee">No payee found</string>
 </resources>
