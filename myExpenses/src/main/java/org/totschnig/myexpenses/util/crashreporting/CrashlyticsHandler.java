@@ -1,6 +1,7 @@
 package org.totschnig.myexpenses.util.crashreporting;
 
 import android.content.Context;
+import android.os.Handler;
 import android.util.Log;
 
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
@@ -21,11 +22,12 @@ public class CrashlyticsHandler extends CrashHandler {
 
   @Override
   void setupLoggingDo(Context context) {
-    setKeys(context);
     if (crashReportingTree == null) {
       crashReportingTree = new CrashReportingTree();
       Timber.plant(crashReportingTree);
     }
+    final Handler handler = new Handler();
+    handler.postDelayed(() -> setKeys(context), 5000);
   }
 
   @Override
@@ -37,7 +39,12 @@ public class CrashlyticsHandler extends CrashHandler {
 
   @Override
   public void putCustomData(String key, String value) {
-    FirebaseCrashlytics.getInstance().setCustomKey(key, value);
+    try {
+      FirebaseCrashlytics.getInstance().setCustomKey(key, value);
+    } catch (IllegalStateException e) {
+      //Firebase not yet initialized
+      e.printStackTrace();
+    }
   }
 
   private static class CrashReportingTree extends Timber.Tree {
