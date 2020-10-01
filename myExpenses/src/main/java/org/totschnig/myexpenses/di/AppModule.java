@@ -34,6 +34,12 @@ public class AppModule {
 
   @Provides
   @Singleton
+  static Context provideContext(MyApplication myApplication) {
+    return myApplication;
+  }
+
+  @Provides
+  @Singleton
   static CrashHandler providesCrashHandler(PrefHandler prefHandler) {
     return (MyApplication.isInstrumentationTest()) ? CrashHandler.NO_OP :
         prefHandler.getBoolean(PrefKey.CRASHREPORT_ENABLED, true) ?

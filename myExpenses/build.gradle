@@ -46,8 +46,8 @@ android {
         applicationId "org.totschnig.myexpenses"
         minSdkVersion project.minSdkVersion
         targetSdkVersion project.targetSdkVersion
-        versionCode 422
-        versionName '3.1.3.1'
+        versionCode 425
+        versionName '3.1.4'
         multiDexEnabled true
 
         buildConfigField "String", "BUILD_DATE", "\"" + getDate() + "\""
@@ -96,12 +96,6 @@ android {
         debug {
             applicationIdSuffix ".debug"
             manifestPlaceholders = [appName: "My Expenses Debug", debug: "true"]
-        }
-        forTest {
-            initWith debug
-            applicationIdSuffix ".fortest"
-            manifestPlaceholders = [appName: "My Expenses Test", debug: "true"]
-            matchingFallbacks = ['debug']
             buildConfigField "int", "TEST_SCENARIO", getPropertyIfDefined('testScenario', "1")
         }
     }
@@ -168,7 +162,6 @@ android {
         exclude 'META-INF/proguard/androidx-annotations.pro'
         exclude 'META-INF/gradle/incremental.annotation.processors'
     }
-    testBuildType "forTest"
 
     variantFilter { variant ->
         def names = variant.flavors*.name
@@ -301,10 +294,10 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'com.google.android.material:material:1.2.0'
+    implementation 'com.google.android.material:material:1.2.1'
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
     implementation 'androidx.preference:preference:1.1.1'
-    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.1'
 
     implementation 'com.google.android:flexbox:2.0.1'
 
@@ -331,7 +324,7 @@ dependencies {
 
     androidTestImplementation 'tools.fastlane:screengrab:2.0.0'
     androidTestImplementation "androidx.test.espresso:espresso-core:$rootProject.espressoVersion"
-    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation "androidx.test:runner:$rootProject.androidSupportTestVersion"
     androidTestUtil "androidx.test:orchestrator:$rootProject.androidSupportTestVersion"
     androidTestImplementation "androidx.test:rules:$rootProject.androidSupportTestVersion"

@@ -129,6 +129,7 @@ import static org.totschnig.myexpenses.preference.PrefKey.CONTRIB_PURCHASE;
 import static org.totschnig.myexpenses.preference.PrefKey.CRASHREPORT_ENABLED;
 import static org.totschnig.myexpenses.preference.PrefKey.CRASHREPORT_SCREEN;
 import static org.totschnig.myexpenses.preference.PrefKey.CRASHREPORT_USEREMAIL;
+import static org.totschnig.myexpenses.preference.PrefKey.CRITERION_FUTURE;
 import static org.totschnig.myexpenses.preference.PrefKey.CUSTOM_DATE_FORMAT;
 import static org.totschnig.myexpenses.preference.PrefKey.CUSTOM_DECIMAL_FORMAT;
 import static org.totschnig.myexpenses.preference.PrefKey.DEBUG_ADS;
@@ -149,6 +150,7 @@ import static org.totschnig.myexpenses.preference.PrefKey.NEXT_REMINDER_RATE;
 import static org.totschnig.myexpenses.preference.PrefKey.OCR;
 import static org.totschnig.myexpenses.preference.PrefKey.OCR_DATE_FORMATS;
 import static org.totschnig.myexpenses.preference.PrefKey.OCR_TIME_FORMATS;
+import static org.totschnig.myexpenses.preference.PrefKey.OCR_TOTAL_INDICATORS;
 import static org.totschnig.myexpenses.preference.PrefKey.PERFORM_PROTECTION_SCREEN;
 import static org.totschnig.myexpenses.preference.PrefKey.PERFORM_SHARE;
 import static org.totschnig.myexpenses.preference.PrefKey.PERSONALIZED_AD_CONSENT;
@@ -517,6 +519,10 @@ public class SettingsFragment extends BaseSettingsFragment implements
       findPreference(CRASHREPORT_ENABLED).setOnPreferenceChangeListener(this);
       findPreference(CRASHREPORT_USEREMAIL).setOnPreferenceChangeListener(this);
     } else if (rootKey.equals(getKey(OCR))) {
+      pref = findPreference(OCR_TOTAL_INDICATORS);
+      if ("".equals(prefHandler.getString(OCR_TOTAL_INDICATORS, ""))) {
+        ((EditTextPreference) pref).setText(getString(R.string.pref_ocr_total_indicators_default));
+      }
       pref = findPreference(OCR_DATE_FORMATS);
       pref.setOnPreferenceChangeListener(this);
       if ("".equals(prefHandler.getString(OCR_DATE_FORMATS, ""))) {
@@ -632,7 +638,7 @@ public class SettingsFragment extends BaseSettingsFragment implements
     if (key.equals(getKey(UI_LANGUAGE))) {
       featureManager.requestLocale(activity());
     } else if (key.equals(getKey(GROUP_MONTH_STARTS)) ||
-        key.equals(getKey(GROUP_WEEK_STARTS))) {
+        key.equals(getKey(GROUP_WEEK_STARTS)) || key.equals(getKey(CRITERION_FUTURE))) {
       rebuildDbConstants();
     } else if (key.equals(getKey(UI_FONTSIZE))) {
       updateAllWidgets();
@@ -668,6 +674,7 @@ public class SettingsFragment extends BaseSettingsFragment implements
   public void rebuildDbConstants() {
     DatabaseConstants.buildLocalized(userLocaleProvider.getUserPreferredLocale());
     Transaction.buildProjection(requireContext());
+    org.totschnig.myexpenses.model.Account.buildProjection();
   }
 
   private void updateAllWidgets() {

@@ -189,7 +189,7 @@
     <string name="contrib_feature_auto_backup_label" tools:ignore="UnusedResources">@string/pref_auto_backup_title</string>
     <string name="contrib_feature_split_transaction_label" tools:ignore="UnusedResources">@string/split_transaction</string>
     <string name="contrib_feature_budget_label" tools:ignore="UnusedResources">@string/menu_budget</string>
-    <string name="contrib_feature_ocr_label" tools:ignore="UnusedResources">@string/title_ocr</string>
+    <string name="contrib_feature_ocr_label" tools:ignore="UnusedResources">@string/title_scan_receipt_feature</string>
     <string name="drive_backend_upgrade" tools:ignore="UnusedResources">Since 2.8.0, My Expenses supports synchronization with Drive folders from multiple Google accounts. Please select the Google account from which your existing Drive backends were created.</string>
     <string name="button_label_try_again">Try again</string>
     <string name="licence_validation_upgrade_needed" tools:ignore="UnusedResources">Please upgrade My Expenses Contrib to version 1.5.</string>
@@ -221,6 +221,9 @@
         <item>@android:string/selectAll</item>
         <item>@string/button_label_clone_and_remap</item>
     </string-array>
+    <string-array name="whats_new_314">
+        <item>@string/title_scan_receipt_feature</item>
+    </string-array>
     <string-array name="Sub_10" tools:ignore="InconsistentArrays">
     </string-array>
     <!-- During onboarding, user can select to restore data from synchronized account-specific data . This is the title for the tab where the accounts are listed -->
@@ -232,6 +235,7 @@
     <string name="cab_ManageTemplates_planner_edit_plan_instance_help_text">@string/cab_ManageTemplates_plans_edit_plan_instance_help_text</string>
     <string name="pref_planner_advanced_key">planner_advanced</string>
     <string name="pref_planner_manual_time_key">planner_manual_time</string>
+    <string name="pref_criterion_future_key">criterion_future</string>
     <string name="pref_ocr_total_indicators_key">ocr_total_indicators</string>
     <string name="pref_ocr_time_formats_key">ocr_time_formats</string>
     <string name="pref_ocr_date_formats_key">ocr_date_formats</string>
