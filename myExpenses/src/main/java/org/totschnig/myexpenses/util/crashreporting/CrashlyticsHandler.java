@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
 
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.jetbrains.annotations.NotNull;
@@ -60,6 +61,13 @@ public class CrashlyticsHandler extends CrashHandler {
     @Override
     protected boolean isLoggable(String tag, int priority) {
       return priority == Log.ERROR || priority == Log.WARN;
+    }
+  }
+
+  @Override
+  public void initProcess(Context context, boolean syncService) {
+    if (syncService) {
+      FirebaseApp.initializeApp(context);
     }
   }
 }
