@@ -43,7 +43,7 @@ public class AppModule {
   static CrashHandler providesCrashHandler(PrefHandler prefHandler) {
     return (MyApplication.isInstrumentationTest()) ? CrashHandler.NO_OP :
         prefHandler.getBoolean(PrefKey.CRASHREPORT_ENABLED, true) ?
-            new CrashlyticsHandler() : new AcraCrashHandler();
+            new CrashlyticsHandler(prefHandler) : new AcraCrashHandler();
   }
 
   @Provides
