@@ -23,6 +23,7 @@ public class CrashlyticsHandler extends CrashHandler {
 
   @Override
   void setupLoggingDo(Context context) {
+    FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(true);
     if (crashReportingTree == null) {
       crashReportingTree = new CrashReportingTree();
       Timber.plant(crashReportingTree);
