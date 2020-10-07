@@ -3,6 +3,7 @@ package org.totschnig.myexpenses.util.locale
 import android.app.Activity
 import android.app.Application
 import android.content.Context
+import androidx.fragment.app.FragmentActivity
 import com.google.android.play.core.splitcompat.SplitCompat
 import com.google.android.play.core.splitinstall.SplitInstallManager
 import com.google.android.play.core.splitinstall.SplitInstallManagerFactory
@@ -73,20 +74,26 @@ class PlatformSplitManager(private var userLocaleProvider: UserLocaleProvider) :
         listener?.let { manager.unregisterListener(it) }
     }
 
-    override fun isFeatureInstalled(feature: FeatureManager.Feature) =
-            if (BuildConfig.DEBUG) true else manager.installedModules.contains(OCR_MODULE)
+    override fun isFeatureInstalled(feature: FeatureManager.Feature, context: Context) =
+            when {
+                BuildConfig.DEBUG -> true
+                feature == FeatureManager.Feature.OCR -> manager.installedModules.contains(OCR_MODULE)
+                else -> false
+            }
 
-    override fun requestFeature(feature: FeatureManager.Feature) {
-        callback?.onAsyncStarted(feature)
-        val request = SplitInstallRequest
-                        .newBuilder()
-                        .addModule(OCR_MODULE)
-                        .build()
+    override fun requestFeature(feature: FeatureManager.Feature, fragmentActivity: FragmentActivity) {
+        if (feature == FeatureManager.Feature.OCR) {
+            callback?.onAsyncStarted(feature)
+            val request = SplitInstallRequest
+                    .newBuilder()
+                    .addModule(OCR_MODULE)
+                    .build()
 
-        manager.startInstall(request)
-                .addOnSuccessListener { sessionId -> mySessionId = sessionId }
-                .addOnFailureListener { exception ->
-                    callback?.onError(exception)
-                }
+            manager.startInstall(request)
+                    .addOnSuccessListener { sessionId -> mySessionId = sessionId }
+                    .addOnFailureListener { exception ->
+                        callback?.onError(exception)
+                    }
+        }
     }
 }

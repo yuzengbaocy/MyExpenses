@@ -21,6 +21,8 @@ import java.util.Locale;
 
 import androidx.annotation.NonNull;
 
+import static org.totschnig.myexpenses.activity.ConstantsKt.SYNC_BACKEND_SETUP_REQUEST;
+
 public class GoogleDriveBackendProviderFactory extends SyncBackendProviderFactory {
   public static final String LABEL = "Drive";
 
@@ -41,7 +43,7 @@ public class GoogleDriveBackendProviderFactory extends SyncBackendProviderFactor
     int result = googleApiAvailability.isGooglePlayServicesAvailable(activity);
     if (result == ConnectionResult.SUCCESS) {
       activity.startActivityForResult(new Intent(activity, DriveSetup2.class),
-          ProtectedFragmentActivity.SYNC_BACKEND_SETUP_REQUEST);
+          SYNC_BACKEND_SETUP_REQUEST);
     } else if (googleApiAvailability.isUserResolvableError(result)) {
       googleApiAvailability.getErrorDialog(activity, result, 0).show();
     } else {
