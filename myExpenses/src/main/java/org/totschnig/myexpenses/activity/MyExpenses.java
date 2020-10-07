@@ -125,6 +125,11 @@ import timber.log.Timber;
 
 import static android.text.format.DateUtils.DAY_IN_MILLIS;
 import static eltos.simpledialogfragment.list.CustomListDialog.SELECTED_SINGLE_ID;
+import static org.totschnig.myexpenses.activity.ConstantsKt.CREATE_ACCOUNT_REQUEST;
+import static org.totschnig.myexpenses.activity.ConstantsKt.EDIT_ACCOUNT_REQUEST;
+import static org.totschnig.myexpenses.activity.ConstantsKt.EDIT_REQUEST;
+import static org.totschnig.myexpenses.activity.ConstantsKt.OCR_REQUEST;
+import static org.totschnig.myexpenses.activity.ConstantsKt.PICTURE_REQUEST_CODE;
 import static org.totschnig.myexpenses.preference.PrefKey.OCR;
 import static org.totschnig.myexpenses.preference.PreferenceUtilsKt.requireString;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_ACCOUNTID;
@@ -200,8 +205,8 @@ public class MyExpenses extends BaseMyExpenses implements
     getPrefHandler().putBoolean(OCR, newMode);
     updateFab();
     invalidateOptionsMenu();
-    if (newMode && !viewModel.isOcrAvailable()) {
-      viewModel.requestOcrFeature();
+    if (newMode && !viewModel.isOcrAvailable(this)) {
+      viewModel.requestOcrFeature(this);
     }
   }
 
@@ -515,6 +520,9 @@ public class MyExpenses extends BaseMyExpenses implements
     if (requestCode == PICTURE_REQUEST_CODE && resultCode == RESULT_OK) {
       viewModel.startOcrFeature(scanFile, this);
     }
+    if (requestCode == OCR_REQUEST && resultCode == RESULT_OK) {
+      viewModel.handleOcrData(intent, this);
+    }
   }
 
   @Override
@@ -566,10 +574,10 @@ public class MyExpenses extends BaseMyExpenses implements
           showSnackbar(R.string.warning_no_account, Snackbar.LENGTH_LONG);
         } else {
           if (isScanMode()) {
-            if (viewModel.isOcrAvailable()) {
+            if (viewModel.isOcrAvailable(this)) {
               contribFeatureRequested(ContribFeature.OCR, null);
             } else {
-              viewModel.requestOcrFeature();
+              viewModel.requestOcrFeature(this);
             }
           } else {
             createRow();
@@ -782,6 +790,19 @@ public class MyExpenses extends BaseMyExpenses implements
       case R.id.HIDDEN_ACCOUNTS_COMMAND: {
         SelectHiddenAccountDialogFragment.newInstance().show(getSupportFragmentManager(),
             MANAGE_HIDDEN_FRAGMENT_TAG);
+        return true;
+      }
+      case R.id.OCR_DOWNLOAD_COMMAND: {
+        i = new Intent(Intent.ACTION_VIEW);
+        i.setData(Uri.parse("https://github.com/mtotschnig/OCR/releases/download/1/app-release.apk"));
+        startActivity(i);
+        return true;
+      }
+      case R.id.OCR_FAQ_COMMAND: {
+        i = new Intent(Intent.ACTION_VIEW);
+        i.setData(Uri.parse("https://github.com/mtotschnig/MyExpenses/wiki/FAQ:-OCR"));
+        startActivity(i);
+        return true;
       }
     }
     return false;
@@ -903,7 +924,7 @@ public class MyExpenses extends BaseMyExpenses implements
           scanFile = file;
           Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
           intent.putExtra(MediaStore.EXTRA_OUTPUT, AppDirHelper.getContentUriForFile(scanFile));
-          startActivityForResult(intent, ProtectedFragmentActivity.PICTURE_REQUEST_CODE);
+          startActivityForResult(intent, PICTURE_REQUEST_CODE);
           return Unit.INSTANCE;
         });
       }

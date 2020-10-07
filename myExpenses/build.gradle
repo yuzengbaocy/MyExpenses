@@ -77,10 +77,10 @@ android {
 
     signingConfigs {
         release {
-            storeFile file(getPropertyIfDefined("RELEASE_STORE_FILE", "gitlab.keystore"))
-            storePassword getPropertyIfDefined("RELEASE_STORE_PASSWORD", "gitlab")
-            keyAlias getPropertyIfDefined("RELEASE_KEY_ALIAS", "gitlab")
-            keyPassword getPropertyIfDefined("RELEASE_KEY_PASSWORD", "gitlab")
+            storeFile file(getPropertyIfDefined("RELEASE_STORE_FILE", "unknown"))
+            storePassword getPropertyIfDefined("RELEASE_STORE_PASSWORD", "unknown")
+            keyAlias getPropertyIfDefined("RELEASE_KEY_ALIAS", "unknown")
+            keyPassword getPropertyIfDefined("RELEASE_KEY_PASSWORD", "unknown")
         }
     }
 
@@ -135,7 +135,7 @@ android {
         mlkit {
             dimension "textRecognition"
         }
-        stub {
+        extern {
             dimension "textRecognition"
         }
     }
@@ -322,13 +322,13 @@ dependencies {
     implementation 'com.afollestad.material-dialogs:core:3.3.0'
 
     androidTestImplementation 'tools.fastlane:screengrab:2.0.0'
-    androidTestImplementation "androidx.test.espresso:espresso-core:$rootProject.espressoVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$espressoVersion"
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation "androidx.test:runner:$rootProject.androidSupportTestVersion"
     androidTestUtil "androidx.test:orchestrator:$rootProject.androidSupportTestVersion"
     androidTestImplementation "androidx.test:rules:$rootProject.androidSupportTestVersion"
-    androidTestImplementation "androidx.test.espresso:espresso-intents:$rootProject.espressoVersion"
-    androidTestImplementation("androidx.test.espresso:espresso-contrib:$rootProject.espressoVersion") {
+    androidTestImplementation "androidx.test.espresso:espresso-intents:$espressoVersion"
+    androidTestImplementation("androidx.test.espresso:espresso-contrib:$espressoVersion") {
         exclude module: 'accessibility-test-framework'
     }
     //androidTestImplementation  "androidx.test.espresso.idling:idling-concurrent:$rootProject.espressoVersion"
