@@ -7,7 +7,6 @@ android {
     compileSdkVersion project.compileSdkVersion
 
     defaultConfig {
-        missingDimensionStrategy 'distribution', 'play'
         missingDimensionStrategy 'security', 'gms'
         minSdkVersion project.minSdkVersion
         targetSdkVersion project.targetSdkVersion
@@ -24,7 +23,7 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    flavorDimensions "textRecognition"
+    flavorDimensions "textRecognition", 'distribution'
 
     productFlavors {
         mlkit {
@@ -32,6 +31,16 @@ android {
         }
         extern {
             dimension "textRecognition"
+        }
+        play {
+            dimension "distribution"
+        }
+        amazon {
+            dimension "distribution"
+        }
+        huawei {
+            dimension "distribution"
+
         }
     }
 }
