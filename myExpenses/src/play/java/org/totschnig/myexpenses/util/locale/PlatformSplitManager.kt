@@ -15,8 +15,7 @@ import org.totschnig.myexpenses.BuildConfig
 import org.totschnig.myexpenses.feature.Callback
 import org.totschnig.myexpenses.feature.FeatureManager
 import timber.log.Timber
-
-const val OCR_MODULE = "ocr"
+import java.util.*
 
 @Suppress("unused")
 class PlatformSplitManager(private var userLocaleProvider: UserLocaleProvider) : FeatureManager {
@@ -41,14 +40,14 @@ class PlatformSplitManager(private var userLocaleProvider: UserLocaleProvider) :
         } else {
             val installedLanguages = manager.installedLanguages
             Timber.d("Downloaded languages: %s", installedLanguages.joinToString())
-            val userPreferedLocale = userLocaleProvider.getUserPreferredLocale()
-            if (installedLanguages.contains(userPreferedLocale.language)) {
+            val userPreferredLocale = userLocaleProvider.getUserPreferredLocale()
+            if (installedLanguages.contains(userPreferredLocale.language)) {
                 Timber.i("Already installed")
                 callback?.onAvailable()
             } else {
-                callback?.onAsyncStarted(userPreferedLocale.displayLanguage)
+                callback?.onAsyncStartedLanguage(userPreferredLocale.displayLanguage)
                 val request = SplitInstallRequest.newBuilder()
-                        .addLanguage(userPreferedLocale)
+                        .addLanguage(userPreferredLocale)
                         .build()
                 manager.startInstall(request)
                         .addOnSuccessListener { sessionId -> mySessionId = sessionId }
@@ -74,26 +73,37 @@ class PlatformSplitManager(private var userLocaleProvider: UserLocaleProvider) :
         listener?.let { manager.unregisterListener(it) }
     }
 
-    override fun isFeatureInstalled(feature: FeatureManager.Feature, context: Context) =
+    override fun isFeatureInstalled(feature: String, context: Context) =
             when {
                 BuildConfig.DEBUG -> true
-                feature == FeatureManager.Feature.OCR -> manager.installedModules.contains(OCR_MODULE)
-                else -> false
+                else -> manager.installedModules.contains(feature)
             }
 
-    override fun requestFeature(feature: FeatureManager.Feature, fragmentActivity: FragmentActivity) {
-        if (feature == FeatureManager.Feature.OCR) {
-            callback?.onAsyncStarted(feature)
-            val request = SplitInstallRequest
-                    .newBuilder()
-                    .addModule(OCR_MODULE)
-                    .build()
+    override fun requestFeature(feature: String, fragmentActivity: FragmentActivity) {
+        callback?.onAsyncStartedFeature(feature)
+        val request = SplitInstallRequest
+                .newBuilder()
+                .addModule(feature)
+                .build()
 
-            manager.startInstall(request)
-                    .addOnSuccessListener { sessionId -> mySessionId = sessionId }
-                    .addOnFailureListener { exception ->
-                        callback?.onError(exception)
-                    }
-        }
+        manager.startInstall(request)
+                .addOnSuccessListener { sessionId -> mySessionId = sessionId }
+                .addOnFailureListener { exception ->
+                    callback?.onError(exception)
+                }
     }
+
+    override fun installedFeatures() = manager.installedModules
+
+    override fun installedLanguages() = manager.installedLanguages
+
+    override fun uninstallFeatures(features: Set<String>) {
+        manager.deferredUninstall(features.toList())
+    }
+
+    override fun uninstallLanguages(languages: Set<String>) {
+        manager.deferredLanguageUninstall(languages.map { language ->  Locale(language) })
+    }
+
+    override fun allowsUninstall() = true
 }
