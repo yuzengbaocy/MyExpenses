@@ -25,6 +25,7 @@ import com.google.android.material.snackbar.Snackbar;
 
 import org.jetbrains.annotations.NotNull;
 import org.threeten.bp.LocalDate;
+import org.threeten.bp.LocalTime;
 import org.threeten.bp.chrono.IsoChronology;
 import org.threeten.bp.format.DateTimeFormatter;
 import org.totschnig.myexpenses.BuildConfig;
@@ -36,7 +37,6 @@ import org.totschnig.myexpenses.activity.MyPreferenceActivity;
 import org.totschnig.myexpenses.dialog.ConfirmationDialogFragment;
 import org.totschnig.myexpenses.dialog.MessageDialogFragment;
 import org.totschnig.myexpenses.feature.Callback;
-import org.totschnig.myexpenses.feature.FeatureManager;
 import org.totschnig.myexpenses.model.ContribFeature;
 import org.totschnig.myexpenses.model.Transaction;
 import org.totschnig.myexpenses.preference.CalendarListPreferenceDialogFragmentCompat;
@@ -44,7 +44,6 @@ import org.totschnig.myexpenses.preference.FontSizeDialogFragmentCompat;
 import org.totschnig.myexpenses.preference.FontSizeDialogPreference;
 import org.totschnig.myexpenses.preference.LegacyPasswordPreferenceDialogFragmentCompat;
 import org.totschnig.myexpenses.preference.PopupMenuPreference;
-import org.totschnig.myexpenses.preference.PrefHandler;
 import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.preference.SecurityQuestionDialogFragmentCompat;
 import org.totschnig.myexpenses.preference.SimplePasswordDialogFragmentCompat;
@@ -61,6 +60,7 @@ import org.totschnig.myexpenses.task.TaskExecutionFragment;
 import org.totschnig.myexpenses.util.AppDirHelper;
 import org.totschnig.myexpenses.util.CurrencyFormatter;
 import org.totschnig.myexpenses.util.DistributionHelper;
+import org.totschnig.myexpenses.util.MoreUiUtilsKt;
 import org.totschnig.myexpenses.util.ShareUtils;
 import org.totschnig.myexpenses.util.ShortcutHelper;
 import org.totschnig.myexpenses.util.UiUtils;
@@ -137,6 +137,7 @@ import static org.totschnig.myexpenses.preference.PrefKey.CUSTOM_DATE_FORMAT;
 import static org.totschnig.myexpenses.preference.PrefKey.CUSTOM_DECIMAL_FORMAT;
 import static org.totschnig.myexpenses.preference.PrefKey.DEBUG_ADS;
 import static org.totschnig.myexpenses.preference.PrefKey.DEBUG_SCREEN;
+import static org.totschnig.myexpenses.preference.PrefKey.EXCHANGE_RATES;
 import static org.totschnig.myexpenses.preference.PrefKey.EXCHANGE_RATE_PROVIDER;
 import static org.totschnig.myexpenses.preference.PrefKey.FEATURE_UNINSTALL;
 import static org.totschnig.myexpenses.preference.PrefKey.GROUPING_START_SCREEN;
@@ -421,8 +422,6 @@ public class SettingsFragment extends BaseSettingsFragment implements
         }
         findPreference(TRANSLATION).setSummary(String.format("%s: %s", getString(R.string.translated_by), translators));
       }
-      findPreference(EXCHANGE_RATE_PROVIDER).setOnPreferenceChangeListener(this);
-      configureOpenExchangeRatesPreference(prefHandler.getString(PrefKey.EXCHANGE_RATE_PROVIDER, "RATESAPI"));
 
       final PreferenceCategory advancedCategory = (PreferenceCategory) findPreference(CATEGORY_ADVANCED);
       pref = findPreference(FEATURE_UNINSTALL);
@@ -541,6 +540,9 @@ public class SettingsFragment extends BaseSettingsFragment implements
       findPreference(SYNC_WIFI_ONLY).setOnPreferenceChangeListener(storeInDatabaseChangeListener);
     } else if (rootKey.equals(getKey(FEATURE_UNINSTALL))) {
       configureUninstallPrefs();
+    } else if (rootKey.equals(getKey(EXCHANGE_RATES))) {
+      findPreference(EXCHANGE_RATE_PROVIDER).setOnPreferenceChangeListener(this);
+      configureOpenExchangeRatesPreference(prefHandler.getString(PrefKey.EXCHANGE_RATE_PROVIDER, "RATESAPI"));
     }
   }
 
@@ -654,7 +656,7 @@ public class SettingsFragment extends BaseSettingsFragment implements
       setProtectionDependentsState();
       updateAllWidgets();
     } else if (key.equals(getKey(UI_THEME_KEY))) {
-      activity().recreate();
+      MoreUiUtilsKt.setNightMode(prefHandler, requireContext());
     } else if (key.equals(getKey(PROTECTION_ENABLE_ACCOUNT_WIDGET))) {
       //Log.d("DEBUG","shared preference changed: Account Widget");
       updateWidgets(AccountWidget.class);
@@ -822,7 +824,7 @@ public class SettingsFragment extends BaseSettingsFragment implements
   public boolean onPreferenceChange(Preference pref, Object value) {
     if (matches(pref, HOME_CURRENCY)) {
       if (!value.equals(prefHandler.getString(HOME_CURRENCY, null))) {
-        MessageDialogFragment.newInstance(R.string.dialog_title_information,
+        MessageDialogFragment.newInstance(getString(R.string.dialog_title_information),
             concatResStrings(getContext(), " ", R.string.home_currency_change_warning, R.string.continue_confirmation),
             new MessageDialogFragment.Button(android.R.string.ok, R.id.CHANGE_COMMAND, ((String) value)),
             null, MessageDialogFragment.Button.noButton()).show(getFragmentManager(), "CONFIRM");
@@ -888,7 +890,7 @@ public class SettingsFragment extends BaseSettingsFragment implements
       if (!TextUtils.isEmpty((String) value)) {
         try {
           for (String line : kotlin.text.StringsKt.lines(((String) value))) {
-            LocalDate.now().format(DateTimeFormatter.ofPattern(line));
+            LocalTime.now().format(DateTimeFormatter.ofPattern(line));
           }
         } catch (Exception e) {
           activity().showSnackbar(R.string.date_format_illegal, Snackbar.LENGTH_LONG);
@@ -1004,6 +1006,7 @@ public class SettingsFragment extends BaseSettingsFragment implements
             )
             .pos(R.string.button_validate)
             .neut()
+            .theme(R.style.SimpleDialog)
             .show(this, DIALOG_VALIDATE_LICENCE);
       }
       return true;
@@ -1077,7 +1080,7 @@ public class SettingsFragment extends BaseSettingsFragment implements
     if (Utils.hasApiLevel(Build.VERSION_CODES.LOLLIPOP)) {
       return UiUtils.drawableToBitmap(getResources().getDrawable(iconIdLollipop));
     } else {
-      return UiUtils.getTintedBitmapForTheme(getActivity(), iconIdLegacy, R.style.ThemeDark);
+      return UiUtils.getTintedBitmapForTheme(getActivity(), iconIdLegacy, R.style.DarkBackground);
     }
   }
 
