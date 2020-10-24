@@ -15,9 +15,9 @@ class StoreLicenceHandler(context: MyApplication, preferenceObfuscator: Preferen
 
     override fun getExtendedUpgradeGoodieMessage(selectedPackage: Package): String? {
         if (selectedPackage == Package.Professional_12) {
-            val pricesPrefsString = pricesPrefs.getString(Config.SKU_EXTENDED2PROFESSIONAL_12, null)
-            if (pricesPrefsString != null) {
-                return context.getString(R.string.extended_upgrade_goodie_subscription, pricesPrefsString)
+            val skuDetails = getSkuDetailsFromPrefs(Config.SKU_EXTENDED2PROFESSIONAL_12)
+            if (skuDetails != null) {
+                return context.getString(R.string.extended_upgrade_goodie_subscription, skuDetails.price)
             }
         }
         return null

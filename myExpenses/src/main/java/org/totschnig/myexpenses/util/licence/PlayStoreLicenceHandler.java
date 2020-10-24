@@ -57,7 +57,7 @@ public class PlayStoreLicenceHandler extends AbstractInAppPurchaseLicenceHandler
   }
 
   @Nullable
-  private SkuDetails getSkuDetailsFromPrefs(String sku) {
+  SkuDetails getSkuDetailsFromPrefs(String sku) {
     String originalJson = getPricesPrefs().getString(prefKeyForSkuJson(sku), null);
     if (originalJson != null) {
       try {
