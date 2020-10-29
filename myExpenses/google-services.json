@@ -61,19 +61,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "725385967731-g7tn9hptelb3jac4l6qqstmku7q4vcam.apps.googleusercontent.com",
+          "client_id": "725385967731-87t3d7e37vhlq6b5h6t6hud2tr11fs29.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "org.totschnig.myexpenses.debug",
-            "certificate_hash": "6493d402773387614ceeeb7374d4685895853c37"
-          }
-        },
-        {
-          "client_id": "725385967731-9hq1pg93f3dui4mihga6gkvg76hcmdgv.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "org.totschnig.myexpenses.debug",
-            "certificate_hash": "dfc0f8e9dd097b1b01393bbf9315a1999174035c"
+            "certificate_hash": "75de2e7015be3c311412cacdd0a2627637d9ddcd"
           }
         },
         {
