@@ -8,11 +8,10 @@ import android.text.TextWatcher
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.CompoundButton
 import android.widget.SeekBar
 import android.widget.TextView
-import android.widget.ToggleButton
 import androidx.core.util.Pair
-import com.google.android.material.snackbar.Snackbar
 import com.squareup.picasso.Picasso
 import icepick.Icepick
 import icepick.State
@@ -43,7 +42,6 @@ import org.totschnig.myexpenses.preference.PrefKey
 import org.totschnig.myexpenses.provider.DatabaseConstants
 import org.totschnig.myexpenses.ui.AmountInput
 import org.totschnig.myexpenses.ui.DateButton
-import org.totschnig.myexpenses.ui.DiscoveryHelper
 import org.totschnig.myexpenses.ui.MyTextWatcher
 import org.totschnig.myexpenses.ui.SpinnerHelper
 import org.totschnig.myexpenses.util.DistributionHelper
@@ -152,7 +150,7 @@ abstract class TransactionDelegate<T : ITransaction>(val viewBinding: OneExpense
     @JvmField
     @State
     var rowId: Long = 0L
-    
+
     @JvmField
     @State
     var planId: Long? = null
@@ -172,7 +170,7 @@ abstract class TransactionDelegate<T : ITransaction>(val viewBinding: OneExpense
 
     private val planButton: DateButton
         get() = viewBinding.PB
-    private val planExecutionButton: ToggleButton
+    private val planExecutionButton: CompoundButton
         get() = viewBinding.TB
 
     fun bindUnsafe(transaction: ITransaction?, isCalendarPermissionPermanentlyDeclined: Boolean, newInstance: Boolean, savedInstanceState: Bundle?, recurrence: Plan.Recurrence?, withAutoFill: Boolean) {
@@ -263,7 +261,6 @@ abstract class TransactionDelegate<T : ITransaction>(val viewBinding: OneExpense
         //}
         //after setLocalDateTime, so that the plan info can override the date
         configurePlan((transaction as? Template)?.plan)
-        configurePlanExecutionButton()
 
         viewBinding.Amount.addTextChangedListener(object : MyTextWatcher() {
             override fun afterTextChanged(s: Editable) {
@@ -280,15 +277,6 @@ abstract class TransactionDelegate<T : ITransaction>(val viewBinding: OneExpense
         }
 
         setMethodSelection()
-    }
-
-    private fun configurePlanExecutionButton() {
-        with(planExecutionButton) {
-            val automatic = paint.measureText(context.getString(R.string.plan_automatic)).toInt()
-            val manual = paint.measureText(context.getString(R.string.plan_manual)).toInt()
-            width = ((if (automatic > manual) automatic else manual) +
-                    +paddingLeft + paddingRight)
-        }
     }
 
     protected fun hideRowsSpecificToMain() {
@@ -554,14 +542,7 @@ abstract class TransactionDelegate<T : ITransaction>(val viewBinding: OneExpense
             }
             R.id.Method -> {
                 val hasSelection = position > 0
-                if (hasSelection) {
-                    methodId = parent.selectedItemId
-                    if (methodId!! <= 0) {
-                        methodId = null
-                    }
-                } else {
-                    methodId = null
-                }
+                methodId = if (hasSelection) parent.selectedItemId.takeIf { it > 0 } else null
                 setVisibility(viewBinding.ClearMethod, hasSelection)
                 setReferenceNumberVisibility()
             }
@@ -570,7 +551,6 @@ abstract class TransactionDelegate<T : ITransaction>(val viewBinding: OneExpense
                 updateAccount(account)
             }
             R.id.OperationType -> {
-                host.discoveryHelper.markDiscovered(DiscoveryHelper.Feature.OPERATION_TYPE_SELECT)
                 val newType = operationTypeSpinner.getItemAtPosition(position) as Int
                 if (host.isValidType(newType)) {
                     if (newType == TransactionsContract.Transactions.TYPE_TRANSFER && !checkTransferEnabled()) { //reset to previous
@@ -665,7 +645,7 @@ abstract class TransactionDelegate<T : ITransaction>(val viewBinding: OneExpense
     abstract val operationType: Int
 
     open fun syncStateAndValidate(forSave: Boolean, currencyContext: CurrencyContext): T? {
-        return buildTransaction(forSave, currencyContext, currentAccount()!!.id)?.apply {
+        return currentAccount()?.let { buildTransaction(forSave, currencyContext, it.id) }?.apply {
             originTemplateId = this@TransactionDelegate.originTemplateId
             uuid = this@TransactionDelegate.uuid
             id = rowId
@@ -735,6 +715,7 @@ abstract class TransactionDelegate<T : ITransaction>(val viewBinding: OneExpense
         configureDateInput(account)
         configureStatusSpinner()
         viewBinding.Amount.setFractionDigits(account.currency.fractionDigits())
+        host.tintSystemUi(account.color)
     }
 
     private fun hasHomeCurrency(account: Account): Boolean {
