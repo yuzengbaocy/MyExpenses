@@ -62,6 +62,7 @@ public class ExpenseEditTest extends BaseUiTest {
 
   @Before
   public void fixture() {
+    configureLocale(Locale.GERMANY);
     currency1 = CurrencyUnit.create(Currency.getInstance("USD"));
     currency2 = CurrencyUnit.create(Currency.getInstance("EUR"));
     account1 = new Account(accountLabel1, currency1, 0, "", AccountType.CASH, Account.DEFAULT_COLOR);

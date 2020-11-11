@@ -20,6 +20,7 @@ import android.app.NotificationManager
 import android.content.ContentUris
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.database.ContentObserver
 import android.database.Cursor
 import android.net.Uri
@@ -38,6 +39,7 @@ import android.widget.Toast
 import androidx.annotation.Nullable
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.widget.PopupMenu
+import androidx.core.view.ViewCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.loader.app.LoaderManager
 import androidx.loader.content.CursorLoader
@@ -52,6 +54,7 @@ import org.totschnig.myexpenses.R
 import org.totschnig.myexpenses.contract.TransactionsContract.Transactions
 import org.totschnig.myexpenses.contract.TransactionsContract.Transactions.TYPE_TRANSFER
 import org.totschnig.myexpenses.databinding.DateEditBinding
+import org.totschnig.myexpenses.databinding.MethodRowBinding
 import org.totschnig.myexpenses.databinding.OneExpenseBinding
 import org.totschnig.myexpenses.delegate.CategoryDelegate
 import org.totschnig.myexpenses.delegate.SplitDelegate
@@ -112,6 +115,7 @@ import timber.log.Timber
 import java.io.Serializable
 import java.util.*
 import javax.inject.Inject
+import org.totschnig.myexpenses.viewmodel.data.Template as DataTemplate
 
 /**
  * Activity for editing a transaction
@@ -121,6 +125,7 @@ import javax.inject.Inject
 open class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?>, ContribIFace, ConfirmationDialogListener, ButtonWithDialog.Host, ExchangeRateEdit.Host {
     private lateinit var rootBinding: OneExpenseBinding
     private lateinit var dateEditBinding: DateEditBinding
+    private lateinit var methodRowBinding: MethodRowBinding
     override val amountLabel: TextView
         get() = rootBinding.AmountLabel
     override val amountRow: ViewGroup
@@ -154,6 +159,7 @@ open class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?
     @State
     var operationType = 0
     private lateinit var mManager: LoaderManager
+
     @JvmField
     @State
     var createNew = false
@@ -187,10 +193,12 @@ open class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?
 
     lateinit var delegate: TransactionDelegate<*>
 
+    private var menuItem2TemplateMap: MutableMap<Int, DataTemplate> = mutableMapOf()
+
     private val isSplitPart: Boolean
         get() = parentId != 0L
 
-    private val isNoMainTransaction: Boolean
+    private val isSplitPartOrTemplate: Boolean
         get() = isSplitPart || isTemplate
 
     private val isMainTemplate: Boolean
@@ -200,7 +208,7 @@ open class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?
         get() = operationType != TYPE_TRANSFER && !isSplitPart
 
     private val isMainTransaction: Boolean
-        get() = operationType != TYPE_TRANSFER && !isSplitPart && !isTemplate
+        get() = operationType != TYPE_TRANSFER && !isSplitPartOrTemplate
 
     private val isClone: Boolean
         get() = intent.getBooleanExtra(KEY_CLONE, false)
@@ -226,6 +234,7 @@ open class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?
         setHelpVariant(HelpVariant.transaction)
         rootBinding = OneExpenseBinding.inflate(LayoutInflater.from(this))
         dateEditBinding = DateEditBinding.bind(rootBinding.root)
+        methodRowBinding = MethodRowBinding.bind(rootBinding.root)
         setContentView(rootBinding.root)
         setupToolbar()
         mManager = LoaderManager.getInstance(this)
@@ -235,8 +244,7 @@ open class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?
         amountInput.setTypeEnabled(false)
 
         if (savedInstanceState != null) {
-            delegate = TransactionDelegate.create(operationType, isTemplate, rootBinding, dateEditBinding, prefHandler)
-            loadData()
+            delegate = TransactionDelegate.create(operationType, isTemplate, rootBinding, dateEditBinding, methodRowBinding, prefHandler)
             delegate.bind(null, isCalendarPermissionPermanentlyDeclined, mNewInstance, savedInstanceState, null, withAutoFill)
             setTitle()
             refreshPlanData()
@@ -372,6 +380,14 @@ open class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?
                 }
             }
         })
+        viewModel.getTemplates().observe(this, { templates ->
+            menuItem2TemplateMap.clear()
+            for (template in templates) {
+                val menuId = ViewCompat.generateViewId()
+                menuItem2TemplateMap.put(menuId, template)
+                invalidateOptionsMenu()
+            }
+        })
         if (!isSplitPart) {
             viewModel.getTags().observe(this, { tags ->
                 if (::delegate.isInitialized) {
@@ -384,6 +400,10 @@ open class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?
             })
         }
         linkInputsWithLabels()
+        if (!isSplitPartOrTemplate) {
+            createNew = prefHandler.getBoolean(PrefKey.EXPENSE_EDIT_SAVE_AND_NEW, false)
+            updateFab()
+        }
     }
 
     override fun linkInputsWithLabels() {
@@ -400,8 +420,10 @@ open class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?
                 linkInputWithLabel(Comment, this)
             }
             linkInputWithLabel(Category, CategoryLabel)
-            linkInputWithLabel(Method, MethodLabel)
-            linkInputWithLabel(Number, MethodLabel)
+            with(methodRowBinding) {
+                linkInputWithLabel(Method.root, MethodLabel.root)
+                linkInputWithLabel(Number, ReferenceNumberLabel ?: MethodLabel.root)
+            }
             linkInputWithLabel(PB, PlanLabel)
             linkInputWithLabel(Recurrence, PlanLabel)
             linkInputWithLabel(TB, PlanLabel)
@@ -414,6 +436,7 @@ open class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?
     private fun loadData() {
         loadCurrencies()
         loadAccounts()
+        viewModel.loadTemplates()
     }
 
     private fun loadAccounts() {
@@ -531,7 +554,7 @@ open class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?
                 transaction.date = it / 1000
             }
         }
-        delegate = TransactionDelegate.create(transaction, rootBinding, dateEditBinding, prefHandler)
+        delegate = TransactionDelegate.create(transaction, rootBinding, dateEditBinding, methodRowBinding, prefHandler)
         loadData()
         delegate.bindUnsafe(transaction, isCalendarPermissionPermanentlyDeclined, mNewInstance, null, intent.getSerializableExtra(KEY_CACHED_RECURRENCE) as? Recurrence,
                 withAutoFill)
@@ -599,19 +622,22 @@ open class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         if (::delegate.isInitialized) {
-            val sanMenuItem = menu.findItem(R.id.SAVE_AND_NEW_COMMAND)
-            if (sanMenuItem != null) {
-                sanMenuItem.isChecked = createNew
+            menu.findItem(R.id.SAVE_AND_NEW_COMMAND)?.let {
+                it.isChecked = createNew
             }
-            val oaMenuItem = menu.findItem(R.id.ORIGINAL_AMOUNT_COMMAND)
-            if (oaMenuItem != null) {
-                oaMenuItem.isChecked = delegate.originalAmountVisible
+            menu.findItem(R.id.ORIGINAL_AMOUNT_COMMAND)?.let {
+                it.isChecked = delegate.originalAmountVisible
             }
             val currentAccount = currentAccount
-            val eaMenuItem = menu.findItem(R.id.EQUIVALENT_AMOUNT_COMMAND)
-            if (eaMenuItem != null) {
-                Utils.menuItemSetEnabledAndVisible(eaMenuItem, !(currentAccount == null || hasHomeCurrency(currentAccount)))
-                eaMenuItem.isChecked = delegate.equivalentAmountVisible
+            menu.findItem(R.id.EQUIVALENT_AMOUNT_COMMAND)?.let {
+                Utils.menuItemSetEnabledAndVisible(it, !(currentAccount == null || hasHomeCurrency(currentAccount)))
+                it.isChecked = delegate.equivalentAmountVisible
+            }
+            menu.findItem(R.id.MANAGE_TEMPLATES_COMMAND)?.subMenu?.let { subMenu ->
+                subMenu.clear()
+                menuItem2TemplateMap.forEach { entry ->
+                    subMenu.add(Menu.NONE, entry.key, Menu.NONE, entry.value.title)
+                }
             }
         }
         return super.onPrepareOptionsMenu(menu)
@@ -623,7 +649,10 @@ open class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         super.onCreateOptionsMenu(menu)
-        if (!isNoMainTransaction) {
+        if (!isSplitPartOrTemplate) {
+            menu.addSubMenu(Menu.NONE, R.id.MANAGE_TEMPLATES_COMMAND, 0, R.string.template).apply {
+                item.setIcon(R.drawable.ic_menu_template).setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM)
+            }
             menu.add(Menu.NONE, R.id.SAVE_AND_NEW_COMMAND, 0, R.string.menu_save_and_new)
                     .setCheckable(true)
                     .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER)
@@ -641,6 +670,31 @@ open class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?
                     .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER)
         }
         return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem) =
+            handleTemplateMenuItem(item) || super.onOptionsItemSelected(item)
+
+    private fun handleTemplateMenuItem(item: MenuItem): Boolean {
+        return menuItem2TemplateMap[item.itemId]?.let {
+            if (isDirty) {
+                Bundle().apply {
+                    putString(ConfirmationDialogFragment.KEY_MESSAGE, getString(R.string.confirmation_load_template_discard_data))
+                    putInt(ConfirmationDialogFragment.KEY_COMMAND_POSITIVE, R.id.LOAD_TEMPLATE_DO)
+                    putLong(KEY_ROWID, it.id)
+                    ConfirmationDialogFragment.newInstance(this).show(supportFragmentManager, "CONFIRM_LOAD")
+                }
+            } else {
+                loadTemplate(it.id)
+            }
+            true
+        } ?: false
+    }
+
+    fun loadTemplate(id: Long) {
+        viewModel.transaction(id, TRANSACTION_FROM_TEMPLATE, false, true, null).observe(this, {
+            populateFromTask(it, TRANSACTION_FROM_TEMPLATE)
+        })
     }
 
     override fun doSave(andNew: Boolean) {
@@ -670,6 +724,8 @@ open class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?
             }
             R.id.SAVE_AND_NEW_COMMAND -> {
                 createNew = !createNew
+                prefHandler.putBoolean(PrefKey.EXPENSE_EDIT_SAVE_AND_NEW, createNew)
+                updateFab()
                 invalidateOptionsMenu()
                 return true;
             }
@@ -1062,6 +1118,9 @@ open class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?
                 startAutoFill(args.getLong(KEY_ROWID), true)
                 enableAutoFill(prefHandler)
             }
+            R.id.LOAD_TEMPLATE_DO -> {
+                loadTemplate(args.getLong(KEY_ROWID))
+            }
             else -> super.onPositive(args)
         }
     }
@@ -1170,6 +1229,11 @@ open class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?
         if (delegate.rowId == 0L) {
             (delegate as? TransferDelegate)?.configureTransferDirection()
         }
+        updateFab()
+    }
+
+    private fun updateFab() {
+        floatingActionButton.setImageResource(if (createNew) R.drawable.ic_action_save_new else R.drawable.ic_menu_done)
     }
 
     fun clearMethodSelection(@Suppress("UNUSED_PARAMETER") view: View) {
