@@ -238,7 +238,7 @@ dependencies {
     //noinspection GradleDependency
     implementation 'org.apache.commons:commons-lang3:3.5'
     implementation 'com.android.billingclient:billing:2.2.1'
-    playImplementation 'com.google.android.play:core:1.8.2'
+    playImplementation 'com.google.android.play:core:1.8.3'
     amazonImplementation fileTree(dir: 'libs', include: ['in-app-purchasing-2.0.76.jar'])
 
     implementation 'org.apache.commons:commons-csv:1.5'
@@ -268,7 +268,7 @@ dependencies {
     //noinspection GradleDynamicVersion
     withAdsImplementation 'com.amazon.android:mobile-ads:5.+'
 
-    withDriveImplementation 'com.google.android.gms:play-services-auth:18.1.0'
+    withDriveImplementation 'com.google.android.gms:play-services-auth:19.0.0'
     withDriveImplementation('com.google.http-client:google-http-client-gson:1.37.0')  {
         exclude module: 'httpclient'
         exclude module: 'commons-logging'
@@ -281,10 +281,10 @@ dependencies {
     }
 
     implementation 'com.google.firebase:firebase-crashlytics:17.2.2'
-    implementation 'com.google.firebase:firebase-analytics:17.6.0'
-    implementation 'com.google.firebase:firebase-core:17.5.1'
-    implementation 'com.google.firebase:firebase-config:19.2.0'
-    implementation 'com.google.firebase:firebase-ads:19.4.0'
+    implementation 'com.google.firebase:firebase-analytics:18.0.0'
+    implementation 'com.google.firebase:firebase-core:18.0.0'
+    implementation 'com.google.firebase:firebase-config:20.0.0'
+    implementation 'com.google.firebase:firebase-ads:19.5.0'
 
     implementation 'org.slf4j:slf4j-api:1.7.25'
     implementation 'com.github.tony19:logback-android:2.0.0'
