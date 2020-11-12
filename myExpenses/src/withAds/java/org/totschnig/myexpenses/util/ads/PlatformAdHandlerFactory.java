@@ -4,11 +4,7 @@ import android.content.Context;
 import android.view.ViewGroup;
 
 import com.annimon.stream.Stream;
-import com.google.firebase.analytics.FirebaseAnalytics;
-import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
-import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 
-import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.preference.PrefHandler;
 
@@ -23,23 +19,10 @@ public class PlatformAdHandlerFactory extends DefaultAdHandlerFactory {
   @Override
   public AdHandler create(ViewGroup adContainer) {
     if (isAdDisabled()) {
-      FirebaseAnalytics.getInstance(context).setUserProperty("AdHandler", "NoOp");
       return new NoOpAdHandler(this, adContainer);
     }
-    FirebaseRemoteConfig remoteConfig = FirebaseRemoteConfig.getInstance();
-    FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
-        .setDeveloperModeEnabled(BuildConfig.DEBUG)
-        .build();
-    remoteConfig.setConfigSettings(configSettings);
-    remoteConfig.setDefaults(R.xml.remote_config_defaults);
-    remoteConfig.fetch().addOnCompleteListener(task -> {
-      remoteConfig.activateFetched();
-    });
-    String adHandler = remoteConfig.getString("ad_handling_waterfall");
-    FirebaseAnalytics.getInstance(context).setUserProperty("AdHandler", adHandler);
-    AdHandler[] adHandlers = getAdHandlers(adContainer, adHandler);
-    return adHandlers.length > 0 ? new WaterfallAdHandler(this, adContainer, adHandlers) :
-        new NoOpAdHandler(this, adContainer);
+    return new AdmobAdHandler(this, adContainer,
+        R.string.admob_unitid_mainscreen, R.string.admob_unitid_interstitial);
   }
 
   @VisibleForTesting
