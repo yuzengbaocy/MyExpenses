@@ -122,9 +122,6 @@ android {
         withAds {
             dimension "ads"
         }
-        conscript {
-            dimension "security"
-        }
         gms {
             dimension "security"
         }
@@ -138,14 +135,6 @@ android {
 
     sourceSets {
         main.res.srcDirs += 'src/main/categoryIcons'
-        conscript {
-            release {
-                java.srcDirs += 'src/conscriptRelease/java'
-            }
-            debug {
-                java.srcDirs += 'src/conscriptDebug/java'
-            }
-        }
     }
 
     lintOptions {
@@ -315,9 +304,6 @@ dependencies {
     implementation "com.jakewharton.threetenabp:threetenabp:$threetenabp"
 
     implementation 'com.github.lzyzsd:circleprogress:1.2.1'
-
-    conscriptExternReleaseImplementation 'org.conscrypt:conscrypt-android:2.4.0'
-    conscriptMlkitReleaseImplementation 'org.conscrypt:conscrypt-android:2.4.0'
 
     implementation 'com.squareup.sqlbrite3:sqlbrite:3.2.0'
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
