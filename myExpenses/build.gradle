@@ -195,11 +195,6 @@ android {
     dynamicFeatures = [':ocr']
 }
 
-configurations {
-    conscriptExternReleaseImplementation
-    conscriptMlkitReleaseImplementation
-}
-
 dependencies {
     implementation project(':transactionscontract')
     implementation "com.jakewharton:butterknife:$rootProject.butterknifeVersion"
