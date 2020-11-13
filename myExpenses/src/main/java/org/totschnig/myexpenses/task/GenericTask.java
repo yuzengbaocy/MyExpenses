@@ -28,6 +28,7 @@ import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.fragment.CategoryList;
 import org.totschnig.myexpenses.model.Account;
 import org.totschnig.myexpenses.model.Category;
+import org.totschnig.myexpenses.model.ExportFormat;
 import org.totschnig.myexpenses.model.Payee;
 import org.totschnig.myexpenses.model.PaymentMethod;
 import org.totschnig.myexpenses.model.Plan;
@@ -64,7 +65,6 @@ import java.util.Date;
 import java.util.List;
 
 import androidx.annotation.NonNull;
-import androidx.core.util.Pair;
 import androidx.documentfile.provider.DocumentFile;
 import timber.log.Timber;
 
@@ -127,8 +127,8 @@ public class GenericTask<T> extends AsyncTask<T, Void, Object> {
     switch (mTaskId) {
       case TaskExecutionFragment.TASK_NEW_FROM_TEMPLATE:
         for (int i = 0; i < ids.length; i++) {
-          Pair<Transaction, List<Tag>> pair = Transaction.getInstanceFromTemplate((Long) ids[i]);
-          Transaction t = pair.first;
+          kotlin.Pair<Transaction, List<Tag>> pair = Transaction.getInstanceFromTemplateWithTags((Long) ids[i]);
+          Transaction t = pair.getFirst();
           if (t != null) {
             if (mExtra != null) {
               extraInfo2d = (Long[][]) mExtra;
@@ -136,7 +136,7 @@ public class GenericTask<T> extends AsyncTask<T, Void, Object> {
               t.setOriginPlanInstanceId(extraInfo2d[i][0]);
             }
             t.setStatus(STATUS_NONE);
-            if (t.save(true) != null && t.saveTags(pair.second, cr)) {
+            if (t.save(true) != null && t.saveTags(pair.getSecond(), cr)) {
               successCount++;
             }
           }
@@ -435,7 +435,7 @@ public class GenericTask<T> extends AsyncTask<T, Void, Object> {
         DocumentFile outputFile = AppDirHelper.timeStampedFile(
             appDir,
             fileName,
-            "text/qif", null);
+            ExportFormat.QIF.getMimeType(), null);
         if (outputFile == null) {
           return Result.ofFailure(
               R.string.io_error_unable_to_create_file,
