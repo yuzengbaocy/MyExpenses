@@ -66,16 +66,6 @@
         <item>zh-TW</item>
     </string-array>
 
-    <string-array name="pref_template_click_default_entries">
-        <item>@string/menu_create_instance_save</item>
-        <item>@string/menu_create_instance_edit</item>
-    </string-array>
-
-    <string-array name="pref_template_click_default_values">
-        <item>SAVE</item>
-        <item>EDIT</item>
-    </string-array>
-
     <string-array name="method_types">
         <item>@string/pm_type_debit</item>
         <item>@string/pm_type_neutral</item>
@@ -289,6 +279,7 @@
         <item>category</item>
         <item>tags</item>
         <item>method</item>
+        <item>default_action</item>
         <item>plan</item>
     </string-array>
     <string-array name="ExpenseEdit_templateTransfer_formfields" tools:ignore="UnusedResources">
@@ -298,6 +289,7 @@
         <item>exchange_rate</item>
         <item>tags</item>
         <item>comment</item>
+        <item>default_action</item>
         <item>plan</item>
     </string-array>
     <string-array name="ExpenseEdit_templateSplit_formfields" tools:ignore="UnusedResources">
@@ -309,6 +301,7 @@
         <item>category</item>
         <item>tags</item>
         <item>method</item>
+        <item>default_action</item>
         <item>plan</item>
         <item>split_parts_heading</item>
     </string-array>
@@ -512,6 +505,7 @@
     </string-array>
 
     <string-array name="versions">
+        <item>440;3.1.8</item>
         <item>439;3.1.7</item>
         <item>435;3.1.6</item>
         <item>432;3.1.5</item>
@@ -564,12 +558,14 @@
     <string name="version_more_info_315" tools:ignore="UnusedResources">2733962776865183</string>
     <string name="version_more_info_316" tools:ignore="UnusedResources">2741460342782093</string>
     <string name="version_more_info_317" tools:ignore="UnusedResources">2755797368015057</string>
+    <string name="version_more_info_318" tools:ignore="UnusedResources">2760165394244921</string>
 
     <!-- Github -->
     <string name="project_board_314">30#column-10686300</string>
     <string name="project_board_315">31#column-11152071</string>
     <string name="project_board_316">32#column-11377778</string>
     <string name="project_board_317">34#column-11664847</string>
+    <string name="project_board_318">35#column-11734963</string>
 
     <string-array name="comparison_operator_entries">
         <item>@string/comparison_operator_equal</item>
@@ -663,5 +659,10 @@
     <string-array name="pref_criterion_future_entries">
         <item>@string/pref_criterion_future_end_of_day</item>
         <item>@string/pref_criterion_future_current</item>
+    </string-array>
+
+    <string-array name="template_default_action_entries">
+        <item>@string/menu_save</item>
+        <item>@string/menu_edit</item>
     </string-array>
 </resources>
