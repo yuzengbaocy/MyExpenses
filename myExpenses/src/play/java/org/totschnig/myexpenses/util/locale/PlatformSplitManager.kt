@@ -38,10 +38,9 @@ class PlatformSplitManager(private var userLocaleProvider: UserLocaleProvider) :
             Timber.i("userLanguage == DEFAULT_LANGUAGE")
             callback?.onAvailable()
         } else {
-            val installedLanguages = manager.installedLanguages
-            Timber.d("Downloaded languages: %s", installedLanguages.joinToString())
             val userPreferredLocale = userLocaleProvider.getUserPreferredLocale()
-            if (installedLanguages.contains(userPreferredLocale.language)) {
+            if (userPreferredLocale.language.equals("en") ||
+                    manager.installedLanguages.contains(userPreferredLocale.language)) {
                 Timber.i("Already installed")
                 callback?.onAvailable()
             } else {
