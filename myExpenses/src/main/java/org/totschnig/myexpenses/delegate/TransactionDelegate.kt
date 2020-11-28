@@ -11,7 +11,6 @@ import android.widget.ArrayAdapter
 import android.widget.CompoundButton
 import android.widget.SeekBar
 import android.widget.TextView
-import androidx.core.util.Pair
 import com.squareup.picasso.Picasso
 import icepick.Icepick
 import icepick.State
@@ -45,7 +44,6 @@ import org.totschnig.myexpenses.ui.AmountInput
 import org.totschnig.myexpenses.ui.DateButton
 import org.totschnig.myexpenses.ui.MyTextWatcher
 import org.totschnig.myexpenses.ui.SpinnerHelper
-import org.totschnig.myexpenses.util.DistributionHelper
 import org.totschnig.myexpenses.util.PermissionHelper
 import org.totschnig.myexpenses.util.UiUtils
 import org.totschnig.myexpenses.util.Utils
@@ -58,7 +56,7 @@ import java.math.BigDecimal
 import java.util.*
 
 abstract class TransactionDelegate<T : ITransaction>(
-        val viewBinding: OneExpenseBinding, val dateEditBinding: DateEditBinding, val methodRowBinding: MethodRowBinding,
+        val viewBinding: OneExpenseBinding, private val dateEditBinding: DateEditBinding, private val methodRowBinding: MethodRowBinding,
         val prefHandler: PrefHandler, val isTemplate: Boolean) : AdapterView.OnItemSelectedListener {
 
     private val methodSpinner = SpinnerHelper(methodRowBinding.Method.root)
@@ -76,7 +74,7 @@ abstract class TransactionDelegate<T : ITransaction>(
         viewBinding.advanceExecutionSeek.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
                 seekBar.requestFocusFromTouch() //prevent jump to first EditText https://stackoverflow.com/a/6177270/1199911
-                viewBinding.advanceExecutionValue.setText(progress.toString())
+                viewBinding.advanceExecutionValue.text = progress.toString()
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {
@@ -106,14 +104,14 @@ abstract class TransactionDelegate<T : ITransaction>(
     open val editResId = R.string.menu_edit_transaction
     open val editPartResId = R.string.menu_edit_split_part_category
 
-    val isMainTransaction: Boolean
+    private val isMainTransaction: Boolean
         get() = !isSplitPart && !isTemplate
     open val shouldAutoFill
         get() = !isTemplate
 
     val isSplitPart
         get() = parentId != null
-    val isMainTemplate
+    private val isMainTemplate
         get() = isTemplate && !isSplitPart
 
     var isProcessingLinkedAmountInputs = false
@@ -192,8 +190,8 @@ abstract class TransactionDelegate<T : ITransaction>(
             originTemplateId = transaction.originTemplateId
             uuid = transaction.uuid
             //Setting this early instead of waiting for call to setAccounts
-            //works around a bug in some legagy virtual keyboards where configuring the
-            //edittext too late corrupt inputType
+            //works around a bug in some legacy virtual keyboards where configuring the
+            //editText too late corrupt inputType
             viewBinding.Amount.setFractionDigits(transaction.amount.currencyUnit.fractionDigits())
         } else {
             Icepick.restoreInstanceState(this, savedInstanceState)
@@ -210,16 +208,13 @@ abstract class TransactionDelegate<T : ITransaction>(
             viewBinding.DefaultActionRow.visibility  = View.VISIBLE
             if (!isCalendarPermissionPermanentlyDeclined) { //if user has denied access and checked that he does not want to be asked again, we do not
 //bother him with a button that is not working
-                setPlannerRowVisibility(View.VISIBLE)
-                val recurrenceAdapter = RecurrenceAdapter(context,
-                        if (DistributionHelper.shouldUseAndroidPlatformCalendar()) null else Plan.Recurrence.CUSTOM)
+                setPlannerRowVisibility(true)
+                val recurrenceAdapter = RecurrenceAdapter(context)
                 recurrenceSpinner.adapter = recurrenceAdapter
                 recurrenceSpinner.setOnItemSelectedListener(this)
                 planButton.setOnClickListener {
                     planId?.let {
-                        if (DistributionHelper.shouldUseAndroidPlatformCalendar()) {
-                            host.launchPlanView(false, it)
-                        }
+                        host.launchPlanView(false, it)
                     } ?: run {
                         planButton.showDialog()
                     }
@@ -229,8 +224,7 @@ abstract class TransactionDelegate<T : ITransaction>(
         } else if (!isSplitPart) {
             if (!isCalendarPermissionPermanentlyDeclined) { //we set adapter even if spinner is not immediately visible, since it might become visible
 //after SAVE_AND_NEW action
-                val recurrenceAdapter = RecurrenceAdapter(context,
-                        Plan.Recurrence.ONETIME)
+                val recurrenceAdapter = RecurrenceAdapter(context)
                 recurrenceSpinner.adapter = recurrenceAdapter
                 if (missingRecurrenceFeature() == null) {
                     recurrence?.let {
@@ -239,7 +233,6 @@ abstract class TransactionDelegate<T : ITransaction>(
                     }
                 }
                 recurrenceSpinner.setOnItemSelectedListener(this)
-                setPlannerRowVisibility(View.VISIBLE)
             }
         }
         if (isSplitPart || isTemplate) {
@@ -302,8 +295,8 @@ abstract class TransactionDelegate<T : ITransaction>(
         }
     }
 
-    fun setPlannerRowVisibility(visibility: Int) {
-        viewBinding.PlanRow.visibility = visibility
+    private fun setPlannerRowVisibility(visibility: Boolean) {
+        setVisibility(viewBinding.PlanRow, visibility)
     }
 
     /**
@@ -366,7 +359,7 @@ abstract class TransactionDelegate<T : ITransaction>(
         setVisibility(viewBinding.OriginalAmountRow, originalAmountVisible)
     }
 
-    fun populateOriginalCurrency() {
+    private fun populateOriginalCurrency() {
         if (originalCurrencyCode != null) {
             viewBinding.OriginalAmount.setSelectedCurrency(originalCurrencyCode)
         }
@@ -401,7 +394,7 @@ abstract class TransactionDelegate<T : ITransaction>(
         equivalentAmountVisible = !equivalentAmountVisible
         showEquivalentAmount()
         if (equivalentAmountVisible) {
-            if (validateAmountInput(viewBinding.EquivalentAmount, false, true) == null && currentAccount != null) {
+            if (validateAmountInput(viewBinding.EquivalentAmount, showToUser = false, ifPresent = true) == null && currentAccount != null) {
                 val rate = BigDecimal(currentAccount.exchangeRate)
                 viewBinding.EquivalentAmount.setExchangeRate(rate)
             }
@@ -483,7 +476,7 @@ abstract class TransactionDelegate<T : ITransaction>(
         statusSpinner.adapter = sAdapter
     }
 
-    protected fun createAccountAdapter() {
+    private fun createAccountAdapter() {
         accountsAdapter = AccountAdapter(context)
         accountsAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item)
         accountSpinner.adapter = accountsAdapter
@@ -528,14 +521,14 @@ abstract class TransactionDelegate<T : ITransaction>(
         }
         when (parent.id) {
             R.id.Recurrence -> {
-                var planVisibilty = View.GONE
+                var planVisibility = false
                 if (id > 0) {
                     if (PermissionHelper.PermissionGroup.CALENDAR.hasPermission(context)) {
                         missingRecurrenceFeature()?.let {
                             recurrenceSpinner.setSelection(0)
                             host.showContribDialog(it, null)
                         } ?: run {
-                            planVisibilty = View.VISIBLE
+                            planVisibility = true
                             showCustomRecurrenceInfo()
                         }
                     } else {
@@ -543,7 +536,7 @@ abstract class TransactionDelegate<T : ITransaction>(
                     }
                 }
                 if (isTemplate) {
-                    configurePlanDependents(planVisibilty)
+                    configurePlanDependents(planVisibility)
                 }
             }
             R.id.Method -> {
@@ -564,7 +557,7 @@ abstract class TransactionDelegate<T : ITransaction>(
                     } else if (newType == TransactionsContract.Transactions.TYPE_SPLIT) {
                         resetOperationType()
                         if (isTemplate) {
-                            if (PrefKey.NEW_SPLIT_TEMPLATE_ENABLED.getBoolean(true)) {
+                            if (prefHandler.getBoolean(PrefKey.NEW_SPLIT_TEMPLATE_ENABLED, true)) {
                                 host.restartWithType(newType)
                             } else {
                                 host.contribFeatureRequested(ContribFeature.SPLIT_TEMPLATE, null)
@@ -615,12 +608,6 @@ abstract class TransactionDelegate<T : ITransaction>(
      */
     protected val isIncome: Boolean
         get() = viewBinding.Amount.type
-
-    open fun linkAccountLabels() {
-        with(host) {
-            linkInputWithLabel(accountSpinner.spinner, viewBinding.AccountLabel)
-        }
-    }
 
     private fun readZonedDateTime(dateEdit: DateButton): ZonedDateTime {
         return ZonedDateTime.of(dateEdit.date,
@@ -696,8 +683,8 @@ abstract class TransactionDelegate<T : ITransaction>(
             } else {
                 referenceNumber = methodRowBinding.Number.text.toString()
                 if (forSave && !isSplitPart) {
-                    if (recurrenceSpinner.selectedItemPosition > 0) {
-                        setInitialPlan(Pair.create(recurrenceSpinner.selectedItem as Plan.Recurrence, dateEditBinding.DateButton.date))
+                    if (host.createTemplate) {
+                        setInitialPlan(Triple(viewBinding.Title.text.toString(), recurrenceSpinner.selectedItem as Plan.Recurrence, dateEditBinding.DateButton.date))
                     }
                 }
             }
@@ -791,20 +778,25 @@ abstract class TransactionDelegate<T : ITransaction>(
         viewBinding.PayeeLabel.setText(if (viewBinding.Amount.type) R.string.payer else R.string.payee)
     }
 
+    fun updatePlanButton(plan: Plan) {
+        planButton.text = Plan.prettyTimeInfo(context, plan.rrule, plan.dtstart)
+    }
+
     fun configurePlan(plan: Plan?) {
-        plan?.let { plan ->
-            planButton.text = Plan.prettyTimeInfo(context, plan.rrule, plan.dtstart)
-            if (viewBinding.Title.text.toString() == "") viewBinding.Title.setText(plan.title)
+        plan?.let {
+            updatePlanButton(it)
+            if (viewBinding.Title.text.toString() == "") viewBinding.Title.setText(it.title)
             recurrenceSpinner.spinner.visibility = View.GONE
-            configurePlanDependents(View.VISIBLE)
-            host.observePlan(plan.id)
+            configurePlanDependents(true)
+            host.observePlan(it.id)
         }
     }
 
-    private fun configurePlanDependents(visibility: Int) {
-        planButton.visibility = visibility
-        planExecutionButton.visibility = visibility
-        viewBinding.advanceExecutionRow.visibility = visibility
+    private fun configurePlanDependents(visibility: Boolean) {
+        setVisibility(planButton, visibility)
+        setVisibility(planExecutionButton, visibility)
+        setVisibility(viewBinding.advanceExecutionRow, visibility)
+        setVisibility(viewBinding.DefaultActionRow, !visibility)
     }
 
     open fun onSaveInstanceState(outState: Bundle) {
@@ -824,7 +816,7 @@ abstract class TransactionDelegate<T : ITransaction>(
         configurePicture()
     }
 
-    fun configurePicture() {
+    private fun configurePicture() {
         if (pictureUri != null) {
             viewBinding.PictureContainer.root.visibility = View.VISIBLE
             Picasso.get().load(pictureUri).fit().into(viewBinding.PictureContainer.picture)
@@ -841,7 +833,7 @@ abstract class TransactionDelegate<T : ITransaction>(
         planButton.visibility = View.GONE
     }
 
-    fun resetAmounts() {
+    private fun resetAmounts() {
         isProcessingLinkedAmountInputs = true
         viewBinding.Amount.clear()
         viewBinding.TransferAmount.clear()
@@ -861,28 +853,33 @@ abstract class TransactionDelegate<T : ITransaction>(
     fun onCalendarPermissionsResult(granted: Boolean) {
         if (granted) {
             if (isTemplate) {
-                configurePlanDependents(View.VISIBLE)
+                configurePlanDependents(true)
                 showCustomRecurrenceInfo()
             }
         } else {
             recurrenceSpinner.setSelection(0)
             if (!PermissionHelper.PermissionGroup.CALENDAR.shouldShowRequestPermissionRationale(host)) {
-                setPlannerRowVisibility(View.GONE)
+                setPlannerRowVisibility(false)
             }
         }
     }
 
     fun originTemplateLoaded(template: Template) {
         template.plan?.let { plan ->
+            setPlannerRowVisibility(true)
             recurrenceSpinner.spinner.visibility = View.GONE
-            planButton.visibility = View.VISIBLE
-            planButton.text = Plan.prettyTimeInfo(context,
-                    plan.rrule, plan.dtstart)
-            planButton.setOnClickListener {
-                currentAccount()?.let {
-                    (context as ExpenseEdit).showPlanMonthFragment(template, it.color)
+            updatePlanButton(plan)
+            with(planButton) {
+                visibility = View.VISIBLE
+                setOnClickListener {
+                    currentAccount()?.let {
+                        (context as ExpenseEdit).showPlanMonthFragment(template, it.color)
+                    }
                 }
             }
+            setVisibility(viewBinding.EditPlan, true)
+            planId = plan.id
+            host.observePlan(plan.id)
         }
     }
 
@@ -891,6 +888,11 @@ abstract class TransactionDelegate<T : ITransaction>(
             removeAllViews()
             tags?.let { addChipsBulk(it, closeFunction) }
         }
+    }
+
+    fun setCreateTemplate(createTemplate: Boolean) {
+        setVisibility(viewBinding.TitleRow, createTemplate)
+        setPlannerRowVisibility(createTemplate)
     }
 
     companion object {

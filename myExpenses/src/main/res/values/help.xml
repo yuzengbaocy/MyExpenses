@@ -131,6 +131,7 @@
   <string name="form_ExpenseEdit_templateTransfer_foreign_currency_help_text">If the currencies of \'From\' and \'To\' account are different, you specify the amount for only one of them. The other one will be calculated when you create instances from the template.</string>
   <string name="form_goal_or_limit_help_text">This field allows to specify either a positive saving goal or a negative credit limit. In either case, on the account list, a progress indicator visualizes the distance between the current balance and the goal or the limit.</string>
   <string name="menu_templates_help_text">Open a menu that lists all templates allowing to quickly load them into the form.</string>
+  <string name="menu_create_template_from_transaction_help_text">If this is checked, the transaction will also be saved as template. You can define its title and optionally set a plan for automatic recurrence.</string>
 
   <!-- AccountEdit -->
   <string name="help_AccountEdit_title">Form for accounts</string>
@@ -173,8 +174,6 @@
   <string name="menu_NavigationDrawer_hidden_accounts_help_text">Displays a list of all hidden accounts, where they can be made visible again or deleted.</string>
   <string name="cab_NavigationDrawer_hide_help_text">Remove the account from the list.</string>
   <string name="cab_NavigationDrawer_close_reopen_help_text">By closing an account, you can prevent any changes (additions, deletions, edits) to its data, but still allow it to be taken into consideration for all statistical calculations.</string>
-
-  <string name="form_instant_plan_help_text">Here you can set the transaction to recur on a daily, weekly, monthly or yearly basis. On the \'Templates and Plans\' screen, you can inspect the resulting plan and configure advanced options. If a transaction is already linked to a plan, you can no longer change the type of recurrence, but you can open a calendar view displaying all recurring dates.</string>
 
   <!-- SyncBackends -->
   <string name="help_ManageSyncBackends_intro">My Expenses allows to configure different synchronization backends for each account. For example, you can sync one account with a shared folder, while you sync another account with a private folder. On this screen you add or remove synchronization backends, start or stop synchronization with accounts available remotely. While synchronization happens automatically in a periodic manner, here you can also manually trigger it with a backend. Please be aware that My Expenses needs full control over the remote folder. You should not use other tools or interfaces for changing its contents, since this will most likely lead to failures during synchronization.</string>

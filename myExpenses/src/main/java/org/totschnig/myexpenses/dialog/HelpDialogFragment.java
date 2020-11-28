@@ -124,6 +124,7 @@ public class HelpDialogFragment extends CommitSafeDialogFragment implements Imag
     iconMap.put("close.reopen", R.drawable.ic_lock);
     iconMap.put("remap", null);
     iconMap.put("scan_mode", R.drawable.ic_scan);
+    iconMap.put("save_and_new", R.drawable.ic_action_save_new);
   }
 
   private String context;
@@ -344,9 +345,8 @@ public class HelpDialogFragment extends CommitSafeDialogFragment implements Imag
   }
 
   private boolean shouldSkip(String component) {
+    //noinspection SwitchStatementWithTooFewBranches
     switch (component) {
-      case "form_plan_help_text_advanced":
-        return !DistributionHelper.shouldUseAndroidPlatformCalendar();
       case "help_ManageSyncBackends_drive":
         return DistributionHelper.isGithub();
     }

@@ -30,18 +30,21 @@ import java.math.BigDecimal
 class TransferDelegate(viewBinding: OneExpenseBinding, dateEditBinding: DateEditBinding, methodRowBinding: MethodRowBinding, prefHandler: PrefHandler, isTemplate: Boolean) :
         TransactionDelegate<ITransfer>(viewBinding, dateEditBinding, methodRowBinding, prefHandler, isTemplate) {
 
-    private  var transferAccountSpinner = SpinnerHelper(viewBinding.TransferAccount)
+    private var transferAccountSpinner = SpinnerHelper(viewBinding.TransferAccount)
 
     init {
         createTransferAccountAdapter()
     }
+
     override val operationType = TransactionsContract.Transactions.TYPE_TRANSFER
 
     private val lastExchangeRateRelevantInputs = intArrayOf(INPUT_EXCHANGE_RATE, INPUT_AMOUNT)
     private lateinit var transferAccountsAdapter: AccountAdapter
+
     @JvmField
     @State
     var mTransferAccountId: Long? = null
+
     @JvmField
     @State
     var transferPeer: Long? = null
@@ -194,17 +197,6 @@ class TransferDelegate(viewBinding: OneExpenseBinding, dateEditBinding: DateEdit
                 addView(viewBinding.AmountRow, 2)
                 addView(viewBinding.TransferAmountRow, 4)
             }
-        }
-
-        linkAccountLabels()
-    }
-
-    override fun linkAccountLabels() {
-        with(host) {
-            linkInputWithLabel(accountSpinner.spinner,
-                    if (isIncome) viewBinding.TransferAccountLabel else viewBinding.AccountLabel)
-            linkInputWithLabel(transferAccountSpinner.spinner,
-                    if (isIncome) viewBinding.AccountLabel else viewBinding.TransferAccountLabel)
         }
     }
 

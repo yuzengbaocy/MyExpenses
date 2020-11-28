@@ -225,17 +225,20 @@
     <string-array name="ExpenseEdit_transaction_menuitems" tools:ignore="UnusedResources">
         <item>templates</item>
         <item>save_and_new</item>
+        <item>create_template_from_transaction</item>
         <item>original_amount</item>
         <item>equivalent_amount</item>
     </string-array>
     <string-array name="ExpenseEdit_transfer_menuitems" tools:ignore="UnusedResources">
         <item>templates</item>
         <item>save_and_new</item>
+        <item>create_template_from_transaction</item>
         <item>invert_transfer</item>
     </string-array>
     <string-array name="ExpenseEdit_split_menuitems" tools:ignore="UnusedResources">
         <item>templates</item>
         <item>save_and_new</item>
+        <item>create_template_from_transaction</item>
         <item>original_amount</item>
         <item>equivalent_amount</item>
     </string-array>
@@ -356,6 +359,10 @@
         <item>form_plan_help_text</item>
         <item>form_plan_help_text_advanced</item>
         <item>form_plan_help_text_mode</item>
+    </string-array>
+    <string-array name="form_instant_plan_help_text" tools:ignore="UnusedResources">
+        <item>form_plan_help_text</item>
+        <item>form_plan_help_text_advanced</item>
     </string-array>
     <string-array name="form_AccountEdit_type_help_text" tools:ignore="UnusedResources">
         <item>form_AccountEdit_type_help_text</item>
@@ -505,7 +512,7 @@
     </string-array>
 
     <string-array name="versions">
-        <item>442;3.1.8.1</item>
+        <item>444;3.1.9</item>
         <item>441;3.1.8</item>
         <item>439;3.1.7</item>
         <item>435;3.1.6</item>
@@ -560,6 +567,7 @@
     <string name="version_more_info_316" tools:ignore="UnusedResources">2741460342782093</string>
     <string name="version_more_info_317" tools:ignore="UnusedResources">2755797368015057</string>
     <string name="version_more_info_318" tools:ignore="UnusedResources">2760165394244921</string>
+    <string name="version_more_info_319" tools:ignore="UnusedResources">2768864520041675</string>
 
     <!-- Github -->
     <string name="project_board_314">30#column-10686300</string>
@@ -567,6 +575,7 @@
     <string name="project_board_316">32#column-11377778</string>
     <string name="project_board_317">34#column-11664847</string>
     <string name="project_board_318">35#column-11734963</string>
+    <string name="project_board_319">33#column-11450748</string>
 
     <string-array name="comparison_operator_entries">
         <item>@string/comparison_operator_equal</item>

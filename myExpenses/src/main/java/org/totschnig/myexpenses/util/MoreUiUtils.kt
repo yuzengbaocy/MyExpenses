@@ -1,7 +1,16 @@
 package org.totschnig.myexpenses.util
 
 import android.content.Context
+import android.content.res.TypedArray
 import android.graphics.Color
+import android.util.TypedValue
+import android.view.View
+import android.view.View.OnFocusChangeListener
+import android.view.ViewGroup
+import android.widget.Spinner
+import android.widget.TableLayout
+import android.widget.TableRow
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.graphics.ColorUtils.calculateContrast
 import com.google.android.material.chip.ChipGroup
@@ -28,7 +37,7 @@ fun <T> ChipGroup.addChipsBulk(chips: Iterable<T>, closeFunction: ((T) -> Unit)?
 
 fun setNightMode(prefHandler: PrefHandler, context: Context) {
     AppCompatDelegate.setDefaultNightMode(
-            when(prefHandler.getString(PrefKey.UI_THEME_KEY, context.getString(R.string.pref_ui_theme_default))) {
+            when (prefHandler.getString(PrefKey.UI_THEME_KEY, context.getString(R.string.pref_ui_theme_default))) {
                 "dark" -> AppCompatDelegate.MODE_NIGHT_YES
                 "light" -> AppCompatDelegate.MODE_NIGHT_NO
                 else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
@@ -37,9 +46,18 @@ fun setNightMode(prefHandler: PrefHandler, context: Context) {
 
 fun getBestForeground(color: Int) = arrayOf(Color.BLACK, Color.WHITE).maxByOrNull { calculateContrast(color, it) }!!
 
-inline fun <reified E: Enum<E>> getEnumFromPreferencesWithDefault(prefHandler: PrefHandler, prefKey: PrefKey, defaultValue: E) =
+inline fun <reified E : Enum<E>> getEnumFromPreferencesWithDefault(prefHandler: PrefHandler, prefKey: PrefKey, defaultValue: E) =
         try {
             enumValueOf(prefHandler.getString(prefKey, defaultValue.name)!!)
         } catch (e: IllegalArgumentException) {
             defaultValue
         }
+
+fun <T : View> findParentWithTypeRecursively(view: View, type: Class<T>): T? {
+    if (type.isInstance(view)) {
+        @Suppress("UNCHECKED_CAST")
+        return view as T
+    }
+    val parent = view.parent
+    return if (parent is View) findParentWithTypeRecursively(parent as View, type) else null
+}
