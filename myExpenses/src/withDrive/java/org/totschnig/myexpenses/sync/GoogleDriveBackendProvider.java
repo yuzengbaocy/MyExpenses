@@ -42,10 +42,10 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
   private static final String LOCK_TOKEN_KEY = KEY_LOCK_TOKEN;
   private static final String IS_BACKUP_FOLDER = "isBackupFolder";
   public static final String IS_SYNC_FOLDER = "isSyncFolder";
-  private String folderId;
+  private final String folderId;
   private File baseFolder, accountFolder;
 
-  private DriveServiceHelper driveServiceHelper;
+  private final DriveServiceHelper driveServiceHelper;
 
   GoogleDriveBackendProvider(Context context, android.accounts.Account account, AccountManager accountManager) throws SyncParseException {
     super(context);
@@ -167,12 +167,11 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
       lastShardInt = 0;
       reference = start.number;
     }
-    SequenceNumber result = Stream.of(lastShard)
+    return Stream.of(lastShard)
         .filter(metadata -> isNewerJsonFile(reference, metadata.getName()))
         .max(resourceComparator)
         .map(metadata -> new SequenceNumber(lastShardInt, getSequenceFromFileName(metadata.getName())))
         .orElse(start);
-    return result;
   }
 
   @Override
@@ -308,7 +307,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
     requireBaseFolder();
     List<File> fileList = driveServiceHelper.listChildren(baseFolder);
     return Stream.of(fileList)
-        .filter(metadata -> driveServiceHelper.isFolder(metadata))
+        .filter(driveServiceHelper::isFolder)
         .filter(metadata -> !metadata.getName().equals(BACKUP_FOLDER_NAME))
         .map(this::getAccountMetaDataFromDriveMetadata);
   }
@@ -344,7 +343,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
         .setDescription(getPropertyWithDefault(appProperties, ACCOUNT_METADATA_DESCRIPTION_KEY, ""))
         .setColor(getPropertyWithDefault(appProperties, ACCOUNT_METADATA_COLOR_KEY, Account.DEFAULT_COLOR))
         .setCurrency(getPropertyWithDefault(appProperties, ACCOUNT_METADATA_CURRENCY_KEY,
-            Utils.getHomeCurrency().code()))
+            Utils.getHomeCurrency().getCode()))
         .setUuid(uuid)
         .setLabel(metadata.getName()).build());
   }
@@ -374,7 +373,7 @@ public class GoogleDriveBackendProvider extends AbstractSyncBackendProvider {
                                          String key,
                                          boolean defaultValue) {
     String result = metadata.get(key);
-    return result != null ? Boolean.valueOf(result) : defaultValue;
+    return result != null ? Boolean.parseBoolean(result) : defaultValue;
   }
 
   @Nullable
