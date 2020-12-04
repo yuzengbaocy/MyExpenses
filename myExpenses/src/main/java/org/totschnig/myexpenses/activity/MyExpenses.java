@@ -23,7 +23,6 @@ import android.database.Cursor;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.text.ClipboardManager;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -37,6 +36,8 @@ import android.widget.AdapterView;
 import com.annimon.stream.Stream;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
+import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageView;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
@@ -120,12 +121,12 @@ import se.emilsjolander.stickylistheaders.StickyListHeadersListView;
 import timber.log.Timber;
 
 import static android.text.format.DateUtils.DAY_IN_MILLIS;
+import static com.theartofdev.edmodo.cropper.CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE;
 import static eltos.simpledialogfragment.list.CustomListDialog.SELECTED_SINGLE_ID;
 import static org.totschnig.myexpenses.activity.ConstantsKt.CREATE_ACCOUNT_REQUEST;
 import static org.totschnig.myexpenses.activity.ConstantsKt.EDIT_ACCOUNT_REQUEST;
 import static org.totschnig.myexpenses.activity.ConstantsKt.EDIT_REQUEST;
 import static org.totschnig.myexpenses.activity.ConstantsKt.OCR_REQUEST;
-import static org.totschnig.myexpenses.activity.ConstantsKt.PICTURE_REQUEST_CODE;
 import static org.totschnig.myexpenses.contract.TransactionsContract.Transactions.TYPE_TRANSACTION;
 import static org.totschnig.myexpenses.preference.PrefKey.OCR;
 import static org.totschnig.myexpenses.preference.PreferenceUtilsKt.requireString;
@@ -519,8 +520,15 @@ public class MyExpenses extends BaseMyExpenses implements
       //since its implementation is based on MutableLiveData
       accountId = intent.getLongExtra(KEY_ROWID, 0);
     }
-    if (requestCode == PICTURE_REQUEST_CODE && resultCode == RESULT_OK) {
-      viewModel.startOcrFeature(scanFile, this);
+    if (requestCode == CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+      final CropImage.ActivityResult activityResult = CropImage.getActivityResult(intent);
+      if (resultCode == RESULT_OK) {
+        viewModel.startOcrFeature(scanFile, this);
+      } else {
+        if (activityResult != null) {
+          showSnackbar(activityResult.getError().getMessage());
+        }
+      }
     }
     if (requestCode == OCR_REQUEST && resultCode == RESULT_OK) {
       viewModel.handleOcrData(intent, this);
@@ -923,11 +931,15 @@ public class MyExpenses extends BaseMyExpenses implements
       }
       case OCR: {
         //viewModel.startOcrFeature(new File("/sdcard/OCR_DEBUG.jpg"), this);
-        viewModel.getScanFile(file -> {
-          scanFile = file;
-          Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-          intent.putExtra(MediaStore.EXTRA_OUTPUT, viewModel.getScanUri(scanFile));
-          startActivityForResult(intent, PICTURE_REQUEST_CODE);
+        viewModel.getScanFiles(pair -> {
+          scanFile = pair.getSecond();
+          CropImage.activity()
+              .setCameraOnly(true)
+              .setAllowFlipping(false)
+              .setOutputUri(Uri.fromFile(scanFile))
+              .setCaptureImageOutputUri(viewModel.getScanUri(pair.getFirst()))
+              .setGuidelines(CropImageView.Guidelines.ON)
+              .start(this);
           return Unit.INSTANCE;
         });
       }

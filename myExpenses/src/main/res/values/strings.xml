@@ -223,6 +223,7 @@
     <string name="no_exportable_expenses">There are no transactions that have not yet been exported.</string>
     <string name="no_filemanager_installed">No filemanager installed</string>
     <string name="no_calendar_app_installed">No app found for editing calendar event.</string>
+    <string name="image_capture_not_installed">No app found for taking picture.</string>
     <string name="no_mapped_transactions">No transactions have been mapped to categories during this period.</string>
     <string name="no_methods">No payment methods.</string>
     <string name="no_parties">No parties.</string>
@@ -954,4 +955,6 @@
     <string name="default_action">Default action</string>
     <string name="template_default_action_without_amount_hint">Template without amount should be saved with default action \'Edit\'</string>
     <string name="content_description_edit_plan">Edit plan in calendar app</string>
+    <string name="reset_equivalent_amounts_success">Equivalent amounts have been reset</string>
+    <string name="menu_save_and_new_content_description">Save the data, leave the form open for creating a new transaction with the same data.</string>
 </resources>

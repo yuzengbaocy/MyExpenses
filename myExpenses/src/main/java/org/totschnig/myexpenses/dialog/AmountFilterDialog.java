@@ -44,14 +44,16 @@ public class AmountFilterDialog extends CommitSafeDialogFragment implements OnCl
   public Dialog onCreateDialog(Bundle savedInstanceState) {
     AlertDialog.Builder builder = initBuilderWithView(R.layout.filter_amount);
     mOperatorSpinner = dialogView.findViewById(R.id.Operator);
+    mAmount1Text = dialogView.findViewById(R.id.amount1);
+    mAmount2Text = dialogView.findViewById(R.id.amount2);
     final View amount2Row = dialogView.findViewById(R.id.Amount2Row);
     mOperatorSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
 
       @Override
       public void onItemSelected(AdapterView<?> parent, View view,
                                  int position, long id) {
-        String selectedOp = getResources().getStringArray(R.array.comparison_operator_values)[position];
-        amount2Row.setVisibility(selectedOp.equals("BTW") ? View.VISIBLE : View.GONE);
+        mAmount1Text.setContentDescription(getResources().getStringArray(R.array.comparison_operator_entries)[position]);
+        amount2Row.setVisibility(getResources().getStringArray(R.array.comparison_operator_values)[position].equals("BTW") ? View.VISIBLE : View.GONE);
       }
 
       @Override
@@ -61,9 +63,7 @@ public class AmountFilterDialog extends CommitSafeDialogFragment implements OnCl
     });
     ((ArrayAdapter) mOperatorSpinner.getAdapter())
         .setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
-    mAmount1Text = dialogView.findViewById(R.id.amount1);
-    mAmount2Text = dialogView.findViewById(R.id.amount2);
-    int fractionDigits = ((CurrencyUnit) getArguments().getSerializable(KEY_CURRENCY)).fractionDigits();
+    int fractionDigits = ((CurrencyUnit) getArguments().getSerializable(KEY_CURRENCY)).getFractionDigits();
     mAmount1Text.setFractionDigits(fractionDigits);
     mAmount2Text.setFractionDigits(fractionDigits);
 
@@ -99,7 +99,7 @@ public class AmountFilterDialog extends CommitSafeDialogFragment implements OnCl
     final CurrencyUnit currency = (CurrencyUnit) getArguments().getSerializable(KEY_CURRENCY);
     ctx.addFilterCriteria(new AmountCriteria(
         WhereFilter.Operation.valueOf(selectedOp),
-        currency.code(),
+        currency.getCode(),
         type,
         new Money(currency, bdAmount1).getAmountMinor(),
         bdAmount2 != null ? new Money(currency, bdAmount2).getAmountMinor() : null));

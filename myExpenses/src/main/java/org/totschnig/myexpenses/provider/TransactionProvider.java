@@ -209,6 +209,7 @@ public class TransactionProvider extends BaseTransactionProvider {
   public static final String METHOD_BULK_END = "bulkEnd";
   public static final String METHOD_SORT_ACCOUNTS = "sort_accounts";
   public static final String METHOD_SETUP_CATEGORIES = "setup_categories";
+  public static final String METHOD_RESET_EQUIVALENT_AMOUNTS = "reset_equivalent_amounts";
 
   public static final String KEY_RESULT = "result";
 
@@ -1463,34 +1464,32 @@ public class TransactionProvider extends BaseTransactionProvider {
         break;
       case CURRENCIES_CHANGE_FRACTION_DIGITS:
         synchronized (MyApplication.getInstance()) {
-          db.beginTransaction();
-          try {
-            List<String> segments = uri.getPathSegments();
-            segment = segments.get(2);
-            String[] bindArgs = new String[]{segment};
-            int oldValue = currencyContext.get(segment).fractionDigits();
-            int newValue = Integer.parseInt(segments.get(3));
-            if (oldValue == newValue) {
-              return 0;
-            }
-            c = db.query(
-                TABLE_ACCOUNTS,
-                new String[]{"count(*)"},
-                KEY_CURRENCY + "=?",
-                bindArgs, null, null, null);
-            count = 0;
-            if (c.getCount() != 0) {
-              c.moveToFirst();
-              count = c.getInt(0);
-            }
-            c.close();
-            if (count != 0) {
-              String operation = oldValue < newValue ? "*" : "/";
-              int factor = (int) Math.pow(10, Math.abs(oldValue - newValue));
+          List<String> segments = uri.getPathSegments();
+          segment = segments.get(2);
+          String[] bindArgs = new String[]{segment};
+          int oldValue = currencyContext.get(segment).getFractionDigits();
+          int newValue = Integer.parseInt(segments.get(3));
+          if (oldValue == newValue) {
+            return 0;
+          }
+          c = db.query(
+              TABLE_ACCOUNTS,
+              new String[]{"count(*)"},
+              KEY_CURRENCY + "=?",
+              bindArgs, null, null, null);
+          count = 0;
+          if (c.getCount() != 0) {
+            c.moveToFirst();
+            count = c.getInt(0);
+          }
+          c.close();
+          String operation = oldValue < newValue ? "*" : "/";
+          int factor = (int) Math.pow(10, Math.abs(oldValue - newValue));
+          if (count != 0) {
+            MoreDbUtilsKt.safeUpdateWithSealedAccounts(db, () -> {
               db.execSQL("UPDATE " + TABLE_ACCOUNTS + " SET " + KEY_OPENING_BALANCE + "="
                       + KEY_OPENING_BALANCE + operation + factor + " WHERE " + KEY_CURRENCY + "=?",
                   bindArgs);
-
               db.execSQL("UPDATE " + TABLE_TRANSACTIONS + " SET " + KEY_AMOUNT + "="
                       + KEY_AMOUNT + operation + factor + " WHERE " + KEY_ACCOUNTID
                       + " IN (SELECT " + KEY_ROWID + " FROM " + TABLE_ACCOUNTS + " WHERE " + KEY_CURRENCY + "=?)",
@@ -1500,11 +1499,10 @@ public class TransactionProvider extends BaseTransactionProvider {
                       + KEY_AMOUNT + operation + factor + " WHERE " + KEY_ACCOUNTID
                       + " IN (SELECT " + KEY_ROWID + " FROM " + TABLE_ACCOUNTS + " WHERE " + KEY_CURRENCY + "=?)",
                   bindArgs);
-            }
+              currencyContext.storeCustomFractionDigits(segment, newValue);
+            });
+          } else {
             currencyContext.storeCustomFractionDigits(segment, newValue);
-            db.setTransactionSuccessful();
-          } finally {
-            db.endTransaction();
           }
         }
         break;
@@ -1781,6 +1779,16 @@ public class TransactionProvider extends BaseTransactionProvider {
         Bundle result = new Bundle(1);
         result.putInt(KEY_RESULT, DbUtils.setupDefaultCategories(mOpenHelper.getWritableDatabase(), ContextHelper.wrap(getContext(), userLocaleProvider.getUserPreferredLocale())));
         notifyChange(CATEGORIES_URI, false);
+        return result;
+      }
+      case METHOD_RESET_EQUIVALENT_AMOUNTS: {
+        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+        Bundle result = new Bundle(1);
+        MoreDbUtilsKt.safeUpdateWithSealedAccounts(db, () -> {
+          ContentValues resetValues = new ContentValues(1);
+          resetValues.putNull(KEY_EQUIVALENT_AMOUNT);
+          result.putInt(KEY_RESULT, db.update(TABLE_TRANSACTIONS, resetValues, KEY_EQUIVALENT_AMOUNT + " IS NOT NULL", null));
+        });
         return result;
       }
     }

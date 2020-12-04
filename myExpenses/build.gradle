@@ -42,8 +42,8 @@ android {
         applicationId "org.totschnig.myexpenses"
         minSdkVersion project.minSdkVersion
         targetSdkVersion project.targetSdkVersion
-        versionCode 443
-        versionName '3.1.9'
+        versionCode 444
+        versionName '3.2.0'
         multiDexEnabled true
 
         buildConfigField "String", "BUILD_DATE", "\"" + getDate() + "\""
@@ -125,6 +125,9 @@ android {
         gms {
             dimension "security"
         }
+        /*tesseract {
+            dimension "textRecognition"
+        }*/
         mlkit {
             dimension "textRecognition"
         }
@@ -362,6 +365,7 @@ dependencies {
 
     mlkitImplementation "com.google.android.gms:play-services-base:17.5.0"
 
+    implementation 'com.github.mtotschnig:Android-Image-Cropper:5b4c9eb500'
 }
 
 static def getDate() {
