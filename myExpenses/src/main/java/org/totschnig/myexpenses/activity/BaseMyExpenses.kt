@@ -1,6 +1,5 @@
 package org.totschnig.myexpenses.activity
 
-import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -10,7 +9,6 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.view.menu.MenuBuilder
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.graphics.drawable.DrawableCompat
-import com.theartofdev.edmodo.cropper.CropImage
 import eltos.simpledialogfragment.SimpleDialog.OnDialogResultListener
 import eltos.simpledialogfragment.form.Hint
 import eltos.simpledialogfragment.form.SimpleFormDialog
@@ -29,6 +27,7 @@ import org.totschnig.myexpenses.provider.DatabaseConstants.KEY_AMOUNT
 import org.totschnig.myexpenses.provider.DatabaseConstants.KEY_DATE
 import org.totschnig.myexpenses.provider.DatabaseConstants.KEY_PAYEE_NAME
 import org.totschnig.myexpenses.ui.DiscoveryHelper
+import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
 
@@ -52,12 +51,6 @@ abstract class BaseMyExpenses : LaunchActivity(), OcrHost, OnDialogResultListene
         if (savedInstanceState == null) {
             discoveryHelper.discover(this, floatingActionButton, 3, DiscoveryHelper.Feature.fab_long_press)
         }
-    }
-
-    fun processImageCaptureError(activityResult: CropImage.ActivityResult?) {
-        showSnackbar(activityResult?.error?.let {
-            if (it is ActivityNotFoundException) getString(R.string.image_capture_not_installed) else it.message
-        } ?: "ERROR")
     }
 
     override fun processOcrResult(result: Result<OcrResult>) {
@@ -101,6 +94,7 @@ abstract class BaseMyExpenses : LaunchActivity(), OcrHost, OnDialogResultListene
                 })
             }
         }.onFailure {
+            Timber.e(it)
             Toast.makeText(this, it.message, Toast.LENGTH_LONG).show()
         }
     }
