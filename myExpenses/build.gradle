@@ -234,7 +234,7 @@ dependencies {
     //noinspection GradleDependency
     implementation 'org.apache.commons:commons-lang3:3.5'
     implementation 'com.android.billingclient:billing:2.2.1'
-    playImplementation 'com.google.android.play:core:1.8.3'
+    playImplementation 'com.google.android.play:core:1.9.0'
     amazonImplementation fileTree(dir: 'libs', include: ['in-app-purchasing-2.0.76.jar'])
 
     implementation 'org.apache.commons:commons-csv:1.5'
@@ -260,7 +260,7 @@ dependencies {
 
     implementation "com.jakewharton.timber:timber:$timberVersion"
 
-    withAdsImplementation 'com.google.android.gms:play-services-ads:19.5.0'
+    withAdsImplementation 'com.google.android.gms:play-services-ads:19.6.0'
     //noinspection GradleDynamicVersion
     withAdsImplementation 'com.amazon.android:mobile-ads:5.+'
 
@@ -280,7 +280,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-analytics:18.0.0'
     implementation 'com.google.firebase:firebase-core:18.0.0'
     //implementation 'com.google.firebase:firebase-config:20.0.0'
-    implementation 'com.google.firebase:firebase-ads:19.5.0'
+    implementation 'com.google.firebase:firebase-ads:19.6.0'
 
     implementation 'org.slf4j:slf4j-api:1.7.26'
     implementation 'com.github.tony19:logback-android:2.0.0'
