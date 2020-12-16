@@ -78,23 +78,22 @@ class PlatformSplitManager(private var userLocaleProvider: UserLocaleProvider) :
     }
 
     override fun isFeatureInstalled(feature: String, context: Context) =
-             isModuleInstalled(feature) && super.isFeatureInstalled(feature, context)
+             isModuleInstalled(feature2Module(feature, context)) && super.isFeatureInstalled(feature, context)
 
-    private fun isModuleInstalled(feature: String) = when {
+    private fun isModuleInstalled(module: String) = when {
         BuildConfig.DEBUG -> true
-        else -> manager.installedModules.contains(feature)
+        else -> manager.installedModules.contains(module)
     }
 
     override fun requestFeature(feature: String, activity: BaseActivity) {
-        if (isModuleInstalled(feature)) {
+        val module = feature2Module(feature, activity)
+        if (isModuleInstalled(module)) {
             super.requestFeature(feature, activity)
         } else {
-            callback?.onAsyncStartedFeature(feature)
+            callback?.onAsyncStartedFeature(module)
             val request = SplitInstallRequest
                     .newBuilder()
-                    .addModule(if (feature == OCR_MODULE) {
-                        getDefaultEngine(activity)
-                    } else feature)
+                    .addModule(module)
                     .build()
 
             manager.startInstall(request)
@@ -104,6 +103,9 @@ class PlatformSplitManager(private var userLocaleProvider: UserLocaleProvider) :
                     }
         }
     }
+
+    private fun feature2Module(feature: String, context: Context) =
+            if (feature == OCR_MODULE) getDefaultEngine(context) else feature
 
     override fun installedFeatures() = manager.installedModules
 
