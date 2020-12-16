@@ -93,8 +93,3 @@
 }
 
 -keepattributes Signature,RuntimeVisibleAnnotations,AnnotationDefault
-
--keep class org.totschnig.myexpenses.util.locale.PlatformSplitManager
--keepclassmembers class org.totschnig.myexpenses.util.locale.PlatformSplitManager{
- public <init>(org.totschnig.myexpenses.util.locale.UserLocaleProvider);
-}
