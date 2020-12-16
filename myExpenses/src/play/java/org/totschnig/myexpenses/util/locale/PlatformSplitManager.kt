@@ -9,20 +9,20 @@ import com.google.android.play.core.splitinstall.SplitInstallManagerFactory
 import com.google.android.play.core.splitinstall.SplitInstallRequest
 import com.google.android.play.core.splitinstall.SplitInstallStateUpdatedListener
 import com.google.android.play.core.splitinstall.model.SplitInstallSessionStatus
-import org.totschnig.myexpenses.BuildConfig
 import org.totschnig.myexpenses.MyApplication
 import org.totschnig.myexpenses.MyApplication.DEFAULT_LANGUAGE
 import org.totschnig.myexpenses.activity.BaseActivity
 import org.totschnig.myexpenses.feature.Callback
 import org.totschnig.myexpenses.feature.FeatureManager
 import org.totschnig.myexpenses.feature.OCR_MODULE
-import org.totschnig.myexpenses.feature.getDefaultEngine
+import org.totschnig.myexpenses.feature.getUserConfiguredEngine
+import org.totschnig.myexpenses.preference.PrefHandler
 import timber.log.Timber
 import java.util.*
 
 @Suppress("unused")
 @Keep
-class PlatformSplitManager(private var userLocaleProvider: UserLocaleProvider) : FeatureManager() {
+class PlatformSplitManager(private val userLocaleProvider: UserLocaleProvider, private val prefHandler: PrefHandler) : FeatureManager() {
     private lateinit var manager: SplitInstallManager
     private var mySessionId = 0
     var listener: SplitInstallStateUpdatedListener? = null
@@ -47,7 +47,7 @@ class PlatformSplitManager(private var userLocaleProvider: UserLocaleProvider) :
             if (userPreferredLocale.language.equals("en") ||
                     manager.installedLanguages.contains(userPreferredLocale.language)) {
                 Timber.i("Already installed")
-                callback?.onAvailable(false)
+                callback?.onLanguageAvailable()
             } else {
                 callback?.onAsyncStartedLanguage(userPreferredLocale.displayLanguage)
                 val request = SplitInstallRequest.newBuilder()
@@ -66,7 +66,8 @@ class PlatformSplitManager(private var userLocaleProvider: UserLocaleProvider) :
         listener = SplitInstallStateUpdatedListener { state ->
             if (state.sessionId() == mySessionId) {
                 if (state.status() == SplitInstallSessionStatus.INSTALLED) {
-                    this.callback?.onAvailable(true)
+                    state.moduleNames()
+                    this.callback?.onFeatureAvailable()
                 }
             }
         }.also { manager.registerListener(it) }
@@ -78,22 +79,24 @@ class PlatformSplitManager(private var userLocaleProvider: UserLocaleProvider) :
     }
 
     override fun isFeatureInstalled(feature: String, context: Context) =
-             isModuleInstalled(feature2Module(feature, context)) && super.isFeatureInstalled(feature, context)
+             areModulesInstalled(feature, context) && super.isFeatureInstalled(feature, context)
 
-    private fun isModuleInstalled(module: String) = when {
-        BuildConfig.DEBUG -> true
-        else -> manager.installedModules.contains(module)
-    }
+    private fun areModulesInstalled(feature: String, context: Context) = isModuleInstalled(feature) &&
+            subModule(feature, context)?.let { isModuleInstalled(it) } ?: true
+
+    private fun isModuleInstalled(module: String) = manager.installedModules.contains(module)
 
     override fun requestFeature(feature: String, activity: BaseActivity) {
-        val module = feature2Module(feature, activity)
-        if (isModuleInstalled(module)) {
+        if (areModulesInstalled(feature, activity)) {
             super.requestFeature(feature, activity)
         } else {
-            callback?.onAsyncStartedFeature(module)
+            callback?.onAsyncStartedFeature(feature)
             val request = SplitInstallRequest
                     .newBuilder()
-                    .addModule(module)
+                    .addModule(feature)
+                    .apply {
+                        subModule(feature, activity)?.let { addModule(it) }
+                    }
                     .build()
 
             manager.startInstall(request)
@@ -104,8 +107,8 @@ class PlatformSplitManager(private var userLocaleProvider: UserLocaleProvider) :
         }
     }
 
-    private fun feature2Module(feature: String, context: Context) =
-            if (feature == OCR_MODULE) getDefaultEngine(context) else feature
+    private fun subModule(feature: String, context: Context) =
+            if (feature == OCR_MODULE) getUserConfiguredEngine(context, prefHandler) else null
 
     override fun installedFeatures() = manager.installedModules
 
