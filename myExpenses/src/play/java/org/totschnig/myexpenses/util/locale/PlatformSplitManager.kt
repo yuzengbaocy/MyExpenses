@@ -20,7 +20,6 @@ import org.totschnig.myexpenses.preference.PrefHandler
 import timber.log.Timber
 import java.util.*
 
-@Suppress("unused")
 @Keep
 class PlatformSplitManager(private val userLocaleProvider: UserLocaleProvider, private val prefHandler: PrefHandler) : FeatureManager() {
     private lateinit var manager: SplitInstallManager
@@ -87,15 +86,22 @@ class PlatformSplitManager(private val userLocaleProvider: UserLocaleProvider, p
     private fun isModuleInstalled(module: String) = manager.installedModules.contains(module)
 
     override fun requestFeature(feature: String, activity: BaseActivity) {
-        if (areModulesInstalled(feature, activity)) {
+        val isModuleInstalled = isModuleInstalled(feature)
+        val subModule = subModule(feature, activity)
+        val isSubModuleInstalled = subModule?.let { isModuleInstalled(it) } ?: true
+        if (isModuleInstalled && isSubModuleInstalled) {
             super.requestFeature(feature, activity)
         } else {
             callback?.onAsyncStartedFeature(feature)
             val request = SplitInstallRequest
                     .newBuilder()
-                    .addModule(feature)
                     .apply {
-                        subModule(feature, activity)?.let { addModule(it) }
+                        if (!isModuleInstalled) {
+                            addModule(feature)
+                        }
+                        if (!isSubModuleInstalled) {
+                            addModule(subModule)
+                        }
                     }
                     .build()
 
