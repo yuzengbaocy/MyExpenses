@@ -4,6 +4,7 @@ orbs:
   android: circleci/android@0.2.3
 jobs:
   build:
+    working_directory: ~/code
     docker:
       - image: circleci/android:api-29-ndk
     environment:
