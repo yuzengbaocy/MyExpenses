@@ -65,8 +65,12 @@ class PlatformSplitManager(private val userLocaleProvider: UserLocaleProvider, p
         listener = SplitInstallStateUpdatedListener { state ->
             if (state.sessionId() == mySessionId) {
                 if (state.status() == SplitInstallSessionStatus.INSTALLED) {
-                    state.moduleNames()
-                    this.callback?.onFeatureAvailable()
+                    if (state.languages().size > 0) {
+                        this.callback?.onLanguageAvailable()
+                    }
+                    if (state.moduleNames().size > 0) {
+                        this.callback?.onFeatureAvailable()
+                    }
                 }
             }
         }.also { manager.registerListener(it) }
