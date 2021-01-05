@@ -6,12 +6,14 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.lifecycleScope
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import org.totschnig.myexpenses.R
 import org.totschnig.myexpenses.activity.CONFIRM_MAP_TAG_REQUEST
 import org.totschnig.myexpenses.activity.MAP_TAG_REQUEST
 import org.totschnig.myexpenses.activity.MyExpenses
+import org.totschnig.myexpenses.dialog.TransactionDetailFragment
 import org.totschnig.myexpenses.viewmodel.data.Tag
 
 const val KEY_REPLACE = "replace"
@@ -20,24 +22,24 @@ class TransactionList : BaseTransactionList() {
     private fun handleTagResult(intent: Intent) {
         ConfirmTagDialogFragment().also {
             it.arguments = Bundle().apply {
-                putParcelableArrayList(KEY_TAGLIST, intent.getParcelableArrayListExtra(KEY_TAGLIST))
+                putParcelableArrayList(KEY_TAG_LIST, intent.getParcelableArrayListExtra(KEY_TAG_LIST))
             }
             it.setTargetFragment(this, CONFIRM_MAP_TAG_REQUEST)
         }.show(parentFragmentManager, "CONFIRM")
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
-        if (requestCode == CONFIRM_MAP_TAG_REQUEST) {
-            if (resultCode == Activity.RESULT_OK) {
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == CONFIRM_MAP_TAG_REQUEST) {
                 intent?.let {
-                    viewModel.tag(mListView.checkedItemIds, it.getParcelableArrayListExtra(KEY_TAGLIST)!!, it.getBooleanExtra(KEY_REPLACE, false))
+                    viewModel.tag(mListView.checkedItemIds, it.getParcelableArrayListExtra(KEY_TAG_LIST)!!, it.getBooleanExtra(KEY_REPLACE, false))
                 }
+                finishActionMode()
+            } else if (requestCode == MAP_TAG_REQUEST) {
+                handleTagResult(intent!!)
+            } else {
+                super.onActivityResult(requestCode, resultCode, intent)
             }
-            finishActionMode()
-        } else if (requestCode == MAP_TAG_REQUEST) {
-            handleTagResult(intent!!)
-        } else {
-            super.onActivityResult(requestCode, resultCode, intent)
         }
     }
 
@@ -54,11 +56,21 @@ class TransactionList : BaseTransactionList() {
             findItem(R.id.REMAP_METHOD_COMMAND).isVisible = !hasTransfer
         }
     }
+
+    override fun showDetails(transactionId: Long) {
+        lifecycleScope.launchWhenResumed {
+            with(parentFragmentManager)  {
+                if (findFragmentByTag(TransactionDetailFragment::class.java.name) == null) {
+                    TransactionDetailFragment.newInstance(transactionId).show(this, TransactionDetailFragment::class.java.name)
+                }
+            }
+        }
+    }
 }
 
 class ConfirmTagDialogFragment : DialogFragment() {
     val tagList
-        get() = requireArguments().getParcelableArrayList<Tag>(KEY_TAGLIST)!!
+        get() = requireArguments().getParcelableArrayList<Tag>(KEY_TAG_LIST)!!
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val isEmpty = tagList.size == 0
@@ -77,7 +89,7 @@ class ConfirmTagDialogFragment : DialogFragment() {
     private fun confirm(replace: Boolean) {
         targetFragment?.onActivityResult(CONFIRM_MAP_TAG_REQUEST, Activity.RESULT_OK, Intent().apply {
             putExtra(KEY_REPLACE, replace)
-            putParcelableArrayListExtra(KEY_TAGLIST, tagList)
+            putParcelableArrayListExtra(KEY_TAG_LIST, tagList)
         })
     }
 }

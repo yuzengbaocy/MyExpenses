@@ -69,7 +69,6 @@ import org.totschnig.myexpenses.dialog.AmountFilterDialog;
 import org.totschnig.myexpenses.dialog.ConfirmationDialogFragment;
 import org.totschnig.myexpenses.dialog.DateFilterDialog;
 import org.totschnig.myexpenses.dialog.ProgressDialogFragment;
-import org.totschnig.myexpenses.dialog.TransactionDetailFragment;
 import org.totschnig.myexpenses.dialog.select.SelectCrStatusDialogFragment;
 import org.totschnig.myexpenses.dialog.select.SelectMethodDialogFragment;
 import org.totschnig.myexpenses.dialog.select.SelectSingleAccountDialogFragment;
@@ -102,6 +101,7 @@ import org.totschnig.myexpenses.provider.filter.PayeeCriteria;
 import org.totschnig.myexpenses.provider.filter.TagCriteria;
 import org.totschnig.myexpenses.provider.filter.WhereFilter;
 import org.totschnig.myexpenses.task.TaskExecutionFragment;
+import org.totschnig.myexpenses.ui.ExpansionHandle;
 import org.totschnig.myexpenses.util.AppDirHelper;
 import org.totschnig.myexpenses.util.CurrencyFormatter;
 import org.totschnig.myexpenses.util.MenuUtilsKt;
@@ -127,10 +127,8 @@ import javax.inject.Inject;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.collection.LongSparseArray;
-import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.CursorLoader;
@@ -162,7 +160,7 @@ import static org.totschnig.myexpenses.activity.ProtectedFragmentActivity.PROGRE
 import static org.totschnig.myexpenses.adapter.CategoryTreeBaseAdapter.NULL_ITEM_ID;
 import static org.totschnig.myexpenses.dialog.ConfirmationDialogFragment.KEY_TITLE;
 import static org.totschnig.myexpenses.dialog.ConfirmationDialogFragment.KEY_TITLE_STRING;
-import static org.totschnig.myexpenses.fragment.TagListKt.KEY_TAGLIST;
+import static org.totschnig.myexpenses.fragment.TagListKt.KEY_TAG_LIST;
 import static org.totschnig.myexpenses.preference.PrefKey.NEW_SPLIT_TEMPLATE_ENABLED;
 import static org.totschnig.myexpenses.preference.PrefKey.OCR;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.HAS_TRANSFERS;
@@ -378,7 +376,9 @@ public abstract class BaseTransactionList extends ContextualActionBarFragment im
 
   private void setGrouping() {
     mAdapter.refreshDateFormat();
-    mListView.setCollapsedHeaderIds(PreferenceUtilsKt.getLongList(prefHandler, collapsedHeaderIdsPrefKey()));
+    if (mAccount.getGrouping() != Grouping.NONE) {
+      mListView.setCollapsedHeaderIds(PreferenceUtilsKt.getLongList(prefHandler, collapsedHeaderIdsPrefKey()));
+    }
     restartGroupingLoader();
   }
 
@@ -411,12 +411,7 @@ public abstract class BaseTransactionList extends ContextualActionBarFragment im
 
     mListView.setEmptyView(emptyView);
     mListView.setOnItemClickListener((a, v1, position, id) -> {
-      FragmentManager fm = getActivity().getSupportFragmentManager();
-      DialogFragment f = (DialogFragment) fm.findFragmentByTag(TransactionDetailFragment.class.getName());
-      if (f == null) {
-        FragmentTransaction ft = fm.beginTransaction();
-        TransactionDetailFragment.newInstance(id).show(ft, TransactionDetailFragment.class.getName());
-      }
+      showDetails(id);
     });
     mListView.setOnScrollListener(new AbsListView.OnScrollListener() {
       private int currentState = 0;
@@ -443,6 +438,8 @@ public abstract class BaseTransactionList extends ContextualActionBarFragment im
     mListView.addFooterView(LayoutInflater.from(getActivity()).inflate(R.layout.group_divider, mListView.getWrappedList(), false), null, false);
     mListView.setAdapter(mAdapter);
   }
+
+  protected abstract void showDetails(long id);
 
   protected void refresh(boolean invalidateMenu) {
     if (mAccount != null) { //if we are refreshed from onActivityResult, it might happen, that mAccount is not yet set (report 5c1754c8f8b88c29631ef140)
@@ -954,6 +951,7 @@ public abstract class BaseTransactionList extends ContextualActionBarFragment im
     @Override
     public View getHeaderView(int position, View convertView, ViewGroup parent) {
       HeaderViewHolder holder = null;
+      final long headerId = getHeaderId(position);
       final boolean withBudget = BaseTransactionList.this.getFilter().isEmpty() &&
           budget != null;
 
@@ -968,11 +966,31 @@ public abstract class BaseTransactionList extends ContextualActionBarFragment im
         holder = new HeaderViewHolder(convertView);
         convertView.setTag(holder);
       }
+      HeaderViewHolder finalHolder = holder;
+      if (mAccount.getGrouping() != Grouping.NONE) {
+        holder.headerIndicator.setVisibility(View.VISIBLE);
+        holder.headerIndicator.setExpanded(!mListView.isHeaderCollapsed(headerId));
+        holder.headerIndicator.setOnClickListener(v -> finalHolder.headerIndicator.rotate(
+            !mListView.isHeaderCollapsed(headerId), expanded -> {
+              if (expanded) {
+                mListView.expand(headerId);
+                mAdapter.notifyDataSetChanged();
+                persistCollapsedHeaderIds();
+                finalHolder.dividerBottom.setVisibility(View.VISIBLE);
+              } else {
+                mListView.collapse(headerId);
+                persistCollapsedHeaderIds();
+                finalHolder.dividerBottom.setVisibility(View.GONE);
+              }
+            }));
+      } else {
+        holder.headerIndicator.setVisibility(View.GONE);
+      }
 
       Cursor c = getCursor();
       if (c != null) {
         c.moveToPosition(position);
-        fillSums(holder, getHeaderId(position));
+        fillSums(holder, headerId);
         holder.text.setText(mAccount.getGrouping().getDisplayTitle(getActivity(), c.getInt(getColumnIndexForYear()), getSecond(c),
             DateInfo.fromCursor(c), userLocaleProvider.getUserPreferredLocale()));
       }
@@ -1169,6 +1187,8 @@ public abstract class BaseTransactionList extends ContextualActionBarFragment im
     DonutProgress budgetProgress;
     @BindView(R.id.divider_bottom)
     View dividerBottom;
+    @BindView(R.id.headerIndicator)
+    ExpansionHandle headerIndicator;
 
     HeaderViewHolder(View convertView) {
       ButterKnife.bind(this, convertView);
@@ -1178,21 +1198,10 @@ public abstract class BaseTransactionList extends ContextualActionBarFragment im
   @Override
   public void onHeaderClick(StickyListHeadersListView l, View header,
                             int itemPosition, long headerId, boolean currentlySticky) {
-    final HeaderViewHolder viewHolder = (HeaderViewHolder) header.getTag();
-    if (mListView.isHeaderCollapsed(headerId)) {
-      mListView.expand(headerId);
-      mAdapter.notifyDataSetChanged();
-      persistCollapsedHeaderIds();
-      viewHolder.dividerBottom.setVisibility(View.VISIBLE);
-    } else {
-      mListView.collapse(headerId);
-      persistCollapsedHeaderIds();
-      viewHolder.dividerBottom.setVisibility(View.GONE);
-    }
   }
 
   private void persistCollapsedHeaderIds() {
-    PreferenceUtilsKt.putLongList(prefHandler, collapsedHeaderIdsPrefKey(),  mListView.getCollapsedHeaderIds());
+    PreferenceUtilsKt.putLongList(prefHandler, collapsedHeaderIdsPrefKey(), mListView.getCollapsedHeaderIds());
   }
 
   private String collapsedHeaderIdsPrefKey() {
@@ -1559,7 +1568,7 @@ public abstract class BaseTransactionList extends ContextualActionBarFragment im
         addCategoryFilter(label, catIds);
       }
     } else if (requestCode == FILTER_TAGS_REQUEST) {
-      final ArrayList<Tag> tagList = intent.getParcelableArrayListExtra(KEY_TAGLIST);
+      final ArrayList<Tag> tagList = intent.getParcelableArrayListExtra(KEY_TAG_LIST);
       if (tagList != null && !tagList.isEmpty()) {
         long[] tagIds = Stream.of(tagList).mapToLong(Tag::getId).toArray();
         String label = Stream.of(tagList).map(Tag::getLabel).collect(Collectors.joining(", "));

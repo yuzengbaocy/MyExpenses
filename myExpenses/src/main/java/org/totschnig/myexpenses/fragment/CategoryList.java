@@ -202,7 +202,8 @@ public class CategoryList extends SortableListFragment {
     if (isFiltered) {
       String normalized = Utils.esacapeSqlLikeExpression(Utils.normalize(mFilter));
       String filterSelection = KEY_LABEL_NORMALIZED + " LIKE ?";
-      selectionArgs = new String[]{"%" + normalized + "%", "%" + normalized + "%"};
+      final String likeExpression = "%" + normalized + "%";
+      selectionArgs = new String[]{likeExpression, likeExpression};
       selection = filterSelection + " OR EXISTS (SELECT 1 FROM " + TABLE_CATEGORIES +
           " subtree WHERE " + KEY_PARENTID + " = " + TABLE_CATEGORIES + "." + KEY_ROWID + " AND ("
           + filterSelection + " ))";
@@ -559,7 +560,6 @@ public class CategoryList extends SortableListFragment {
     maybeHide(menu, R.id.CREATE_COMMAND, isFilter);
     menu.findItem(R.id.MOVE_COMMAND).setVisible(!(isFilter || hasChildren));
     maybeHide(menu, R.id.COLOR_COMMAND, !isWithMainColors());
-    maybeHide(menu, R.id.SELECT_ALL_COMMAND, true);
   }
 
   private void maybeHide(Menu menu, int id, boolean condition) {

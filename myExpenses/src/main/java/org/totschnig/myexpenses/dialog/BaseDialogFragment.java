@@ -15,16 +15,13 @@ import org.totschnig.myexpenses.ui.SnackbarAction;
 import org.totschnig.myexpenses.util.UiUtils;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import timber.log.Timber;
 
-public abstract class CommitSafeDialogFragment extends DialogFragment {
+public abstract class BaseDialogFragment extends DialogFragment {
 
   protected View dialogView;
   protected LayoutInflater layoutInflater;
@@ -44,16 +41,6 @@ public abstract class CommitSafeDialogFragment extends DialogFragment {
     return builder;
   }
 
-  @Override
-  public int show(@NonNull FragmentTransaction transaction, String tag) {
-      try {
-          return super.show(transaction, tag);
-      } catch (IllegalStateException e) {
-        report(e);
-      }
-      return -1;
-  }
-
   public void report(IllegalStateException e) {
     @Nullable final FragmentActivity activity = getActivity();
     if (activity == null) {
@@ -62,15 +49,6 @@ public abstract class CommitSafeDialogFragment extends DialogFragment {
       Timber.w("Activity is finishing?: %b", activity.isFinishing());
     }
     CrashHandler.report(e);
-  }
-
-  @Override
-  public void show(@NonNull FragmentManager manager, String tag) {
-      try {
-          super.show(manager, tag);
-      } catch (IllegalStateException e) {
-        report(e);
-      }
   }
 
   @Override

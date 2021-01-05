@@ -42,8 +42,8 @@ android {
         applicationId "org.totschnig.myexpenses"
         minSdkVersion project.minSdkVersion
         targetSdkVersion project.targetSdkVersion
-        versionCode 448
-        versionName '3.2.1'
+        versionCode 450
+        versionName '3.2.1.1'
         multiDexEnabled true
 
         buildConfigField "String", "BUILD_DATE", "\"" + getDate() + "\""
@@ -222,7 +222,7 @@ dependencies {
 
     kapt 'com.ryanharter.auto.value:auto-value-parcel:0.2.8'
 
-    implementation 'com.github.mtotschnig:StickyListHeaders:2.7.2.2'
+    implementation 'com.github.mtotschnig:StickyListHeaders:2.8.0'
     implementation 'com.github.mtotschnig:MaterialSeekBarPreference:bc211774e5'
     implementation project(':PlayLicensingOrig')
     implementation('com.gitlab.mtotschn:dav4android:fbaa5b51') {
@@ -283,7 +283,7 @@ dependencies {
     //implementation 'com.google.firebase:firebase-config:20.0.0'
     implementation 'com.google.firebase:firebase-ads:19.6.0'
 
-    implementation 'org.slf4j:slf4j-api:1.7.26'
+    implementation 'org.slf4j:slf4j-api:1.7.30'
     implementation 'com.github.tony19:logback-android:2.0.0'
 
     implementation "androidx.appcompat:appcompat:$appcompatVersion"
