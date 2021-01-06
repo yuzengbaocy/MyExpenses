@@ -15,7 +15,7 @@ import org.totschnig.myexpenses.activity.BaseActivity
 import org.totschnig.myexpenses.feature.Callback
 import org.totschnig.myexpenses.feature.FeatureManager
 import org.totschnig.myexpenses.feature.OCR_MODULE
-import org.totschnig.myexpenses.feature.getUserConfiguredEngine
+import org.totschnig.myexpenses.feature.getUserConfiguredOcrEngine
 import org.totschnig.myexpenses.preference.PrefHandler
 import timber.log.Timber
 import java.util.*
@@ -118,7 +118,7 @@ class PlatformSplitManager(private val userLocaleProvider: UserLocaleProvider, p
     }
 
     private fun subModule(feature: String, context: Context) =
-            if (feature == OCR_MODULE) getUserConfiguredEngine(context, prefHandler) else null
+            if (feature == OCR_MODULE) getUserConfiguredOcrEngine(context, prefHandler) else null
 
     override fun installedFeatures() = manager.installedModules
 
