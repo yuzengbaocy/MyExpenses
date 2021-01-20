@@ -69,6 +69,7 @@ import org.totschnig.myexpenses.dialog.AmountFilterDialog;
 import org.totschnig.myexpenses.dialog.ConfirmationDialogFragment;
 import org.totschnig.myexpenses.dialog.DateFilterDialog;
 import org.totschnig.myexpenses.dialog.ProgressDialogFragment;
+import org.totschnig.myexpenses.dialog.select.SelectMultipleAccountDialogFragment;
 import org.totschnig.myexpenses.dialog.select.SelectCrStatusDialogFragment;
 import org.totschnig.myexpenses.dialog.select.SelectMethodDialogFragment;
 import org.totschnig.myexpenses.dialog.select.SelectSingleAccountDialogFragment;
@@ -278,6 +279,7 @@ public abstract class BaseTransactionList extends ContextualActionBarFragment im
   private Account mAccount;
   private Money budget = null;
   protected TransactionListViewModel viewModel;
+  @Nullable
   private ContentObserver budgetsObserver;
 
   @Inject
@@ -342,10 +344,12 @@ public abstract class BaseTransactionList extends ContextualActionBarFragment im
     });
     MyApplication.getInstance().getAppComponent().inject(this);
     firstLoadCompleted = (savedInstanceState != null);
-    budgetsObserver = new BudgetObserver();
-    getContext().getContentResolver().registerContentObserver(
-        TransactionProvider.BUDGETS_URI,
-        true, budgetsObserver);
+    if (ContribFeature.BUDGET.isAvailable(prefHandler)) {
+      budgetsObserver = new BudgetObserver();
+      requireContext().getContentResolver().registerContentObserver(
+          TransactionProvider.BUDGETS_URI,
+          true, budgetsObserver);
+    }
   }
 
   @Override
@@ -966,7 +970,9 @@ public abstract class BaseTransactionList extends ContextualActionBarFragment im
         holder = new HeaderViewHolder(convertView);
         convertView.setTag(holder);
       }
+      holder.sumLine.setVisibility(prefHandler.getBoolean(PrefKey.GROUP_HEADER, true) ? View.VISIBLE : View.GONE);
       HeaderViewHolder finalHolder = holder;
+      holder.interimBalance.setOnClickListener(v -> finalHolder.sumLine.setVisibility(finalHolder.sumLine.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE));
       if (mAccount.getGrouping() != Grouping.NONE) {
         holder.headerIndicator.setVisibility(View.VISIBLE);
         holder.headerIndicator.setExpanded(!mListView.isHeaderCollapsed(headerId));
@@ -1001,9 +1007,9 @@ public abstract class BaseTransactionList extends ContextualActionBarFragment im
     private void fillSums(HeaderViewHolder holder, long headerId) {
       Long[] data = headerData != null ? headerData.get(headerId) : null;
       if (data != null) {
-        holder.sumIncome.setText("+ " + currencyFormatter.convAmount(data[0], mAccount.getCurrencyUnit()));
-        final Long expensesSum = data[1];
-        holder.sumExpense.setText(currencyFormatter.convAmount(expensesSum, mAccount.getCurrencyUnit()));
+        holder.sumIncome.setText("⊕ " + currencyFormatter.convAmount(data[0], mAccount.getCurrencyUnit()));
+        final Long expensesSum = -data[1];
+        holder.sumExpense.setText("⊖ " + currencyFormatter.convAmount(expensesSum, mAccount.getCurrencyUnit()));
         holder.sumTransfer.setText(Transfer.BI_ARROW + " " + currencyFormatter.convAmount(
             data[2], mAccount.getCurrencyUnit()));
         String formattedDelta = String.format("%s %s", Long.signum(data[4]) > -1 ? "+" : "-",
@@ -1176,6 +1182,8 @@ public abstract class BaseTransactionList extends ContextualActionBarFragment im
     TextView interimBalance;
     @BindView(R.id.text)
     TextView text;
+    @BindView(R.id.sum_line)
+    ViewGroup sumLine;
     @BindView(R.id.sum_income)
     TextView sumIncome;
     @BindView(R.id.sum_expense)
@@ -1381,7 +1389,7 @@ public abstract class BaseTransactionList extends ContextualActionBarFragment im
             enabled = mappedCategories;
             break;
           case R.id.FILTER_STATUS_COMMAND:
-            enabled = !mAccount.getType().equals(AccountType.CASH);
+            enabled = mAccount.isAggregate() || !mAccount.getType().equals(AccountType.CASH);
             break;
           case R.id.FILTER_PAYEE_COMMAND:
             enabled = mappedPayees;
@@ -1394,6 +1402,9 @@ public abstract class BaseTransactionList extends ContextualActionBarFragment im
             break;
           case R.id.FILTER_TAG_COMMAND:
             enabled = hasTags;
+            break;
+          case R.id.FILTER_ACCOUNT_COMMAND:
+            enabled = mAccount.isAggregate();
             break;
         }
         Criteria c = getFilter().get(filterItem.getItemId());
@@ -1509,6 +1520,12 @@ public abstract class BaseTransactionList extends ContextualActionBarFragment im
         if (!removeFilter(command)) {
           SelectTransferAccountDialogFragment.newInstance(mAccount.getId())
               .show(getActivity().getSupportFragmentManager(), "TRANSFER_FILTER");
+        }
+        return true;
+      case R.id.FILTER_ACCOUNT_COMMAND:
+        if (!removeFilter(command)) {
+          SelectMultipleAccountDialogFragment.newInstance(mAccount.getCurrencyUnit().getCode())
+              .show(getActivity().getSupportFragmentManager(), "ACCOUNT_FILTER");
         }
         return true;
       case R.id.PRINT_COMMAND:
