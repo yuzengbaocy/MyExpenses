@@ -7,7 +7,7 @@
 * Test and assemble
   * ./gradlew lintPlayWithDriveWithAdsGmsInternRelease
   * ./gradlew testPlayWithDriveWithAdsGmsInternReleaseUnitTest
-  * ./gradlew clean connectedPlayWithDriveWithAdsGmsInternDebugAndroidTest
+  * ./gradlew disableSystemAnimations clean connectedPlayWithDriveWithAdsGmsInternDebugAndroidTest
   * ./gradlew clean bundlePlayWithDriveWithAdsGmsInternRelease
 * test upgrade mechanism
 * Create release tag in GIT (git tag r39gp; git push gitlab r39gp)

@@ -11,7 +11,7 @@ buildscript {
     }
     dependencies {
         //classpath 'com.android.tools:r8:1.6.42'  //Must be before the Gradle Plugin for Android. - Or any other version
-        classpath 'com.android.tools.build:gradle:4.1.1'
+        classpath 'com.android.tools.build:gradle:4.1.2'
         classpath 'com.google.gms:google-services:4.3.4'
         classpath 'com.google.firebase:firebase-crashlytics-gradle:2.3.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
