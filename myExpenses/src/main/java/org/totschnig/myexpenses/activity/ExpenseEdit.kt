@@ -235,7 +235,7 @@ open class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?
 
     override fun onEnterAnimationComplete() {
         super.onEnterAnimationComplete()
-        floatingActionButton.show()
+        floatingActionButton?.show()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -258,7 +258,7 @@ open class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?
             delegate.bind(null, isCalendarPermissionPermanentlyDeclined, mNewInstance, savedInstanceState, null, withAutoFill)
             setTitle()
             refreshPlanData()
-            floatingActionButton.show()
+            floatingActionButton?.show()
         } else {
             val extras = intent.extras
             var mRowId = Utils.getFromExtra(extras, KEY_ROWID, 0L)
@@ -361,7 +361,7 @@ open class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?
             }
             if (mNewInstance) {
                 if (operationType != TYPE_TRANSFER) {
-                    discoveryHelper.discover(this, amountInput.typeButton, 1,
+                    discoveryHelper.discover(this, amountInput.typeButton(), 1,
                             DiscoveryHelper.Feature.expense_income_switch)
                 }
             }
@@ -791,7 +791,7 @@ open class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?
     override fun onCreateDialog(id: Int): Dialog? {
         hideKeyboard()
         return try {
-            (findViewById<View>(id) as ButtonWithDialog).onCreateDialog()
+            (findViewById<View>(id) as ButtonWithDialog).onCreateDialog(prefHandler)
         } catch (e: ClassCastException) {
             Timber.e(e)
             null
@@ -1198,9 +1198,9 @@ open class ExpenseEdit : AmountActivity(), LoaderManager.LoaderCallbacks<Cursor?
     }
 
     private fun updateFab() {
-        with(floatingActionButton) {
-            setImageResource(if (createNew) R.drawable.ic_action_save_new else R.drawable.ic_menu_done)
-            contentDescription = getString(if (createNew) R.string.menu_save_and_new_content_description else R.string.menu_save_help_text)
+        floatingActionButton?.let {
+            it.setImageResource(if (createNew) R.drawable.ic_action_save_new else R.drawable.ic_menu_done)
+            it.contentDescription = getString(if (createNew) R.string.menu_save_and_new_content_description else R.string.menu_save_help_text)
         }
     }
 
