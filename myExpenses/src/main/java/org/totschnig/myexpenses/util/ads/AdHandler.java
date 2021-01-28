@@ -13,7 +13,7 @@ import javax.inject.Inject;
 
 import timber.log.Timber;
 
-import static android.text.format.DateUtils.DAY_IN_MILLIS;
+import static android.text.format.DateUtils.HOUR_IN_MILLIS;
 import static org.totschnig.myexpenses.preference.PrefKey.ENTRIES_CREATED_SINCE_LAST_INTERSTITIAL;
 import static org.totschnig.myexpenses.preference.PrefKey.INTERSTITIAL_LAST_SHOWN;
 import static org.totschnig.myexpenses.preference.PrefKey.PERSONALIZED_AD_CONSENT;
@@ -64,9 +64,9 @@ public abstract class AdHandler {
 
   public void maybeRequestNewInterstitial() {
     long now = System.currentTimeMillis();
-    if (now - prefHandler.getLong(INTERSTITIAL_LAST_SHOWN,0) > DAY_IN_MILLIS &&
+    if (now - prefHandler.getLong(INTERSTITIAL_LAST_SHOWN,0) > HOUR_IN_MILLIS &&
         prefHandler.getInt(ENTRIES_CREATED_SINCE_LAST_INTERSTITIAL, 0) > INTERSTITIAL_MIN_INTERVAL) {
-      //last ad shown more than 24h and at least five expense entries ago,
+      //last ad shown more than one hour and at least five expense entries ago,
       requestNewInterstitialDo();
     }
   }

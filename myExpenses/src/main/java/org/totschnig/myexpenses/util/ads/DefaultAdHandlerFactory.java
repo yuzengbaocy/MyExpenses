@@ -20,7 +20,7 @@ import static org.totschnig.myexpenses.preference.PrefKey.PERSONALIZED_AD_CONSEN
 import static org.totschnig.myexpenses.util.Utils.PLACEHOLDER_APP_NAME;
 
 public class DefaultAdHandlerFactory implements AdHandlerFactory {
-  private static final int INITIAL_GRACE_DAYS = 5;
+  private static final int INITIAL_GRACE_DAYS = 2;
   private static final String[] EU_COUNTRIES = {
        "at",
        "be",
