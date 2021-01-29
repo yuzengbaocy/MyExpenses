@@ -389,7 +389,9 @@ apply plugin: 'com.google.gms.google-services'
 
 task echoPublishTag() {
     doLast {
-        println "git tag r${versionCode}; git push origin r${versionCode}"
+        def tag = "${versionCode}gp"
+        def dir = "/Volumes/Transcend/MyExpensesReleases/${tag}"
+        println "mkdir ${dir}; mv myExpenses/build/outputs/mapping/playWithDriveWithAdsGmsInternRelease/mapping.txt ${dir}; mv myExpenses/build/outputs/bundle/playWithDriveWithAdsGmsInternRelease/myExpenses-play-withDrive-withAds-gms-intern-release.aab ${dir}; git tag r${tag}; git push gitlab r${tag}"
     }
 }
 
