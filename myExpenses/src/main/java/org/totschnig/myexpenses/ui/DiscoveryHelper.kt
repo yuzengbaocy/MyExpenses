@@ -13,7 +13,9 @@ import org.totschnig.myexpenses.util.UiUtils
 import org.totschnig.myexpenses.util.Utils
 import timber.log.Timber
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class DiscoveryHelper @Inject constructor(val prefHandler: PrefHandler) {
 
     enum class Feature(val key: String) {
@@ -62,7 +64,7 @@ class DiscoveryHelper @Inject constructor(val prefHandler: PrefHandler) {
         TapTargetView.showFor(context,
                 TapTarget.forView(target, feature.toTitle(context), feature.toDescription(context))
                         .transparentTarget(true)
-                        .outerCircleColorInt(UiUtils.themeIntAttr(context, R.attr.colorAccent))
+                        .outerCircleColorInt(UiUtils.getColor(context, R.attr.colorAccent))
                         .apply {
                             targetRadius?.let { this.targetRadius(it) }
                         },

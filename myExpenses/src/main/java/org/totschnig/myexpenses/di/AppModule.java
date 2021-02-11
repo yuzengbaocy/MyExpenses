@@ -1,6 +1,7 @@
 package org.totschnig.myexpenses.di;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import org.totschnig.myexpenses.BuildConfig;
@@ -14,8 +15,8 @@ import org.totschnig.myexpenses.util.Utils;
 import org.totschnig.myexpenses.util.crashreporting.AcraCrashHandler;
 import org.totschnig.myexpenses.util.crashreporting.CrashlyticsHandler;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
-import org.totschnig.myexpenses.util.locale.UserLocaleProviderImpl;
 import org.totschnig.myexpenses.util.locale.UserLocaleProvider;
+import org.totschnig.myexpenses.util.locale.UserLocaleProviderImpl;
 import org.totschnig.myexpenses.util.tracking.Tracker;
 
 import java.util.Locale;
@@ -87,8 +88,8 @@ public class AppModule {
 
   @Provides
   @Singleton
-  static PrefHandler providePrefHandler(MyApplication context) {
-    return new PrefHandlerImpl(context);
+  static PrefHandler providePrefHandler(MyApplication context, SharedPreferences sharedPreferences) {
+    return new PrefHandlerImpl(context, sharedPreferences);
   }
 
   @Provides
