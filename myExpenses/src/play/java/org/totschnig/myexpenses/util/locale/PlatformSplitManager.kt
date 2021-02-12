@@ -13,8 +13,8 @@ import org.totschnig.myexpenses.MyApplication
 import org.totschnig.myexpenses.MyApplication.DEFAULT_LANGUAGE
 import org.totschnig.myexpenses.activity.BaseActivity
 import org.totschnig.myexpenses.feature.Callback
+import org.totschnig.myexpenses.feature.Feature
 import org.totschnig.myexpenses.feature.FeatureManager
-import org.totschnig.myexpenses.feature.OCR_MODULE
 import org.totschnig.myexpenses.feature.getUserConfiguredOcrEngine
 import org.totschnig.myexpenses.preference.PrefHandler
 import timber.log.Timber
@@ -69,7 +69,7 @@ class PlatformSplitManager(private val userLocaleProvider: UserLocaleProvider, p
                         this.callback?.onLanguageAvailable()
                     }
                     if (state.moduleNames().size > 0) {
-                        this.callback?.onFeatureAvailable()
+                        this.callback?.onFeatureAvailable(state.moduleNames())
                     }
                 }
             }
@@ -81,19 +81,18 @@ class PlatformSplitManager(private val userLocaleProvider: UserLocaleProvider, p
         listener?.let { manager.unregisterListener(it) }
     }
 
-    override fun isFeatureInstalled(feature: String, context: Context) =
+    override fun isFeatureInstalled(feature: Feature, context: Context) =
              areModulesInstalled(feature, context) && super.isFeatureInstalled(feature, context)
 
-    private fun areModulesInstalled(feature: String, context: Context) = isModuleInstalled(feature) &&
-            subModule(feature, context)?.let { isModuleInstalled(it) } ?: true
+    private fun areModulesInstalled(feature: Feature, context: Context) = isModuleInstalled(feature) &&
+            subFeature(feature, context)?.let { isModuleInstalled(it) } ?: true
 
-    private fun isModuleInstalled(module: String) = manager.installedModules.contains(module)
+    private fun isModuleInstalled(feature: Feature) = manager.installedModules.contains(feature.moduleName)
 
-    override fun requestFeature(feature: String, activity: BaseActivity) {
+    override fun requestFeature(feature: Feature, activity: BaseActivity) {
         val isModuleInstalled = isModuleInstalled(feature)
-        val subModule = subModule(feature, activity)
-        val isSubModuleInstalled = subModule?.let { isModuleInstalled(it) } ?: true
-        if (isModuleInstalled && isSubModuleInstalled) {
+        val subFeatureToInstall = subFeature(feature, activity)?.takeIf { !isModuleInstalled(it) }
+        if (isModuleInstalled && subFeatureToInstall == null) {
             super.requestFeature(feature, activity)
         } else {
             callback?.onAsyncStartedFeature(feature)
@@ -101,11 +100,9 @@ class PlatformSplitManager(private val userLocaleProvider: UserLocaleProvider, p
                     .newBuilder()
                     .apply {
                         if (!isModuleInstalled) {
-                            addModule(feature)
+                            addModule(feature.moduleName)
                         }
-                        if (!isSubModuleInstalled) {
-                            addModule(subModule)
-                        }
+                        subFeatureToInstall?.let { addModule(it.moduleName) }
                     }
                     .build()
 
@@ -117,8 +114,8 @@ class PlatformSplitManager(private val userLocaleProvider: UserLocaleProvider, p
         }
     }
 
-    private fun subModule(feature: String, context: Context) =
-            if (feature == OCR_MODULE) getUserConfiguredOcrEngine(context, prefHandler) else null
+    private fun subFeature(feature: Feature, context: Context) =
+            if (feature == Feature.OCR) getUserConfiguredOcrEngine(context, prefHandler) else null
 
     override fun installedFeatures() = manager.installedModules
 
