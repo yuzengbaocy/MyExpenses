@@ -1,7 +1,6 @@
 package org.totschnig.myexpenses.di;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import org.totschnig.myexpenses.BuildConfig;
@@ -9,12 +8,7 @@ import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.model.CurrencyContext;
 import org.totschnig.myexpenses.model.PreferencesCurrencyContext;
 import org.totschnig.myexpenses.preference.PrefHandler;
-import org.totschnig.myexpenses.preference.PrefHandlerImpl;
-import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.util.Utils;
-import org.totschnig.myexpenses.util.crashreporting.AcraCrashHandler;
-import org.totschnig.myexpenses.util.crashreporting.CrashlyticsHandler;
-import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
 import org.totschnig.myexpenses.util.locale.UserLocaleProvider;
 import org.totschnig.myexpenses.util.locale.UserLocaleProviderImpl;
 import org.totschnig.myexpenses.util.tracking.Tracker;
@@ -37,14 +31,6 @@ public class AppModule {
   @Singleton
   static Context provideContext(MyApplication myApplication) {
     return myApplication;
-  }
-
-  @Provides
-  @Singleton
-  static CrashHandler providesCrashHandler(PrefHandler prefHandler) {
-    return (MyApplication.isInstrumentationTest()) ? CrashHandler.NO_OP :
-        prefHandler.getBoolean(PrefKey.CRASHREPORT_ENABLED, true) ?
-            new CrashlyticsHandler(prefHandler) : new AcraCrashHandler();
   }
 
   @Provides
@@ -84,12 +70,6 @@ public class AppModule {
       final String countryFromTelephonyManager = Utils.getCountryFromTelephonyManager(application);
       return countryFromTelephonyManager != null ? countryFromTelephonyManager : defaultCountry;
     }
-  }
-
-  @Provides
-  @Singleton
-  static PrefHandler providePrefHandler(MyApplication context, SharedPreferences sharedPreferences) {
-    return new PrefHandlerImpl(context, sharedPreferences);
   }
 
   @Provides
