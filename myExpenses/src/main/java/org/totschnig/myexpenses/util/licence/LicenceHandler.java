@@ -49,7 +49,7 @@ public class LicenceHandler {
   private final CrashHandler crashHandler;
   private boolean isSandbox = BuildConfig.DEBUG;
 
-  private LicenceStatus licenceStatus;
+  @Nullable private LicenceStatus licenceStatus;
   PreferenceObfuscator licenseStatusPrefs;
   CurrencyUnit currencyUnit;
 
@@ -373,7 +373,7 @@ public class LicenceHandler {
   }
 
   void setLicenceStatus(@Nullable LicenceStatus licenceStatus) {
-    if (!hasOurLicence || !this.licenceStatus.greaterOrEqual(licenceStatus)) {
+    if (!hasOurLicence || this.licenceStatus == null || !this.licenceStatus.greaterOrEqual(licenceStatus)) {
       setLicenceStatusInternal(licenceStatus);
     }
   }
