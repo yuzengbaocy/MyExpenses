@@ -29,7 +29,6 @@ public class UnlockHandler extends Handler {
   private static final int STATUS_TEMPORARY = 3;
   private static final int STATUS_PERMANENT = 4;
   private static final int STATUS_FINAL = 7;
-  private static final int STATUS_BLACKBERRY_PRO = 8;
 
   @Override
   public void handleMessage(Message msg) {
@@ -37,7 +36,6 @@ public class UnlockHandler extends Handler {
     Timber.i("Now handling answer from license verification service; got status %d.", msg.what);
     switch (msg.what) {
       case STATUS_FINAL:
-      case STATUS_BLACKBERRY_PRO:
         doUnlock(msg.what);
         break;
       case STATUS_TEMPORARY:
@@ -55,9 +53,7 @@ public class UnlockHandler extends Handler {
   private void doUnlock(int status) {
     MyApplication app = MyApplication.getInstance();
     LicenceHandler licenceHandler = app.getLicenceHandler();
-    boolean unlocked = (status == STATUS_BLACKBERRY_PRO) ?
-        licenceHandler.registerBlackberryProfessional() :
-        licenceHandler.registerUnlockLegacy();
+    boolean unlocked = licenceHandler.registerUnlockLegacy();
     if (unlocked) {
       showNotif(String.format("%s (%s) %s", app.getString(R.string.licence_validation_premium),
           app.getString(licenceHandler.getLicenceStatus().getResId()), app.getString(R.string.thank_you)));

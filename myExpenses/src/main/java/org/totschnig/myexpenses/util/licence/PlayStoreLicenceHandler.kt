@@ -12,10 +12,11 @@ import com.google.android.vending.licensing.PreferenceObfuscator
 import org.json.JSONException
 import org.totschnig.myexpenses.MyApplication
 import org.totschnig.myexpenses.activity.ContribInfoDialogActivity
+import org.totschnig.myexpenses.preference.PrefHandler
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler
 import java.util.*
 
-open class PlayStoreLicenceHandler(context: MyApplication?, preferenceObfuscator: PreferenceObfuscator?, crashHandler: CrashHandler?) : AbstractInAppPurchaseLicenceHandler(context!!, preferenceObfuscator!!, crashHandler!!) {
+open class PlayStoreLicenceHandler(context: MyApplication, preferenceObfuscator: PreferenceObfuscator, crashHandler: CrashHandler, prefHandler: PrefHandler) : AbstractInAppPurchaseLicenceHandler(context, preferenceObfuscator, crashHandler, prefHandler) {
     private fun storeSkuDetails(inventory: List<SkuDetails>) {
         val editor = pricesPrefs.edit()
         for (skuDetails in inventory) {

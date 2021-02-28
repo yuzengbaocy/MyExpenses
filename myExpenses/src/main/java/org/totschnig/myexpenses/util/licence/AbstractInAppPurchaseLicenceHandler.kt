@@ -7,11 +7,12 @@ import com.google.android.vending.licensing.PreferenceObfuscator
 import org.totschnig.myexpenses.MyApplication
 import org.totschnig.myexpenses.R
 import org.totschnig.myexpenses.contrib.Config
+import org.totschnig.myexpenses.preference.PrefHandler
 import org.totschnig.myexpenses.preference.PrefKey
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler
 
 
-abstract class AbstractInAppPurchaseLicenceHandler(context: MyApplication, preferenceObfuscator: PreferenceObfuscator, crashHandler: CrashHandler) : ContribStatusLicenceHandler(context, preferenceObfuscator, crashHandler) {
+abstract class AbstractInAppPurchaseLicenceHandler(context: MyApplication, preferenceObfuscator: PreferenceObfuscator, crashHandler: CrashHandler, prefHandler: PrefHandler) : ContribStatusLicenceHandler(context, preferenceObfuscator, crashHandler, prefHandler) {
     private val KEY_ORDER_ID = "order_id"
     private val REFUND_WINDOW = 172800000L
     private val STATUS_DISABLED = 0
@@ -112,9 +113,9 @@ abstract class AbstractInAppPurchaseLicenceHandler(context: MyApplication, prefe
             Package.Contrib -> Config.SKU_PREMIUM
             Package.Upgrade -> Config.SKU_PREMIUM2EXTENDED
             Package.Extended -> Config.SKU_EXTENDED
-            Package.Professional_1 -> Config.SKU_PROFESSIONAL_1
-            Package.Professional_12 -> if (hasExtended) Config.SKU_EXTENDED2PROFESSIONAL_12 else Config.SKU_PROFESSIONAL_12
-            Package.Professional_Amazon -> if (hasExtended) Config.SKU_EXTENDED2PROFESSIONAL_PARENT else Config.SKU_PROFESSIONAL_PARENT
+            ProfessionalPackage.Professional_1 -> Config.SKU_PROFESSIONAL_1
+            ProfessionalPackage.Professional_12 -> if (hasExtended) Config.SKU_EXTENDED2PROFESSIONAL_12 else Config.SKU_PROFESSIONAL_12
+            ProfessionalPackage.Amazon -> if (hasExtended) Config.SKU_EXTENDED2PROFESSIONAL_PARENT else Config.SKU_PROFESSIONAL_PARENT
             else -> throw IllegalStateException()
         }
     }
@@ -141,13 +142,14 @@ abstract class AbstractInAppPurchaseLicenceHandler(context: MyApplication, prefe
         }
     }
 
-    override fun getPurchaseExtraInfo(): String? {
-        return licenseStatusPrefs.getString(KEY_ORDER_ID, null)
-    }
+    override val purchaseExtraInfo: String?
+        get() = licenseStatusPrefs.getString(KEY_ORDER_ID, null)
 
-    override fun doesUseIAP() = true
+    override val doesUseIAP: Boolean
+        get() = true
 
-    override fun needsKeyEntry() = false
+    override val needsKeyEntry: Boolean
+        get() = false
 
     companion object {
         const val KEY_CURRENT_SUBSCRIPTION = "current_subscription"

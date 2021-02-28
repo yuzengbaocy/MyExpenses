@@ -4,6 +4,7 @@ import com.google.android.vending.licensing.PreferenceObfuscator;
 
 import org.totschnig.myexpenses.BuildConfig;
 import org.totschnig.myexpenses.MyApplication;
+import org.totschnig.myexpenses.preference.PrefHandler;
 import org.totschnig.myexpenses.preference.PrefKey;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
 
@@ -13,9 +14,6 @@ import androidx.annotation.NonNull;
  * Common functionality defunct BlackberryLegacyLicenceHandler and {@link StoreLicenceHandler}
  */
 public abstract class ContribStatusLicenceHandler extends LicenceHandler {
-  /**
-   * this status was used before and including the APP_GRATIS campaign
-   */
   //public static final String STATUS_ENABLED_LEGACY_FIRST = "1";
   /**
    * this status was used after the APP_GRATIS campaign in order to distinguish
@@ -28,9 +26,6 @@ public abstract class ContribStatusLicenceHandler extends LicenceHandler {
    */
   static final int STATUS_ENABLED_TEMPORARY = 3;
 
-  /**
-   * user has recently purchased, and is inside a two days window
-   */
   //public static final String STATUS_ENABLED_VERIFICATION_NEEDED = "4";
 
   /**
@@ -46,8 +41,8 @@ public abstract class ContribStatusLicenceHandler extends LicenceHandler {
 
   private int contribStatus;
 
-  ContribStatusLicenceHandler(MyApplication context, PreferenceObfuscator preferenceObfuscator, CrashHandler crashHandler) {
-    super(context, preferenceObfuscator, crashHandler);
+  ContribStatusLicenceHandler(MyApplication context, PreferenceObfuscator preferenceObfuscator, CrashHandler crashHandler, PrefHandler prefHandler) {
+    super(context, preferenceObfuscator, crashHandler, prefHandler);
   }
 
   abstract int getLegacyStatus();
@@ -70,17 +65,21 @@ public abstract class ContribStatusLicenceHandler extends LicenceHandler {
   }
 
   /**
-   * Sets the licencestatus from contribStatus and commits licenseStatusPrefs
+   * Sets the licenceStatus from contribStatus and commits licenseStatusPrefs
    */
   void updateContribStatus(int contribStatus) {
-    licenseStatusPrefs.putString(PrefKey.LICENSE_STATUS.getKey(), String.valueOf(contribStatus));
-    licenseStatusPrefs.commit();
+    getLicenseStatusPrefs().putString(licenceStatusKey(), String.valueOf(contribStatus));
+    getLicenseStatusPrefs().commit();
     setContribStatus(contribStatus);
     update();
   }
 
+  private String licenceStatusKey() {
+    return getPrefHandler().getKey(PrefKey.LICENSE_STATUS);
+  }
+
   protected void readContribStatusFromPrefs() {
-    setContribStatus(Integer.parseInt(licenseStatusPrefs.getString(PrefKey.LICENSE_STATUS.getKey(), "0")));
+    setContribStatus(Integer.parseInt(getLicenseStatusPrefs().getString(licenceStatusKey(), "0")));
   }
 
   synchronized private void setContribStatus(int contribStatus) {
@@ -102,6 +101,6 @@ public abstract class ContribStatusLicenceHandler extends LicenceHandler {
   }
 
   protected void d(String event) {
-    log().i("%s: %s-%s, contrib status %s", event, this, Thread.currentThread(), contribStatus);
+    LicenceHandler.Companion.log().i("%s: %s-%s, contrib status %s", event, this, Thread.currentThread(), contribStatus);
   }
 }

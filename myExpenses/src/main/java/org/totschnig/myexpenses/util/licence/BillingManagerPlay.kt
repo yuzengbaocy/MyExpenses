@@ -32,7 +32,7 @@ import com.android.billingclient.api.SkuDetails
 import com.android.billingclient.api.SkuDetailsParams
 import com.android.billingclient.api.SkuDetailsResponseListener
 import org.totschnig.myexpenses.contrib.Config
-import org.totschnig.myexpenses.util.licence.LicenceHandler.log
+import org.totschnig.myexpenses.util.licence.LicenceHandler.Companion.log
 import java.util.*
 import kotlin.collections.HashSet
 
