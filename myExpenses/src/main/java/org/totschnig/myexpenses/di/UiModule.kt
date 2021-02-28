@@ -24,7 +24,7 @@ open class UiModule {
     @Provides
     @Singleton
     fun provideAdHandlerFactory(application: MyApplication, prefHandler: PrefHandler, @Named(AppComponent.USER_COUNTRY) userCountry: String, licenceHandler: LicenceHandler): AdHandlerFactory =
-            PlatformAdHandlerFactory(application, prefHandler, userCountry)
+            PlatformAdHandlerFactory(application, prefHandler, userCountry, licenceHandler)
 
     @Provides
     @Singleton

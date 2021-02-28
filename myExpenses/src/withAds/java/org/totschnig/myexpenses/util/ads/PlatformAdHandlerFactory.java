@@ -7,13 +7,14 @@ import com.annimon.stream.Stream;
 
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.preference.PrefHandler;
+import org.totschnig.myexpenses.util.licence.LicenceHandler;
 
 import androidx.annotation.VisibleForTesting;
 
 public class PlatformAdHandlerFactory extends DefaultAdHandlerFactory {
 
-  public PlatformAdHandlerFactory(Context context, PrefHandler prefHandler, String userCountry) {
-    super(context, prefHandler, userCountry);
+  public PlatformAdHandlerFactory(Context context, PrefHandler prefHandler, String userCountry, LicenceHandler licenceHandler) {
+    super(context, prefHandler, userCountry, licenceHandler);
   }
 
   @Override
