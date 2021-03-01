@@ -72,9 +72,14 @@ sealed class ProfessionalPackage(defaultPrice: Long, val duration: Int) : Packag
         private const val DURATION_EXTRA = 3
     }
 }
+
 sealed class AddOnPackage(defaultPrice: Long, val feature: ContribFeature) : Package(defaultPrice) {
     override val optionName = "AddOn"
+    val sku: String
+        get() = this::class.simpleName!!
+
     override fun payPalButtonId(isSandBox: Boolean) = if (isSandBox) "9VF4Z9KSLHXZN" else TODO()
+
     object SplitTemplate : AddOnPackage(500, ContribFeature.SPLIT_TEMPLATE)
     object History : AddOnPackage(500, ContribFeature.HISTORY)
     object Budget : AddOnPackage(500, ContribFeature.BUDGET)

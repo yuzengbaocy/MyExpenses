@@ -19,6 +19,7 @@ data class Licence(@SerializedName("valid_since") val validSince: LocalDate?,
     companion object {
         fun parseFeatures(features: List<String>?) = AddOnPackage::class.sealedSubclasses.filter { features?.contains(it.simpleName) == true }
                 .mapNotNull { it.objectInstance?.feature }
+        fun parseFeature(feature: String) = AddOnPackage::class.sealedSubclasses.find { it.simpleName == feature }?.objectInstance
         fun getFeaturesFromPreference(prefString: String?) = parseFeatures(prefString?.split(','))
     }
 }

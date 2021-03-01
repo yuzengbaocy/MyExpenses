@@ -55,15 +55,14 @@ open class PlayStoreLicenceHandler(context: MyApplication, preferenceObfuscator:
     override fun initBillingManager(activity: Activity, query: Boolean): BillingManagerPlay {
         val billingUpdatesListener: BillingUpdatesListener = object : BillingUpdatesListener {
             override fun onPurchasesUpdated(purchases: List<Purchase>?): Boolean {
-                var result = false
                 if (purchases != null) {
                     val oldStatus = licenceStatus
-                    result = registerInventory(purchases) != null
+                    registerInventory(purchases) != null
                     if (activity is BillingListener) {
                         (activity as BillingListener).onLicenceStatusSet(licenceStatus, oldStatus)
                     }
                 }
-                return result
+                return licenceStatus != null || !addOnFeatures.isNullOrEmpty()
             }
 
             override fun onPurchaseCanceled() {
@@ -94,19 +93,27 @@ open class PlayStoreLicenceHandler(context: MyApplication, preferenceObfuscator:
     fun findHighestValidPurchase(inventory: List<Purchase>) = inventory.mapNotNull { purchase -> extractLicenceStatusFromSku(purchase.sku)?.let { Pair(purchase, it) } }
             .maxByOrNull { pair -> pair.second }?.first
 
-    private fun registerInventory(inventory: List<Purchase>): LicenceStatus? {
+    private fun registerInventory(inventory: List<Purchase>) {
         inventory.forEach { purchase: Purchase -> log().i("%s (acknowledged %b)", purchase.sku, purchase.isAcknowledged) }
-        return findHighestValidPurchase(inventory)?.let {
+        findHighestValidPurchase(inventory)?.let {
             if (it.purchaseState == Purchase.PurchaseState.PURCHASED) {
-                handlePurchase(it.sku, it.orderId)
+                handlePurchaseForLicence(it.sku, it.orderId)
             } else {
                 CrashHandler.reportWithTag(String.format("Found purchase in state %s", it.purchaseState), TAG)
-                null
             }
         } ?: run {
             maybeCancel()
-            null
         }
+        handlePurchaseForAddOns(inventory.map { Pair(Licence.parseFeature(it.sku), it.orderId) })
+    }
+
+    private fun handlePurchaseForAddOns(features: List<Pair<AddOnPackage?, String>>) {
+        addOnFeatures = features.filter { pair ->
+            pair.first?.let {
+                persistOrderIdForAddOn(it, pair.second)
+                true
+            } ?: false
+        }.map { it.first!!.feature }
     }
 
     override fun launchPurchase(aPackage: Package, shouldReplaceExisting: Boolean, billingManager: BillingManager) {

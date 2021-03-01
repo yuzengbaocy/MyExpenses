@@ -69,15 +69,19 @@ abstract class AbstractInAppPurchaseLicenceHandler(context: MyApplication, prefe
         updateContribStatus(STATUS_DISABLED)
     }
 
-    fun handlePurchase(sku: String, orderId: String): LicenceStatus? {
+    fun handlePurchaseForLicence(sku: String, orderId: String) {
         licenseStatusPrefs.putString(KEY_ORDER_ID, orderId)
-        return extractLicenceStatusFromSku(sku).also {
+        extractLicenceStatusFromSku(sku).also {
             when (it) {
                 LicenceStatus.CONTRIB -> registerPurchase(false)
                 LicenceStatus.EXTENDED -> registerPurchase(true)
                 LicenceStatus.PROFESSIONAL -> registerSubscription(sku)
             }
         }
+    }
+
+    fun persistOrderIdForAddOn(addOnPackage: AddOnPackage, orderId: String) {
+        licenseStatusPrefs.putString(KEY_ORDER_ID + "_" + addOnPackage.sku, orderId)
     }
 
     /**
@@ -116,6 +120,7 @@ abstract class AbstractInAppPurchaseLicenceHandler(context: MyApplication, prefe
             ProfessionalPackage.Professional_1 -> Config.SKU_PROFESSIONAL_1
             ProfessionalPackage.Professional_12 -> if (hasExtended) Config.SKU_EXTENDED2PROFESSIONAL_12 else Config.SKU_PROFESSIONAL_12
             ProfessionalPackage.Amazon -> if (hasExtended) Config.SKU_EXTENDED2PROFESSIONAL_PARENT else Config.SKU_PROFESSIONAL_PARENT
+            is AddOnPackage -> aPackage.sku
             else -> throw IllegalStateException()
         }
     }
