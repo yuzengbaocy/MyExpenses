@@ -130,7 +130,7 @@ abstract class AbstractInAppPurchaseLicenceHandler(context: MyApplication, prefe
                 Config.SKU_PROFESSIONAL_1, Config.SKU_EXTENDED2PROFESSIONAL_1 -> R.string.monthly_plain
                 Config.SKU_PROFESSIONAL_12, Config.SKU_EXTENDED2PROFESSIONAL_12 -> R.string.yearly_plain
                 else -> 0
-            }.takeIf { it != 0 }?.let { context.getString(it) } ?: ""
+            }.takeIf { it != 0 }?.let { context.getString(it) }
 
     /**
      * do not call on main thread
