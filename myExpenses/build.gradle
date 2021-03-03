@@ -253,7 +253,7 @@ dependencies {
 
     withAdsImplementation 'com.google.android.gms:play-services-ads:19.7.0'
     //noinspection GradleDynamicVersion
-    withAdsImplementation 'com.amazon.android:mobile-ads:5.+'
+    //withAdsImplementation 'com.amazon.android:mobile-ads:5.+'
 
     withDriveImplementation 'com.google.android.gms:play-services-auth:19.0.0'
     withDriveImplementation('com.google.http-client:google-http-client-gson:1.37.0')  {

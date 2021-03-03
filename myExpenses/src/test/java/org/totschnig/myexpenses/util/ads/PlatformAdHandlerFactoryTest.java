@@ -33,9 +33,9 @@ public class PlatformAdHandlerFactoryTest {
 
   @Test
   public void getDefaultAdHandlers() {
-    AdHandler[] adHandlers = factory.getAdHandlers(adContainer, "Ama:AdMob");
-    assertThat(adHandlers).hasSize(2);
-    assertThat(adHandlers[0]).isInstanceOf(AmaAdHandler.class);
+    AdHandler[] adHandlers = factory.getAdHandlers(adContainer, "AdMob");
+    assertThat(adHandlers).hasSize(1);
+    //assertThat(adHandlers[0]).isInstanceOf(AmaAdHandler.class);
     assertThat(adHandlers[1]).isInstanceOf(AdmobAdHandler.class);
   }
 
@@ -48,8 +48,7 @@ public class PlatformAdHandlerFactoryTest {
   @Test
   public void ignoreUnknownAdHandlers() {
     AdHandler[] adHandlers = factory.getAdHandlers(adContainer, "Ama:Bogus:AdMob");
-    assertThat(adHandlers).hasSize(2);
-    assertThat(adHandlers[0]).isInstanceOf(AmaAdHandler.class);
-    assertThat(adHandlers[1]).isInstanceOf(AdmobAdHandler.class);
+    assertThat(adHandlers).hasSize(1);
+    assertThat(adHandlers[0]).isInstanceOf(AdmobAdHandler.class);
   }
 }
