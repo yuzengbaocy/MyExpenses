@@ -87,7 +87,7 @@ class BillingManagerAmazon(val activity: Activity, private val mBillingUpdatesLi
                         (activity as? BillingListener)?.onBillingSetupFinished()
                         if (query) {
                             PurchasingService.getPurchaseUpdates(true)
-                            PurchasingService.getProductData(Config.allSkus.toSet())
+                            PurchasingService.getProductData(Config.amazonSkus.toSet())
                         }
                     }
                     else -> {

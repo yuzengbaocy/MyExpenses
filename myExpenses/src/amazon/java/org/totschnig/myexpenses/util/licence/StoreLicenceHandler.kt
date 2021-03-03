@@ -10,7 +10,7 @@ import org.totschnig.myexpenses.MyApplication
 import org.totschnig.myexpenses.R
 import org.totschnig.myexpenses.activity.ContribInfoDialogActivity
 import org.totschnig.myexpenses.contrib.Config
-import org.totschnig.myexpenses.contrib.Config.allSkus
+import org.totschnig.myexpenses.contrib.Config.amazonSkus
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler
 
 class StoreLicenceHandler(context: MyApplication, preferenceObfuscator: PreferenceObfuscator, crashHandler: CrashHandler) :
@@ -57,7 +57,7 @@ class StoreLicenceHandler(context: MyApplication, preferenceObfuscator: Preferen
 
     private fun storeSkuDetails(productData: MutableMap<String, Product>) {
         val editor = pricesPrefs.edit()
-        allSkus.forEach { sku ->
+        amazonSkus.forEach { sku ->
             val product = productData[sku]
             product?.let {
                 log().d("Sku: %s", it.toString())

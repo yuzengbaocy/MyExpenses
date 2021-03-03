@@ -31,7 +31,8 @@ import com.android.billingclient.api.PurchasesUpdatedListener
 import com.android.billingclient.api.SkuDetails
 import com.android.billingclient.api.SkuDetailsParams
 import com.android.billingclient.api.SkuDetailsResponseListener
-import org.totschnig.myexpenses.contrib.Config
+import org.totschnig.myexpenses.contrib.Config.playInAppSkus
+import org.totschnig.myexpenses.contrib.Config.playSubsSkus
 import org.totschnig.myexpenses.util.licence.LicenceHandler.Companion.log
 import java.util.*
 import kotlin.collections.HashSet
@@ -74,9 +75,9 @@ class BillingManagerPlay(val activity: Activity, private val mBillingUpdatesList
             log().d("Setup successful.")
             listener?.let {
                 queryPurchases()
-                querySkuDetailsAsync(SkuType.INAPP, listOf(Config.SKU_PREMIUM, Config.SKU_EXTENDED, Config.SKU_PREMIUM2EXTENDED)) { inAppResult, inAppSkuDetailsList ->
+                querySkuDetailsAsync(SkuType.INAPP, playInAppSkus) { inAppResult, inAppSkuDetailsList ->
                     if (inAppResult.responseCode == BillingResponseCode.OK && inAppSkuDetailsList != null) {
-                        querySkuDetailsAsync(SkuType.SUBS, listOf(Config.SKU_PROFESSIONAL_1, Config.SKU_PROFESSIONAL_12, Config.SKU_EXTENDED2PROFESSIONAL_12)) { subsResult, subsSkuDetailsList ->
+                        querySkuDetailsAsync(SkuType.SUBS, playSubsSkus) { subsResult, subsSkuDetailsList ->
                             if (subsResult.responseCode == BillingResponseCode.OK && subsSkuDetailsList != null) {
                                 it.onSkuDetailsResponse(
                                         BillingResult.newBuilder().setResponseCode(BillingResponseCode.OK).build(),
@@ -100,14 +101,14 @@ class BillingManagerPlay(val activity: Activity, private val mBillingUpdatesList
      */
     override fun onPurchasesUpdated(billingResult: BillingResult, purchases: MutableList<Purchase>?) {
         when (billingResult.responseCode) {
-            BillingResponseCode.OK -> onPurchasesUpdated(purchases)
+            BillingResponseCode.OK -> onPurchasesUpdated(purchases, true)
             BillingResponseCode.USER_CANCELED -> mBillingUpdatesListener.onPurchaseCanceled()
             else -> mBillingUpdatesListener.onPurchaseFailed(billingResult.responseCode)
         }
     }
 
-    private fun onPurchasesUpdated(purchases: List<Purchase>?) {
-        if (mBillingUpdatesListener.onPurchasesUpdated(purchases)) {
+    private fun onPurchasesUpdated(purchases: List<Purchase>?, newPurchase: Boolean) {
+        if (mBillingUpdatesListener.onPurchasesUpdated(purchases, newPurchase)) {
             purchases?.forEach { purchase ->
                 if (!purchase.isAcknowledged && purchase.purchaseState == Purchase.PurchaseState.PURCHASED) {
                     acknowledgePurchase(purchase.purchaseToken)
@@ -191,7 +192,7 @@ class BillingManagerPlay(val activity: Activity, private val mBillingUpdatesList
         log().d("Query inventory was successful.")
 
         // Update the UI and purchases inventory with new list of purchases
-        onPurchasesUpdated(purchases)
+        onPurchasesUpdated(purchases, false)
     }
 
     /**
@@ -281,7 +282,7 @@ class BillingManagerPlay(val activity: Activity, private val mBillingUpdatesList
 
 interface BillingUpdatesListener {
     //return true if purchases should be acknowledged
-    fun onPurchasesUpdated(purchases: List<@JvmSuppressWildcards Purchase>?): Boolean
+    fun onPurchasesUpdated(purchases: List<Purchase>?, newPurchase: Boolean): Boolean
 
     fun onPurchaseCanceled()
     fun onPurchaseFailed(resultCode: Int)

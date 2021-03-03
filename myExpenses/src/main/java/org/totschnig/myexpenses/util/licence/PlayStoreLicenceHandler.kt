@@ -54,29 +54,27 @@ open class PlayStoreLicenceHandler(context: MyApplication, preferenceObfuscator:
 
     override fun initBillingManager(activity: Activity, query: Boolean): BillingManagerPlay {
         val billingUpdatesListener: BillingUpdatesListener = object : BillingUpdatesListener {
-            override fun onPurchasesUpdated(purchases: List<Purchase>?): Boolean {
+            override fun onPurchasesUpdated(purchases: List<Purchase>?, newPurchase: Boolean): Boolean {
                 if (purchases != null) {
                     val oldStatus = licenceStatus
-                    registerInventory(purchases) != null
-                    if (activity is BillingListener) {
-                        (activity as BillingListener).onLicenceStatusSet(licenceStatus, oldStatus)
+                    val oldFeatures = addOnFeatures
+                    registerInventory(purchases, newPurchase)
+
+                    if (newPurchase || oldStatus != licenceStatus || addOnFeatures.size > oldFeatures.size) {
+                        (activity as? BillingListener)?.onLicenceStatusSet(prettyPrintStatus(activity))
                     }
                 }
-                return licenceStatus != null || !addOnFeatures.isNullOrEmpty()
+                return licenceStatus != null || addOnFeatures.isNotEmpty()
             }
 
             override fun onPurchaseCanceled() {
                 log().i("onPurchasesUpdated() - user cancelled the purchase flow - skipping")
-                if (activity is ContribInfoDialogActivity) {
-                    activity.onPurchaseCancelled()
-                }
+                (activity as? ContribInfoDialogActivity)?.onPurchaseCancelled()
             }
 
             override fun onPurchaseFailed(resultCode: Int) {
                 log().w("onPurchasesUpdated() got unknown resultCode: %s", resultCode)
-                if (activity is ContribInfoDialogActivity) {
-                    activity.onPurchaseFailed(resultCode)
-                }
+                (activity as? ContribInfoDialogActivity)?.onPurchaseFailed(resultCode)
             }
         }
         val skuDetailsResponseListener = if (query) SkuDetailsResponseListener { result: BillingResult, skuDetailsList: List<SkuDetails>? ->
@@ -93,7 +91,7 @@ open class PlayStoreLicenceHandler(context: MyApplication, preferenceObfuscator:
     fun findHighestValidPurchase(inventory: List<Purchase>) = inventory.mapNotNull { purchase -> extractLicenceStatusFromSku(purchase.sku)?.let { Pair(purchase, it) } }
             .maxByOrNull { pair -> pair.second }?.first
 
-    private fun registerInventory(inventory: List<Purchase>) {
+    private fun registerInventory(inventory: List<Purchase>, newPurchase: Boolean) {
         inventory.forEach { purchase: Purchase -> log().i("%s (acknowledged %b)", purchase.sku, purchase.isAcknowledged) }
         findHighestValidPurchase(inventory)?.let {
             if (it.purchaseState == Purchase.PurchaseState.PURCHASED) {
@@ -102,24 +100,31 @@ open class PlayStoreLicenceHandler(context: MyApplication, preferenceObfuscator:
                 CrashHandler.reportWithTag(String.format("Found purchase in state %s", it.purchaseState), TAG)
             }
         } ?: run {
-            maybeCancel()
+            if (!newPurchase) {
+                maybeCancel()
+            }
         }
-        handlePurchaseForAddOns(inventory.map { Pair(Licence.parseFeature(it.sku), it.orderId) })
+        handlePurchaseForAddOns(inventory.map { Pair(Licence.parseFeature(it.sku), it.orderId) }, newPurchase)
     }
 
-    private fun handlePurchaseForAddOns(features: List<Pair<AddOnPackage?, String>>) {
-        addOnFeatures = features.filter { pair ->
+    private fun handlePurchaseForAddOns(features: List<Pair<AddOnPackage?, String>>, newPurchase: Boolean) {
+        val newFeatures = features.filter { pair ->
             pair.first?.let {
                 persistOrderIdForAddOn(it, pair.second)
                 true
             } ?: false
         }.map { it.first!!.feature }
+        addOnFeatures = if (newPurchase) {
+            addOnFeatures.plus(newFeatures)
+        } else {
+            newFeatures
+        }
     }
 
     override fun launchPurchase(aPackage: Package, shouldReplaceExisting: Boolean, billingManager: BillingManager) {
         val sku = getSkuForPackage(aPackage)
         val skuDetails = getSkuDetailsFromPrefs(sku)
-                ?: throw IllegalStateException("Could not determine sku details")
+                ?: throw IllegalStateException("Could not determine sku details for $sku")
         val oldSku: String?
         if (shouldReplaceExisting) {
             oldSku = currentSubscription
