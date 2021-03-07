@@ -81,7 +81,7 @@ open class PlayStoreLicenceHandler(context: MyApplication, preferenceObfuscator:
             if (result.responseCode == BillingClient.BillingResponseCode.OK && skuDetailsList != null) {
                 storeSkuDetails(skuDetailsList)
             } else {
-                log().d("skuDetails response %d", result.responseCode)
+                log().w("skuDetails response %d", result.responseCode)
             }
         } else null
         return BillingManagerPlay(activity, billingUpdatesListener, skuDetailsResponseListener)
