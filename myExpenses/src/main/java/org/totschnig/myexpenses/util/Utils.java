@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.InsetDrawable;
 import android.os.Build;
@@ -89,6 +90,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 import androidx.loader.app.LoaderManager;
+import androidx.loader.content.Loader;
 import timber.log.Timber;
 
 import static android.text.format.DateUtils.DAY_IN_MILLIS;
@@ -666,8 +668,9 @@ public class Utils {
   }
 
   public static void requireLoader(LoaderManager manager, int loaderId, Bundle args,
-                                   LoaderManager.LoaderCallbacks callback) {
-    if (manager.getLoader(loaderId) != null && !manager.getLoader(loaderId).isReset()) {
+                                   LoaderManager.LoaderCallbacks<Cursor> callback) {
+    final Loader<Cursor> loader = manager.getLoader(loaderId);
+    if (loader != null && !loader.isReset()) {
       manager.restartLoader(loaderId, args, callback);
     } else {
       manager.initLoader(loaderId, args, callback);
@@ -697,21 +700,6 @@ public class Utils {
    */
   public static <T> int compare(T a, T b, Comparator<? super T> c) {
     return (a == b) ? 0 : c.compare(a, b);
-  }
-
-  // From Guava
-  public static int indexOf(int[] array, int target) {
-    return indexOf(array, target, 0, array.length);
-  }
-
-  private static int indexOf(
-      int[] array, int target, int start, int end) {
-    for (int i = start; i < end; i++) {
-      if (array[i] == target) {
-        return i;
-      }
-    }
-    return -1;
   }
 
   public static int pow(int b, int k) {

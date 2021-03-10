@@ -45,6 +45,7 @@ android {
         versionCode project.versionCode
         versionName project.versionName
         multiDexEnabled true
+        multiDexKeepProguard file('multidex-config.pro')
 
         buildConfigField "String", "DISTRIBUTION", "\"GITHUB\""
         buildConfigField "boolean", "UNLOCK_SWITCH", getPropertyIfDefined("UNLOCK", "false")
@@ -83,7 +84,7 @@ android {
     buildTypes {
         release {
             minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-project.txt', 'proguard-flavored.txt'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-project.txt', 'proguard-flavored.txt'
             signingConfig signingConfigs.release
             manifestPlaceholders = [appName: "@string/app_name", debug: "false"]
             applicationIdSuffix ""
@@ -227,14 +228,14 @@ dependencies {
     //noinspection GradleDependency
     implementation "org.apache.commons:commons-lang3:$commonsLang"
     implementation 'com.android.billingclient:billing:2.2.1'
-    playImplementation 'com.google.android.play:core:1.9.1'
+    playImplementation 'com.google.android.play:core:1.10.0'
     amazonImplementation fileTree(dir: 'libs', include: ['in-app-purchasing-2.0.76.jar'])
 
-    implementation 'org.apache.commons:commons-csv:1.5'
+    implementation 'org.apache.commons:commons-csv:1.8'
     implementation "com.squareup.picasso:picasso:$picassoVersion"
     implementation 'com.github.mtotschnig:MPAndroidChart:6fcf34d9d4'
     implementation 'com.github.mtotschnig:Caldroid:d217ebc306'
-    implementation 'com.github.eltos:simpledialogfragments:v3.3'
+    implementation 'com.github.eltos:simpledialogfragments:v3.3.2'
     implementation 'com.annimon:stream:1.2.1'
     implementation 'com.getkeepsafe.taptargetview:taptargetview:1.13.0'
 
@@ -257,7 +258,7 @@ dependencies {
     //withAdsImplementation 'com.amazon.android:mobile-ads:5.+'
 
     withDriveImplementation 'com.google.android.gms:play-services-auth:19.0.0'
-    withDriveImplementation('com.google.http-client:google-http-client-gson:1.37.0')  {
+    withDriveImplementation('com.google.http-client:google-http-client-gson:1.39.0')  {
         exclude module: 'httpclient'
         exclude module: 'commons-logging'
     }
@@ -327,7 +328,8 @@ dependencies {
     testImplementation "org.robolectric:shadows-multidex:$robolectricVersion"
     testImplementation "androidx.test:core:$androidSupportTestVersion"
     testImplementation "org.assertj:assertj-core:$assertjVersion"
-    androidTestImplementation "org.assertj:assertj-core:$assertjVersion"
+    //noinspection GradleDependency
+    androidTestImplementation "org.assertj:assertj-core:$assertjVersionAndroid"
     implementation "androidx.core:core-ktx:$ktxVersion"
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
     androidTestImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
