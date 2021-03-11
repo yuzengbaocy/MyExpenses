@@ -13,6 +13,7 @@ import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
 import org.totschnig.myexpenses.MyApplication
+import org.totschnig.myexpenses.preference.PrefHandler
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler
 
 @RunWith(JUnitParamsRunner::class)
@@ -25,7 +26,7 @@ class StoreLicenceHandlerTest {
     fun setUp() {
         val context = mock(MyApplication::class.java)
         `when`(context.getSharedPreferences(ArgumentMatchers.any(), ArgumentMatchers.anyInt())).thenReturn(mock(SharedPreferences::class.java))
-        licenceHandler = StoreLicenceHandler(context, mock(PreferenceObfuscator::class.java), mock(CrashHandler::class.java))
+        licenceHandler = StoreLicenceHandler(context, mock(PreferenceObfuscator::class.java), mock(CrashHandler::class.java), mock(PrefHandler::class.java))
     }
 
     private fun m(sku: String) = mock(Purchase::class.java).also {
