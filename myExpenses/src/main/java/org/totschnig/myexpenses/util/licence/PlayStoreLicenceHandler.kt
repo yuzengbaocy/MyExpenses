@@ -105,6 +105,7 @@ open class PlayStoreLicenceHandler(context: MyApplication, preferenceObfuscator:
             }
         }
         handlePurchaseForAddOns(inventory.map { Pair(Licence.parseFeature(it.sku), it.orderId) }, newPurchase)
+        licenseStatusPrefs.commit()
     }
 
     private fun handlePurchaseForAddOns(features: List<Pair<AddOnPackage?, String>>, newPurchase: Boolean) {
@@ -119,6 +120,7 @@ open class PlayStoreLicenceHandler(context: MyApplication, preferenceObfuscator:
         } else {
             newFeatures
         }
+        persistAddonFeatures()
     }
 
     override fun launchPurchase(aPackage: Package, shouldReplaceExisting: Boolean, billingManager: BillingManager) {

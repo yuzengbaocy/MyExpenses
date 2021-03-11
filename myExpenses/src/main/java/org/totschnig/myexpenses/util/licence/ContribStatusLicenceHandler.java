@@ -53,6 +53,7 @@ public abstract class ContribStatusLicenceHandler extends LicenceHandler {
   public boolean registerUnlockLegacy() {
     if (getLicenceStatus() == null) {
       updateContribStatus(getLegacyStatus());
+      getLicenseStatusPrefs().commit();
       return true;
     } else {
       return false;
@@ -69,7 +70,6 @@ public abstract class ContribStatusLicenceHandler extends LicenceHandler {
    */
   void updateContribStatus(int contribStatus) {
     getLicenseStatusPrefs().putString(licenceStatusKey(), String.valueOf(contribStatus));
-    getLicenseStatusPrefs().commit();
     setContribStatus(contribStatus);
     update();
   }
