@@ -121,7 +121,7 @@ abstract class AbstractInAppPurchaseLicenceHandler(context: MyApplication, prefe
             ProfessionalPackage.Professional_12 -> if (hasExtended) Config.SKU_EXTENDED2PROFESSIONAL_12 else Config.SKU_PROFESSIONAL_12
             ProfessionalPackage.Amazon -> if (hasExtended) Config.SKU_EXTENDED2PROFESSIONAL_PARENT else Config.SKU_PROFESSIONAL_PARENT
             is AddOnPackage -> aPackage.sku
-            else -> throw IllegalStateException()
+            else -> throw IllegalStateException("Did not find sku for package $aPackage")
         }
     }
 
