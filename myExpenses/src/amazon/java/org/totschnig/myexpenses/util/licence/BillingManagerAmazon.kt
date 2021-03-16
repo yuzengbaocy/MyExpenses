@@ -21,9 +21,7 @@ import com.amazon.device.iap.PurchasingListener
 import com.amazon.device.iap.PurchasingService
 import com.amazon.device.iap.model.*
 import org.totschnig.myexpenses.contrib.Config
-import org.totschnig.myexpenses.util.licence.LicenceHandler.log
-
-private const val BILLING_MANAGER_NOT_INITIALIZED = -1
+import org.totschnig.myexpenses.util.licence.LicenceHandler.Companion.log
 
 /**
  * Handles all the interactions with Play Store (via Billing library), maintains connection to
@@ -38,8 +36,8 @@ class BillingManagerAmazon(val activity: Activity, private val mBillingUpdatesLi
 
         PurchasingService.registerListener(activity.applicationContext, object : PurchasingListener {
             override fun onProductDataResponse(productDataResponse: ProductDataResponse) {
-                val status = productDataResponse.getRequestStatus()
-                val requestId = productDataResponse.getRequestId()
+                val status = productDataResponse.requestStatus
+                val requestId = productDataResponse.requestId
                 log().d("onProductDataResponse() reqStatus: %s, reqId: %s", status, requestId)
 
                 when (status) {
@@ -82,7 +80,7 @@ class BillingManagerAmazon(val activity: Activity, private val mBillingUpdatesLi
             }
 
             override fun onUserDataResponse(userDataResponse: UserDataResponse) {
-                when (userDataResponse.getRequestStatus()) {
+                when (userDataResponse.requestStatus) {
                     UserDataResponse.RequestStatus.SUCCESSFUL -> {
                         (activity as? BillingListener)?.onBillingSetupFinished()
                         if (query) {
@@ -93,7 +91,7 @@ class BillingManagerAmazon(val activity: Activity, private val mBillingUpdatesLi
                     else -> {
                         (activity as? BillingListener)?.onBillingSetupFailed(
                                 "Please make sure you are logged into Amazon AppStore (%s)"
-                                        .format(userDataResponse.getRequestStatus().name))
+                                        .format(userDataResponse.requestStatus.name))
                     }
                 }
 

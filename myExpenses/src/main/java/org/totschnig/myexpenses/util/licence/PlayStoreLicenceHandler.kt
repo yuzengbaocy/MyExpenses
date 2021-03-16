@@ -52,7 +52,7 @@ open class PlayStoreLicenceHandler(context: MyApplication, preferenceObfuscator:
     private val currentSubscription: String?
         get() = licenseStatusPrefs.getString(KEY_CURRENT_SUBSCRIPTION, null)
 
-    override fun initBillingManager(activity: Activity, query: Boolean): BillingManagerPlay {
+    override fun initBillingManager(activity: Activity, query: Boolean): BillingManager {
         val billingUpdatesListener: BillingUpdatesListener = object : BillingUpdatesListener {
             override fun onPurchasesUpdated(purchases: List<Purchase>?, newPurchase: Boolean): Boolean {
                 if (purchases != null) {

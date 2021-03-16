@@ -11,25 +11,27 @@ import org.totschnig.myexpenses.R
 import org.totschnig.myexpenses.activity.ContribInfoDialogActivity
 import org.totschnig.myexpenses.contrib.Config
 import org.totschnig.myexpenses.contrib.Config.amazonSkus
+import org.totschnig.myexpenses.model.ContribFeature
+import org.totschnig.myexpenses.preference.PrefHandler
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler
 
-class StoreLicenceHandler(context: MyApplication, preferenceObfuscator: PreferenceObfuscator, crashHandler: CrashHandler) :
-        AbstractInAppPurchaseLicenceHandler(context, preferenceObfuscator, crashHandler) {
-
+class StoreLicenceHandler(context: MyApplication, preferenceObfuscator: PreferenceObfuscator, crashHandler: CrashHandler, prefHandler: PrefHandler) :
+        PlayStoreLicenceHandler(context, preferenceObfuscator, crashHandler, prefHandler) {
 
     override fun initBillingManager(activity: Activity, query: Boolean): BillingManager {
         val billingUpdatesListener = object : AmazonBillingUpdatesListener {
             override fun onPurchase(receipt: Receipt): Boolean {
-                val oldStatus = licenceStatus
-                val result = handlePurchase(receipt.sku, receipt.receiptId) != null
-                (activity as? BillingListener)?.onLicenceStatusSet(licenceStatus, oldStatus)
-                return result
+                handlePurchaseForLicence(receipt.sku, receipt.receiptId)
+                (activity as? BillingListener)?.onLicenceStatusSet(prettyPrintStatus(activity))
+                return licenceStatus != null
             }
 
             override fun onPurchasesUpdated(purchases: MutableList<Receipt>) {
                 val oldStatus = licenceStatus
                 registerInventory(purchases)
-                (activity as? BillingListener)?.onLicenceStatusSet(licenceStatus, oldStatus)
+                if (oldStatus != licenceStatus) {
+                    (activity as? BillingListener)?.onLicenceStatusSet(prettyPrintStatus(activity))
+                }
             }
 
             override fun onProductDataResponse(productData: MutableMap<String, Product>) {
@@ -37,7 +39,7 @@ class StoreLicenceHandler(context: MyApplication, preferenceObfuscator: Preferen
             }
 
             override fun onPurchaseFailed(resultCode: PurchaseResponse.RequestStatus) {
-                LicenceHandler.log().w("onPurchaseFailed() resultCode: %s", resultCode)
+                log().w("onPurchaseFailed() resultCode: %s", resultCode)
                 (activity as? ContribInfoDialogActivity)?.onPurchaseFailed(resultCode.ordinal)
             }
         }
@@ -47,13 +49,13 @@ class StoreLicenceHandler(context: MyApplication, preferenceObfuscator: Preferen
     private fun registerInventory(purchases: MutableList<Receipt>) {
         val receipt = findHighestValidPurchase(purchases)
         receipt?.let {
-            handlePurchase(it.sku, it.receiptId)
+            handlePurchaseForLicence(it.sku, it.receiptId)
         } ?: kotlin.run { maybeCancel() }
     }
 
     private fun findHighestValidPurchase(purchases: List<Receipt>) =
             purchases.filter { !it.isCanceled && extractLicenceStatusFromSku(it.sku) != null }
-                    .maxBy { extractLicenceStatusFromSku(it.sku)?.ordinal ?: 0}
+                    .maxByOrNull { extractLicenceStatusFromSku(it.sku)?.ordinal ?: 0 }
 
     private fun storeSkuDetails(productData: MutableMap<String, Product>) {
         val editor = pricesPrefs.edit()
@@ -73,24 +75,27 @@ class StoreLicenceHandler(context: MyApplication, preferenceObfuscator: Preferen
         (billingManager as? BillingManagerAmazon)?.initiatePurchaseFlow(getSkuForPackage(aPackage))
     }
 
+    override val proPackages: Array<ProfessionalPackage>
+        get() = arrayOf(ProfessionalPackage.Amazon)
 
-    override fun getProPackages() = arrayOf(Package.Professional_Amazon)
-
-    override fun getProfessionalPriceShortInfo(): String {
-        var priceInfo = joinPriceInfos(Package.Professional_1, Package.Professional_12)
-        if (licenceStatus === LicenceStatus.EXTENDED) {
-            val regularPrice = pricesPrefs.getString(Config.SKU_PROFESSIONAL_12, null)
-            if (regularPrice != null) {
-                priceInfo += ". " + context.getString(R.string.extended_upgrade_goodie_subscription_amazon, 15, regularPrice)
+    override val professionalPriceShortInfo: String
+        get() {
+            var priceInfo = joinPriceInformation(ProfessionalPackage.Professional_1, ProfessionalPackage.Professional_12)
+            if (licenceStatus === LicenceStatus.EXTENDED) {
+                val regularPrice = pricesPrefs.getString(Config.SKU_PROFESSIONAL_12, null)
+                if (regularPrice != null) {
+                    priceInfo += ". " + context.getString(R.string.extended_upgrade_goodie_subscription_amazon, 15, regularPrice)
+                }
             }
+            return priceInfo
         }
-        return priceInfo
-    }
 
-    override protected fun getDisplayPriceForPackage(aPackage: Package) = pricesPrefs.getString(getSkuForPackage(aPackage), null)
+    override fun getDisplayPriceForPackage(aPackage: Package) = pricesPrefs.getString(getSkuForPackage(aPackage), null)
 
-    override fun getProPackagesForExtendOrSwitch() = null
+    override val proPackagesForExtendOrSwitch: Array<ProfessionalPackage>?
+        get() = null
 
-    override fun getProLicenceAction(context: Context?) = ""
+    override fun getProLicenceAction(context: Context) = ""
 
+    override fun supportSingleFeaturePurchase(feature: ContribFeature) = false
 }
