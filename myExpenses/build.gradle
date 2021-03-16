@@ -110,15 +110,17 @@ android {
         play {
             dimension "distribution"
             buildConfigField "String", "DISTRIBUTION", "\"PLAY\""
+            ext.gitTagSuffix = 'gp'
         }
         amazon {
             dimension "distribution"
             buildConfigField "String", "DISTRIBUTION", "\"AMAZON\""
+            ext.gitTagSuffix = 'aa'
         }
         huawei {
             dimension "distribution"
             buildConfigField "String", "DISTRIBUTION", "\"HUAWEI\""
-
+            ext.gitTagSuffix = 'hu'
         }
         withDrive {
             dimension "drive"
@@ -134,6 +136,20 @@ android {
         }
         extern {
             dimension "textRecognition"
+        }
+        all { flavor ->
+            if (flavor.dimension == "distribution") {
+                task("${flavor.name}EchoPublishTag") {
+                    doLast {
+                        def tag = "${project.versionCode}${flavor.ext.gitTagSuffix}"
+                        def dir = "/Volumes/Transcend/MyExpensesReleases/${tag}"
+                        def outputFolder = flavor.name == 'play' ? 'bundle' : 'universal_apk'
+                        def artifactSuffix = flavor.name == 'play' ? '.aab' : '-universal.apk'
+                        def renameTarget = flavor.name == 'huawei' ? '/myExpenses.apk' : ''
+                        println "mkdir ${dir}; mv myExpenses/build/outputs/mapping/${flavor.name}WithDriveWithAdsGmsInternRelease/mapping.txt ${dir}; mv myExpenses/build/outputs/${outputFolder}/${flavor.name}WithDriveWithAdsGmsInternRelease/myExpenses-${flavor.name}-withDrive-withAds-gms-intern-release${artifactSuffix} ${dir}${renameTarget}; git tag r${tag}; git push gitlab r${tag}"
+                    }
+                }
+            }
         }
     }
 
@@ -376,14 +392,6 @@ task copyFileForFixture(type: Files) {
 }
 
 apply plugin: 'com.google.gms.google-services'
-
-task echoPublishTag() {
-    doLast {
-        def tag = "${versionCode}gp"
-        def dir = "/Volumes/Transcend/MyExpensesReleases/${tag}"
-        println "mkdir ${dir}; mv myExpenses/build/outputs/mapping/playWithDriveWithAdsGmsInternRelease/mapping.txt ${dir}; mv myExpenses/build/outputs/bundle/playWithDriveWithAdsGmsInternRelease/myExpenses-play-withDrive-withAds-gms-intern-release.aab ${dir}; git tag r${tag}; git push gitlab r${tag}"
-    }
-}
 
 def categoryIcons() {
     return new File("${projectDir}/src/main/categoryIcons/drawable")
