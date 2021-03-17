@@ -1,2 +1,11 @@
 -keep class org.totschnig.myexpenses.test.** { *; }
 -keep class org.totschnig.myexpenses.testutils.** { *; }
+-keep class androidx.core.**
+-keep class androidx.cardview.**
+-keep class androidx.appcompat.**
+-keep class android.support.v4.media.**
+-keep class androidx.constraintlayout.**
+-keep class androidx.coordinatorlayout.**
+-keep class androidx.customview.**
+-keep class androidx.documentfile.**
+-keep class androidx.exifinterface.**
