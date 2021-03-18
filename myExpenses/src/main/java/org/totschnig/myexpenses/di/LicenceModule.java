@@ -9,10 +9,9 @@ import com.google.android.vending.licensing.Obfuscator;
 import com.google.android.vending.licensing.PreferenceObfuscator;
 
 import org.totschnig.myexpenses.MyApplication;
-import org.totschnig.myexpenses.util.DistributionHelper;
 import org.totschnig.myexpenses.preference.PrefHandler;
+import org.totschnig.myexpenses.util.DistributionHelper;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
-import org.totschnig.myexpenses.util.licence.HashLicenceHandler;
 import org.totschnig.myexpenses.util.licence.LicenceHandler;
 import org.totschnig.myexpenses.util.licence.StoreLicenceHandler;
 
@@ -33,7 +32,7 @@ public class LicenceModule {
       case AMAZON:
         return new StoreLicenceHandler(application, preferenceObfuscator, crashHandler, prefHandler);
     }
-    return new HashLicenceHandler(application, preferenceObfuscator, crashHandler, prefHandler);
+    return new LicenceHandler(application, preferenceObfuscator, crashHandler, prefHandler);
   }
 
   @Provides
