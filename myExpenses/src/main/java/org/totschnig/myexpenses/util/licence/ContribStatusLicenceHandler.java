@@ -85,13 +85,13 @@ public abstract class ContribStatusLicenceHandler extends LicenceHandler {
   synchronized private void setContribStatus(int contribStatus) {
     this.contribStatus = contribStatus;
     if (contribStatus >= STATUS_PROFESSIONAL) {
-      setLicenceStatus(LicenceStatus.PROFESSIONAL);
+      maybeUpgradeLicence(LicenceStatus.PROFESSIONAL);
     } else if (contribStatus >= STATUS_EXTENDED_TEMPORARY) {
-      setLicenceStatus(LicenceStatus.EXTENDED);
+      maybeUpgradeLicence(LicenceStatus.EXTENDED);
     } else if (contribStatus > 0) {
-      setLicenceStatus(LicenceStatus.CONTRIB);
+      maybeUpgradeLicence(LicenceStatus.CONTRIB);
     } else {
-      setLicenceStatus(null);
+      maybeUpgradeLicence(null);
     }
     d("valueSet");
   }

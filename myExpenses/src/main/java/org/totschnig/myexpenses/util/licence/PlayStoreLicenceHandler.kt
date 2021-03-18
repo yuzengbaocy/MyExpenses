@@ -115,12 +115,7 @@ open class PlayStoreLicenceHandler(context: MyApplication, preferenceObfuscator:
                 true
             } ?: false
         }.map { it.first!!.feature }
-        addOnFeatures = if (newPurchase) {
-            addOnFeatures.plus(newFeatures)
-        } else {
-            newFeatures
-        }
-        persistAddonFeatures()
+        maybeUpgradeAddonFeatures(newFeatures, newPurchase)
     }
 
     override fun launchPurchase(aPackage: Package, shouldReplaceExisting: Boolean, billingManager: BillingManager) {

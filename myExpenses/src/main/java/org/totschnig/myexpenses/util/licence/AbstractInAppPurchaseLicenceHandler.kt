@@ -2,6 +2,7 @@ package org.totschnig.myexpenses.util.licence
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.annotation.VisibleForTesting
 import com.google.android.gms.ads.identifier.AdvertisingIdClient
 import com.google.android.vending.licensing.PreferenceObfuscator
 import org.totschnig.myexpenses.MyApplication
@@ -13,15 +14,7 @@ import org.totschnig.myexpenses.util.crashreporting.CrashHandler
 
 
 abstract class AbstractInAppPurchaseLicenceHandler(context: MyApplication, preferenceObfuscator: PreferenceObfuscator, crashHandler: CrashHandler, prefHandler: PrefHandler) : ContribStatusLicenceHandler(context, preferenceObfuscator, crashHandler, prefHandler) {
-    private val KEY_ORDER_ID = "order_id"
-    private val REFUND_WINDOW = 172800000L
-    private val STATUS_DISABLED = 0
-    private val PRICES_PREFS_FILE = "license_prices"
-    val pricesPrefs: SharedPreferences
-
-    init {
-        pricesPrefs = context.getSharedPreferences(PRICES_PREFS_FILE, Context.MODE_PRIVATE)
-    }
+    val pricesPrefs: SharedPreferences = context.getSharedPreferences(PRICES_PREFS_FILE, Context.MODE_PRIVATE)
 
     override fun getLegacyStatus() = STATUS_ENABLED_LEGACY_SECOND
 
@@ -38,7 +31,7 @@ abstract class AbstractInAppPurchaseLicenceHandler(context: MyApplication, prefe
             null
     }
 
-    abstract protected fun getDisplayPriceForPackage(aPackage: Package): String?
+    protected abstract fun getDisplayPriceForPackage(aPackage: Package): String?
 
     /**
      * @param sku
@@ -55,11 +48,7 @@ abstract class AbstractInAppPurchaseLicenceHandler(context: MyApplication, prefe
      */
     fun maybeCancel() {
         if (contribStatus != STATUS_ENABLED_LEGACY_SECOND) {
-            val timestamp = java.lang.Long.parseLong(licenseStatusPrefs.getString(
-                    PrefKey.LICENSE_INITIAL_TIMESTAMP.key, "0"))
-            val now = System.currentTimeMillis()
-            val timeSincePurchase = now - timestamp
-            if (timeSincePurchase > REFUND_WINDOW) {
+            if (System.currentTimeMillis() - licenseStatusPrefs.getString(prefHandler.getKey(PrefKey.LICENSE_INITIAL_TIMESTAMP), "0").toLong() > REFUND_WINDOW) {
                 cancel()
             }
         }
@@ -87,17 +76,17 @@ abstract class AbstractInAppPurchaseLicenceHandler(context: MyApplication, prefe
     /**
      * @param extended if true user has purchase extended licence
      */
+    @VisibleForTesting
     fun registerPurchase(extended: Boolean) {
         var status = if (extended) STATUS_EXTENDED_TEMPORARY else STATUS_ENABLED_TEMPORARY
-        val timestamp = java.lang.Long.parseLong(licenseStatusPrefs.getString(
-                PrefKey.LICENSE_INITIAL_TIMESTAMP.key, "0"))
+        val timestampKey = prefHandler.getKey(PrefKey.LICENSE_INITIAL_TIMESTAMP)
+        val timestamp = licenseStatusPrefs.getString(timestampKey, "0").toLong()
         val now = System.currentTimeMillis()
         if (timestamp == 0L) {
-            licenseStatusPrefs.putString(PrefKey.LICENSE_INITIAL_TIMESTAMP.key,
-                    now.toString())
+            licenseStatusPrefs.putString(timestampKey, now.toString())
         } else {
             val timeSincePurchase = now - timestamp
-            LicenceHandler.log().d("time since initial check : %d", timeSincePurchase)
+            log().d("time since initial check : %d", timeSincePurchase)
             //give user 2 days to request refund
             if (timeSincePurchase > REFUND_WINDOW) {
                 status = if (extended) STATUS_EXTENDED_PERMANENT else STATUS_ENABLED_PERMANENT
@@ -106,7 +95,7 @@ abstract class AbstractInAppPurchaseLicenceHandler(context: MyApplication, prefe
         updateContribStatus(status)
     }
 
-    fun registerSubscription(sku: String) {
+    private fun registerSubscription(sku: String) {
         licenseStatusPrefs.putString(KEY_CURRENT_SUBSCRIPTION, sku)
         updateContribStatus(STATUS_PROFESSIONAL)
     }
@@ -158,5 +147,9 @@ abstract class AbstractInAppPurchaseLicenceHandler(context: MyApplication, prefe
 
     companion object {
         const val KEY_CURRENT_SUBSCRIPTION = "current_subscription"
+        private const val KEY_ORDER_ID = "order_id"
+        private const val REFUND_WINDOW = 172800000L
+        private const val STATUS_DISABLED = 0
+        private const val PRICES_PREFS_FILE = "license_prices"
     }
 }
