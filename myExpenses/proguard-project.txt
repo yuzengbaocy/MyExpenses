@@ -7,7 +7,7 @@
 -dontwarn org.bouncycastle.**
 -dontwarn com.itextpdf.**
 
--keepclassmembers class org.totschnig.myexpenses.provider.filter.** {
+-keepclassmembers class org.totschnig.myexpenses.provider.filter.* {
  public <init>(java.lang.String,java.lang.String[]);
 }
 
@@ -22,18 +22,10 @@
 
 -keep enum org.totschnig.myexpenses.activity.*$HelpVariant
 
--keep class android.support.v7.widget.SearchView { *; }
-
 -keep class se.emilsjolander.stickylistheaders.StickyListHeadersListView { *; }
 
 #Picasso
 -dontwarn com.squareup.okhttp.**
-
-# Espresso Contrib DrawerActions accesses this through reflection
--keepclassmembers class android.support.v4.widget.DrawerLayout {
-    private android.support.v4.widget.DrawerLayout$DrawerListener mListener;
-    public void setDrawerListener(android.support.v4.widget.DrawerLayout$DrawerListener);
-}
 
 -dontwarn icepick.**
 -keep class icepick.** { *; }
@@ -84,3 +76,8 @@
 -keepattributes Signature
 # Retain declared checked exceptions for use by a Proxy instance.
 -keepattributes Exceptions
+
+#https://issuetracker.google.com/issues/181878999
+-keep class androidx.exifinterface.media.ExifInterface$OsApi21Impl {
+  <methods>;
+}
