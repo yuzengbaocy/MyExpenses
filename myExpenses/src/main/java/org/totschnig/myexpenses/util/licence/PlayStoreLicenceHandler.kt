@@ -49,8 +49,15 @@ open class PlayStoreLicenceHandler(context: MyApplication, preferenceObfuscator:
         return null
     }
 
-    private val currentSubscription: String?
-        get() = licenseStatusPrefs.getString(KEY_CURRENT_SUBSCRIPTION, null)
+    /**
+     * Pair of sku and purchaseToken
+     */
+    private val currentSubscription: Pair<String, String>?
+        get() {
+            val sku = licenseStatusPrefs.getString(KEY_CURRENT_SUBSCRIPTION_SKU, null)
+            val purchaseToken = licenseStatusPrefs.getString(KEY_CURRENT_SUBSCRIPTION_PURCHASE_TOKEN, null)
+            return if (sku != null && purchaseToken != null) Pair(sku, purchaseToken) else null
+        }
 
     override fun initBillingManager(activity: Activity, query: Boolean): BillingManager {
         val billingUpdatesListener: BillingUpdatesListener = object : BillingUpdatesListener {
@@ -95,7 +102,7 @@ open class PlayStoreLicenceHandler(context: MyApplication, preferenceObfuscator:
         inventory.forEach { purchase: Purchase -> log().i("%s (acknowledged %b)", purchase.sku, purchase.isAcknowledged) }
         findHighestValidPurchase(inventory)?.let {
             if (it.purchaseState == Purchase.PurchaseState.PURCHASED) {
-                handlePurchaseForLicence(it.sku, it.orderId)
+                handlePurchaseForLicence(it.sku, it.orderId, it.purchaseToken)
             } else {
                 CrashHandler.reportWithTag(String.format("Found purchase in state %s", it.purchaseState), TAG)
             }
@@ -122,13 +129,14 @@ open class PlayStoreLicenceHandler(context: MyApplication, preferenceObfuscator:
         val sku = getSkuForPackage(aPackage)
         val skuDetails = getSkuDetailsFromPrefs(sku)
                 ?: throw IllegalStateException("Could not determine sku details for $sku")
-        val oldSku: String?
+        val oldPurchase: Pair<String, String>?
         if (shouldReplaceExisting) {
-            oldSku = currentSubscription
-            checkNotNull(oldSku) { "Could not determine current subscription" }
+            oldPurchase = currentSubscription
+            checkNotNull(oldPurchase) { "Could not determine current subscription" }
+            check(sku != oldPurchase.first)
         } else {
-            oldSku = null
+            oldPurchase = null
         }
-        (billingManager as BillingManagerPlay).initiatePurchaseFlow(skuDetails, oldSku)
+        (billingManager as BillingManagerPlay).initiatePurchaseFlow(skuDetails, oldPurchase)
     }
 }

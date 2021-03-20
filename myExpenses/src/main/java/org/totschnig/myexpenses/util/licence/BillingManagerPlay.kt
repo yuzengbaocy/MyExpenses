@@ -119,14 +119,15 @@ class BillingManagerPlay(val activity: Activity, private val mBillingUpdatesList
 
     /**
      * Start a purchase or subscription replace flow
+     * @param oldPurchase: Pair of sku and purchaseToken
      */
-    fun initiatePurchaseFlow(skuDetails: SkuDetails, oldSku: String?) {
+    fun initiatePurchaseFlow(skuDetails: SkuDetails, oldPurchase: Pair<String, String>?) {
         check(billingClientResponseCode > BILLING_MANAGER_NOT_INITIALIZED) { "Billing manager not yet initialized" }
         val purchaseFlowRequest = Runnable {
-            log().d("Launching in-app purchase flow. Replace old SKU? %s", oldSku != null)
-            val purchaseParams = BillingFlowParams.newBuilder()
-                    .setSkuDetails(skuDetails).setOldSku(oldSku).build()
-            billingClient?.launchBillingFlow(activity, purchaseParams)
+            log().d("Launching in-app purchase flow. Replace old SKU? %s", oldPurchase != null)
+            val purchaseParams = BillingFlowParams.newBuilder().setSkuDetails(skuDetails)
+            oldPurchase?.let { purchaseParams.setOldSku(oldPurchase.first, oldPurchase.second) }
+            billingClient?.launchBillingFlow(activity, purchaseParams.build())
         }
 
         executeServiceRequest(purchaseFlowRequest)

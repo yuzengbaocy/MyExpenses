@@ -27,7 +27,7 @@ class StoreLicenceHandler(context: MyApplication, preferenceObfuscator: Preferen
     override val proPackagesForExtendOrSwitch: Array<ProfessionalPackage>?
         get() = getPackageForSwitch()?.let { arrayOf(it) }
 
-    private fun getPackageForSwitch() = when (licenseStatusPrefs.getString(KEY_CURRENT_SUBSCRIPTION, null)) {
+    private fun getPackageForSwitch() = when (licenseStatusPrefs.getString(KEY_CURRENT_SUBSCRIPTION_SKU, null)) {
         Config.SKU_PROFESSIONAL_1 -> ProfessionalPackage.Professional_12
         Config.SKU_PROFESSIONAL_12, Config.SKU_EXTENDED2PROFESSIONAL_12 -> ProfessionalPackage.Professional_1
         else -> null

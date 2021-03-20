@@ -58,13 +58,13 @@ abstract class AbstractInAppPurchaseLicenceHandler(context: MyApplication, prefe
         updateContribStatus(STATUS_DISABLED)
     }
 
-    fun handlePurchaseForLicence(sku: String, orderId: String) {
+    fun handlePurchaseForLicence(sku: String, orderId: String, purchaseToken: String) {
         licenseStatusPrefs.putString(KEY_ORDER_ID, orderId)
         extractLicenceStatusFromSku(sku).also {
             when (it) {
                 LicenceStatus.CONTRIB -> registerPurchase(false)
                 LicenceStatus.EXTENDED -> registerPurchase(true)
-                LicenceStatus.PROFESSIONAL -> registerSubscription(sku)
+                LicenceStatus.PROFESSIONAL -> registerSubscription(sku, purchaseToken)
             }
         }
     }
@@ -95,8 +95,9 @@ abstract class AbstractInAppPurchaseLicenceHandler(context: MyApplication, prefe
         updateContribStatus(status)
     }
 
-    private fun registerSubscription(sku: String) {
-        licenseStatusPrefs.putString(KEY_CURRENT_SUBSCRIPTION, sku)
+    private fun registerSubscription(sku: String, purchaseToken: String) {
+        licenseStatusPrefs.putString(KEY_CURRENT_SUBSCRIPTION_SKU, sku)
+        licenseStatusPrefs.putString(KEY_CURRENT_SUBSCRIPTION_PURCHASE_TOKEN, purchaseToken)
         updateContribStatus(STATUS_PROFESSIONAL)
     }
 
@@ -115,7 +116,7 @@ abstract class AbstractInAppPurchaseLicenceHandler(context: MyApplication, prefe
     }
 
     override fun getProLicenceStatus(context: Context) =
-            when (licenseStatusPrefs.getString(KEY_CURRENT_SUBSCRIPTION, "")) {
+            when (licenseStatusPrefs.getString(KEY_CURRENT_SUBSCRIPTION_SKU, "")) {
                 Config.SKU_PROFESSIONAL_1, Config.SKU_EXTENDED2PROFESSIONAL_1 -> R.string.monthly_plain
                 Config.SKU_PROFESSIONAL_12, Config.SKU_EXTENDED2PROFESSIONAL_12 -> R.string.yearly_plain
                 else -> 0
@@ -146,7 +147,8 @@ abstract class AbstractInAppPurchaseLicenceHandler(context: MyApplication, prefe
         get() = false
 
     companion object {
-        const val KEY_CURRENT_SUBSCRIPTION = "current_subscription"
+        const val KEY_CURRENT_SUBSCRIPTION_SKU = "current_subscription"
+        const val KEY_CURRENT_SUBSCRIPTION_PURCHASE_TOKEN = "current_subscription_purchase_token"
         private const val KEY_ORDER_ID = "order_id"
         private const val REFUND_WINDOW = 172800000L
         private const val STATUS_DISABLED = 0
