@@ -58,7 +58,7 @@ abstract class AbstractInAppPurchaseLicenceHandler(context: MyApplication, prefe
         updateContribStatus(STATUS_DISABLED)
     }
 
-    fun handlePurchaseForLicence(sku: String, orderId: String, purchaseToken: String) {
+    fun handlePurchaseForLicence(sku: String, orderId: String, purchaseToken: String? = null) {
         licenseStatusPrefs.putString(KEY_ORDER_ID, orderId)
         extractLicenceStatusFromSku(sku).also {
             when (it) {
@@ -95,9 +95,11 @@ abstract class AbstractInAppPurchaseLicenceHandler(context: MyApplication, prefe
         updateContribStatus(status)
     }
 
-    private fun registerSubscription(sku: String, purchaseToken: String) {
+    private fun registerSubscription(sku: String, purchaseToken: String?) {
         licenseStatusPrefs.putString(KEY_CURRENT_SUBSCRIPTION_SKU, sku)
-        licenseStatusPrefs.putString(KEY_CURRENT_SUBSCRIPTION_PURCHASE_TOKEN, purchaseToken)
+        purchaseToken?.let {
+            licenseStatusPrefs.putString(KEY_CURRENT_SUBSCRIPTION_PURCHASE_TOKEN, it)
+        }
         updateContribStatus(STATUS_PROFESSIONAL)
     }
 
