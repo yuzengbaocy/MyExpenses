@@ -204,7 +204,7 @@ android {
     }
     //It does not seem possible to define dynamicFeatures dependent on variant
     //If you want to build intern variant, you need to include mlkit and/or tesseract module
-    dynamicFeatures = [':ocr', ':mlkit', ':tesseract', ':webui']
+    //dynamicFeatures = [':ocr', ':mlkit', ':tesseract', ':webui']
     //dynamicFeatures = [':ocr', ':webui']
 }
 
@@ -288,7 +288,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-crashlytics:17.4.0'
     implementation 'com.google.firebase:firebase-analytics:18.0.2'
     implementation 'com.google.firebase:firebase-core:18.0.2'
-    //implementation 'com.google.firebase:firebase-config:20.0.0'
+    implementation 'com.google.firebase:firebase-config:20.0.4'
     implementation 'com.google.firebase:firebase-ads:19.8.0'
 
     implementation 'org.slf4j:slf4j-api:1.7.30'
