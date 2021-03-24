@@ -89,12 +89,13 @@ internal class AdmobAdHandler(factory: AdHandlerFactory, adContainer: ViewGroup,
     override fun requestNewInterstitialDo() {
         mInterstitialShown = false
         interstitialCounter++
+        //every 20th attempt (starting from 5) we try the non-smart unit
         val adUnitId = activity.getString(if (isTest) R.string.admob_unitid_test_interstitial else
-            smartSegmentationInterstitialUnitId.takeIf { it != 0 && (interstitialCounter % 5 != 0)  } ?: interstitialUnitId)
+            smartSegmentationInterstitialUnitId.takeIf { it != 0 && (interstitialCounter % 20 != 5)  } ?: interstitialUnitId)
         trackInterstitialRequest(PROVIDER_ADMOB)
         InterstitialAd.load(activity, adUnitId, buildAdmobRequest(), object: InterstitialAdLoadCallback() {
             override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                trackInterstitialFailed(PROVIDER_ADMOB, loadAdError.toString())
+                trackInterstitialFailed(PROVIDER_ADMOB, loadAdError.code.toString())
                 onInterstitialFailed()
             }
 
