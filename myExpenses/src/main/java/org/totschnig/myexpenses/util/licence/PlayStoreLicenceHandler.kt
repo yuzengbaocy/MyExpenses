@@ -20,7 +20,6 @@ open class PlayStoreLicenceHandler(context: MyApplication, preferenceObfuscator:
     private fun storeSkuDetails(inventory: List<SkuDetails>) {
         val editor = pricesPrefs.edit()
         for (skuDetails in inventory) {
-            log().w("Sku %s, json: %s", skuDetails.sku, skuDetails.toString())
             editor.putString(prefKeyForSkuJson(skuDetails.sku), skuDetails.originalJson)
         }
         editor.apply()
