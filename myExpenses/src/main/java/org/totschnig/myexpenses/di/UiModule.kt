@@ -23,6 +23,7 @@ open class UiModule {
 
     @Provides
     @Singleton
+    //TODO instantiate via reflection
     fun provideAdHandlerFactory(application: MyApplication, prefHandler: PrefHandler, @Named(AppComponent.USER_COUNTRY) userCountry: String, licenceHandler: LicenceHandler): AdHandlerFactory =
             PlatformAdHandlerFactory(application, prefHandler, userCountry, licenceHandler)
 
