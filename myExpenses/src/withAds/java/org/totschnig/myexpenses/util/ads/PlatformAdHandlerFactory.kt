@@ -25,7 +25,11 @@ class PlatformAdHandlerFactory(context: Context, prefHandler: PrefHandler, userC
             remoteConfig.setDefaultsAsync(R.xml.remote_config_defaults)
             remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
                 if (!task.isSuccessful) {
-                    CrashHandler.report("Firebase Remote Config Fetch failed")
+                    task.exception?.let {
+                        CrashHandler.report(it)
+                    } ?: run {
+                        CrashHandler.report("Firebase Remote Config Fetch failed")
+                    }
                 }
             }
             remoteConfig.getString("ad_handling_waterfall").split(":".toRegex()).getOrNull(0) ?: "AdMob"
