@@ -10,7 +10,7 @@ import com.google.android.vending.licensing.PreferenceObfuscator;
 
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.preference.PrefHandler;
-import org.totschnig.myexpenses.util.DistributionHelper;
+import org.totschnig.myexpenses.util.distrib.DistributionHelper;
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler;
 import org.totschnig.myexpenses.util.licence.LicenceHandler;
 import org.totschnig.myexpenses.util.licence.StoreLicenceHandler;
