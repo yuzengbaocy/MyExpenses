@@ -5,7 +5,7 @@ import android.os.Bundle;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 
-import org.totschnig.myexpenses.util.DistributionHelper;
+import org.totschnig.myexpenses.util.distrib.DistributionHelper;
 import org.totschnig.myexpenses.util.Preconditions;
 
 public class PlatformTracker implements Tracker {

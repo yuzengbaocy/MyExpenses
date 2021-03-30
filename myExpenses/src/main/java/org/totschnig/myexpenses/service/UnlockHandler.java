@@ -11,7 +11,7 @@ import android.os.Message;
 import org.totschnig.myexpenses.MyApplication;
 import org.totschnig.myexpenses.R;
 import org.totschnig.myexpenses.activity.MyExpenses;
-import org.totschnig.myexpenses.util.DistributionHelper;
+import org.totschnig.myexpenses.util.distrib.DistributionHelper;
 import org.totschnig.myexpenses.util.licence.LicenceHandler;
 
 import androidx.core.app.NotificationCompat;
