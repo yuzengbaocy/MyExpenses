@@ -2,6 +2,7 @@ package org.totschnig.myexpenses.util.ads
 
 import android.content.Context
 import android.view.ViewGroup
+import androidx.annotation.Keep
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
@@ -12,6 +13,7 @@ import org.totschnig.myexpenses.preference.PrefHandler
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler
 import org.totschnig.myexpenses.util.licence.LicenceHandler
 
+@Keep
 class PlatformAdHandlerFactory(context: Context, prefHandler: PrefHandler, userCountry: String, licenceHandler: LicenceHandler) : DefaultAdHandlerFactory(context, prefHandler, userCountry, licenceHandler) {
     override fun create(adContainer: ViewGroup, baseActivity: BaseActivity): AdHandler {
         val adHandler = if (isAdDisabled) "NoOp" else {
