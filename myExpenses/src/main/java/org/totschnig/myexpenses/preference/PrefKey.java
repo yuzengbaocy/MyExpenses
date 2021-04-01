@@ -69,6 +69,8 @@ public enum PrefKey {
   AUTO_FILL_HINT_SHOWN("auto_fill_hint_shown"),
   TEMPLATE_CLICK_DEFAULT(R.string.pref_template_click_default_key),
   NEXT_REMINDER_RATE("nextReminderRate"),
+  LAST_REQUEST_RATE_PLAY("lastReminderRatePlay"),
+  REQUEST_RATE_PLAY_OFFSET_DAYS("reminderRatePlayOffset"),
   DISTRIBUTION_SHOW_CHART("distributionShowChart"),
   DISTRIBUTION_AGGREGATE_TYPES("distributionAggregateTypes"),
   BUDGET_AGGREGATE_TYPES("budgetAggregateTypes"),
