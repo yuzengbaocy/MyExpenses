@@ -39,8 +39,8 @@ allprojects {
 }
 
 ext {
-    versionCode = 476
-    versionName = '3.2.7'
+    versionCode = 478
+    versionName = '3.2.8'
     compileSdkVersion = 30
     minSdkVersion = 16
     targetSdkVersion = 30
@@ -51,7 +51,7 @@ ext {
     okHttpVersion = "3.12.12"
     acraVersion = "5.7.0"
     butterknifeVersion = "10.2.3"
-    robolectricVersion = "4.4"
+    robolectricVersion = "4.5.1"
     roomVersion = "2.2.6"
     archLifecycleVersion = '2.3.1'
     androidxArchVersion = '2.1.0'
