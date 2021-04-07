@@ -12,6 +12,7 @@ import org.totschnig.myexpenses.activity.BaseActivity
 import org.totschnig.myexpenses.preference.PrefHandler
 import org.totschnig.myexpenses.util.crashreporting.CrashHandler
 import org.totschnig.myexpenses.util.licence.LicenceHandler
+import timber.log.Timber
 
 @Keep
 class PlatformAdHandlerFactory(context: Context, prefHandler: PrefHandler, userCountry: String, licenceHandler: LicenceHandler) : DefaultAdHandlerFactory(context, prefHandler, userCountry, licenceHandler) {
@@ -30,7 +31,7 @@ class PlatformAdHandlerFactory(context: Context, prefHandler: PrefHandler, userC
                     task.exception?.let {
                         CrashHandler.report(it)
                     } ?: run {
-                        CrashHandler.report("Firebase Remote Config Fetch failed")
+                        Timber.d("Firebase Remote Config Fetch failed")
                     }
                 }
             }
