@@ -17,9 +17,7 @@ import java.util.*
 
 open class DefaultAdHandlerFactory(protected val context: Context, protected val prefHandler: PrefHandler, protected val userCountry: String, private val licenceHandler: LicenceHandler) : AdHandlerFactory {
     override val isAdDisabled: Boolean
-        get() = !prefHandler.getBoolean(PrefKey.DEBUG_ADS, false) &&
-                (licenceHandler.hasAccessTo(ContribFeature.AD_FREE) ||
-                        isInInitialGracePeriod || BuildConfig.DEBUG)
+        get() = false
     private val isInInitialGracePeriod: Boolean
         get() = Utils.getDaysSinceInstall(context) < INITIAL_GRACE_DAYS
     override val isRequestLocationInEeaOrUnknown: Boolean

@@ -33,6 +33,7 @@ import android.view.ViewTreeObserver;
 import android.widget.AdapterView;
 
 import com.annimon.stream.Stream;
+import com.google.android.ads.mediationtestsuite.MediationTestSuite;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.theartofdev.edmodo.cropper.CropImage;
@@ -114,7 +115,6 @@ import static org.totschnig.myexpenses.activity.ConstantsKt.EDIT_ACCOUNT_REQUEST
 import static org.totschnig.myexpenses.activity.ConstantsKt.EDIT_REQUEST;
 import static org.totschnig.myexpenses.activity.ConstantsKt.OCR_REQUEST;
 import static org.totschnig.myexpenses.contract.TransactionsContract.Transactions.TYPE_SPLIT;
-import static org.totschnig.myexpenses.contract.TransactionsContract.Transactions.TYPE_TRANSACTION;
 import static org.totschnig.myexpenses.preference.PrefKey.OCR;
 import static org.totschnig.myexpenses.preference.PreferenceUtilsKt.requireString;
 import static org.totschnig.myexpenses.provider.DatabaseConstants.KEY_ACCOUNTID;
@@ -512,7 +512,8 @@ public class MyExpenses extends BaseMyExpenses implements
       }
       return true;
     } else if (command == R.id.CREATE_COMMAND) {
-      if (mAccountCount == 0) {
+      MediationTestSuite.launch(this);
+      /*if (mAccountCount == 0) {
         showSnackbar(R.string.warning_no_account);
       } else {
         if (isScanMode()) {
@@ -520,7 +521,7 @@ public class MyExpenses extends BaseMyExpenses implements
         } else {
           createRowDo(TYPE_TRANSACTION, false);
         }
-      }
+      }*/
       return true;
     } else if (command == R.id.BALANCE_COMMAND) {
       tl = getCurrentFragment();

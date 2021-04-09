@@ -84,7 +84,7 @@ internal class AdmobAdHandler(factory: AdHandlerFactory, adContainer: ViewGroup,
     }
 
     private val isTest: Boolean
-        get() = BuildConfig.DEBUG
+        get() = false
 
     override fun requestNewInterstitialDo() {
         mInterstitialShown = false

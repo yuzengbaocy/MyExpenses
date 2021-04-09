@@ -67,7 +67,7 @@ abstract class BaseAdHandler protected constructor(private val factory: AdHandle
     abstract fun requestNewInterstitialDo()
 
     fun shouldHideAd(): Boolean {
-        return factory.isAdDisabled || factory.isRequestLocationInEeaOrUnknown && !prefHandler.isSet(PrefKey.PERSONALIZED_AD_CONSENT)
+        return false //factory.isAdDisabled || factory.isRequestLocationInEeaOrUnknown && !prefHandler.isSet(PrefKey.PERSONALIZED_AD_CONSENT)
     }
 
     protected open fun onInterstitialFailed() {
